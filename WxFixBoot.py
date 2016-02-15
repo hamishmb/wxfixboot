@@ -20,7 +20,7 @@
 #*** Mount filesystems inside the temporary directory instead of in /mnt ***
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
 #*** Maybe use parted with the '-m' flag because we get lots of info in a easy to process way that way ***
-#*** Always use self.Panel in stead of self.MainPanel or whatever. ***
+#*** Always use self.Panel instead of self.MainPanel or whatever. ***
 #*** Instead of wx.Exit(), make a emergency exit function that will handle log files and such ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
@@ -2531,8 +2531,8 @@ class MainBackendThread(threading.Thread):
 
         #Now do other processes
         if BootloaderToInstall != "None":
-            self.OperationsToDo.append(self.ManageBootloaders)
-            logger.info("MainBackendThread().CountOperations(): Added self.ManageBootloaders to self.OperationsToDo...")
+            self.OperationsToDo.append(MainBootloaderTools().ManageBootloaders)
+            logger.info("MainBackendThread().CountOperations(): Added MainBootloaderTools().ManageBootloaders to self.OperationsToDo...")
 
         if ReinstallBootloader:
             self.OperationsToDo.append(self.ReinstallBootloader)
@@ -2542,10 +2542,10 @@ class MainBackendThread(threading.Thread):
             self.OperationsToDo.append(self.UpdateBootloader)
             logger.info("MainBackendThread().CountOperations(): Added self.UpdateBootloader to self.OperationsToDo...")
 
-        #Check if we need to prepare to install a new bootloader, and do so first if needed.
-        for element in (self.ManageBootloaders, self.ReinstallBootloader, self.UpdateBootloader):
+        #Check if we need to prepare to install a new bootloader, and do so first if needed. *** Log this ***
+        for element in (MainBootloaderTools().ManageBootloaders, self.ReinstallBootloader, self.UpdateBootloader):
             if element in self.OperationsToDo:
-                self.OperationsToDo.insert(0, self.PrepareForBootloaderInstallation)
+                self.OperationsToDo.insert(0, MainBootloaderTools().PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations ***
 
         NumberOfOperationsToDo = len(self.OperationsToDo)
 
@@ -2564,6 +2564,7 @@ class MainBackendThread(threading.Thread):
             #Run functions to do operations.
             for function in self.OperationsToDo:
                 #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries ***
+                #*** We temporarily neeed global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
                 #*** Essential backend tools ***
                 Tools.BackendTools.essentials.RootDevice = RootDevice
                 Tools.BackendTools.essentials.DeviceList = DeviceList
@@ -2589,6 +2590,7 @@ class MainBackendThread(threading.Thread):
                 Tools.BackendTools.BootloaderTools.main.Bootloader = Bootloader
                 Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
                 Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
+                Tools.BackendTools.BootloaderTools.main.DisableBootloaderOperations = DisableBootloaderOperations
 
                 #Run the function.
                 function()
@@ -2608,41 +2610,6 @@ class MainBackendThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.MainBackendThreadFinished)
 
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
-
-    def ManageBootloaders(self):
-        #Function to manage the installation and removal of bootloaders.
-        global DisableBootloaderOperations
-        DisableBootloaderOperations = False
-
-        #First, we need to check that these operations haven't been disabled.
-        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
-            #These operations have been disabled. Notify the user and skip them.
-            DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 100)
-            DisableBootloaderOperations = True
-
-        else:
-            #First remove the old bootloader, then install the new one.
-            self.GetOldBootloaderConfig()
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 25)
-            self.RemoveOldBootloader()
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 50)
-            BLInstallFailure = self.InstallNewBootloader()
-
-            if BLInstallFailure == "No":
-                wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 75)
-                self.SetNewBootloaderConfig()
-
-            else:
-                #Bootloader installation failed for at least one OS!
-                Result = DialogTools().ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Do you want to continue and configure the new bootloader(s), or skip the rest of the bootloader operation? You proabably want to configure the bootloader anyway.", Title="WxFixBoot - Configure Bootloader(s)?")
-
-                if Result:
-                    #Continue and configure bootloaders. Otherwise, do nothing.
-                    wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 75)
-                    self.SetNewBootloaderConfig()
-
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 100)
 
     def ReinstallBootloader(self):
         #Function to reinstall/fix the bootloader.

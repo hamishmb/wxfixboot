@@ -273,8 +273,10 @@ class Main():
 
                 return OSsForBootloaderRemoval, OSsForBootloaderInstallation
 
-    def AskUserForBootloaderInstallationOSs(self, OSListWithPackageManagers, UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval):
+    def AskUserForBootloaderInstallationOSs(self, OSListWithPackageManagers, UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval): #*** Maybe move to BootloaderTools package ***
         """Ask the user where the new bootloader is to be installed."""
+        #*** Temporarily define this as global until switch to dictionaries ***
+        global OSsForBootloaderInstallation
         OSsForBootloaderInstallation = []
 
         if len(OSListWithPackageManagers) == 1:
@@ -343,6 +345,9 @@ class Main():
     def FindBootloaderRemovalOSs(self, OSListWithPackageManagers, LiveDisk, AutoRootFS, Bootloader):
         """Find the OS(es) that currently have the bootloader installed, so we know where to remove it from."""
         logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Looking for Operating Systems that currently have the bootloader installed, to add to the removal list...")
+        #*** Temporarily define this as global until switch to dictionaries ***
+        global OSsForBootloaderRemoval
+
         OSsForBootloaderRemoval = []
 
         for OS in OSListWithPackageManagers:

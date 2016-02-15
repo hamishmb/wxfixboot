@@ -27,6 +27,10 @@ class Main():
         #First, check the Internet connection.
         DisableBootloaderOperations = HelperBackendTools().CheckInternetConnection()
 
+        #*** Temporarily define these as global until switch to dictionaries ***
+        global OSsForBootloaderRemoval
+        global OSsForBootloaderInstallation
+
         if DisableBootloaderOperations:
             #Disable bootloader operations.
             OSsForBootloaderRemoval = []
@@ -109,4 +113,40 @@ class Main():
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Done!###\n") 
+
+    def ManageBootloaders(self):
+        """Manage the installation and removal of bootloaders."""
+        DisableBootloaderOperations = False
+
+        #First, we need to check that these operations haven't been disabled.
+        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
+            #These operations have been disabled. Notify the user and skip them.
+            DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+            DisableBootloaderOperations = True
+
+        else:
+            #First remove the old bootloader, then install the new one.
+            self.GetOldBootloaderConfig() #*** Broken, not moved yet. ***
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
+
+            self.RemoveOldBootloader() #*** Broken, not moved yet. ***
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
+
+            BLInstallFailure = self.InstallNewBootloader()
+
+            if BLInstallFailure == "No":
+                wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
+                self.SetNewBootloaderConfig()
+
+            else:
+                #Bootloader installation failed for at least one OS! *** Clarify this message with better info ***
+                Result = DialogTools().ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Do you want to continue and configure the new bootloader(s), or skip the rest of the bootloader operations? You proabably want to configure the bootloader anyway.", Title="WxFixBoot - Configure Bootloader(s)?")
+
+                if Result:
+                    #Continue and configure bootloaders. Otherwise, do nothing.
+                    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
+                    self.SetNewBootloaderConfig() #*** Broken, not moved yet. ***
+
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 

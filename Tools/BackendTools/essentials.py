@@ -306,6 +306,10 @@ class Main(): #*** These need refactoring and proper testing ***
                     logger.info("EssentialBackendTools: Main().QuickFileSystemCheck(): Checked partition: "+Partition+". No Errors Found!")
 
                 else:
+                    #*** Temporarily define these as global until switch to dictionaries ***
+                    global OSsForBootloaderRemoval
+                    global OSsForBootloaderInstallation
+
                     OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools().HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
 
             if RemountPartitionAfter == "True":
@@ -391,6 +395,10 @@ class Main(): #*** These need refactoring and proper testing ***
                     logger.info("EssentialBackendTools: Main().BadSectorCheck(): Checked partition: "+Partition+" No Errors Found!")
 
                 else:
+                    #*** Temporarily define these as global until switch to dictionaries ***
+                    global OSsForBootloaderRemoval
+                    global OSsForBootloaderInstallation
+
                     OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools().HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
 
             if RemountPartitionAfter == "True":
