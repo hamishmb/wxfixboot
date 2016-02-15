@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class.
+#Begin Main Class. #*** On wx 3 and newer we can customise buttons ***
 class Main():
     def ShowThreadMsgDlg(self, msg, kind="info"):
         """Shows a message dialog from a thread upon instruction"""

@@ -2535,8 +2535,8 @@ class MainBackendThread(threading.Thread):
             logger.info("MainBackendThread().CountOperations(): Added MainBootloaderTools().ManageBootloaders to self.OperationsToDo...")
 
         if ReinstallBootloader:
-            self.OperationsToDo.append(self.ReinstallBootloader)
-            logger.info("MainBackendThread().CountOperations(): Added self.ReinstallBootloader to self.OperationsToDo...")
+            self.OperationsToDo.append(MainBootloaderTools().ReinstallBootloader)
+            logger.info("MainBackendThread().CountOperations(): Added MainBootloaderTools().ReinstallBootloader to self.OperationsToDo...")
 
         if UpdateBootloader:
             self.OperationsToDo.append(self.UpdateBootloader)
@@ -2561,9 +2561,9 @@ class MainBackendThread(threading.Thread):
         else:
             DialogTools().ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may also see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
 
-            #Run functions to do operations.
+            #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even ith the extra code after running the function ***
             for function in self.OperationsToDo:
-                #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries ***
+                #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
                 #*** We temporarily neeed global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
                 #*** Essential backend tools ***
                 Tools.BackendTools.essentials.RootDevice = RootDevice
@@ -2595,6 +2595,15 @@ class MainBackendThread(threading.Thread):
                 #Run the function.
                 function()
 
+                #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set the vars global to this file) ***
+                #*** Essential backend tools ***
+                OSsForBootloaderRemoval = Tools.BackendTools.Essentials.OSsForBootloaderRemoval
+                OSsForBootloaderInstallation = Tools.BackendTools.Essentials.OSsForBootloaderInstallation
+    
+                #*** Main Bootloader Tools (in Backend Tools package) ***
+                OSsForBootloaderRemoval = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval
+                OSsForBootloaderInstallation = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation
+
             logger.info("MainBackendThread().StartOperations(): Finished Operation Running Code.")
 
             #Save a system report if needed.
@@ -2605,37 +2614,11 @@ class MainBackendThread(threading.Thread):
 
             wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished!")
 
-            DialogTools().ShowMsgDlg(Kind="info", Message="Your operations are all done! Thank you for using WxFixBoot. If you performed any bootloader operations, please now reboot your system.")
+            DialogTools().ShowMsgDlg(Kind="info", Message="Your operations are all done! Thank you for using WxFixBoot. If you performed any bootloader operations, please now reboot your system.") #*** Check this and customise message if needed ***
 
         wx.CallAfter(self.ParentWindow.MainBackendThreadFinished)
 
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
-
-    def ReinstallBootloader(self):
-        #Function to reinstall/fix the bootloader.
-        global DisableBootloaderOperations
-        DisableBootloaderOperations = False
-
-        logger.info("MainBackendThread().ReinstallBootloader(): Preparing to reinstall the bootloader...")
-        wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Preparing to reinstall the bootloader...###\n")
-
-        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
-            #These operations have been disabled. Notify the user and skip them.
-            DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 100)
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
-            DisableBootloaderOperations = True
-
-        else:
-            #Set BootloaderToInstall as the current bootloader to allow this to work properly.
-            global BootloaderToInstall
-            BootloaderToInstall = Bootloader
-
-            #Call self.ManageBootloaders to perform the reinstallation safely.
-            logger.info("MainBackendThread().ReinstallBootloader(): Reinstalling the Bootloader...")
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Reinstalling the Bootloader...###\n")
-            self.ManageBootloaders()
-            logger.info("MainBackendThread().ReinstallBootloader(): Done!")
 
     def UpdateBootloader(self):
         #Function to update bootloader menu and config
@@ -3087,7 +3070,7 @@ class MainBackendThread(threading.Thread):
         #Install the new bootloader on the chosen OS.
         wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Preparing to install the new bootloader(s)...")
         wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 52)  
-        BLInstallFailure = "No"     
+        BootloaderInstallSucceded = True     
 
         #Loop through OSsForBootloaderInstallation, and provide information to the function that will install the bootloader.
         for OS in OSsForBootloaderInstallation:
@@ -3188,7 +3171,7 @@ class MainBackendThread(threading.Thread):
 
             if retval != 0:
                 #Something went wrong! Log it and notify the user.
-                BLInstallFailure = "Yes"
+                BootloaderInstallSucceded = False
                 logger.error("MainBackendThread().InstallNewBootloader(): Failed to install "+BootloaderToInstall+" in OS: "+OS+"! This may mean the system (or this OS) is now unbootable! We'll continue anyway. Warn the user.")
                 DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+BootloaderToInstall+" in: "+OS+"! This may leave your system, or this OS, in an unbootable state. It is recommended to do a Bad Sector check, unplug any non-essential devices, and then try again.")
 
@@ -3198,7 +3181,7 @@ class MainBackendThread(threading.Thread):
         logger.info("MainBackendThread().InstallNewBootloader(): Finished Installing bootloaders...")
         wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished Installing bootloaders...")
         wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 75)
-        return BLInstallFailure
+        return BootloaderInstallSucceded
 
     def UpdatePackageLists(self, PackageManager, UseChroot, MountPoint="None"):
         #Function to update thpackage lists so the required packages can always be found.

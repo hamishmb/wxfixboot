@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main():
+class Main(): #*** Refactor and test all of these ***
     def PrepareForBootloaderInstallation(self):
         """Run checks, gather information, and prepare for bootloader operations.""" #*** Make this more customisable *** 
         #First, check the Internet connection.
@@ -114,8 +114,35 @@ class Main():
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Done!###\n") 
 
+    def ReinstallBootloader(self):
+        """Reinstall/fix the bootloader.""" #*** Add logging stuff ***
+        #*** Temporarily define this as global until switch to dictionaries ***
+        global DisableBootloaderOperations
+        DisableBootloaderOperations = False
+
+        logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Preparing to reinstall the bootloader...")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to reinstall the bootloader...###\n")
+
+        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
+            #These operations have been disabled. Notify the user and skip them.
+            DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
+            DisableBootloaderOperations = True
+
+        else:
+            #Set BootloaderToInstall as the current bootloader to allow this to work properly.
+            global BootloaderToInstall
+            BootloaderToInstall = Bootloader
+
+            #Call self.ManageBootloaders to perform the reinstallation safely.
+            logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Reinstalling the Bootloader...")
+            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Reinstalling the Bootloader...###\n")
+            self.ManageBootloaders() 
+            logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Done!")
+
     def ManageBootloaders(self):
-        """Manage the installation and removal of bootloaders."""
+        """Manage the installation and removal of bootloaders.""" #*** Add logging stuff ***
         DisableBootloaderOperations = False
 
         #First, we need to check that these operations haven't been disabled.
@@ -133,15 +160,15 @@ class Main():
             self.RemoveOldBootloader() #*** Broken, not moved yet. ***
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
 
-            BLInstallFailure = self.InstallNewBootloader()
+            BootloaderInstallSucceded = self.InstallNewBootloader() #*** Broken, not moved yet. ***
 
-            if BLInstallFailure == "No":
+            if BootloaderInstallSucceded:
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
                 self.SetNewBootloaderConfig()
 
             else:
                 #Bootloader installation failed for at least one OS! *** Clarify this message with better info ***
-                Result = DialogTools().ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Do you want to continue and configure the new bootloader(s), or skip the rest of the bootloader operations? You proabably want to configure the bootloader anyway.", Title="WxFixBoot - Configure Bootloader(s)?")
+                Result = DialogTools().ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Do you want to continue and configure the new bootloader(s), or skip the rest of the bootloader operations? You probably want to configure the bootloader anyway.", Title="WxFixBoot - Configure Bootloader(s)?")
 
                 if Result:
                     #Continue and configure bootloaders. Otherwise, do nothing.
