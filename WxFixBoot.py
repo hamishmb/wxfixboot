@@ -98,8 +98,11 @@ import GetDevInfo
 import Tools
 
 from GetDevInfo.getdevinfo import Main as DevInfoTools
+
 from Tools.coretools import Main as CoreTools
+
 from Tools.dialogtools import Main as DialogTools
+
 from Tools.StartupTools.core import Main as CoreStartupTools
 from Tools.StartupTools.main import Main as MainStartupTools
 
@@ -107,6 +110,8 @@ from Tools.BackendTools.core import Main as CoreBackendTools
 from Tools.BackendTools.helpers import Main as HelperBackendTools
 from Tools.BackendTools.essentials import Main as EssentialBackendTools
 from Tools.BackendTools.main import Main as MainBackendTools
+
+from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderTools
 
 #Setup custom-made modules (make global variables accessible inside the packages). *** Continue to add stuff as needed *** *** I might want to break these down into further subcategories (packages within packages) to avoid a mess ***
 #GetDevInfo Package.
@@ -138,13 +143,13 @@ Tools.StartupTools.main.time = time
 Tools.StartupTools.main.os = os
 
 #BackendTools Package (Core).
-Tools.BackendTools.core.wx = wx
+Tools.BackendTools.core.wx = wx #*** Remove this later ***
 Tools.BackendTools.core.CoreTools = CoreTools
 Tools.BackendTools.core.logger = logger
 Tools.BackendTools.core.subprocess = subprocess #*** Remove this later ***
 
 #BackendTools Package (Helpers)
-Tools.BackendTools.helpers.wx = wx
+Tools.BackendTools.helpers.wx = wx #*** Remove this later ***
 Tools.BackendTools.helpers.CoreTools = CoreTools
 Tools.BackendTools.helpers.logger = logger
 Tools.BackendTools.helpers.DialogTools = DialogTools
@@ -153,7 +158,7 @@ Tools.BackendTools.helpers.subprocess = subprocess #*** Remove this later ***
 Tools.BackendTools.helpers.LooseVersion = LooseVersion
 
 #BackendTools Package (Essentials)
-Tools.BackendTools.essentials.wx = wx
+Tools.BackendTools.essentials.wx = wx #*** Remove this later ***
 Tools.BackendTools.essentials.CoreTools = CoreTools
 Tools.BackendTools.essentials.logger = logger
 Tools.BackendTools.essentials.DialogTools = DialogTools
@@ -164,6 +169,10 @@ Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools
 #BackendTools Package (Main).
 Tools.BackendTools.main.CoreTools = CoreTools
 Tools.BackendTools.main.logger = logger
+
+#BootloaderTools Package (Main)
+Tools.BackendTools.BootloaderTools.main.CoreTools = CoreTools
+Tools.BackendTools.BootloaderTools.main.logger = logger
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
@@ -2513,8 +2522,8 @@ class MainBackendThread(threading.Thread):
             logger.info("MainBackendThread().CountOperations(): Added EssentialBackendTools().QuickFileSystemCheck to self.OperationsToDo...")
 
         if BadSectCheck:
-            self.OperationsToDo.append(self.BadSectorCheck)
-            logger.info("MainBackendThread().CountOperations(): Added self.BadSectorCheck to self.OperationsToDo...")
+            self.OperationsToDo.append(EssentialBackendTools().BadSectorCheck)
+            logger.info("MainBackendThread().CountOperations(): Added EssentialBackendTools().BadSectorCheck to self.OperationsToDo...")
 
         #Now do other processes
         if BootloaderToInstall != "None":
@@ -2568,6 +2577,10 @@ class MainBackendThread(threading.Thread):
                 Tools.BackendTools.essentials.OSsForBootloaderRemoval = OSsForBootloaderRemoval
                 Tools.BackendTools.essentials.OSsForBootloaderInstallation = OSsForBootloaderInstallation
 
+                #*** Main Bootloader Tools (in Backend Tools package) ***
+                Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
+                Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
+
                 #Run the function.
                 function()
 
@@ -2585,99 +2598,7 @@ class MainBackendThread(threading.Thread):
 
         wx.CallAfter(self.ParentWindow.MainBackendThreadFinished)
 
-    ####################Start Of Bootloader Operation functions.####################
-
-    def PrepareForBootloaderInstallation(self):
-        """Run checks, gather information, and prepare for bootloader operations.""" #*** Make this more customisable *** 
-        global OSsForBootloaderRemoval
-        global OSsForBootloaderInstallation
-
-        #First, check the Internet connection.
-        DisableBootloaderOperations = HelperBackendTools().CheckInternetConnection()
-
-        if DisableBootloaderOperations:
-            #Disable bootloader operations.
-            OSsForBootloaderRemoval = []
-            OSsForBootloaderInstallation = []
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
-
-        else:
-            #Determine all the package managers on the system, including all OSs and the OS running, but not the live disk (if there is one). #*** Move this to startuptools ***
-            logger.debug("MainBackendThread().PrepareForBootloaderInstallation(): Determining package managers for all Linux OSs...")
-            wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Preparing for bootloader operations...")
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 10)
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox,"\n###Preparing for bootloader operations...###\n")
-
-            OSListWithPackageManagers = []
-        
-            #Use OSList to find all partitions with Linux OSs on them.
-            #Start of for loop.
-            for OS in OSList:
-                #Get the partition that each OS is on.
-                Partition = OS.split()[-1]
-
-                #If not on a live disk, and this OS is the one running, skip some stuff.
-                if LiveDisk == False and Partition == AutoRootFS:
-                    #Find the package manager on this partition, if one exists.
-                    #This is the RootFS, so don't use chroot in the given command lists.
-                    APT = HelperBackendTools().LookForAPTOnPartition(APTExecList=["apt-get", "-h"])
-
-                    #Add the OS and its package manager to the list, if there is one.
-                    if APT:
-                       logger.info("MainBackendThread().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager "+Result)
-                       OSListWithPackageManagers.append(OS+" with Package Manager "+Result)
-                            
-                    #Skip the rest of the for loop.
-                    continue
-
-                #Mount the partition.
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint="/mnt"+Partition)
-
-                #Check if anything went wrong.
-                if Retval != 0:
-                    #Ignore this partition.
-                    logger.warning("MainBackendThread().PrepareForBootloaderInstallation(): Failed to mount "+Partition+"! Ignoring this partition...")
-
-                else:
-                    #Find the package manager on this partition, if one exists.
-                    #This isn't the RootFS, so use chroot in the given command lists.
-                    APT = HelperBackendTools().LookForAPTOnPartition(APTExecList=["chroot", "/mnt"+Partition, "apt-get", "-h"])
-
-                    #Add the OS and its package manager to the list, if there is one.
-                    if APT:
-                        logger.info("MainBackendThread().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager "+Result)
-                        OSListWithPackageManagers.append(OS+" with Package Manager "+Result)
-
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 70)
-
-            #Check if there are any candidates for bootloader installation/removal. Hopefully there are!
-            if OSListWithPackageManagers == []:
-                #Oh dear... There aren't.
-                logger.error("MainBackendThread().PrepareForBootloaderInstallation(): Couldn't find an OS with APT! Will have to disable some operations!")
-                DialogTools().ShowMsgDlg(Kind="error", Message="No supported package managers could be found on any of your operating systems! At the moment, APT is supported, which covers most Linux Operating Systems. WxFixBoot will have to skip all operations that require a package manager, such as installing, removing and reinstalling the bootloader. In a later release WxFixBoot will likely support another package manager, such as Slackware's system. If you think you do have an OS with a supported package manager, please report a bug or email me directly via my Launchpad page, so I can try to help. In the meantime, you can probably follow some online instructions for your operating system.")
-
-                #Set these to "None", so the packagemanager-dependant code can skip itself.
-                OSsForBootloaderRemoval = []
-                OSsForBootloaderInstallation = []
-
-                #Update Current Operation Text.
-                wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 100)
-
-            else:
-                #Very good! There is at least one candidate.
-                logger.info("MainBackendThread().PrepareForBootloaderInstallation(): Found at least one candidate for installing and removing bootloaders! Continuing...")
-
-                #Also, we need to find which OS(es) installed the bootloader (or have it installed currently), and ask the user which OS to install the bootloader with.
-                OSsForBootloaderRemoval = HelperBackendTools().FindBootloaderRemovalOSs(OSListWithPackageManagers, LiveDisk, AutoRootFS, Bootloader)
-                logger.info("MainBackendThread().PrepareForBootloaderInstallation(): List of OSs to have the bootloader removed: "+', '.join(OSsForBootloaderRemoval)+"...")
-
-                #Update Current Operation Text.
-                wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 85)
-                global OSsForBootloaderInstallation
-                OSsForBootloaderInstallation = self.AskUserForBootloaderInstallationOSs(OSListWithPackageManagers, UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval)
-                wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 100)
-
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Done!###\n") 
+    ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
 
     def ManageBootloaders(self):
         #Function to manage the installation and removal of bootloaders.
