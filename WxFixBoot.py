@@ -46,7 +46,7 @@ from wx.animate import AnimationCtrl
 
 #Define the version number and the release date as global variables.
 Version = "1.1~pre1"
-ReleaseDate = "10/2/2016"
+ReleaseDate = "15/2/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")

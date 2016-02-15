@@ -377,8 +377,6 @@ if __name__ == "__main__":
 
     Info = Main().GetInfo()
 
-    Info.keys().sort()
-
     #Get blocksizes.
     BlockSizeList = []
     for Disk in Info:

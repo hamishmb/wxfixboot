@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Core Tools in the Tools Package for WxFixBoot Version 1.1~pre1
 # This file is part of WxFixBoot.
-# Copyright (C) 2013-2015 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.

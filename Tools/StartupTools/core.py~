@@ -262,7 +262,7 @@ class Main():
             else:
                 return None, FatPartitions
 
-   def CheckForGRUBUEFI(self, UEFISYSPMountPoint):
+    def CheckForGRUBUEFI(self, UEFISYSPMountPoint):
         """Check for GRUB-UEFI"""
         #Look for GRUB's UEFI file.
         Temp = CoreTools().StartProcess("find "+UEFISYSPMountPoint+" -iname '*grub*.efi'", ReturnOutput=True)[1].replace('\n', '')
