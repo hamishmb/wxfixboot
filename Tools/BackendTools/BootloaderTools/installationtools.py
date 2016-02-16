@@ -60,7 +60,7 @@ class Main(): #*** Refactor and test all of these ***
                     CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
                     CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint="/boot/efi") #*** Check this worked! ***
 
-                    retval = self.InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
+                    retval = self.InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
 
                 elif BootloaderToInstall == "ELILO":
                     #Unmount the UEFI Partition now.
@@ -101,10 +101,10 @@ class Main(): #*** Refactor and test all of these ***
 
                     elif BootloaderToInstall == "GRUB-UEFI":
                         #Mount the UEFI partition at MountPoint/boot/efi.
-                        #Unmount it first though, in case it's already mounted.
+                        #Unmount it first though, in case it's already mounted. *** Alternately check where it's mounted and leave it if it's okay ***
                         CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
                         CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") #*** Check it worked! ***
-                        retval = self.InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
+                        retval = self.InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
                     elif BootloaderToInstall == "ELILO":
                         #Unmount the UEFI Partition now, and update the mtab inside chroot.
@@ -165,6 +165,18 @@ class Main(): #*** Refactor and test all of these ***
 
             else:
                 retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y lilo'", Piping=True)
+        
+        #Return the return value.
+        return retval
+
+    def InstallGRUBUEFI(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+        """Install GRUB-UEFI."""
+        if PackageManager == "apt-get":
+            if UseChroot == False:
+                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober", Piping=True)
+
+            else:
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'", Piping=True)
         
         #Return the return value.
         return retval

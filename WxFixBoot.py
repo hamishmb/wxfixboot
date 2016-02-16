@@ -2693,17 +2693,6 @@ class MainBackendThread(threading.Thread):
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Installation Functions.#################### #*** Move these to their seperate package ***
 
-    def InstallGRUBUEFI(self, PackageManager, UseChroot, Arch, MountPoint="None"):
-        #Function to Install GRUB-UEFI.
-        if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober", Piping=True)
-            else:
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'", Piping=True)
-        
-        #Return the return value.
-        return retval
-
     def InstallELILO(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         #Function to install ELILO.
         if PackageManager == "apt-get":
