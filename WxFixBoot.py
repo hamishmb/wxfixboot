@@ -2479,6 +2479,7 @@ class MainBackendThread(threading.Thread):
         Tools.BackendTools.core.ParentWindow = ParentWindow
         Tools.BackendTools.helpers.ParentWindow = ParentWindow
         Tools.BackendTools.essentials.ParentWindow = ParentWindow
+        Tools.BackendTools.BootloaderTools.main.ParentWindow = ParentWindow
 
         #Start the main part of this thread.
         threading.Thread.__init__(self)
@@ -2539,11 +2540,11 @@ class MainBackendThread(threading.Thread):
             logger.info("MainBackendThread().CountOperations(): Added MainBootloaderTools().ReinstallBootloader to self.OperationsToDo...")
 
         if UpdateBootloader:
-            self.OperationsToDo.append(self.UpdateBootloader)
-            logger.info("MainBackendThread().CountOperations(): Added self.UpdateBootloader to self.OperationsToDo...")
+            self.OperationsToDo.append(MainBootloaderTools().UpdateBootloader)
+            logger.info("MainBackendThread().CountOperations(): Added MainBootloaderTools().UpdateBootloader to self.OperationsToDo...")
 
         #Check if we need to prepare to install a new bootloader, and do so first if needed. *** Log this ***
-        for element in (MainBootloaderTools().ManageBootloaders, self.ReinstallBootloader, self.UpdateBootloader):
+        for element in (MainBootloaderTools().ManageBootloaders, MainBootloaderTools().ReinstallBootloader, MainBootloaderTools().UpdateBootloader):
             if element in self.OperationsToDo:
                 self.OperationsToDo.insert(0, MainBootloaderTools().PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations ***
 
@@ -2591,6 +2592,7 @@ class MainBackendThread(threading.Thread):
                 Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
                 Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
                 Tools.BackendTools.BootloaderTools.main.DisableBootloaderOperations = DisableBootloaderOperations
+                Tools.BackendTools.BootloaderTools.main.BootloaderToInstall = BootloaderToInstall
 
                 #Run the function.
                 function()
@@ -2603,6 +2605,7 @@ class MainBackendThread(threading.Thread):
                 #*** Main Bootloader Tools (in Backend Tools package) ***
                 OSsForBootloaderRemoval = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval
                 OSsForBootloaderInstallation = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation
+                BootloaderToInstall = Tools.BackendTools.BootloaderTools.main.BootloaderToInstall
 
             logger.info("MainBackendThread().StartOperations(): Finished Operation Running Code.")
 
@@ -2619,39 +2622,7 @@ class MainBackendThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.MainBackendThreadFinished)
 
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
-
-    def UpdateBootloader(self):
-        #Function to update bootloader menu and config
-        global DisableBootloaderOperations
-        DisableBootloaderOperations = False
-        logger.info("MainBackendThread().UpdateBootloader(): Preparing to update the bootloader...")
-        wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader...###\n")
-
-        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
-            #These operations have been disabled. Notify the user and skip them.
-            DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 100)
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
-            DisableBootloaderOperations = True
-
-        else:
-            #Set BootloaderToInstall as the current bootloader to allow this to work properly.
-            global BootloaderToInstall
-            BootloaderToInstall = Bootloader
-            logger.info("MainBackendThread().UpdateBootloader(): Updating the bootloader's config...")
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader's configuration...###\n")
-
-            #Get the bootloader's config.
-            self.GetOldBootloaderConfig()
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 50)
-
-            #Set the bootloaders new config.
-            self.SetNewBootloaderConfig()
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 100)
-
-            logger.info("MainBackendThread().UpdateBootloader(): Done!")
-
-    ####################Start Of Bootloader Configuration Obtaining Functions.####################
+    ####################Start Of Bootloader Configuration Obtaining Functions.#################### #*** Move these to their seperate package ***
 
     def GetOldBootloaderConfig(self):
         #Get the old bootloader's config before removing it, so we can reuse it (if possible) with the new one.

@@ -177,3 +177,34 @@ class Main(): #*** Refactor and test all of these ***
 
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
+    def UpdateBootloader(self):
+        """Update bootloader menu and config"""
+        global DisableBootloaderOperations
+        DisableBootloaderOperations = False
+        logger.info("MainBootloaderTools: Main().UpdateBootloader(): Preparing to update the bootloader...")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader...###\n")
+
+        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
+            #These operations have been disabled. Notify the user and skip them.
+            DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
+            DisableBootloaderOperations = True
+
+        else:
+            #Set BootloaderToInstall as the current bootloader to allow this to work properly.
+            global BootloaderToInstall
+            BootloaderToInstall = Bootloader
+            logger.info("MainBootloaderTools: Main().UpdateBootloader(): Updating the bootloader's config...")
+            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader's configuration...###\n")
+
+            #Get the bootloader's config.
+            self.GetOldBootloaderConfig() #*** Broken, not moved yet. ***
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
+
+            #Set the bootloaders new config.
+            self.SetNewBootloaderConfig() #*** Broken, not moved yet. ***
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+
+            logger.info("MainBootloaderTools: Main().UpdateBootloader(): Done!")
+
