@@ -42,10 +42,10 @@ class Main(): #*** Refactor and test all of these ***
             #If we're not on a live disk, and the partition is AutoRootFS, let the remover function know that we aren't using chroot.
             if LiveDisk == False and Partition == AutoRootFS:
                 if Bootloader == "GRUB-LEGACY":
-                    retval = self.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
+                    retval = self.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
 
                 elif Bootloader == "GRUB2":
-                    retval = self.RemoveGRUB2(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
+                    retval = self.RemoveGRUB2(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
 
                 elif Bootloader == "LILO":
                     retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
@@ -75,10 +75,10 @@ class Main(): #*** Refactor and test all of these ***
 
                     #Remove the bootloader.
                     if Bootloader == "GRUB-LEGACY":
-                        retval = self.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
+                        retval = self.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
                     elif Bootloader == "GRUB2":
-                        retval = self.RemoveGRUB2(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
+                        retval = self.RemoveGRUB2(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
                     elif Bootloader == "LILO":
                         retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
@@ -119,3 +119,14 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
+    def RemoveGRUB2(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+        """Remove GRUB2."""
+        if PackageManager == "apt-get":
+            if UseChroot == False:
+                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'grub-pc', 'grub-pc-bin', 'grub-common'])
+
+            else:
+                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'grub-pc', 'grub-pc-bin', 'grub-common'])
+        
+        #Return the return value.
+        return retval

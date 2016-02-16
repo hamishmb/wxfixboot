@@ -2671,17 +2671,6 @@ class MainBackendThread(threading.Thread):
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Removal Functions.#################### #*** Move these to their seperate package ***
 
-    def RemoveGRUB2(self, PackageManager, UseChroot, Arch, MountPoint="None"):
-        #Function to remove GRUB2.
-        if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'grub-pc', 'grub-pc-bin', 'grub-common'])
-            else:
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'grub-pc', 'grub-pc-bin', 'grub-common'])
-        
-        #Return the return value.
-        return retval
-
     def RemoveLILO(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         #Function to remove lilo.
         if PackageManager == "apt-get":
