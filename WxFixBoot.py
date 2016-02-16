@@ -112,9 +112,10 @@ from Tools.BackendTools.essentials import Main as EssentialBackendTools
 from Tools.BackendTools.main import Main as MainBackendTools
 
 from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderTools
-from Tools.BackendTools.BootloaderTools.getconfigtool import Main as GetConfigBootloaderTools
+from Tools.BackendTools.BootloaderTools.getconfigtools import Main as GetConfigBootloaderTools
+from Tools.BackendTools.BootloaderTools.removaltools import Main as BootloaderRemovalTools
 
-#Setup custom-made modules (make global variables accessible inside the packages). *** Continue to add stuff as needed *** *** I might want to break these down into further subcategories (packages within packages) to avoid a mess ***
+#Setup custom-made modules (make global variables accessible inside the packages). *** Continue to add stuff as needed *** *** Cut/rejig these later ***
 #GetDevInfo Package.
 GetDevInfo.getdevinfo.subprocess = subprocess
 GetDevInfo.getdevinfo.re = re
@@ -179,6 +180,7 @@ Tools.BackendTools.BootloaderTools.main.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.main.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.BootloaderTools.main.wx = wx
 Tools.BackendTools.BootloaderTools.main.GetConfigBootloaderTools = GetConfigBootloaderTools
+Tools.BackendTools.BootloaderTools.main.BootloaderRemovalTools = BootloaderRemovalTools
 
 #BootloaderTools Package (GetConfigTools)
 Tools.BackendTools.BootloaderTools.getconfigtools.CoreTools = CoreTools
@@ -187,6 +189,14 @@ Tools.BackendTools.BootloaderTools.getconfigtools.DialogTools = DialogTools
 Tools.BackendTools.BootloaderTools.getconfigtools.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.getconfigtools.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.BootloaderTools.getconfigtools.wx = wx
+
+#BootloaderTools Package (RemovalTools)
+Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools
+Tools.BackendTools.BootloaderTools.removaltools.logger = logger
+Tools.BackendTools.BootloaderTools.removaltools.DialogTools = DialogTools
+Tools.BackendTools.BootloaderTools.removaltools.HelperBackendTools = HelperBackendTools
+Tools.BackendTools.BootloaderTools.removaltools.CoreBackendTools = CoreBackendTools
+Tools.BackendTools.BootloaderTools.removaltools.wx = wx
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
@@ -2490,6 +2500,8 @@ class MainBackendThread(threading.Thread):
         Tools.BackendTools.helpers.ParentWindow = ParentWindow
         Tools.BackendTools.essentials.ParentWindow = ParentWindow
         Tools.BackendTools.BootloaderTools.main.ParentWindow = ParentWindow
+        Tools.BackendTools.BootloaderTools.getconfigtools.ParentWindow = ParentWindow
+        Tools.BackendTools.BootloaderTools.removaltools.ParentWindow = ParentWindow
 
         #Start the main part of this thread.
         threading.Thread.__init__(self)
@@ -2612,8 +2624,21 @@ class MainBackendThread(threading.Thread):
                 Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
                 Tools.BackendTools.BootloaderTools.main.DisableBootloaderOperations = DisableBootloaderOperations
                 Tools.BackendTools.BootloaderTools.main.BootloaderToInstall = BootloaderToInstall
-                Tools.BackendTools.BootloaderTools.main.BootloaderTimeout = BootloaderTimeout
-                Tools.BackendTools.BootloaderTools.main.KernelOptions = KernelOptions
+
+                #*** Bootloader Configuration Obtaining Tools (in Backend Tools package) ***
+                Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout = BootloaderTimeout
+                Tools.BackendTools.BootloaderTools.getconfigtools.KernelOptions = KernelOptions
+                Tools.BackendTools.BootloaderTools.getconfigtools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
+                Tools.BackendTools.BootloaderTools.getconfigtools.LiveDisk = LiveDisk
+                Tools.BackendTools.BootloaderTools.getconfigtools.AutoRootFS = AutoRootFS
+                Tools.BackendTools.BootloaderTools.getconfigtools.Bootloader = Bootloader
+
+                #*** Bootloader Removal Tools (in Backend Tools package) ***
+                Tools.BackendTools.BootloaderTools.removaltools.OSsForBootloaderInstallation = OSsForBootloaderInstallation
+                Tools.BackendTools.BootloaderTools.removaltools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
+                Tools.BackendTools.BootloaderTools.removaltools.LiveDisk = LiveDisk
+                Tools.BackendTools.BootloaderTools.removaltools.AutoRootFS = AutoRootFS
+                Tools.BackendTools.BootloaderTools.removaltools.Bootloader = Bootloader
 
                 #Run the function.
                 function()
@@ -2644,89 +2669,6 @@ class MainBackendThread(threading.Thread):
 
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Removal Functions.#################### #*** Move these to their seperate package ***
-
-    def RemoveOldBootloader(self):
-        #Remove the currently installed bootloader.
-        logger.debug("MainBackendThread().RemoveOldBootloader(): Preparing to remove old bootloaders...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Removing old bootloaders...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 27)
-        wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Removing old bootloaders...###\n")
-
-        #Loop through each OS in OSsForBootloaderRemoval, and provide information to the function that will remove the bootloader.
-        for OS in OSsForBootloaderRemoval:
-            #For each OS that needs the bootloader removed, grab the partition, and the package manager.
-            Partition = OS.split()[-5]
-            PackageManager = OS.split()[-1]
-
-            logger.info("MainBackendThread().RemoveOldBootloader(): Removing "+Bootloader+" from OS: "+OS+"...")
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Removing the old bootloader from OS: "+OS+"...###\n")
-
-            #Grab the architecture.
-            Arch = OS.split()[-8]
-            if Arch == "64-bit":
-                Arch = "x86_64"
-            else:
-                Arch = "i686"
-            
-            #If we're not on a live disk, and the partition is AutoRootFS, let the remover function know that we aren't using chroot.
-            if LiveDisk == False and Partition == AutoRootFS:
-                if Bootloader == "GRUB-LEGACY":
-                    retval = self.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
-                elif Bootloader == "GRUB2":
-                    retval = self.RemoveGRUB2(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
-                elif Bootloader == "LILO":
-                    retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
-                elif Bootloader == "GRUB-UEFI":
-                    retval = self.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
-                elif Bootloader == "ELILO":
-                    retval = self.RemoveELILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
-
-            #Otherwise, setup the chroot and everything else first, and tell it we are using chroot, and pass the mountpoint to it.
-            else:
-                #Mount the partition using the global mount function.
-                MountPoint = "/mnt"+Partition
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
-
-                if Retval != 0:
-                    logger.error("MainBackendThread().RemoveOldBootloader(): Failed to remount "+Partition+"! Warn the user and skip this OS.")
-                    DialogTools().ShowMsgDlg(Kind="error", Message="WxixBoot failed to mount the partition containing: "+OS+"! This OS will now be skipped.")
-
-                else:
-                    #Set up chroot.
-                    CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
-
-                    #If there's a seperate /boot partition for this OS, make sure it's mounted.
-                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'mount', '-av'], ShowOutput=False)
-
-                    #Remove the bootloader.
-                    if Bootloader == "GRUB-LEGACY":
-                        retval = self.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
-                    elif Bootloader == "GRUB2":
-                        retval = self.RemoveGRUB2(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
-                    elif Bootloader == "LILO":
-                        retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
-                    elif Bootloader == "GRUB-UEFI":
-                        retval = self.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
-                    elif Bootloader == "ELILO":
-                        retval = self.RemoveELILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
-
-                    #Tear down chroot.
-                    CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
-
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Finished removing the old bootloader from OS: "+OS+"...###\n")
-
-            if retval != 0:
-                #Something went wrong! Log it and notify the user.
-                logger.error("MainBackendThread().RemoveOldBootloader(): Failed to remove "+Bootloader+" from OS: "+OS+"! We'll continue anyway. Warn the user.")
-                DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+Bootloader+" from: "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that OS after WxFixBoot finishes its operations.")
-
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 27+(22/len(OSsForBootloaderRemoval)))
-
-        #Log and notify the user that we're finished remving bootloaders.
-        logger.info("MainBackendThread().RemoveOldBootloader(): Finished removing bootloaders...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished removing old bootloaders...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 50)
-        DialogTools().ShowMsgDlg(Kind="info", Message="Finished removing old bootloaders! WxFixBoot will now install your new bootloader to: "+', '.join(OSsForBootloaderInstallation)+".")
 
     def RemoveGRUBLEGACY(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         #Function to remove GRUB-LEGACY.
