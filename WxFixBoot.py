@@ -2643,45 +2643,7 @@ class MainBackendThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.MainBackendThreadFinished)
 
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
-    ####################Start Of Bootloader Configuration Obtaining Functions.#################### #*** Move these to their seperate package ***
-
-    def GetLILOConfig(self, filetoopen):
-        #Function to get important bits of config from lilo before removing it.
-        #Set temporary vars
-        Timeout = ""
-        Kopts = ""
-
-        #Open the file in read mode, so we can save the important bits of config.
-        infile = open(filetoopen, 'r')
-
-        #Loop through each line in the file, paying attention only to the important ones.
-        for line in infile:
-            #Look for the delay/timeout setting.
-            if ('delay' in line or 'timeout' in line) and '=' in line:
-                #Found it! Save it to BootloaderTimeout, but only if BootloaderTimeout = -1 (we aren't changing the timeout).
-                if BootloaderTimeout == -1:
-                    #Save it, carefully avoiding errors.
-                    junk, sep, Temp = line.partition('=')
-                    Temp = Temp.replace(' ','').replace('\n', '')
-                    if Temp.isdigit():
-                        #Great! We got it.
-                        #However, because lilo and elilo save this in 10ths of a second, divide it by ten first.
-                        Timeout = int(Temp)/10
-
-            #Look for kernel options used globally in all the boot options.
-            elif 'append' in line and '=' in line:
-                #Found them! Save it to GlobalKernelOptions
-                junk, sep, Temp = line.partition('=')
-                Kopts = Temp.replace('\"', '').replace("\'", "").replace("\n", "")
-
-        #Close the file.
-        infile.close()
-
-        #Return these values to self.RemoveOldBootloader()
-        return (Timeout, Kopts)
-
-    ####################End Of Bootloader Configuration Obtaining Functions.####################
-    ####################Start Of Bootloader Removal Functions.####################
+    ####################Start Of Bootloader Removal Functions.#################### #*** Move these to their seperate package ***
 
     def RemoveOldBootloader(self):
         #Remove the currently installed bootloader.

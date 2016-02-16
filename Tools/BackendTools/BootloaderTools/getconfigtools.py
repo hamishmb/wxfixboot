@@ -81,13 +81,13 @@ class Main(): #*** Refactor and test all of these ***
                 #Check the config file exists for both lilo and elilo.
                 if Bootloader == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
                     #It does, we'll run the function to find the config now.
-                    Temp = self.GetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf") #*** Broken, not moved yet. ***
+                    Temp = self.GetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf")
                     timeout = Temp[0]
                     kopts = Temp[1]
 
                 elif Bootloader == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
                     #It does, we'll run the function to find the config now.
-                    Temp = self.GetLILOConfig(filetoopen=MountPoint+"/etc/elilo.conf") #*** Broken, not moved yet. ***
+                    Temp = self.GetLILOConfig(filetoopen=MountPoint+"/etc/elilo.conf")
                     timeout = Temp[0]
                     kopts = Temp[1]
 
@@ -234,7 +234,7 @@ class Main(): #*** Refactor and test all of these ***
             #Look for the timeout setting.
             if 'GRUB_TIMEOUT' in line and '=' in line:
                 #Found it! Save it to BootloaderTimeout, but only if BootloaderTimeout = -1 (we aren't changing the timeout).
-                if BootloaderTimeout == -1:
+                if BootloaderTimeout == -1: #*** If we check this earlier it'll save CPU time ***
                     #Save it, carefully avoiding errors.
                     junk, sep, Temp = line.partition('=')
                     Temp = Temp.replace(' ','').replace('\n', '').replace("\'", "")
@@ -253,3 +253,39 @@ class Main(): #*** Refactor and test all of these ***
 
         #Return these values to self.RemoveOldBootloader()
         return (Timeout, Kopts)
+
+    def GetLILOConfig(self, filetoopen): #*** Add logging messages ***
+        """Get important bits of config from lilo before removing it."""
+        #Set temporary vars
+        Timeout = ""
+        Kopts = ""
+
+        #Open the file in read mode, so we can save the important bits of config.
+        infile = open(filetoopen, 'r')
+
+        #Loop through each line in the file, paying attention only to the important ones.
+        for line in infile:
+            #Look for the delay/timeout setting.
+            if ('delay' in line or 'timeout' in line) and '=' in line:
+                #Found it! Save it to BootloaderTimeout, but only if BootloaderTimeout = -1 (we aren't changing the timeout). *** Can we use .split("=") instead? ***
+                if BootloaderTimeout == -1: #*** If we check this earlier it'll save CPU time ***
+                    #Save it, carefully avoiding errors.
+                    junk, sep, Temp = line.partition('=')
+                    Temp = Temp.replace(' ','').replace('\n', '')
+                    if Temp.isdigit():
+                        #Great! We got it.
+                        #However, because lilo and elilo save this in 10ths of a second, divide it by ten first.
+                        Timeout = int(Temp)/10
+
+            #Look for kernel options used globally in all the boot options.
+            elif 'append' in line and '=' in line:
+                #Found them! Save it to GlobalKernelOptions
+                junk, sep, Temp = line.partition('=')
+                Kopts = Temp.replace('\"', '').replace("\'", "").replace("\n", "")
+
+        #Close the file.
+        infile.close()
+
+        #Return these values to self.RemoveOldBootloader()
+        return (Timeout, Kopts)
+
