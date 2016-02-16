@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
+
 class Main(): #*** Refactor and test all of these ***
     def RemoveOldBootloader(self): #*** Reduce code duplication if possible ***
         """Remove the currently installed bootloader."""
