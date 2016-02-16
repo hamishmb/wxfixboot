@@ -14,8 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
-class Main():
-    def GetOldBootloaderConfig(self):
+class Main(): #*** Refactor and test all of these ***
+    def GetOldBootloaderConfig(self): #*** Add more logging messages ***
         """Get the old bootloader's config before removing it, so we can reuse it (if possible) with the new one."""
         logger.debug("GetBootloaderConfigTools: Main().GetOldBootloaderConfig(): Preparing to get bootloader config...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to get bootloader config...")
@@ -194,4 +194,30 @@ class Main():
 
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
 
-    
+    def GetGRUBLEGACYConfig(self, filetoopen): #*** Add logging messages ***
+        """Get important bits of config from grub-legacy before removing it."""
+        #In this case, the only useful info is the timeout, so just get this.
+        #Set temporary vars
+        Timeout = ""
+
+        #Open the file in read mode, so we can save the important bits of config.
+        infile = open(filetoopen, 'r')
+
+        #Look for the timeout setting.
+        for line in infile:
+            if 'timeout' in line and 'sec' not in line:
+                #Found it! Save it to BootloaderTimeout, but only if BootloaderTimeout = -1 (we aren't changing the timeout). #*** Otherwise, don't bother looking for it and speed this up! ***
+                if BootloaderTimeout == -1:
+                    Temp = line.split()[1].replace('\n', '')
+                    if Temp.isdigit():
+                        #Great! We got it.
+                        Timeout = int(Temp)
+
+                    #Exit the loop to save time.
+                    break
+
+        #Close the file.
+        infile.close()
+
+        return (Timeout)
+

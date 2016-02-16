@@ -2645,32 +2645,6 @@ class MainBackendThread(threading.Thread):
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Configuration Obtaining Functions.#################### #*** Move these to their seperate package ***
 
-    def GetGRUBLEGACYConfig(self, filetoopen):
-        #Function to get important bits of config from grub-legacy before removing it.
-        #In this case, the only useful info is the timeout, so just get this.
-        #Set temporary vars
-        Timeout = ""
-
-        #Open the file in read mode, so we can save the important bits of config.
-        infile = open(filetoopen, 'r')
-
-        #Look for the timeout setting.
-        for line in infile:
-            if 'timeout' in line and 'sec' not in line:
-                #Found it! Save it to BootloaderTimeout, but only if BootloaderTimeout = -1 (we aren't changing the timeout).
-                if BootloaderTimeout == -1:
-                    Temp = line.split()[1].replace('\n', '')
-                    if Temp.isdigit():
-                        #Great! We got it.
-                        Timeout = int(Temp)
-                    #Exit the loop to save time.
-                    break
-
-        #Close the file.
-        infile.close()
-
-        return (Timeout)
-
     def GetGRUB2Config(self, filetoopen):
         #Function to get important bits of config from grub2 (MBR or UEFI) before removing it.
         #Set temporary vars
