@@ -42,14 +42,14 @@ class Main(): #*** Refactor and test all of these ***
             #If we're not on a live disk, and the partition is AutoRootFS, let the installer function know that we aren't using chroot.
             if LiveDisk == False and Partition == AutoRootFS:
                 #Update the package lists.
-                retval = self.UpdatePackageLists(PackageManager=PackageManager, UseChroot=False) #*** Broken, not moved yet ***
+                retval = self.UpdatePackageLists(PackageManager=PackageManager, UseChroot=False)
 
                 wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Installing the new bootloader(s)...")
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)       
                 wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Installing the new bootloader in OS: "+OS+"...###\n")
 
                 if BootloaderToInstall == "GRUB2":
-                    retval = self.InstallGRUB2(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
+                    retval = self.InstallGRUB2(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
 
                 elif BootloaderToInstall == "LILO":
                     retval = self.InstallLILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
@@ -86,7 +86,7 @@ class Main(): #*** Refactor and test all of these ***
                     CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'mount', '-av'], ShowOutput=False)
 
                     #Update the package lists.
-                    retval = self.UpdatePackageLists(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint) #*** Broken, not moved yet ***
+                    retval = self.UpdatePackageLists(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint)
 
                     wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Installing the new bootloader(s)...")
                     wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)       
@@ -94,7 +94,7 @@ class Main(): #*** Refactor and test all of these ***
 
                     #Install the bootloader.
                     if BootloaderToInstall == "GRUB2":
-                        retval = self.InstallGRUB2(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
+                        retval = self.InstallGRUB2(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
                     elif BootloaderToInstall == "LILO":
                         retval = self.InstallLILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
@@ -141,6 +141,18 @@ class Main(): #*** Refactor and test all of these ***
 
             else:
                 retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'", Piping=True)
+        
+        #Return the return value.
+        return retval
+
+    def InstallGRUB2(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+        """Install GRUB2."""
+        if PackageManager == "apt-get":
+            if UseChroot == False:
+                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober", Piping=True)
+
+            else:
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'", Piping=True)
         
         #Return the return value.
         return retval
