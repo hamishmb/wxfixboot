@@ -154,7 +154,7 @@ class Main(): #*** Refactor and test all of these ***
 
         else:
             #First remove the old bootloader, then install the new one.
-            self.GetOldBootloaderConfig() #*** Broken, not moved yet. ***
+            GetConfigBootloaderTools().GetOldBootloaderConfig() #*** Broken, not moved yet. ***
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
 
             self.RemoveOldBootloader() #*** Broken, not moved yet. ***
@@ -184,7 +184,7 @@ class Main(): #*** Refactor and test all of these ***
         logger.info("MainBootloaderTools: Main().UpdateBootloader(): Preparing to update the bootloader...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader...###\n")
 
-        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
+        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []): #*** Log this ***
             #These operations have been disabled. Notify the user and skip them.
             DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)

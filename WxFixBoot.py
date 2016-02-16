@@ -112,6 +112,7 @@ from Tools.BackendTools.essentials import Main as EssentialBackendTools
 from Tools.BackendTools.main import Main as MainBackendTools
 
 from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderTools
+from Tools.BackendTools.BootloaderTools.getconfigtool import Main as GetConfigBootloaderTools
 
 #Setup custom-made modules (make global variables accessible inside the packages). *** Continue to add stuff as needed *** *** I might want to break these down into further subcategories (packages within packages) to avoid a mess ***
 #GetDevInfo Package.
@@ -177,6 +178,15 @@ Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
 Tools.BackendTools.BootloaderTools.main.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.main.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.BootloaderTools.main.wx = wx
+Tools.BackendTools.BootloaderTools.main.GetConfigBootloaderTools = GetConfigBootloaderTools
+
+#BootloaderTools Package (GetConfigTools)
+Tools.BackendTools.BootloaderTools.getconfigtools.CoreTools = CoreTools
+Tools.BackendTools.BootloaderTools.getconfigtools.logger = logger
+Tools.BackendTools.BootloaderTools.getconfigtools.DialogTools = DialogTools
+Tools.BackendTools.BootloaderTools.getconfigtools.HelperBackendTools = HelperBackendTools
+Tools.BackendTools.BootloaderTools.getconfigtools.CoreBackendTools = CoreBackendTools
+Tools.BackendTools.BootloaderTools.getconfigtools.wx = wx
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
@@ -2491,6 +2501,15 @@ class MainBackendThread(threading.Thread):
         self.templog = [] #*** Do we need this? ***
         time.sleep(1)
 
+        #*** Temporarily do this until I switch to dictionaries ***
+        #Define global vars
+        global BootloaderTimeout
+        global KernelOptions
+
+        #Set to default values
+        BootloaderTimeout = 10
+        KernelOptions = "quiet splash nomodeset"
+ 
         #Log the MainBackendThread start event (in debug mode).
         logger.debug("MainBackendThread().run(): Started. Calculating Operations to do...")
 
@@ -2593,6 +2612,8 @@ class MainBackendThread(threading.Thread):
                 Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
                 Tools.BackendTools.BootloaderTools.main.DisableBootloaderOperations = DisableBootloaderOperations
                 Tools.BackendTools.BootloaderTools.main.BootloaderToInstall = BootloaderToInstall
+                Tools.BackendTools.BootloaderTools.main.BootloaderTimeout = BootloaderTimeout
+                Tools.BackendTools.BootloaderTools.main.KernelOptions = KernelOptions
 
                 #Run the function.
                 function()
@@ -2623,179 +2644,6 @@ class MainBackendThread(threading.Thread):
 
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Configuration Obtaining Functions.#################### #*** Move these to their seperate package ***
-
-    def GetOldBootloaderConfig(self):
-        #Get the old bootloader's config before removing it, so we can reuse it (if possible) with the new one.
-        logger.debug("MainBackendThread().GetOldBootloaderConfig(): Preparing to get bootloader config...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Preparing to get bootloader config...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 2)
-        wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Preparing to get old bootloader config...###\n")
-
-        #Define gloabal vars
-        global BootloaderTimeout
-        global KernelOptions
-
-        #Use two lists for global kernel options and timeouts, so if they differ for each instance of the bootloader (assuming there is more than one), we can ask the user which is best, or go with WxFixBoot's default (timeout=10, kopts="quiet splash nomodeset")
-        KernelOptsList = []
-        TimeoutsList = []
-
-        #Set two temporary vars.
-        timeout = ""
-        kopts = ""
-
-        wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Getting old bootloader config...")
-        wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Getting old bootloader config...###\n")
-
-        #Loop through each OS in OSsForBootloaderRemoval, and provide information to the function that gets the configuration.
-        logger.info("MainBackendThread().GetOldBootloaderConfig(): Looking for configuration in OSs marked for bootloader removal...")
-        for OS in OSsForBootloaderRemoval:
-            #Grab the OS's partition.
-            Partition = OS.split()[-5]
-            logger.debug("MainBackendThread().GetOldBootloaderConfig(): Looking for config in OS: "+OS+"...")
-
-            #Check if the Partition is AutoRootFS, if we're not on a live disk.
-            if LiveDisk == False and Partition == AutoRootFS:
-                #If so, make sure this will work for this OS too, and avoid setting mountpoint, so the config instructions below look in the right place for the config files.
-                MountPoint = ""
-
-            else:
-                #If not, set mountpoint to the actual mountpoint.
-                MountPoint = "/mnt"+Partition
-
-                #Mount the partition.
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
-
-                #Check if anything went wrong.
-                if Retval != 0:
-                    #Ignore this partition.
-                    logger.warning("MainBackendThread().GetOldBootloaderConfig(): Failed to mount "+Partiton+"! Ignoring this partition...")
-                    continue
-
-            #Look for the configuration file, based on which GetConfig() function we're about to run.
-            if Bootloader == "GRUB-LEGACY":
-                #Check MountPoint/boot/grub/menu.lst exists.
-                if os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
-                    #It does, we'll run the function to find the config now.
-                    Temp = self.GetGRUBLEGACYConfig(filetoopen=MountPoint+"/boot/grub/menu.lst")
-                    timeout = Temp[0]
-
-            elif Bootloader in ('GRUB2', 'GRUB-UEFI'):
-                #Check MountPoint/etc/default/grub exists, which should be for either GRUB2 or GRUB-UEFI.
-                if os.path.isfile(MountPoint+"/etc/default/grub"):
-                    #It does, we'll run the function to find the config now.
-                    Temp = self.GetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
-                    timeout = Temp[0]
-                    kopts = Temp[1]
-
-            elif Bootloader in ('LILO', 'ELILO'):
-                #Check the config file exists for both lilo and elilo.
-                if Bootloader == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
-                    #It does, we'll run the function to find the config now.
-                    Temp = self.GetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf")
-                    timeout = Temp[0]
-                    kopts = Temp[1]
-                elif Bootloader == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
-                    #It does, we'll run the function to find the config now.
-                    Temp = self.GetLILOConfig(filetoopen=MountPoint+"/etc/elilo.conf")
-                    timeout = Temp[0]
-                    kopts = Temp[1]
-
-            #Unmount the partition, if needed.
-            if MountPoint != "":
-                CoreTools().Unmount(MountPoint) #*** Check it worked! ***
-
-            #Now we have the config, let's add it to the list, if it's unique. This will also catch the NameError excetpion created if the bootloader's config file wasn't found. 
-            #First do timeout.
-            if timeout != "":
-                try:
-                    TimeoutsList.index(timeout)
-                except ValueError:
-                    #It's unique.
-                    TimeoutsList.append(timeout)
-                except NameError: pass
-
-            if kopts != "":
-                #Now kopts.
-                try:
-                    KernelOptsList.index(kopts)
-                except ValueError:
-                    #It's unique.
-                    KernelOptsList.append(kopts)
-                except NameError: pass
-
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 2+(14/len(OSsForBootloaderRemoval)))
-
-        #We're finished getting the config.
-        logger.info("MainBackendThread().GetOldBootloaderConfig(): Finished looking for configuration in OSs marked for bootloader removal.")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Determining configuration to use...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 14)
-
-        #Now let's check how many options there are in each of these lists, and run different code accordingly.
-        #First TimeoutsList, but only if we aren't using a preset value for BootloaderTimeout.
-        if BootloaderTimeout == -1:
-            if len(TimeoutsList) == 0:
-                #No timeout was found!
-                Temp = DialogTools().ShowTextEntryDlg(Message="WxFixBoot couldn't find the currently installed bootloader's timeout value. Please enter a value, or use WxFixBoot's default (10).", Title="WxFixBoot - Enter timeout value")
-                BootloaderTimeout = int(Temp)
-                logger.info("MainBackendThread().GetOldBootloaderConfig(): Using user's bootloader timeout value: "+unicode(BootloaderTimeout))
-
-            elif len(TimeoutsList) == 1:
-                #As there is one, do what the user said, and set it directly.
-                BootloaderTimeout = int(TimeoutsList[0])
-                logger.info("MainBackendThread().GetOldBootloaderConfig(): Using only bootloader timeout value found: "+unicode(BootloaderTimeout))
-
-            else:
-                #Ask the user which timeout to use, as there are more than one.
-                TimeoutsList.append("WxFixBoot's Default (10)")
-                Result = DialogTools().ShowChoiceDlg(Message="WxFixBoot found multiple timeout settings. Please select the one you want.", Title="WxFixBoot -- Select Timeout Setting", Choices=TimeoutsList)
-
-                #Save it.
-                if Result == "WxFixBoot's Default (10)":
-                    BootloaderTimeout = 10
-                    logger.info("MainBackendThread().GetOldBootloaderConfig(): Using WxFixBoot's default bootloader timeout value: 10")
-
-                else:
-                    BootloaderTimeout = int(Result)
-                    logger.info("MainBackendThread().GetOldBootloaderConfig(): Using user chosen bootloader timeout value: "+unicode(BootloaderTimeout))
-
-        wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 21)
-
-        #Now do the kernel options.
-        if len(KernelOptsList) == 0:
-            #No kernel options were found!
-            #Ask the user to use WxFixBoot's default, or do manual config.
-            Result = DialogTools().ShowYesNoDlg(Message="WxFixBoot couldn't find the current bootloader's default kernel options. Do you want to use WxFixBoot's default options? You should click yes and use the defaults, which are almost always fine. However, if you know exactly what you're doing, you can click no, and modify them yourself.", Title="WxFixBoot - Use Default Kernel Options?")
-
-            if Result:
-                KernelOptions = "quiet splash nomodeset"
-                logger.info("MainBackendThread().GetOldBootloaderConfig(): Using WxFixBoot's default kernel options: 'quiet splash nomodeset'")
-
-            else:
-                #Ask the user for the kernel options to use.
-                Result = DialogTools().ShowTextEntryDlg(Message="Please enter the kernel options you want to use. WxFixBoot's default kernel options are: 'quiet splash nomodeset'. If you've changed your mind, type these instead.", Title="WxFixBoot - Enter Kernel Options")
-
-                KernelOptions = Result
-                logger.info("MainBackendThread().GetOldBootloaderConfig(): Using user defined kernel options: '"+KernelOptions+"'")
-
-        elif len(KernelOptsList) == 1:
-            #Use the single set of options found.
-            KernelOptions = KernelOptsList[0]
-            logger.info("MainBackendThread().GetOldBootloaderConfig(): Using only kernel options found: "+KernelOptions)
-        else:
-            #Ask the user which timeout to use, as there are more than one.
-            KernelOptsList.append("WxFixBoot's Default ('quiet splash nomodeset')")
-            Result = DialogTools().ShowChoiceDlg(Message="WxFixBoot found multiple kernel options. Please select the one you want.", Title="WxFixBoot -- Select Kernel Options", Choices=KernelOptsList)
-
-            #Save it.
-            if Result == "WxFixBoot's Default ('quiet splash nomodeset')":
-                KernelOptions = "quiet splash nomodeset"
-                logger.info("MainBackendThread().GetOldBootloaderConfig(): Using WxFixBoot's default kernel options: 'quiet splash nomodeset'")
-
-            else:
-                KernelOptions = Result
-                logger.warning("MainBackendThread().GetOldBootloaderConfig(): Using user entered kernel options: "+KernelOptions)
-
-        wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 25)
 
     def GetGRUBLEGACYConfig(self, filetoopen):
         #Function to get important bits of config from grub-legacy before removing it.
