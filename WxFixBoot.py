@@ -2672,6 +2672,10 @@ class MainBackendThread(threading.Thread):
                 OSsForBootloaderInstallation = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation
                 BootloaderToInstall = Tools.BackendTools.BootloaderTools.main.BootloaderToInstall
 
+                #*** Bootloader Configuration Obtaining Tools (in Backend Tools Package) ***
+                BootloaderTimeout = Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout
+                KernelOptions = Tools.BackendTools.BootloaderTools.getconfigtools.KernelOptions
+
             logger.info("MainBackendThread().StartOperations(): Finished Operation Running Code.")
 
             #Save a system report if needed.
@@ -2688,124 +2692,6 @@ class MainBackendThread(threading.Thread):
 
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Installation Functions.#################### #*** Move these to their seperate package ***
-
-    def InstallNewBootloader(self):
-        #Function to install a new bootloader.
-        #Install the new bootloader on the chosen OS.
-        wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Preparing to install the new bootloader(s)...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 52)  
-        BootloaderInstallSucceded = True     
-
-        #Loop through OSsForBootloaderInstallation, and provide information to the function that will install the bootloader.
-        for OS in OSsForBootloaderInstallation:
-            #For each OS that needs the new bootloader installed, grab the partition, and the package manager.
-            Partition = OS.split()[-5]
-            PackageManager = OS.split()[-1]
-
-            logger.info("MainBackendThread().InstallNewBootloader(): Preparing to install the new bootloader "+BootloaderToInstall+" in OS: "+OS+"...")
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Preparing to install the new bootloader in OS: "+OS+"...###\n")
-            wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Preparing to install the new bootloader(s)...")
-
-            #Grab the architecture.
-            Arch = OS.split()[-8]
-            if Arch == "64-bit":
-                Arch = "x86_64"
-            else:
-                Arch = "i686"
-
-            #If we're not on a live disk, and the partition is AutoRootFS, let the installer function know that we aren't using chroot.
-            if LiveDisk == False and Partition == AutoRootFS:
-                #Update the package lists.
-                retval = self.UpdatePackageLists(PackageManager=PackageManager, UseChroot=False)
-
-                wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Installing the new bootloader(s)...")
-                wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 55)       
-                wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Installing the new bootloader in OS: "+OS+"...###\n")
-
-                if BootloaderToInstall == "GRUB2":
-                    retval = self.InstallGRUB2(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
-
-                elif BootloaderToInstall == "LILO":
-                    retval = self.InstallLILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
-
-                elif BootloaderToInstall == "GRUB-UEFI":
-                    #Mount the UEFI partition at /boot/efi.
-                    #Unmount it first though, in case it's already mounted.
-                    CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
-                    CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint="/boot/efi") #*** Check this worked! ***
-
-                    retval = self.InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
-
-                elif BootloaderToInstall == "ELILO":
-                    #Unmount the UEFI Partition now.
-                    CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
-
-                    retval = self.InstallELILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
-
-            #Otherwise, setup the chroot and everything else first, and tell it we are using chroot, and pass the mountpoint to it.
-            else:
-                #Mount the partition using the global mount function.
-                MountPoint = "/mnt"+Partition
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
-
-                if Retval != 0:
-                    logger.error("MainBackendThread().InstallNewBootloader(): Failed to remount "+Partition+"! Warn the user and skip this OS.")
-                    DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing: "+OS+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. It is recommended to do a Bad Sector check, and then try again.")
-
-                else:
-                    #Set up chroot.
-                    CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
-
-                    #If there's a seperate /boot partition for this OS, make sure it's mounted.
-                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'mount', '-av'], ShowOutput=False)
-
-                    #Update the package lists.
-                    retval = self.UpdatePackageLists(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint)
-
-                    wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Installing the new bootloader(s)...")
-                    wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 55)       
-                    wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Installing the new bootloader in OS: "+OS+"...###\n")
-
-                    #Install the bootloader.
-                    if BootloaderToInstall == "GRUB2":
-                        retval = self.InstallGRUB2(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
-
-                    elif BootloaderToInstall == "LILO":
-                        retval = self.InstallLILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
-
-                    elif BootloaderToInstall == "GRUB-UEFI":
-                        #Mount the UEFI partition at MountPoint/boot/efi.
-                        #Unmount it first though, in case it's already mounted.
-                        CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
-                        CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") #*** Check it worked! ***
-                        retval = self.InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
-
-                    elif BootloaderToInstall == "ELILO":
-                        #Unmount the UEFI Partition now, and update the mtab inside chroot.
-                        CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
-                        CoreBackendTools().UpdateChrootMtab(MountPoint=MountPoint)
-
-                        retval = self.InstallELILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
-
-                    #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot. *** No need to use chroot for this ***
-                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'umount', '/boot'], ShowOutput=False)
-
-                    #Tear down chroot.
-                    CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
-
-            if retval != 0:
-                #Something went wrong! Log it and notify the user.
-                BootloaderInstallSucceded = False
-                logger.error("MainBackendThread().InstallNewBootloader(): Failed to install "+BootloaderToInstall+" in OS: "+OS+"! This may mean the system (or this OS) is now unbootable! We'll continue anyway. Warn the user.")
-                DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+BootloaderToInstall+" in: "+OS+"! This may leave your system, or this OS, in an unbootable state. It is recommended to do a Bad Sector check, unplug any non-essential devices, and then try again.")
-
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Finished installing the new bootloader in OS: "+OS+"...###\n")
-
-        #Log and notify the user that we're finished removing bootloaders.
-        logger.info("MainBackendThread().InstallNewBootloader(): Finished Installing bootloaders...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished Installing bootloaders...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 75)
-        return BootloaderInstallSucceded
 
     def UpdatePackageLists(self, PackageManager, UseChroot, MountPoint="None"):
         #Function to update thpackage lists so the required packages can always be found.
