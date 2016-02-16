@@ -2671,17 +2671,6 @@ class MainBackendThread(threading.Thread):
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Removal Functions.#################### #*** Move these to their seperate package ***
 
-    def RemoveELILO(self, PackageManager, UseChroot, Arch, MountPoint="None"):
-        #Function to remove ELILO.
-        if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'elilo'])
-            else:
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'elilo'])
-        
-        #Return the return value.
-        return retval
-
     ####################End Of Bootloader Removal Functions.####################
     ####################Start Of Bootloader Installation Functions.####################
 
