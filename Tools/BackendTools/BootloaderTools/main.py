@@ -188,7 +188,7 @@ class Main(): #*** Refactor and test all of these ***
             GetConfigBootloaderTools().GetOldBootloaderConfig()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
 
-            self.RemoveOldBootloader() #*** Broken, not moved yet. ***
+            BootloaderRemovalTools().RemoveOldBootloader()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
 
             BootloaderInstallSucceded = self.InstallNewBootloader() #*** Broken, not moved yet. ***

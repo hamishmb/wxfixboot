@@ -14,8 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
-class Main():
-    def RemoveOldBootloader(self):
+class Main(): #*** Refactor and test all of these ***
+    def RemoveOldBootloader(self): #*** Reduce code duplication if possible ***
         """Remove the currently installed bootloader."""
         logger.debug("BootloaderRemovalTools: Main().RemoveOldBootloader(): Preparing to remove old bootloaders...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Removing old bootloaders...")
@@ -75,19 +75,19 @@ class Main():
 
                     #Remove the bootloader.
                     if Bootloader == "GRUB-LEGACY":
-                        retval = self.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
+                        retval = self.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
 
                     elif Bootloader == "GRUB2":
-                        retval = self.RemoveGRUB2(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
+                        retval = self.RemoveGRUB2(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
 
                     elif Bootloader == "LILO":
-                        retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
+                        retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
 
                     elif Bootloader == "GRUB-UEFI":
-                        retval = self.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
+                        retval = self.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
 
                     elif Bootloader == "ELILO":
-                        retval = self.RemoveELILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
+                        retval = self.RemoveELILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
 
                     #Tear down chroot.
                     CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
@@ -106,3 +106,16 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished removing old bootloaders...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
         DialogTools().ShowMsgDlg(Kind="info", Message="Finished removing old bootloaders! WxFixBoot will now install your new bootloader to: "+', '.join(OSsForBootloaderInstallation)+".")
+
+    def RemoveGRUBLEGACY(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+        """Remove GRUB-LEGACY."""
+        if PackageManager == "apt-get":
+            if UseChroot == False:
+                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'grub', 'grub-legacy-doc', 'grub-common'], ShowOutput=False)
+
+            else:
+                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'grub', 'grub-legacy-doc', 'grub-common'], ShowOutput=False)
+        
+        #Return the return value.
+        return retval
+

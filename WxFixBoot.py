@@ -22,6 +22,7 @@
 #*** Maybe use parted with the '-m' flag because we get lots of info in a easy to process way that way ***
 #*** Always use self.Panel instead of self.MainPanel or whatever. ***
 #*** Instead of wx.Exit(), make a emergency exit function that will handle log files and such ***
+#*** Make sure to use "//" when we want int division ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -2669,17 +2670,6 @@ class MainBackendThread(threading.Thread):
 
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Removal Functions.#################### #*** Move these to their seperate package ***
-
-    def RemoveGRUBLEGACY(self, PackageManager, UseChroot, Arch, MountPoint="None"):
-        #Function to remove GRUB-LEGACY.
-        if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'grub', 'grub-legacy-doc', 'grub-common'], ShowOutput=False)
-            else:
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'grub', 'grub-legacy-doc', 'grub-common'], ShowOutput=False)
-        
-        #Return the return value.
-        return retval
 
     def RemoveGRUB2(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         #Function to remove GRUB2.
