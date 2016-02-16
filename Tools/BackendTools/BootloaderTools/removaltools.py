@@ -48,7 +48,7 @@ class Main(): #*** Refactor and test all of these ***
                     retval = self.RemoveGRUB2(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
 
                 elif Bootloader == "LILO":
-                    retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
+                    retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
 
                 elif Bootloader == "GRUB-UEFI":
                     retval = self.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
@@ -81,7 +81,7 @@ class Main(): #*** Refactor and test all of these ***
                         retval = self.RemoveGRUB2(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
                     elif Bootloader == "LILO":
-                        retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
+                        retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
                     elif Bootloader == "GRUB-UEFI":
                         retval = self.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
@@ -130,3 +130,16 @@ class Main(): #*** Refactor and test all of these ***
         
         #Return the return value.
         return retval
+
+    def RemoveLILO(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+        """Remove lilo."""
+        if PackageManager == "apt-get":
+            if UseChroot == False:
+                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'lilo'])
+
+            else:
+                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'lilo'])
+        
+        #Return the return value.
+        return retval
+
