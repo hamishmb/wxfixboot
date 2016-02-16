@@ -2691,21 +2691,7 @@ class MainBackendThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.MainBackendThreadFinished)
 
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
-    ####################Start Of Bootloader Installation Functions.#################### #*** Move these to their seperate package ***
-
-    def InstallELILO(self, PackageManager, UseChroot, Arch, MountPoint="None"):
-        #Function to install ELILO.
-        if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y elilo", Piping=True)
-            else:
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'", Piping=True)
-        
-        #Return the return value.
-        return retval
-
-    ####################End Of Bootloader Installation Functions.####################
-    ####################Start Of Bootloader Configuration Setting Functions.####################
+    ####################Start Of Bootloader Configuration Setting Functions.#################### #*** Move these to their seperate package ***
 
     def SetNewBootloaderConfig(self):
         #Function to manage setting new bootloader config.

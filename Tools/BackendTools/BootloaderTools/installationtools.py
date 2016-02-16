@@ -66,7 +66,7 @@ class Main(): #*** Refactor and test all of these ***
                     #Unmount the UEFI Partition now.
                     CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
 
-                    retval = self.InstallELILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
+                    retval = self.InstallELILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
 
             #Otherwise, setup the chroot and everything else first, and tell it we are using chroot, and pass the mountpoint to it.
             else:
@@ -111,9 +111,9 @@ class Main(): #*** Refactor and test all of these ***
                         CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
                         CoreBackendTools().UpdateChrootMtab(MountPoint=MountPoint)
 
-                        retval = self.InstallELILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
+                        retval = self.InstallELILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
-                    #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot. *** No need to use chroot for this ***
+                    #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot. *** No need to use chroot for this, do normally using safer global unmount function and update MTAB ***
                     CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'umount', '/boot'], ShowOutput=False)
 
                     #Tear down chroot.
@@ -177,6 +177,18 @@ class Main(): #*** Refactor and test all of these ***
 
             else:
                 retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'", Piping=True)
+        
+        #Return the return value.
+        return retval
+
+   def InstallELILO(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+        """Install ELILO."""
+        if PackageManager == "apt-get":
+            if UseChroot == False:
+                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y elilo", Piping=True)
+
+            else:
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'", Piping=True)
         
         #Return the return value.
         return retval
