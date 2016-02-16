@@ -2693,17 +2693,6 @@ class MainBackendThread(threading.Thread):
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Installation Functions.#################### #*** Move these to their seperate package ***
 
-    def UpdatePackageLists(self, PackageManager, UseChroot, MountPoint="None"):
-        #Function to update thpackage lists so the required packages can always be found.
-        if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get update", Piping=True)
-            else:
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'", Piping=True)
-        
-        #Return the return value.
-        return retval
-
     def InstallGRUB2(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         #Function to install GRUB2.
         if PackageManager == "apt-get":

@@ -14,8 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
-class Main():
-    def InstallNewBootloader(self):
+class Main(): #*** Refactor and test all of these ***
+    def InstallNewBootloader(self): #*** Reduce code duplication ***
         """Install a new bootloader."""
         #Install the new bootloader on the chosen OS.
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to install the new bootloader(s)...") #*** Does this need to be here? ***
@@ -132,3 +132,16 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Installing bootloaders...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
         return BootloaderInstallSucceded
+
+    def UpdatePackageLists(self, PackageManager, UseChroot, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+        """Update the package lists so the required packages can always be found."""
+        if PackageManager == "apt-get":
+            if UseChroot == False:
+                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get update", Piping=True)
+
+            else:
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'", Piping=True)
+        
+        #Return the return value.
+        return retval
+
