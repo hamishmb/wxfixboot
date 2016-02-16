@@ -52,7 +52,7 @@ class Main(): #*** Refactor and test all of these ***
                     retval = self.InstallGRUB2(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
 
                 elif BootloaderToInstall == "LILO":
-                    retval = self.InstallLILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
+                    retval = self.InstallLILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
 
                 elif BootloaderToInstall == "GRUB-UEFI":
                     #Mount the UEFI partition at /boot/efi.
@@ -97,7 +97,7 @@ class Main(): #*** Refactor and test all of these ***
                         retval = self.InstallGRUB2(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
                     elif BootloaderToInstall == "LILO":
-                        retval = self.InstallLILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
+                        retval = self.InstallLILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
                     elif BootloaderToInstall == "GRUB-UEFI":
                         #Mount the UEFI partition at MountPoint/boot/efi.
@@ -153,6 +153,18 @@ class Main(): #*** Refactor and test all of these ***
 
             else:
                 retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'", Piping=True)
+        
+        #Return the return value.
+        return retval
+
+    def InstallLILO(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+        """Install LILO."""
+        if PackageManager == "apt-get":
+            if UseChroot == False:
+                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y lilo", Piping=True)
+
+            else:
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y lilo'", Piping=True)
         
         #Return the return value.
         return retval
