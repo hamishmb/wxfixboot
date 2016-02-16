@@ -2645,40 +2645,6 @@ class MainBackendThread(threading.Thread):
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Configuration Obtaining Functions.#################### #*** Move these to their seperate package ***
 
-    def GetGRUB2Config(self, filetoopen):
-        #Function to get important bits of config from grub2 (MBR or UEFI) before removing it.
-        #Set temporary vars
-        Timeout = ""
-        Kopts = ""
-
-        #Open the file in read mode, so we can save the important bits of config.
-        infile = open(filetoopen, 'r')
-
-        #Loop through each line in the file, paying attention only to the important ones.
-        for line in infile:
-            #Look for the timeout setting.
-            if 'GRUB_TIMEOUT' in line and '=' in line:
-                #Found it! Save it to BootloaderTimeout, but only if BootloaderTimeout = -1 (we aren't changing the timeout).
-                if BootloaderTimeout == -1:
-                    #Save it, carefully avoiding errors.
-                    junk, sep, Temp = line.partition('=')
-                    Temp = Temp.replace(' ','').replace('\n', '').replace("\'", "")
-                    if Temp.isdigit():
-                        #Great! We got it.
-                        Timeout = int(Temp)
-
-            #Look for kernel options used globally in all the boot options.
-            elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line:
-                #Found them! Save it to GlobalKernelOptions
-                junk, sep, Temp = line.partition('=')
-                Kopts = Temp.replace('\"', '').replace("\'", "").replace("\n", "")
-
-        #Close the file.
-        infile.close()
-
-        #Return these values to self.RemoveOldBootloader()
-        return (Timeout, Kopts)
-
     def GetLILOConfig(self, filetoopen):
         #Function to get important bits of config from lilo before removing it.
         #Set temporary vars
