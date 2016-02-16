@@ -67,9 +67,8 @@ class Main(): #*** Refactor and test all of these ***
                 #Check MountPoint/boot/grub/menu.lst exists.
                 if os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
                     #It does, we'll run the function to find the config now.
-                    Temp = self.GetGRUBLEGACYConfig(filetoopen=MountPoint+"/boot/grub/menu.lst") #*** Broken, not moved yet. ***
-                    timeout = Temp[0]
-
+                    timeout = self.GetGRUBLEGACYConfig(filetoopen=MountPoint+"/boot/grub/menu.lst")
+                    
             elif Bootloader in ('GRUB2', 'GRUB-UEFI'):
                 #Check MountPoint/etc/default/grub exists, which should be for either GRUB2 or GRUB-UEFI.
                 if os.path.isfile(MountPoint+"/etc/default/grub"):
@@ -96,7 +95,7 @@ class Main(): #*** Refactor and test all of these ***
             if MountPoint != "":
                 CoreTools().Unmount(MountPoint) #*** Check it worked! ***
 
-            #Now we have the config, let's add it to the list, if it's unique. This will also catch the NameError excetpion created if the bootloader's config file wasn't found. 
+            #Now we have the config, let's add it to the list, if it's unique. This will also catch the NameError exception created if the bootloader's config file wasn't found. 
             #First do timeout.
             if timeout != "":
                 try:
@@ -219,5 +218,5 @@ class Main(): #*** Refactor and test all of these ***
         #Close the file.
         infile.close()
 
-        return (Timeout)
+        return Timeout
 
