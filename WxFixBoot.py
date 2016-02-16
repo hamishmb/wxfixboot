@@ -113,9 +113,10 @@ from Tools.BackendTools.essentials import Main as EssentialBackendTools
 from Tools.BackendTools.main import Main as MainBackendTools
 
 from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderTools
-from Tools.BackendTools.BootloaderTools.getconfigtools import Main as GetConfigBootloaderTools
+from Tools.BackendTools.BootloaderTools.getconfigtools import Main as GetConfigBootloaderTools #*** Change this name? ***
 from Tools.BackendTools.BootloaderTools.removaltools import Main as BootloaderRemovalTools
 from Tools.BackendTools.BootloaderTools.installationtools import Main as BootloaderInstallationTools
+from Tools.BackendTools.BootloaderTools.setconfigtools import Main as SetConfigBootloaderTools #*** Change this name? ***
 
 #Setup custom-made modules (make global variables accessible inside the packages). *** Continue to add stuff as needed *** *** Cut/rejig these later ***
 #GetDevInfo Package.
@@ -208,6 +209,14 @@ Tools.BackendTools.BootloaderTools.installationtools.DialogTools = DialogTools
 Tools.BackendTools.BootloaderTools.installationtools.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.installationtools.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.BootloaderTools.installationtools.wx = wx
+
+#BootloaderTools Package (SetConfigTools)
+Tools.BackendTools.BootloaderTools.setconfigtools.CoreTools = CoreTools
+Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
+Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
+Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
+Tools.BackendTools.BootloaderTools.setconfigtools.CoreBackendTools = CoreBackendTools
+Tools.BackendTools.BootloaderTools.setconfigtools.wx = wx
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
@@ -2514,6 +2523,7 @@ class MainBackendThread(threading.Thread):
         Tools.BackendTools.BootloaderTools.getconfigtools.ParentWindow = ParentWindow
         Tools.BackendTools.BootloaderTools.removaltools.ParentWindow = ParentWindow
         Tools.BackendTools.BootloaderTools.installationtools.ParentWindow = ParentWindow
+        Tools.BackendTools.BootloaderTools.setconfigtools.ParentWindow = ParentWindow
 
         #Start the main part of this thread.
         threading.Thread.__init__(self)
@@ -2658,6 +2668,14 @@ class MainBackendThread(threading.Thread):
                 Tools.BackendTools.BootloaderTools.installationtools.LiveDisk = LiveDisk
                 Tools.BackendTools.BootloaderTools.installationtools.AutoRootFS = AutoRootFS
                 Tools.BackendTools.BootloaderTools.installationtools.Bootloader = Bootloader
+
+                #*** Bootloader Configuration Settings Tools (in Backend Tools package) ***
+                Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderTimeout = BootloaderTimeout
+                Tools.BackendTools.BootloaderTools.setconfigtools.KernelOptions = KernelOptions
+                Tools.BackendTools.BootloaderTools.setconfigtools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
+                Tools.BackendTools.BootloaderTools.setconfigtools.LiveDisk = LiveDisk
+                Tools.BackendTools.BootloaderTools.setconfigtools.AutoRootFS = AutoRootFS
+                Tools.BackendTools.BootloaderTools.setconfigtools.Bootloader = Bootloader
 
                 #Run the function.
                 function()
