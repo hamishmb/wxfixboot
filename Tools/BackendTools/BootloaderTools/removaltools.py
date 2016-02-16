@@ -51,7 +51,7 @@ class Main(): #*** Refactor and test all of these ***
                     retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
 
                 elif Bootloader == "GRUB-UEFI":
-                    retval = self.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
+                    retval = self.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=False, Arch=Arch)
 
                 elif Bootloader == "ELILO":
                     retval = self.RemoveELILO(PackageManager=PackageManager, UseChroot=False, Arch=Arch) #*** Broken, not moved yet ***
@@ -84,7 +84,7 @@ class Main(): #*** Refactor and test all of these ***
                         retval = self.RemoveLILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
                     elif Bootloader == "GRUB-UEFI":
-                        retval = self.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
+                        retval = self.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
                     elif Bootloader == "ELILO":
                         retval = self.RemoveELILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch) #*** Broken, not moved yet ***
@@ -139,6 +139,18 @@ class Main(): #*** Refactor and test all of these ***
 
             else:
                 retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'lilo'])
+        
+        #Return the return value.
+        return retval
+
+    def RemoveGRUBUEFI(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+        """Remove GRUB-UEFI."""
+        if PackageManager == "apt-get":
+            if UseChroot == False:
+                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'grub-efi', 'grub-efi-amd64', 'grub-efi-amd64-bin', 'grub-efi-ia32', 'grub-efi-ia32-bin', 'grub-common', 'grub2-common'])
+
+            else:
+                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'grub-efi', 'grub-efi-amd64', 'grub-efi-amd64-bin', 'grub-efi-ia32', 'grub-efi-ia32-bin', 'grub-common', 'grub2-common'])
         
         #Return the return value.
         return retval
