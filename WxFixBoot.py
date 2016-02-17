@@ -2331,9 +2331,9 @@ class ProgressWindow(wx.Frame):
         self.BindEvents()
 
         logger.debug("ProgressWindow().__init__(): Progress Window Started.")
-        logger.debug("ProgressWindow().__init__(): Starting Main Backend Thread...")
+        logger.debug("ProgressWindow().__init__(): Starting Backend Thread...")
 
-        MainBackendThread(self)
+        BackendThread(self)
 
     def CreateText(self):
         #Create Text, and centre it.
@@ -2460,7 +2460,7 @@ class ProgressWindow(wx.Frame):
         self.CurrentOperationText.SetLabel(Message)
         self.Panel.Layout()
 
-    def MainBackendThreadFinished(self):
+    def BackendThreadFinished(self):
         self.RestartButton.Enable()
         self.ExitButton.Enable()
 
@@ -2508,10 +2508,10 @@ class ProgressWindow(wx.Frame):
             self.Destroy()
 
 #End Progress Window
-#Begin Main Backend Thread
-class MainBackendThread(threading.Thread):
+#Begin Backend Thread
+class BackendThread(threading.Thread):
     def __init__(self, ParentWindow):
-        """Initialize MainBackendThread"""
+        """Initialize BackendThread"""
         #Set up the backend tools.
         Tools.dialogtools.ParentWindow = ParentWindow
         Tools.BackendTools.core.ParentWindow = ParentWindow
@@ -2542,8 +2542,8 @@ class MainBackendThread(threading.Thread):
         BootloaderTimeout = 10
         KernelOptions = "quiet splash nomodeset"
  
-        #Log the MainBackendThread start event (in debug mode).
-        logger.debug("MainBackendThread().run(): Started. Calculating Operations to do...")
+        #Log the BackendThread start event (in debug mode).
+        logger.debug("BackendThread().run(): Started. Calculating Operations to do...")
 
         self.CountOperations()
         self.StartOperations()
@@ -2559,40 +2559,40 @@ class MainBackendThread(threading.Thread):
         #Do essential processes first.
         if BackupPartitionTable:
             self.OperationsToDo.append(EssentialBackendTools().BackupPartitionTable)            
-            logger.info("MainBackendThread().CountOperations(): Added EssentialBackendTools().BackupPartitionTable to self.OperationsToDo...")
+            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().BackupPartitionTable to self.OperationsToDo...")
 
         if BackupBootSector:
             self.OperationsToDo.append(EssentialBackendTools().BackupBootSector)
-            logger.info("MainBackendThread().CountOperations(): Added EssentialBackendTools().BackupBootSector to self.OperationsToDo...")
+            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().BackupBootSector to self.OperationsToDo...")
 
         if RestorePartitionTable:
             self.OperationsToDo.append(EssentialBackendTools().RestorePartitionTable)
-            logger.info("MainBackendThread().CountOperations(): Added EssentialBackendTools().RestorePartitionTable to self.OperationsToDo...")
+            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().RestorePartitionTable to self.OperationsToDo...")
 
         if RestoreBootSector:
             self.OperationsToDo.append(EssentialBackendTools().RestoreBootSector)
-            logger.info("MainBackendThread().CountOperations(): Added EssentialBackendTools().RestoreBootSector to self.OperationsToDo...")
+            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().RestoreBootSector to self.OperationsToDo...")
 
         if QuickFSCheck:
             self.OperationsToDo.append(EssentialBackendTools().QuickFileSystemCheck)
-            logger.info("MainBackendThread().CountOperations(): Added EssentialBackendTools().QuickFileSystemCheck to self.OperationsToDo...")
+            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().QuickFileSystemCheck to self.OperationsToDo...")
 
         if BadSectCheck:
             self.OperationsToDo.append(EssentialBackendTools().BadSectorCheck)
-            logger.info("MainBackendThread().CountOperations(): Added EssentialBackendTools().BadSectorCheck to self.OperationsToDo...")
+            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().BadSectorCheck to self.OperationsToDo...")
 
         #Now do other processes
         if BootloaderToInstall != "None":
             self.OperationsToDo.append(MainBootloaderTools().ManageBootloaders)
-            logger.info("MainBackendThread().CountOperations(): Added MainBootloaderTools().ManageBootloaders to self.OperationsToDo...")
+            logger.info("BackendThread().CountOperations(): Added MainBootloaderTools().ManageBootloaders to self.OperationsToDo...")
 
         if ReinstallBootloader:
             self.OperationsToDo.append(MainBootloaderTools().ReinstallBootloader)
-            logger.info("MainBackendThread().CountOperations(): Added MainBootloaderTools().ReinstallBootloader to self.OperationsToDo...")
+            logger.info("BackendThread().CountOperations(): Added MainBootloaderTools().ReinstallBootloader to self.OperationsToDo...")
 
         if UpdateBootloader:
             self.OperationsToDo.append(MainBootloaderTools().UpdateBootloader)
-            logger.info("MainBackendThread().CountOperations(): Added MainBootloaderTools().UpdateBootloader to self.OperationsToDo...")
+            logger.info("BackendThread().CountOperations(): Added MainBootloaderTools().UpdateBootloader to self.OperationsToDo...")
 
         #Check if we need to prepare to install a new bootloader, and do so first if needed. *** Log this ***
         for element in (MainBootloaderTools().ManageBootloaders, MainBootloaderTools().ReinstallBootloader, MainBootloaderTools().UpdateBootloader):
@@ -2602,8 +2602,8 @@ class MainBackendThread(threading.Thread):
         NumberOfOperationsToDo = len(self.OperationsToDo)
 
         #Log gathered operations to do, and the number (verbose mode, default).
-        logger.info("MainBackendThread().CountOperations(): Number of operations: "+unicode(NumberOfOperationsToDo))
-        logger.info("MainBackendThread().CountOperations(): Starting Operation Running Code...")
+        logger.info("BackendThread().CountOperations(): Number of operations: "+unicode(NumberOfOperationsToDo))
+        logger.info("BackendThread().CountOperations(): Starting Operation Running Code...")
 
     def StartOperations(self):
         #Start doing operations.
@@ -2697,19 +2697,19 @@ class MainBackendThread(threading.Thread):
                 BootloaderTimeout = Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout
                 KernelOptions = Tools.BackendTools.BootloaderTools.getconfigtools.KernelOptions
 
-            logger.info("MainBackendThread().StartOperations(): Finished Operation Running Code.")
+            logger.info("BackendThread().StartOperations(): Finished Operation Running Code.")
 
             #Save a system report if needed.
             if MakeSystemSummary:
-                logger.info("MainBackendThread().StartOperations(): Generating System Report...")
+                logger.info("BackendThread().StartOperations(): Generating System Report...")
                 self.GenerateSystemReport()
-                logger.info("MainBackendThread().StartOperations(): Done, finished all operations.")
+                logger.info("BackendThread().StartOperations(): Done, finished all operations.")
 
             wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished!")
 
             DialogTools().ShowMsgDlg(Kind="info", Message="Your operations are all done! Thank you for using WxFixBoot. If you performed any bootloader operations, please now reboot your system.") #*** Check this and customise message if needed ***
 
-        wx.CallAfter(self.ParentWindow.MainBackendThreadFinished)
+        wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
     def GenerateSystemReport(self): #*** Leave this here until switch to dictionaries cos otherwise this'll be a mighty pain in the backside! :) ***
         #Function to create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary.
@@ -2836,6 +2836,6 @@ class MainBackendThread(threading.Thread):
 
         logfile.close()
  
-#End Main Backend Thread
+#End Backend Thread
 app = WxFixBoot(False)
 app.MainLoop()

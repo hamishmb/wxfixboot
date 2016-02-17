@@ -70,7 +70,7 @@ class Main():
 
     def FindMissingFSCKModules(self, PartitionListWithFSType):
         """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc), based on the FS types in PartitionListWithFSType.""" #*** Will need modification after switching to dictionaries ***
-        logger.info("MainBackendThread().FindMissingFSCKModules(): Looking for missing FSCK modules to ignore...")
+        logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Looking for missing FSCK modules to ignore...")
         FailedList = []
 
         for FSType in PartitionListWithFSType:
@@ -201,7 +201,7 @@ class Main():
                     #Check if the partition is mounted. #*** Test this bit ***
                     PartitionIsMounted = CoreTools().MountPartition(Partition=Partition, MountPoint="/mnt"+Partition, OnlyCheck=True)
 
-                    if PartitionIsMounted == False
+                    if PartitionIsMounted == False:
                         #Not mounted.
                         CheckTheFS = True
                         RemountPartitionAfter = False
@@ -211,7 +211,7 @@ class Main():
                         Retval = CoreTools().Unmount(Partition)
 
                         if Retval != 0:
-                            logger.warning("MainBackendThread().FindCheckableFileSystems(): Failed to unmount "+Partition+", which is necessary for safe disk checking! Ignoring it, becuase it's probably a home directory (if running an OS on the HDD, and not a live disk) or an essential system dir...")
+                            logger.warning("HelperBackendTools: Main().FindCheckableFileSystems(): Failed to unmount "+Partition+", which is necessary for safe disk checking! Ignoring it, becuase it's probably a home directory (if running an OS on the HDD, and not a live disk) or an essential system dir...")
                             CheckTheFS = False
                             RemountPartitionAfter = False
 
@@ -595,7 +595,7 @@ class Main():
             wx.Exit() #*** Can we do this from here? ***
             sys.exit("CRITICAL ERROR: WxFixBoot's variable that contains the name of the (hopefully) now installed UEFI bootloader has been reset! It isn't safe to continue! Exiting...")
 
-        logger.info("MainBackendThread().CopyUEFIFiles(): Done!")
+        logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Done!")
 
         #Check the return value.
         if retval != 0:
