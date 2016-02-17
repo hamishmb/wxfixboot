@@ -69,7 +69,7 @@ class Main(): #*** Refactor and test all of these ***
 
             #Look for the configuration file, based on which SetConfig() function we're about to run.
             if BootloaderToInstall == "GRUB2":
-                #Check MountPoint/etc/default/grub exists.
+                #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
                 if os.path.isfile(MountPoint+"/etc/default/grub"):
                     #It does, we'll run the function to set the config now.
                     logger.info("SetBootloaderConfigTools: Main().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
@@ -88,7 +88,7 @@ class Main(): #*** Refactor and test all of these ***
                 self.SetGRUB2DefaultOS(OS=OS, PackageManager=PackageManager, MountPoint=MountPoint)
 
             elif BootloaderToInstall == "GRUB-UEFI":
-                #Check MountPoint/etc/default/grub exists.
+                #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
                 if os.path.isfile(MountPoint+"/etc/default/grub"):
                     #It does, we'll run the function to set the config now.
                     logger.info("SetBootloaderConfigTools: Main().SetNewBootloaderConfig(): Setting GRUB2-UEFI Configuration...")
@@ -125,7 +125,7 @@ class Main(): #*** Refactor and test all of these ***
                 else:
                     CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'liloconfig', '-f'], ShowOutput=False)
 
-                #Check the config file exists for lilo
+                #Check the config file exists for lilo. *** What do we do if it doesn't? Check the last command ran successfully ***
                 if os.path.isfile(MountPoint+"/etc/lilo.conf"):
                     #It does, we'll run the function to set the config now.
                     logger.info("SetBootloaderConfigTools: Main().SetNewBootloaderConfig(): Setting LILO Configuration...")
@@ -152,7 +152,7 @@ class Main(): #*** Refactor and test all of these ***
                 else:
                     CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'elilo', '-b', UEFISystemPartition, '--autoconf'], ShowOutput=False)
 
-                #Check elilo's config file exists.
+                #Check elilo's config file exists. *** What do we do if it doesn't? Check the last command ran successfully ***
                 if os.path.isfile(MountPoint+"/etc/elilo.conf"):
                     #It does, we'll run the function to set the config now.
                     logger.info("SetBootloaderConfigTools: Main().SetNewBootloaderConfig(): Setting ELILO Configuration...")
@@ -185,4 +185,67 @@ class Main(): #*** Refactor and test all of these ***
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished setting the new bootloader's config!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
-    
+    def SetGRUB2Config(self, filetoopen): #*** Add logging stuff ***
+        """Set GRUB2 config."""
+        SetTimeout = False
+        SetKOpts = False
+        SetDefault = False
+
+        #Open the file in read mode, so we can find the new config that needs setting. Also, use a list to temporarily store the modified lines.
+        ConfigFile = open(filetoopen, 'r')
+        NewFileContents = []
+
+        #Loop through each line in the file, paying attention only to the important ones.
+        for line in ConfigFile:
+            #Look for the timeout setting.
+            if 'GRUB_TIMEOUT' in line and '=' in line:
+                #Found it! Set the value to the current value of BootloaderTimeout.
+                SetTimeout = True
+                head, sep, Temp = line.partition('=')
+                Temp = unicode(BootloaderTimeout)
+
+                #Reassemble the line.
+                line = head+sep+Temp+"\n"
+
+            #Look for kernel options setting.
+            elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line:
+                #Found it! Set it to the options in KernelOptions, carefully making sure we aren't double-quoting it.
+                SetKOpts = True
+                head, sep, Temp = line.partition('=')
+
+                #Reassemble the line.
+                line = head+sep+"'"+KernelOptions+"'"+"\n"
+
+            #Look for the "GRUB_DEFAULT" setting.
+            elif "GRUB_DEFAULT" in line and '=' in line:
+                #Found it. Set it to 'saved', so we can set the default bootloader.
+                SetDefault = True
+                head, sep, Temp = line.partition('=')
+                Temp = "saved"
+
+                #Reassemble the line.
+                line = head+sep+Temp+"\n"
+
+            #Comment out the GRUB_HIDDEN_TIMEOUT line.
+            elif 'GRUB_HIDDEN_TIMEOUT' in line and 'GRUB_HIDDEN_TIMEOUT_QUIET' not in line and '=' in line and '#' not in line:
+                line = "#"+line
+
+            NewFileContents.append(line)
+
+        #Check that everything was set. If not, write that config now.
+        if SetTimeout == False:
+            NewFileContents.append("GRUB_TIMEOUT="+unicode(BootloaderTimeout)+"\n")
+
+        if SetKOpts == False:
+            Temp = KernelOptions.replace('\"', '').replace("\'", "").replace("\n", "")
+            NewFileContents.append("GRUB_CMDLINE_LINUX_DEFAULT='"+Temp+"'\n")
+
+        if SetDefault == False:
+            NewFileContents.append("GRUB_DEFAULT=saved")
+
+        #Write the finished lines to the file.
+        ConfigFile.close()
+        ConfigFile = open(filetoopen, 'w')
+        ConfigFile.write(''.join(NewFileContents))
+        ConfigFile.close()
+

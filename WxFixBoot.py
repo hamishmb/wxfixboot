@@ -2713,72 +2713,7 @@ class MainBackendThread(threading.Thread):
 
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Configuration Setting Functions.#################### #*** Move these to their seperate package ***
-
     ####################Start Of GRUB Bootloader Configuration Setting Functions.####################
-
-    def SetGRUB2Config(self, filetoopen):
-        #Function to set GRUB2 config.
-        SetTimeout = False
-        SetKOpts = False
-        SetDefault = False
-
-        #Open the file in read mode, so we can find the new config that needs setting. Also, use a list to temporarily store the modified lines.
-        ConfigFile = open(filetoopen, 'r')
-        NewFileContents = []
-
-        #Loop through each line in the file, paying attention only to the important ones.
-        for line in ConfigFile:
-            #Look for the timeout setting.
-            if 'GRUB_TIMEOUT' in line and '=' in line:
-                #Found it! Set the value to the current value of BootloaderTimeout.
-                SetTimeout = True
-                head, sep, Temp = line.partition('=')
-                Temp = unicode(BootloaderTimeout)
-
-                #Reassemble the line.
-                line = head+sep+Temp+"\n"
-
-            #Look for kernel options setting.
-            elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line:
-                #Found it! Set it to the options in KernelOptions, carefully making sure we aren't double-quoting it.
-                SetKOpts = True
-                head, sep, Temp = line.partition('=')
-
-                #Reassemble the line.
-                line = head+sep+"'"+KernelOptions+"'"+"\n"
-
-            #Look for the "GRUB_DEFAULT" setting.
-            elif "GRUB_DEFAULT" in line and '=' in line:
-                #Found it. Set it to 'saved', so we can set the default bootloader.
-                SetDefault = True
-                head, sep, Temp = line.partition('=')
-                Temp = "saved"
-
-                #Reassemble the line.
-                line = head+sep+Temp+"\n"
-
-            #Comment out the GRUB_HIDDEN_TIMEOUT line.
-            elif 'GRUB_HIDDEN_TIMEOUT' in line and 'GRUB_HIDDEN_TIMEOUT_QUIET' not in line and '=' in line and '#' not in line:
-                line = "#"+line
-
-            NewFileContents.append(line)
-
-        #Check that everything was set. If not, write that config now.
-        if SetTimeout == False:
-            NewFileContents.append("GRUB_TIMEOUT="+unicode(BootloaderTimeout)+"\n")
-
-        if SetKOpts == False:
-            Temp = KernelOptions.replace('\"', '').replace("\'", "").replace("\n", "")
-            NewFileContents.append("GRUB_CMDLINE_LINUX_DEFAULT='"+Temp+"'\n")
-
-        if SetDefault == False:
-            NewFileContents.append("GRUB_DEFAULT=saved")
-
-        #Write the finished lines to the file.
-        ConfigFile.close()
-        ConfigFile = open(filetoopen, 'w')
-        ConfigFile.write(''.join(NewFileContents))
-        ConfigFile.close()
 
     def InstallGRUB2ToMBR(self, PackageManager, MountPoint):
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the MBR.
