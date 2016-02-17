@@ -249,3 +249,17 @@ class Main(): #*** Refactor and test all of these ***
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
 
+    def InstallGRUB2ToMBR(self, PackageManager, MountPoint): #*** Needs to change when we switch to always using shell=True ***
+        """Install GRUB2 (BIOS version) into the MBR of the hard drive"""
+        #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the MBR.
+        #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition. *** Do we always want to do that? ***
+        if MountPoint == "":
+            if PackageManager == "apt-get":
+                retval = CoreBackendTools().StartThreadProcess(['grub-install', '--force', RootDevice], ShowOutput=False)
+
+        else:
+            if PackageManager == "apt-get":
+                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'grub-install', '--force', RootDevice], ShowOutput=False)
+
+        #Return the return value.
+        return retval

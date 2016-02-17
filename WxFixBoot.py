@@ -2715,19 +2715,6 @@ class MainBackendThread(threading.Thread):
     ####################Start Of Bootloader Configuration Setting Functions.#################### #*** Move these to their seperate package ***
     ####################Start Of GRUB Bootloader Configuration Setting Functions.####################
 
-    def InstallGRUB2ToMBR(self, PackageManager, MountPoint):
-        #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the MBR.
-        #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition.
-        if MountPoint == "":
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['grub-install', '--force', RootDevice], ShowOutput=False)
-        else:
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'grub-install', '--force', RootDevice], ShowOutput=False)
-
-        #Return the return value.
-        return retval
-
     def InstallGRUBUEFIToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch):
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if MountPoint == "":
