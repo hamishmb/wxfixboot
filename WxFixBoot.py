@@ -2715,18 +2715,6 @@ class MainBackendThread(threading.Thread):
     ####################Start Of Bootloader Configuration Setting Functions.#################### #*** Move these to their seperate package ***
     ####################Start Of GRUB Bootloader Configuration Setting Functions.####################
 
-    def UpdateGRUB2(self, PackageManager, MountPoint):
-        #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
-        if MountPoint == "":
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['update-grub'], ShowOutput=False)
-        else:
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'update-grub'], ShowOutput=False)
-
-        #Return the return value.
-        return retval
-
     def SetGRUB2DefaultOS(self, OS, PackageManager, MountPoint):
         #Now we need to set the default os.
         #I couldn't find a reliable way of doing this automatically, so give the user a choice box instead.
