@@ -418,3 +418,77 @@ class Main(): #*** Refactor and test all of these ***
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
 
+    def SetELILOConfig(self, filetoopen, PackageManager, MountPoint): #*** Add logging stuff ***
+        """Set ELILO config."""
+        SetTimeout = False
+        SetUEFIPart = False
+
+        #Open the file in read mode, so we can find the important bits of config to edit. Also, use a list to temporarily store the modified lines.
+        ConfigFile = open(filetoopen, 'r')
+        NewFileContents = []
+
+        #Loop through each line in the file, paying attention only to the important ones.
+        for line in ConfigFile:
+            #Look for the delay setting.
+            if 'delay' in line and '=' in line and '#' not in line:
+                #Found it! Set it to our value.
+                SetTimeout = True
+
+                #Save it, carefully avoiding errors.
+                head, sep, Temp = line.partition('=')
+                Temp = unicode(BootloaderTimeout*10)
+
+                #Reassemble the line.
+                line = head+sep+Temp+"\n"
+
+            #Look for the 'boot' setting.
+            elif 'boot' in line and '=' in line and '#' not in line:
+                #Found it, seperate the line.
+                SetUEFIPart = True
+                head, sep, Temp = line.partition('=')
+
+                #Now let's find the ID of UEFISystemPartition.
+                ID = CoreBackendTools().GetDeviceID(Device=UEFISystemPartition)
+
+                if ID != "None":
+                    #Good, we've got the ID.
+                    #Set it to UEFISystemPartition's ID.                    
+                    Temp = "/dev/disk/by-id/"+ID
+
+                else:
+                    #Not so good... We'll have to use the partition's name, which may change, especially if we're using chroot.
+                    Temp = UEFISystemPartition
+
+                #Reassemble the line.
+                line = head+sep+Temp+"\n"
+
+            #Get rid of any boot entries.
+            elif 'image=' in line or '\t' in line:
+                #Skip this line, and don't append it to the list.
+                continue
+
+            NewFileContents.append(line)
+
+        #Check that everything was set. If not, write that config now.
+        if SetTimeout == False:
+            NewFileContents.append("delay="+unicode(BootloaderTimeout)+"\n")
+
+        if SetUEFIPart == False:
+            #Now let's find the ID of UEFISystemPartition.
+            ID = CoreBackendTools().GetDeviceID(Device=UEFISystemPartition)
+            if ID != "None":
+                #Good, we've got the ID.
+                #Set it to UEFISystemPartition's ID.                    
+                Temp = "/dev/disk/by-id/"+ID
+
+            else:
+                #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
+                Temp = UEFISystemPartition
+
+            NewFileContents.append("boot="+Temp+"\n")
+
+        #Write the finished lines to the file.
+        ConfigFile.close()
+        ConfigFile = open(filetoopen, 'w')
+        ConfigFile.write(''.join(NewFileContents))
+        ConfigFile.close()
