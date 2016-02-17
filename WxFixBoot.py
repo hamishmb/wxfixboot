@@ -2717,16 +2717,6 @@ class MainBackendThread(threading.Thread):
     ####################Start Of Bootloader Configuration Setting Functions.#################### #*** Move these to their seperate package ***
     ####################Start Of LILO and ELILO Bootloader Configuration Setting Functions.####################
 
-    def InstallLILOToMBR(self, PackageManager, MountPoint):
-        #Install lilo to the MBR of RootDev.
-        if MountPoint == "":
-            retval = CoreBackendTools().StartThreadProcess(['lilo'], ShowOutput=False)
-        else:
-            retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'lilo'], ShowOutput=False)
-
-        #Return the return value.
-        return retval
-
     def InstallELILOToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch):
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if MountPoint == "":

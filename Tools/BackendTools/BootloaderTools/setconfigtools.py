@@ -249,7 +249,7 @@ class Main(): #*** Refactor and test all of these ***
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
 
-    def InstallGRUB2ToMBR(self, PackageManager, MountPoint): #*** Needs to change when we switch to always using shell=True ***
+    def InstallGRUB2ToMBR(self, PackageManager, MountPoint): #*** Needs to change when we switch to always using shell=True *** *** Will need changing when we get rid of the Root Device concept ***
         """Install GRUB2 (BIOS version) into the MBR of the hard drive"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the MBR.
         #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition. *** Do we always want to do that? ***
@@ -717,3 +717,13 @@ class Main(): #*** Refactor and test all of these ***
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
 
+    def InstallLILOToMBR(self, PackageManager, MountPoint): #*** Will need changing when we switch to always using shell=True *** Will need changing when we get rid of the Root Device concept ***
+        """Install LILO to the MBR of RootDev."""
+        if MountPoint == "":
+            retval = CoreBackendTools().StartThreadProcess(['lilo'], ShowOutput=False)
+
+        else:
+            retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'lilo'], ShowOutput=False)
+
+        #Return the return value.
+        return retval
