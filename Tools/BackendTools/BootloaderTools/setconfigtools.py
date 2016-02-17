@@ -278,7 +278,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def UpdateGRUB2(self, PackageManager, MountPoint):
+    def UpdateGRUB2(self, PackageManager, MountPoint): #*** Needs to change when we switch to always using shell=True ***
         """Run 'update-grub' to update GRUB2's (BIOS and EFI/UEFI) configuration and bootloader menu"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if MountPoint == "":
@@ -291,4 +291,61 @@ class Main(): #*** Refactor and test all of these ***
 
         #Return the return value.
         return retval
+
+    def SetGRUB2DefaultOS(self, OS, PackageManager, MountPoint): #*** Do logging stuff ***
+        """Set GRUB2's (both BIOS and EFI/UEFI) default OS to boot"""
+        #I couldn't find a reliable way of doing this automatically, so give the user a choice box instead. *** Do this before release of final v1.1, probably in the 1st or 2nd rc ***
+        global DefaultOS
+
+        #Make a list of OSs grub2 found (hopefully all of them).
+        if MountPoint == "":
+            if PackageManager == "apt-get":
+                Temp = CoreBackendTools().StartThreadProcess(["grep", '-w', "menuentry", "/boot/grub/grub.cfg"], ShowOutput=False, ReturnOutput=True) #*** Use python's text processing features ***
+                retcode = Temp[0]
+                GrubMenuEntries = Temp[1]
+
+        else:
+            if PackageManager == "apt-get":
+                Temp = CoreBackendTools().StartThreadProcess(["grep", '-w', "menuentry", MountPoint+"/boot/grub/grub.cfg"], ShowOutput=False, ReturnOutput=True) #*** Use python's text processing features ***
+                retcode = Temp[0]
+                GrubMenuEntries = Temp[1]
+
+        if retcode != 0:
+            #Don't set the default OS.
+            DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set the default OS. This doesn't really matter. Click okay to continue.")
+
+        else:
+            #Now finally make the list of grub's OS names.
+            GRUBOSNameList = []
+
+            #Split with each newline character found in the returned string.
+            GrubMenuEntriesList = GrubMenuEntries.split('\n')
+
+            for OSName in GrubMenuEntriesList:
+                #Get each OS name, removing all of the unneeeded characters. *** Can we use .split() instead? ***
+                junk,sep,info = OSName.partition("'")
+                info,sep,junk = info.partition("'")
+                GRUBOSNameList.append(info)
+
+            #Now ask the user to select the correct one.
+            DefaultOS = DialogTools().ShowChoiceDlg(Message="Please select the OS you want to use as "+BootloaderToInstall+"'s Default OS. You are setting configuration for: "+OS, Title="WxFixBoot - Select Default OS", Choices=GRUBOSNameList)
+
+            #Use the user's selection to set the default OS.
+            if LiveDisk == False and MountPoint == "":
+                #If the OS is AutoRootFS, and we're not on a live disk, do it differently.
+                if PackageManager == "apt-get":
+                    retval = CoreBackendTools().StartThreadProcess(["grub-set-default", DefaultOS], ShowOutput=False)
+
+                else:
+                    retval = CoreBackendTools().StartThreadProcess(["grub2-set-default", DefaultOS], ShowOutput=False)
+
+            else:
+                if PackageManager == "apt-get":
+                    retval = CoreBackendTools().StartThreadProcess(["chroot", MountPoint, "grub-set-default", DefaultOS], ShowOutput=False)
+
+                else:
+                    retval = CoreBackendTools().StartThreadProcess(["chroot", MountPoint, "grub2-set-default", DefaultOS], ShowOutput=False)
+
+            #Return the return value.
+            return retval
 
