@@ -727,3 +727,17 @@ class Main(): #*** Refactor and test all of these ***
 
         #Return the return value.
         return retval
+
+    def InstallELILOToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch): #*** Will need changing when we switch to always using shell=True *** *** Do we need Arch here? ***
+        """Install ELILO to the EFI/UEFI Partition"""
+        #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
+        if MountPoint == "":
+            if PackageManager == "apt-get":
+                retval = CoreBackendTools().StartThreadProcess(['elilo', '-b', UEFISystemPartition, '--efiboot'], ShowOutput=False)
+
+        else:
+            if PackageManager == "apt-get":
+                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'elilo', '-b', UEFISystemPartition, '--efiboot'], ShowOutput=False)
+
+        #Return the return value.
+        return retval
