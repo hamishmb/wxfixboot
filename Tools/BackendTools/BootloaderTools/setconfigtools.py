@@ -492,3 +492,228 @@ class Main(): #*** Refactor and test all of these ***
         ConfigFile = open(filetoopen, 'w')
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
+
+    def MakeLILOOSEntries(self, filetoopen, PackageManager, MountPoint):
+        """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS""" #*** Maybe set default OS in a seperate function? ***
+        #Okay, we've saved the kopts, timeout, and the boot device in the list.
+        #Now we'll set the OS entries, and then the default OS.
+        #Open the file, and add each entry to a temporary list, which will be written to the file later.
+        ConfigFile = open(filetoopen, 'r')
+        NewFileContents = []
+
+        #First, make sure everything else comes first, because LILO and ELILO are picky with the placement of the image files (they must be at the end of the file).
+        #We'll also make a placeholder for the default OS, so it comes before the image entries too.
+        Temp = False
+        for line in ConfigFile:
+            if 'default' in line and '=' in line and '#' not in line:
+                #The place holder already exists. Set a variable so we don't make one.
+                Temp = True
+
+            NewFileContents.append(line)
+
+        #If there isn't a placeholder, make one now.
+        if Temp == False:
+            NewFileContents.append("default=setthis\n")
+
+        #Make the OS entries.
+        if BootloaderToInstall == "ELILO":
+            NewFileContents.append("#################### ELILO per-image section ####################")
+
+        #As we make these entries, we'll record which ones were actually made, as the user can cancel them if it looks like it won't work.
+        CompletedEntriesList = []
+
+        for OS in OSList:
+            logger.info("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Preparing to make an entry for: "+OS)
+
+            #Names in LILO are not allowed to have spaces, so let's grab the names and remove the spaces from them.
+            #If this OS is the currently running one, we'll need to access a different part of the element.
+            if OS.split()[-5] == "OS)":
+                OSName = ''.join(OS.split()[0:-6])
+
+            else:
+                OSName = ''.join(OS.split()[0:-4])
+
+            #Remove all the spaces from the OS's name.
+            OSName = OSName.replace(' ','')
+
+            #Grab the OS's partition.
+            Partition = OS.split()[-1]
+
+            #Check that the name is no longer than 15 characters.
+            if len(OSName) > 15:
+                #The name is too long! Truncate it to 15 characters.
+                logger.warning("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Truncating OS Name: "+OSName+" to 15 characters...")
+                OSName = OSName[0:15]
+
+            #Now let's make the entries.
+            logger.debug("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Checking for /vmlinuz and /initrd.img...")
+
+            if OS[-5] == "OS)": #*** When we use dictionaries we won't need to do this ***
+                CurrentOS = True
+
+            else:
+                CurrentOS = False
+
+            #Check that MountPoint/vmlinuz and MountPoint/initrd.img exist. (If this is the current OS, MountPoint = "", and so doesn't get in the way).
+            if os.path.isfile(MountPoint+"/vmlinuz"):
+                #Good, add this to the file. (It's local to the partition, so we don't need to include MountPoint in the path)
+                logger.info("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Found /vmlinuz! Adding it to the config file...")
+                NewFileContents.append("\nimage=/vmlinuz\n")
+
+            else:
+                #Not so good... This probably means changing LILO's config each time we do a kernel update... Let's ask the user if we should still add it.
+                logger.warning("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Couldn't find /vmlinuz for: "+OS+"! Asking the user if we should search for vmlinuz and make an entry anyway...")
+
+                Result = DialogTools().ShowYesNoDlg(Message="Warning: /vmlinuz (shortcut to the latest kernel) wasn't found for: "+OS+"! Your new bootloader will still work, but this might mean you'll have to manaully change its config file each time you update your kernel on this OS. You can do this with WxFixBoot, but that won't stop it from being annoying and introducing security risks if you forget. However, this OS will be unbootable if you don't add it to the boot menu. Do you want to add it to the boot menu anyway?", Title="WxFixBoot - Add OS to boot menu?")
+
+                if Result == False:
+                    #Okay, go back to the start of the loop.
+                    logger.warning("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Not making an entry for "+OS+"! Skipping this OS...")
+                    continue
+
+                else:
+                    #Right, we'll have to hunt out the Kernel.
+                    logger.warning("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Okay, we'll make an entry for "+OS+" anyway. Now let's try and find the latest Kernel...")
+                    Kernel = HelperBackendTools().FindLatestVersion(Directory=MountPoint+"/boot", Type="Kernel")
+
+                    #Check if we found it.
+                    if Kernel == "None":
+                        #We didn't! Tell the user, and skip this OS.
+                        logger.error("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Couldn't find the latest kernel for "+OS+"! This OS will now be skipped!") 
+                        DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot couldn't find the latest kernel for this OS. This OS will now be skipped.")
+                        continue
+
+                    else:
+                        #We did! Add it to the file. (It's local to the partition, so we don't need to include MountPoint in the path)
+                        logger.info("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Found the latest kernel at: "+Kernel+"! Adding it to the config file...")
+                        NewFileContents.append("\nimage=/boot/"+Kernel+"\n")
+
+            if os.path.isfile(MountPoint+"/initrd.img"):
+                #Good, add this to the file. (It's local to the partition, so we don't need to include MountPoint in the path)
+                logger.info("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Found /initrd.img! Adding it to the config file...")
+                NewFileContents.append("\tinitrd=/initrd.img\n")
+
+            else:
+                #Not so good... This probably means changing LILO's config each time we do a kernel update... Let's ask the user if we should still add it.
+                logger.warning("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Couldn't find /initrd.img for "+OS+"! Asking the user if we should search for initrd.img and make an entry anyway...")
+
+                Result = DialogTools().ShowYesNoDlg(Message="Warning: /initrd.img (shortcut to the latest Initial Filesystem) wasn't found for: "+OS+"! Your new bootloader will still work, but this might mean you'll have to manaully change its config file each time you update your kernel on this OS. You can do this with WxFixBoot, but that won't stop it from being annoying and introducing security risks if you forget. Do you want to add it to the boot menu anyway?", Title="WxFixBoot - Add OS to boot menu?")
+
+                if Result == False:
+                    #Okay, delete the last entry, so we don't have an unconfigured image, and then go back to the start of the loop.
+                    logger.warning("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Not making an entry for "+OS+"! Deleting the unconfigured image, and skipping this OS...")
+                    Temp = NewFileContents.pop()
+                    continue
+
+                else:
+                    #Right, we'll have to hunt out the Initrd/Initramfs.
+                    logger.warning("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Okay, we'll make an entry for "+OS+" anyway. Now let's try and find the latest Initrd...")
+                    Initrd = HelperBackendTools().FindLatestVersion(Directory=MountPoint+"/boot", Type="Initrd")
+
+                    #Check if we found it.
+                    if Initrd == "None":
+                        #We didn't! Tell the user, delete the unconfigured image entry (logically there must be one), and skip this OS.
+                        logger.error("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Couldn't find the latest Initrd for "+OS+"! This OS will now be skipped, and the unconfigured image deleted!") 
+                        DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot couldn't find the latest initrd.img for this OS. This OS will now be skipped.")
+                        Temp = NewFileContents.pop()
+                        continue
+
+                    else:
+                        #We did! Add it to the file. (It's local to the partition, so we don't need to include MountPoint in the path)
+                        logger.info("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Found the latest Initrd at: "+Initrd+"! Adding it to the config file...")
+                        NewFileContents.append("\tinitrd=/boot/"+Initrd+"\n")
+
+            #Set the root device.
+            #Use UUID's here if we can.
+            UUID = CoreBackendTools().GetPartitionUUID(Partition)
+            if UUID == "None":
+                NewFileContents.append("\troot="+Partition+"\n")
+
+            else:
+                #If we're using ELILO, we have to do this differently.
+                if BootloaderToInstall == "ELILO":
+                    NewFileContents.append("\troot=UUID="+UUID+"\n")
+
+                else:
+                    NewFileContents.append("\troot=\"UUID="+UUID+"\"\n")
+
+            #Set the label.
+            NewFileContents.append("\tlabel="+OSName+"\n")
+
+            #Set the kernel options.
+            NewFileContents.append("\tappend=\""+KernelOptions+"\"\n")
+
+            #Set one other necessary boot option.
+            NewFileContents.append("\tread-only\n")
+
+            #Add this OS to the Completed Entries List, because if we got this far it's done and added.
+            CompletedEntriesList.append(OSName)
+
+        #Now set the default OS.
+        #First, write the semi-finished lines to the file.
+        ConfigFile.close()
+        ConfigFile = open(filetoopen, 'w')
+        ConfigFile.write(''.join(NewFileContents))
+        ConfigFile.close()
+
+        #Open the file again, with the new files written.
+        ConfigFile = open(filetoopen, 'r')
+        NewFileContents = []
+
+        #Get the OS name and truncate it if necessary.
+        logger.info("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Getting and truncating the default OS's name...")
+
+        #If DefaultOS is the currently running one, we'll need to access a different part of the variable.
+        if DefaultOS.split()[-5] == "OS)":
+            OSName = ''.join(DefaultOS.split()[0:-6])
+
+        else:
+            OSName = ''.join(DefaultOS.split()[0:-4])
+
+        #Remove all of the spaces.
+        DefaultOSName = OSName.replace(' ','')
+
+        #Check that the name is no longer than 15 characters.
+        if len(DefaultOSName) > 15:
+            #The name is too long! Truncate it to 15 characters.
+            logger.warning("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Truncating OS Name: "+DefaultOSName+" to 15 characters...")
+            DefaultOSName = DefaultOSName[0:15]
+
+        #Now, check if its entry was added to the file, and ask the user for a new one if it wasn't.
+        if DefaultOSName not in CompletedEntriesList:
+            logger.info("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Default OS not in the Completed Entries List! Asking the user for a new one...")
+
+            if len(CompletedEntriesList) <= 0:
+                #Something went wrong here! No OSs appear to have been added to the list. Warn the user.
+                logger.error("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): CompletedEntriesList is empty! This suggests that no OSs have been added to the list! Warn the user, and skip this part of the operation.")
+                DialogTools().ShowMsgDlg(Kind="error", Message="No Operating Systems have had entries created for them! If you canceled creating the entries, please reboot WxFixBoot and select only the option 'Update Bootloader Config'. If you didn't do that, and WxFixBoot either couldn't create them, or you see this error with no previous warnings, you may have to create your own bootloader config. Don't worry, this isn't too difficult, and you can search for tutorials for this on the internet. If WxFixBoot couldn't create your entries, or you are seeing this message with no previous warnings, please also email me directly via my Launchpad page with the contents of /tmp/wxfixboot.log and I'll try to help you.")
+
+            else:
+                #Ask the user for a new default OS.
+                DefaultOSName = DialogTools().ShowChoiceDlg(Message="The OS you previously selected as the default wasn't added to the boot menu. Please an new OS you want to use as "+Bootloader+"'s Default OS. You are setting configuration for: "+OS, Title="WxFixBoot - Select Default OS", Choices=CompletedEntriesList)
+                logger.info("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): User selected new default OS: "+DefaultOSName+"...")
+
+        #Make the entry for the default OS.
+        logger.info("SetBootloaderConfigTools: Main().MakeLILOOSEntries(): Setting default OS...")
+        SetDefaultOS = False
+
+        for line in ConfigFile:
+            if 'default' in line and '=' in line and '#' not in line:
+                #Get the LILO name for DefaultOS.
+                SetDefaultOS = True
+
+                #Set default to the name.
+                line = "default="+DefaultOSName+"\n"
+
+            NewFileContents.append(line)
+
+        #Check that everything was set. If not, write that config now.
+        if SetDefaultOS == False:
+            NewFileContents.append("default="+DefaultOSName+"\n")
+
+        #Write the finished lines to the file.
+        ConfigFile.close()
+        ConfigFile = open(filetoopen, 'w')
+        ConfigFile.write(''.join(NewFileContents))
+        ConfigFile.close()
+
