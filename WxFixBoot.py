@@ -2669,13 +2669,16 @@ class MainBackendThread(threading.Thread):
                 Tools.BackendTools.BootloaderTools.installationtools.AutoRootFS = AutoRootFS
                 Tools.BackendTools.BootloaderTools.installationtools.Bootloader = Bootloader
 
-                #*** Bootloader Configuration Settings Tools (in Backend Tools package) ***
+                #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
                 Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderTimeout = BootloaderTimeout
                 Tools.BackendTools.BootloaderTools.setconfigtools.KernelOptions = KernelOptions
+                Tools.BackendTools.BootloaderTools.setconfigtools.OSsForBootloaderInstallation = OSsForBootloaderInstallation
                 Tools.BackendTools.BootloaderTools.setconfigtools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
                 Tools.BackendTools.BootloaderTools.setconfigtools.LiveDisk = LiveDisk
                 Tools.BackendTools.BootloaderTools.setconfigtools.AutoRootFS = AutoRootFS
                 Tools.BackendTools.BootloaderTools.setconfigtools.Bootloader = Bootloader
+                Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderToInstall = BootloaderToInstall
+                Tools.BackendTools.BootloaderTools.setconfigtools.UEFISystemPartition = UEFISystemPartition
 
                 #Run the function.
                 function()
@@ -2710,172 +2713,6 @@ class MainBackendThread(threading.Thread):
 
     ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
     ####################Start Of Bootloader Configuration Setting Functions.#################### #*** Move these to their seperate package ***
-
-    def SetNewBootloaderConfig(self):
-        #Function to manage setting new bootloader config.
-        logger.debug("MainBackendThread().SetNewBootloaderConfig(): Preparing to set bootloader config in OS(s): "+', '.join(OSsForBootloaderInstallation)+"...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Preparing to set the new bootloaders' config...")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 77)
-
-        #Loop through OSsForBootloaderInstallation, and provide information to the function that will set the bootloaders' config.
-        for OS in OSsForBootloaderInstallation:
-            #For each OS that needs the new bootloader configured, grab the partition, and the package manager.
-            logger.info("MainBackendThread().SetNewBootloaderConfig(): Setting the new bootloader config for OS: "+OS+"...")
-
-            #Grab the OS's partition and package manager.
-            Partition = OS.split()[-5]
-            PackageManager = OS.split()[-1]
-
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Preparing to set the new bootloaders' config for OS: "+OS+"...###\n")
-
-            #Grab the architecture.
-            Arch = OS.split()[-8]
-            if Arch == "64-bit":
-                Arch = "x86_64"
-            else:
-                Arch = "i686"
-
-            wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Setting the new bootloader's config...")
-            wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 79)
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Setting the new bootloader's config for OS: "+OS+"...###\n")
-
-            #Check if the Partition is AutoRootFS, if we're not on a live disk.
-            if LiveDisk == False and Partition == AutoRootFS:
-                #If so, make sure this will work for this OS too, and avoid setting mountpoint, so the config instructions below look in the right place for the config files.
-                MountPoint = ""
-            else:
-                #If not, set mountpoint to the actual mountpoint.
-                MountPoint = "/mnt"+Partition
-
-                #Mount the partition.
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
-
-                if Retval != 0:
-                    #Ignore this partition.
-                    logger.warning("MainBackendThread().SetNewBootloaderConfig(): Failed to mount "+Partition+"! Ignoring this partition...")
-                    continue
-
-                else:
-                    #Set up chroot.
-                    CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
-
-                wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 81)
-
-            #Look for the configuration file, based on which SetConfig() function we're about to run.
-            if BootloaderToInstall == "GRUB2":
-                #Check MountPoint/etc/default/grub exists.
-                if os.path.isfile(MountPoint+"/etc/default/grub"):
-                    #It does, we'll run the function to set the config now.
-                    logger.info("MainBackendThread().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
-                    self.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
-
-                #Now Install GRUB2 to the MBR.
-                logger.info("MainBackendThread().SetNewBootloaderConfig(): Installing GRUB2 to MBR...")
-                self.InstallGRUB2ToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
-
-                #Update GRUB.
-                logger.info("MainBackendThread().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
-                self.UpdateGRUB2(PackageManager=PackageManager, MountPoint=MountPoint)
-
-                #Set the default OS.
-                logger.info("MainBackendThread().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
-                self.SetGRUB2DefaultOS(OS=OS, PackageManager=PackageManager, MountPoint=MountPoint)
-
-            elif BootloaderToInstall == "GRUB-UEFI":
-                #Check MountPoint/etc/default/grub exists.
-                if os.path.isfile(MountPoint+"/etc/default/grub"):
-                    #It does, we'll run the function to set the config now.
-                    logger.info("MainBackendThread().SetNewBootloaderConfig(): Setting GRUB2-UEFI Configuration...")
-                    self.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
-
-                #Mount the UEFI partition at MountPoint/boot/efi.
-                CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") #*** Check it worked! ***
-
-                #Now Install GRUB-UEFI to the UEFI Partition.
-                logger.info("MainBackendThread().SetNewBootloaderConfig(): Installing GRUB2 to UEFISystemPartition...")
-                self.InstallGRUBUEFIToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=Arch)
-
-                #Update GRUB.
-                logger.info("MainBackendThread().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
-                self.UpdateGRUB2(PackageManager=PackageManager, MountPoint=MountPoint)
-
-                #Make an entry in fstab for the UEFI Partition, if needed.
-                HelperBackendTools().WriteFSTABEntryForUEFIPartition(MountPoint=MountPoint, UEFISystemPartition=UEFISystemPartition)
-
-                #Copy and backup EFI files where needed.
-                HelperBackendTools().BackupUEFIFiles(MountPoint=MountPoint)
-                HelperBackendTools().CopyUEFIFiles(MountPoint=MountPoint)
-
-                #Set the default OS.
-                logger.info("MainBackendThread().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
-                self.SetGRUB2DefaultOS(OS=OS, PackageManager=PackageManager, MountPoint=MountPoint)
-
-            elif BootloaderToInstall == "LILO":
-                #Make LILO's config file.
-                logger.info("MainBackendThread().SetNewBootloaderConfig(): Making LILO's configuration file...")
-                if MountPoint == "":
-                    CoreBackendTools().StartThreadProcess(['liloconfig', '-f'], ShowOutput=False)
-                else:
-                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'liloconfig', '-f'], ShowOutput=False)
-
-                #Check the config file exists for lilo
-                if os.path.isfile(MountPoint+"/etc/lilo.conf"):
-                    #It does, we'll run the function to set the config now.
-                    logger.info("MainBackendThread().SetNewBootloaderConfig(): Setting LILO Configuration...")
-                    self.SetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
-    
-                    #Also, set the OS entries.
-                    logger.info("MainBackendThread().SetNewBootloaderConfig(): Creating LILO OS Entries...")
-                    self.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
-
-                #Now Install LILO to the MBR.
-                logger.info("MainBackendThread().SetNewBootloaderConfig(): Installing LILO to the MBR...")
-                self.InstallLILOToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
-
-            elif BootloaderToInstall == "ELILO":
-                #Unmount the UEFI Partition now, and update mtab in the chroot.
-                CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
-                CoreBackendTools().UpdateChrootMtab(MountPoint=MountPoint)
-
-                #Make ELILO's config file.
-                logger.info("MainBackendThread().SetNewBootloaderConfig(): Making ELILO's configuration file...")
-                if MountPoint == "":
-                    CoreBackendTools().StartThreadProcess(['elilo', '-b', UEFISystemPartition, '--autoconf'], ShowOutput=False)
-                else:
-                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'elilo', '-b', UEFISystemPartition, '--autoconf'], ShowOutput=False)
-
-                #Check elilo's config file exists.
-                if os.path.isfile(MountPoint+"/etc/elilo.conf"):
-                    #It does, we'll run the function to set the config now.
-                    logger.info("MainBackendThread().SetNewBootloaderConfig(): Setting ELILO Configuration...")
-                    self.SetELILOConfig(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
-
-                    #Also, set the OS entries.
-                    logger.info("MainBackendThread().SetNewBootloaderConfig(): Creating ELILO OS Entries...")
-                    self.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
-
-                #Now Install ELILO to the UEFI Partition.
-                logger.info("MainBackendThread().SetNewBootloaderConfig(): Installing ELILO to UEFISystemPartition...")
-                self.InstallELILOToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=Arch)
-
-                #Mount the UEFI partition at MountPoint/boot/efi.
-                CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") #*** Check it worked! ***
-
-                #Copy and backup UEFI files where needed.
-                HelperBackendTools().BackupUEFIFiles(MountPoint=MountPoint)
-                HelperBackendTools().CopyUEFIFiles(MountPoint=MountPoint)
-
-            #Unmount the partition, if needed.
-            if MountPoint != "":
-                #Tear down chroot.
-                CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
-                CoreTools().Unmount(MountPoint) #*** Check it worked! ***
-
-            wx.CallAfter(self.ParentWindow.UpdateOutputBox, "\n###Finished setting the new bootloader's config for OS: "+OS+"...###\n")
-
-        logger.debug("MainBackendThread().SetNewBootloaderConfig(): Finished setting bootloader config.")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished setting the new bootloader's config!")
-        wx.CallAfter(self.ParentWindow.UpdateCurrentProgress, 100)
 
     ####################Start Of GRUB Bootloader Configuration Setting Functions.####################
 
