@@ -263,3 +263,17 @@ class Main(): #*** Refactor and test all of these ***
 
         #Return the return value.
         return retval
+
+    def InstallGRUBUEFIToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch): #*** Needs to change when we switch to always using shell=True ***
+        """Install GRUB2 (EFI/UEFI version) into the EFI/UEFI partition"""
+        #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
+        if MountPoint == "":
+            if PackageManager == "apt-get":
+                retval = CoreBackendTools().StartThreadProcess(['grub-install', '--efi-directory='+UEFISystemPartitionMountPoint, '--target='+Arch+'-efi'], ShowOutput=False)
+
+        else:
+            if PackageManager == "apt-get":
+                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'grub-install', '--efi-directory=/boot/efi', '--target='+Arch+'-efi'], ShowOutput=False)
+
+        #Return the return value.
+        return retval

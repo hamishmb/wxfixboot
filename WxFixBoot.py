@@ -2715,18 +2715,6 @@ class MainBackendThread(threading.Thread):
     ####################Start Of Bootloader Configuration Setting Functions.#################### #*** Move these to their seperate package ***
     ####################Start Of GRUB Bootloader Configuration Setting Functions.####################
 
-    def InstallGRUBUEFIToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch):
-        #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
-        if MountPoint == "":
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['grub-install', '--efi-directory='+UEFISystemPartitionMountPoint, '--target='+Arch+'-efi'], ShowOutput=False)
-        else:
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'grub-install', '--efi-directory=/boot/efi', '--target='+Arch+'-efi'], ShowOutput=False)
-
-        #Return the return value.
-        return retval
-
     def UpdateGRUB2(self, PackageManager, MountPoint):
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if MountPoint == "":

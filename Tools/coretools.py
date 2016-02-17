@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def StartProcess(self, ExecCmds, ShowOutput=True, ReturnOutput=False): #*** Will also eventually replace MainBackendThread().StartThreadProcess() ***
+    def StartProcess(self, ExecCmds, ShowOutput=True, ReturnOutput=False): #*** Will also eventually replace MainBackendTools: Main().StartThreadProcess() ***
         """Start a process given a string of commands to execute.
         ShowOutput is boolean and specifies whether to show output in the outputbox (if exists) or not.
         ReturnOutput is boolean and specifies whether to return the output back to the caller or not.
