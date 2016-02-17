@@ -198,11 +198,10 @@ class Main():
                         RemountPartitionAfter = False
                         continue
 
-                    #Check if the partition is mounted. *** Maybe build this into CoreTools().MountPartition() with an extra option like "OnlyCheckIfMounted". Or, just ask it to mount it, which will mean no action if it is. ***
-                    try:
-                        Temp = subprocess.check_output("df | grep "+Partition, shell=True).split()[-1] #*** Don't use df *** *** Don't call subprocess directly *** *** Use python's text processing features ***
+                    #Check if the partition is mounted. #*** Test this bit ***
+                    PartitionIsMounted = CoreTools().MountPartition(Partition=Partition, MountPoint="/mnt"+Partition, OnlyCheck=True)
 
-                    except subprocess.CalledProcessError:
+                    if PartitionIsMounted == False
                         #Not mounted.
                         CheckTheFS = True
                         RemountPartitionAfter = False

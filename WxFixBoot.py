@@ -15,8 +15,6 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Make note of this: when 'cp' errors, the quotes it uses cause this error "UnicodeDecodeError" (use unicode(thing, , errors='ignore')) ***
-#*** Make docstrings for each function as I update and move them ***
-#*** Try to avoid using df because it's unreliable in the way it outputs data. Probably use "mount -l" instead for most things ***
 #*** Mount filesystems inside the temporary directory instead of in /mnt ***
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
 #*** Maybe use parted with the '-m' flag because we get lots of info in a easy to process way that way ***
@@ -2713,15 +2711,7 @@ class MainBackendThread(threading.Thread):
 
         wx.CallAfter(self.ParentWindow.MainBackendThreadFinished)
 
-    ####################Start Of Bootloader Operation functions.#################### #*** Move these to their seperate package ***
-    ####################Start Of Bootloader Configuration Setting Functions.#################### #*** Move these to their seperate package ***
-    ####################Start Of LILO and ELILO Bootloader Configuration Setting Functions.####################
-
-    ####################End Of LILO and ELILO Bootloader Configuration Setting Functions.####################
-    ####################End Of Bootloader Configuration Setting Functions.####################
-    ####################End Of Bootloader Operation functions.####################
-    ####################Start of system report generation function.####################
-    def GenerateSystemReport(self):
+    def GenerateSystemReport(self): #*** Leave this here until switch to dictionaries cos otherwise this'll be a mighty pain in the backside! :) ***
         #Function to create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary.
         DialogTools().ShowMsgDlg(Kind="info", Message="WxFixBoot will now create your system report. Click okay to continue.")
 
@@ -2836,7 +2826,7 @@ class MainBackendThread(threading.Thread):
         #Save terminal output.
         if SaveOutput:
             ReportList.write("\n##########Terminal Output##########\n")
-            ReportList.write(self.ParentWindow.OutputBox.GetValue()) #*** Only works if FullVerbose is enabled, otherwise some output will be hidden. As such, all output is being shown with no regard to FullVerbose or ShowOutput passed to the function, or the user's checkbox in settingswindow ***
+            ReportList.write(self.ParentWindow.OutputBox.GetValue()) #*** Only works if FullVerbose is enabled, otherwise some output will be hidden. As such, all output is currently being shown with absolutely no regard to FullVerbose or ShowOutput passed to the function, or the user's checkbox in settingswindow ***
 
         #Save Log File.
         ReportList.write("\n##########WxFixBoot's Log File##########\n")

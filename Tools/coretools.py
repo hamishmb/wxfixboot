@@ -72,7 +72,7 @@ class Main():
             #Return the return code, as well as the output.
             return (Retval, '\n'.join(LineList))
 
-    def MountPartition(self, Partition, MountPoint, Options=""):
+    def MountPartition(self, Partition, MountPoint, OnlyCheck=False, Options=""): #*** Check this over: What if our partition is mounted somewhere else? *** *** Test using OnlyCheck=True ***
         """Mounts the given partition.
         Partition is the partition to mount.
         MountPoint is where you want to mount the partition.
@@ -96,30 +96,45 @@ class Main():
 
             if MountPointFound != MountPoint:
                 #Unmount the partition, and continue.
-                logger.warning("CoreTools: Main().MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
-                Retval = self.Unmount(MountPoint)
+                if OnlyCheck == False:
+                    logger.warning("CoreTools: Main().MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
+                    Retval = self.Unmount(MountPoint)
 
-                if Retval != 0:
-                    logger.error("CoreTools: Main().MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
+                    if Retval != 0:
+                        logger.error("CoreTools: Main().MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
+                        return False
+
+                else:
+                    logger.debug("CoreTools: Main().MountPartition(): Would unmount filesystem in the way at this point, but OnlyCheck == True. Returning False and doing nothing...") #*** Is this the right thing to do here? ***
                     return False
 
             else:
                 #The correct partition is already mounted here.
                 logger.debug("CoreTools: Main().MountPartition(): Partition: "+Partition+" was already mounted at: "+MountPoint+". Continuing...")
-                return 0
+
+                if OnlyCheck == False:
+                    return 0
+
+                else:
+                    return True
 
         #Create the dir if needed.
         if os.path.isdir(MountPoint) == False:
             os.makedirs(MountPoint)
     
         #Mount the device to the mount point.
-        Retval = self.StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
+        if OnlyCheck == False:
+            Retval = self.StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
 
-        if Retval == 0:
-            logger.debug("CoreTools: Main().MountPartition(): Successfully mounted partition!")
+            if Retval == 0:
+                logger.debug("CoreTools: Main().MountPartition(): Successfully mounted partition!")
+
+            else:
+                logger.warning("CoreTools: Main().MountPartition(): Failed to mount partition!")
 
         else:
-            logger.warning("CoreTools: Main().MountPartition(): Failed to mount partition!")
+            logger.debug("CoreTools: Main().MountPartition(): Would attempt to mount filesystem at this point, but OnlyCheck == True. Returning False and doing nothing...")
+            return False
 
         return Retval
 

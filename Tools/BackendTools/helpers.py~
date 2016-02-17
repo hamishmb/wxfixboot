@@ -198,11 +198,10 @@ class Main():
                         RemountPartitionAfter = False
                         continue
 
-                    #Check if the partition is mounted. *** Maybe build this into CoreTools().MountPartition() with an extra option like "OnlyCheckIfMounted". Or, just ask it to mount it, which will mean no action if it is. ***
-                    try:
-                        Temp = subprocess.check_output("df | grep "+Partition, shell=True).split()[-1] #*** Don't use df *** *** Don't call subprocess directly *** *** Use python's text processing features ***
+                    #Check if the partition is mounted. #*** Te
+                    PartitionIsMounted = CoreTools().MountPartition(Partition=Partition, MountPoint="/mnt"+Partition, OnlyCheck=True)
 
-                    except subprocess.CalledProcessError:
+                    if PartitionIsMounted == False
                         #Not mounted.
                         CheckTheFS = True
                         RemountPartitionAfter = False
@@ -262,10 +261,6 @@ class Main():
             if Result:
                 #A good choice. WxFixBoot will now disable any bootloader operations.
                 logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User disabled bootloader operations as recommended, due to bad sectors/HDD problems/FS Checker problems...")
-
-                #*** Temporarily define these as global until switch to dictionaries ***
-                #global OSsForBootloaderRemoval
-                #global OSsForBootloaderInstallation
 
                 OSsForBootloaderRemoval = []
                 OSsForBootloaderInstallation = ["None,FSCKProblems"]
