@@ -71,7 +71,7 @@ class Main(): #*** Refactor and test all of these ***
                     #Set up chroot.
                     CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
 
-                    #If there's a seperate /boot partition for this OS, make sure it's mounted.
+                    #If there's a seperate /boot partition for this OS, make sure it's mounted. *** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this ***
                     CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'mount', '-av'], ShowOutput=False)
 
                     #Remove the bootloader.

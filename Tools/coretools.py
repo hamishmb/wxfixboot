@@ -62,7 +62,7 @@ class Main():
 
         except UnicodeDecodeError:
 	        #Skip logging the output, but do note we couldn't log the output.
-            logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\nWxFixBoot: Error: Couldn't log output due to unicode decode error\"\n")
+            logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\n*** WxFixBoot: Error: Couldn't log output due to unicode decode error ***\"\n")
 
         if ReturnOutput == False:
             #Return the return code back to whichever function ran this process, so it can handle any errors.
@@ -88,7 +88,7 @@ class Main():
         if MountPoint in self.StartProcess("mount -l", ReturnOutput=True)[1]:
             #There is a partition mounted here. Check if our partition is already mounted in the right place.
             MountPointFound = None
-            Temp = self.StartProcess("mount -l", ReturnOutput=True)[1]
+            Temp = self.StartProcess("mount -l", ReturnOutput=True)[1] #*** Don't call this twice ***
 
             for Line in Temp.split("\n"):
                 if Partition in Line:

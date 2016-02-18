@@ -202,7 +202,7 @@ class Main():
 
             #By the way the default OS in this case is set later, when OS detection takes place. *** Maybe get rid of this try statement when I change/remove this *** *** Badly written, what if we get a UUID? Use the heirachy when I switch ***
             try:
-                RootFS = CoreTools().StartProcess("mount", ReturnOutput=True)[1].split()[0]
+                RootFS = CoreTools().StartProcess("mount", ReturnOutput=True)[1].split()[0] #*** Change this later ***
                 AutoRootFS = RootFS
                 RootDevice = RootFS[0:8]
                 AutoRootDevice = RootDevice

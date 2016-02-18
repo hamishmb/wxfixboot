@@ -88,18 +88,21 @@ class Main(): #*** These need refactoring and proper testing ***
 
         logger.debug("CoreBackendTools: Main().UpdateChrootMtab: Finished updating /etc/mtab for chroot at: "+MountPoint+".")
 
-    def SetUpChroot(self, MountPoint):
+    def SetUpChroot(self, MountPoint): #*** Test this again ***
         """Set up a chroot for the given mountpoint."""
         logger.debug("CoreBackendTools: Main().SetUpChroot(): Setting up chroot for MountPoint: "+MountPoint+"...")
 
-        #Mount /dev, /dev/pts, /proc and /sys for the chroot. Return values and terminal output will be logged by CoreBackendTools().StartThreadProcess().
+        #Mount /dev, /dev/pts, /proc and /sys for the chroot.
         #We might also need internet access in chroot, so to do this first backup MountPoint/etc/resolv.conf to MountPoint/etc/resolv.conf.bak (if it's a link, this will also preserve it),
         #then copy current system's /etc/resolv.conf (the contents, not the link) to MountPoint/etc/resolv.conf, enabling internet access.
 
-        Templist = (['mount', '--bind', '/dev', MountPoint+'/dev'], ['mount', '--bind', '/dev/pts', MountPoint+'/dev/pts'], ['mount', '--bind', '/proc', MountPoint+'/proc'], ['mount', '--bind', '/sys', MountPoint+'/sys'], ['mv', '-vf', MountPoint+'/etc/resolv.conf', MountPoint+'/etc/resolv.conf.bak'], ['cp', '-fv', '/etc/resolv.conf', MountPoint+'/etc/resolv.conf'])
+        MountList = ("/dev", "/dev/pts", "/proc", "/sys")
+        for FileSystem in MountList:
+            CoreTools().MountPartition(Partition=FileSystem, MountPoint=MountPont+FileSystem, Options="--bind") #*** Check it worked ***
 
-        for ExecList in Templist:
-            Result = self.StartThreadProcess(ExecList, ShowOutput=False, ReturnOutput=True)
+        ExecList = ("mv -vf "+MountPoint+"/etc/resolv.conf "+MountPoint+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+MountPoint+"/etc/resolv.conf")
+        for ExecCmd in ExecList:
+            Result = self.StartThreadProcess(ExecCmd, Piping=True, ShowOutput=False, ReturnOutput=True)
             output = Result[1]
             retval = Result[0]
 
@@ -110,22 +113,23 @@ class Main(): #*** These need refactoring and proper testing ***
 
         logger.debug("CoreBackendTools: Main().SetUpChroot(): Finished setting up chroot for MountPoint: "+MountPoint+"...")
 
-    def TearDownChroot(self, MountPoint):
+    def TearDownChroot(self, MountPoint): #*** Test this again ***
         """Remove a chroot at the given mountpoint."""
         logger.debug("CoreBackendTools: Main().TearDownChroot(): Removing chroot at MountPoint: "+MountPoint+"...")
 
         #Unmount /dev/pts, /dev, /proc and /sys in the chroot. Return values and terminal output will be logged by CoreBackendTools().StartThreadProcess().
-        #We'll also need to replace the MountPoint/etc/resolv.conf with the backup file, MountPoint/etc/resolv.conf.bak. Do this last.
+        UnmountList = (MountPoint+"/dev/pts", MountPoint+"/dev", MountPoint+"/proc", MountPoint+"/sys")
 
-        Templist = (['umount', MountPoint+'/dev/pts'], ['umount', MountPoint+'/dev'], ['umount', MountPoint+'/proc'], ['umount', MountPoint+'/sys'], ['mv', '-vf', MountPoint+'/etc/resolv.conf.bak', MountPoint+'/etc/resolv.conf'])
+        for FileSystem in UnmountList:
+            CoreTools().Unmount(FileSystem) #*** Check it worked ***
 
-        for ExecList in Templist:
-            Result = self.StartThreadProcess(ExecList, ShowOutput=False, ReturnOutput=True)
-            output = Result[1]
-            retval = Result[0]
+        #We'll also need to replace the MountPoint/etc/resolv.conf with the backup file, MountPoint/etc/resolv.conf.bak.
+        Result = self.StartThreadProcess("mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf", Piping=True, ShowOutput=False, ReturnOutput=True)
+        output = Result[1]
+        Retval = Result[0]
 
-            if retval != 0:
-                logger.error("CoreBackendTools: Main().TearDownChroot(): Failed to run command: "+', '.join(ExecList)+"! Chroot may not be removed properly!")
+        if Retval != 0:
+            logger.error("CoreBackendTools: Main().TearDownChroot(): Failed to run command: "+', '.join(ExecList)+"! Chroot may not be removed properly!") #*** Log Retval ***
 
         logger.debug("CoreBackendTools: Main().TearDownChroot(): Finished removing chroot at MountPoint: "+MountPoint+"...")
 

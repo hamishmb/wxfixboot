@@ -18,7 +18,7 @@
 #*** Mount filesystems inside the temporary directory instead of in /mnt, to keep them out of the way of interference ***
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
 #*** Maybe use parted with the '-m' flag because we get lots of info in a easy to process way that way ***
-#*** Instead of wx.Exit(), make a emergency exit function that will handle log files and such ***
+#*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
 #*** Make sure to use "//" when we want int division (/ used to be int division before future imports) ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.

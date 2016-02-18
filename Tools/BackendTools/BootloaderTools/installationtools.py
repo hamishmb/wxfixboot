@@ -83,7 +83,7 @@ class Main(): #*** Refactor and test all of these ***
                     CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
 
                     #If there's a seperate /boot partition for this OS, make sure it's mounted.
-                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'mount', '-av'], ShowOutput=False)
+                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'mount', '-av'], ShowOutput=False) #*** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this ***
 
                     #Update the package lists.
                     retval = self.UpdatePackageLists(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint)
@@ -113,8 +113,9 @@ class Main(): #*** Refactor and test all of these ***
 
                         retval = self.InstallELILO(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint, Arch=Arch)
 
-                    #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot. *** No need to use chroot for this, do normally using safer global unmount function and update MTAB ***
-                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'umount', '/boot'], ShowOutput=False)
+                    #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot.
+                    CoreTools().Unmount(MountPoint+"/boot") #*** Check it worked *** *** Test that this works ***
+                    CoreBackendTools().UpdateChrootMtab(MountPoint=MountPoint)
 
                     #Tear down chroot.
                     CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
