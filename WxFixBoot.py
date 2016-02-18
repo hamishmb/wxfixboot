@@ -20,7 +20,6 @@
 #*** Maybe use parted with the '-m' flag because we get lots of info in a easy to process way that way ***
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
 #*** Make sure to use "//" when we want int division (/ used to be int division before future imports) ***
-#*** Fix glitch in settingwindow where bootloadertoinstall choice is in wrong place when revisiting from a subindow ***
 #*** Put docstrings in all functions/methods ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
@@ -1242,7 +1241,7 @@ class OptionsWindow1(wx.Frame):
         AdvancedSettingsSizer = wx.BoxSizer(wx.VERTICAL)
 
         #Create the sizer that holds the intalled bootloader choice and text.
-        InstalledBootloaderChoiceSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.InstalledBootloaderChoiceSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Create the sizer that holds the default OS choice and text.
         DefaultOSChoiceSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1260,8 +1259,8 @@ class OptionsWindow1(wx.Frame):
         BottomButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to the Installed Bootloader Choice Sizer.
-        InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderText, 1, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
-        InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
+        self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderText, 1, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
+        self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
 
         #Add items to the Default OS Choice Sizer.
         DefaultOSChoiceSizer.Add(self.DefaultOSText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
@@ -1277,7 +1276,7 @@ class OptionsWindow1(wx.Frame):
 
         #Add items to the basic settings sizer.
         BasicSettingsSizer.Add(self.BasicSettingsText, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
-        BasicSettingsSizer.Add(InstalledBootloaderChoiceSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
+        BasicSettingsSizer.Add(self.InstalledBootloaderChoiceSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
         BasicSettingsSizer.Add(DefaultOSChoiceSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
         BasicSettingsSizer.Add(self.FullVerboseCheckBox, 1, wx.BOTTOM, 10)
         BasicSettingsSizer.Add(BootloaderTimeoutSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
@@ -1420,9 +1419,13 @@ class OptionsWindow1(wx.Frame):
             self.DefaultOSChoice.Enable()
             self.BootloaderTimeoutSpinner.Enable()
 
-        #Setup options again, but destroy a widget first so it isn't duplicated. *** This doesn't work with the sizer, fix it ***
+        #Setup options again, but destroy a widget first so it isn't duplicated.
         self.InstalledBootloaderChoice.Destroy()
         self.SetupOptions()
+
+        #Red add self.InstalledBootloaderChoice into its sizer.
+        self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
+        self.Panel.Layout()
 
         #Update the BootloaderToInstall and FirmwareType text.
         self.UpdateBLOptsText()
