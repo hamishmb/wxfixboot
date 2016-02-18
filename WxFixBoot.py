@@ -20,6 +20,8 @@
 #*** Maybe use parted with the '-m' flag because we get lots of info in a easy to process way that way ***
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
 #*** Make sure to use "//" when we want int division (/ used to be int division before future imports) ***
+#*** Fix glitch in settingwindow where bootloadertoinstall choice is in wrong place when revisiting from a subindow ***
+#*** Put docstrings in all functions/methods ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -1373,7 +1375,7 @@ class OptionsWindow1(wx.Frame):
         #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first.
         self.SaveOptions()
 
-        logger.debug("OptionsWindow1().LaunchBootSectWindow(): Starting Restore BootSector dialog...")
+        logger.debug("OptionsWindow1().LaunchBootSectWindow(): Starting Restore Bootsector Window...")
         #Show helpful info if the root device uses gpt.
         Tempnum = DeviceList.index(RootDevice)
         Temp = PartSchemeList[Tempnum]
@@ -1382,15 +1384,15 @@ class OptionsWindow1(wx.Frame):
              wx.MessageDialog(self.Panel, "Because the selected root device uses gpt, the Target Device selection in the following dialog will be ignored, though you must still set it, and the backup will always be restored to the UEFI Partition. Please keep this in mind and be sure that the UEFI Partition chosen is correct. You can check and change this in the Bootloader Options.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
 
         self.Hide()
-        RestoreWindow(ParentWindow=self,Type="BootSector").Show()
+        RestoreWindow(ParentWindow=self, Type="Boot Sector").Show()
 
     def LaunchPartTableWindow(self, Event=None):
         #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first.
         self.SaveOptions()
 
-        logger.debug("OptionsWindow1().LaunchPartTableWindow(): Starting Restore PartTable dialog...")
+        logger.debug("OptionsWindow1().LaunchPartTableWindow(): Starting Restore Partition Table Window...")
         self.Hide()
-        RestoreWindow(ParentWindow=self,Type="PartTable").Show()
+        RestoreWindow(ParentWindow=self, Type="Partition Table").Show()
 
     def RefreshOptionsDlg1(self,msg):
         #Check if the partition table or boot sector are to be restored.
@@ -2056,17 +2058,13 @@ class OptionsWindow2(wx.Frame):
         self.Destroy()
 
 #End Options window 2
-#Begin Restore Window
+#Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later ***
 class RestoreWindow(wx.Frame):
-    def __init__(self,ParentWindow,Type):
-        if Type == "BootSector":
-            logger.debug("RestoreWindow().__init__(): Restore Boot Sector Window Started.")
-            title = "WxFixBoot - Restore the Boot Sector"
-        else:
-            logger.debug("RestoreWindow().__init__(): Restore Partition Table Window Started.")
-            title = "WxFixBoot - Restore the Partition Table"
+    def __init__(self, ParentWindow, Type):
+        logger.debug("RestoreWindow().__init__(): Restore "+Type+" Window Started.")
+        title = "WxFixBoot - Restore the "+Type
 
-        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title=title, size=(400,200), style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
+        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title=title, size=(400,200), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(400,200))
         self.ParentWindow = ParentWindow
@@ -2080,6 +2078,7 @@ class RestoreWindow(wx.Frame):
         self.CreateRadios()
         self.CreateChoiceBs()
         self.CreateButtons()
+        self.SetupSizers()
         self.BindEvents()
 
         #Set up the window.
@@ -2088,60 +2087,102 @@ class RestoreWindow(wx.Frame):
     def CreateText(self):
         #Create text, and centre it.
         if self.Type == "BootSector":
-            wx.StaticText(self.Panel, -1, "What type of Boot Sector backup do you have?", pos=(10,40))
-            wx.StaticText(self.Panel, -1, "Easily restore your bootsector here!", pos=(10,10))
+            WelcomeText1Text = "What type of Boot Sector backup do you have?"
+            WelcomeText2Text = "Easily restore your bootsector here!"
 
         else:
-            wx.StaticText(self.Panel, -1, "What type of partition table backup do you have?", pos=(10,40))
-            wx.StaticText(self.Panel, -1, "Easily restore your partition table here!", pos=(10,10))
+            WelcomeText1Text = "What type of partition table backup do you have?"
+            WelcomeText2Text = "Easily restore your partition table here!"
 
-        wx.StaticText(self.Panel, -1, "Backup file:", pos=(10,100))
-        wx.StaticText(self.Panel, -1, "Target Device:", pos=(230,100))
+        self.WelcomeText1 = wx.StaticText(self.Panel, -1, WelcomeText1Text)
+        self.WelcomeText2 = wx.StaticText(self.Panel, -1, WelcomeText2Text)
+
+        self.BackupFileText = wx.StaticText(self.Panel, -1, "Backup file:")
+        self.TargetDeviceText = wx.StaticText(self.Panel, -1, "Target Device:")
 
     def CreateRadios(self):
         #Create Radio Buttons
-        self.autodetectradio = wx.RadioButton(self.Panel, -1, "Autodetect", pos=(10,70), style=wx.RB_GROUP)
-        self.msdosradio = wx.RadioButton(self.Panel, -1, "MBR(msdos)", pos=(150,70))
-        self.gptradio = wx.RadioButton(self.Panel, -1, "GUID(gpt)", pos=(290,70))  
+        self.AutoDetectTypeRadio = wx.RadioButton(self.Panel, -1, "Autodetect", style=wx.RB_GROUP)
+        self.MBRBackupTypeRadio = wx.RadioButton(self.Panel, -1, "MBR")
+        self.GPTBackupTypeRadio = wx.RadioButton(self.Panel, -1, "GPT")  
 
     def CreateChoiceBs(self):
         #Create ChoiceBoxes
-        self.filechoice = wx.Choice(self.Panel, -1, pos=(10,120), size=(150,30), choices=['-- Please Select --', 'Specify File Path...'])
-        self.targetchoice = wx.Choice(self.Panel, -1 , pos=(230,120), size=(150,30), choices=['-- Please Select --', 'Auto: '+AutoRootDevice]+DeviceList+['Specify Path...'])
+        self.BackupFileChoice = wx.Choice(self.Panel, -1, size=(150,30), choices=['-- Please Select --', 'Specify File Path...'])
+        self.TargetDeviceChoice = wx.Choice(self.Panel, -1, size=(150,30), choices=['-- Please Select --', 'Auto: '+AutoRootDevice]+DeviceList+['Specify Path...'])
 
     def CreateButtons(self):
         #Create Buttons
-        self.ExitButton = wx.Button(self.Panel, -1, "Close and Set Options", pos=(120,160))
+        self.ExitButton = wx.Button(self.Panel, -1, "Close and Save Options")
+
+    def SetupSizers(self):
+        """Setup Sizers for Restore Window"""
+        MainSizer = wx.BoxSizer(wx.VERTICAL)
+
+        RadioButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        BackupFileTextSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        BackupFileChoiceSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to the radio button sizer.
+        RadioButtonSizer.Add(self.AutoDetectTypeRadio, 1, wx.RIGHT|wx.LEFT, 10)
+        RadioButtonSizer.Add(self.MBRBackupTypeRadio, 1, wx.RIGHT|wx.LEFT, 10)
+        RadioButtonSizer.Add(self.GPTBackupTypeRadio, 1, wx.RIGHT|wx.LEFT, 10)
+
+        #Add items to the backup file text sizer.
+        BackupFileTextSizer.Add(self.BackupFileText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 10)
+        BackupFileTextSizer.Add(self.TargetDeviceText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 10)
+
+        #Add items to the backup file choice sizer.
+        BackupFileChoiceSizer.Add(self.BackupFileChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 10)
+        BackupFileChoiceSizer.Add(self.TargetDeviceChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 10)
+
+        #Add items to the main sizer.
+        MainSizer.Add(self.WelcomeText1, 0, wx.ALL|wx.ALIGN_CENTER, 10)
+        MainSizer.Add(self.WelcomeText2, 0, wx.RIGHT|wx.LEFT|wx.BOTTOM|wx.ALIGN_CENTER, 10)
+        MainSizer.Add(RadioButtonSizer, 1, wx.RIGHT|wx.LEFT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(BackupFileTextSizer, 1, wx.RIGHT|wx.LEFT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(BackupFileChoiceSizer, 1, wx.RIGHT|wx.LEFT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(self.ExitButton, 1, wx.RIGHT|wx.LEFT|wx.BOTTOM|wx.EXPAND, 10)
+
+        #Get the sizer set up for the frame.
+        self.Panel.SetSizer(MainSizer)
+        MainSizer.SetMinSize(wx.Size(400,200))
+        MainSizer.SetSizeHints(self)
 
     def BindEvents(self):
         #Bind events
         self.Bind(wx.EVT_BUTTON, self.ExitWindow, self.ExitButton)
         self.Bind(wx.EVT_CLOSE, self.ExitWindow)
-        self.Bind(wx.EVT_CHOICE, self.SelectFile, self.filechoice)
-        self.Bind(wx.EVT_CHOICE, self.SelectTargetDevice, self.targetchoice)
+        self.Bind(wx.EVT_CHOICE, self.SelectFile, self.BackupFileChoice)
+        self.Bind(wx.EVT_CHOICE, self.SelectTargetDevice, self.TargetDeviceChoice)
 
     def SetupOptions(self):
         #Set up the choiceboxes according to the values of the variables.
-        if self.Type == "BootSector":
+        if self.Type == "Boot Sector":
             File = BootSectorFile
             TargetDevice = BootSectorTargetDevice
+
         else:
             File = PartitionTableFile
             TargetDevice = PartitionTableTargetDevice
 
         #Image file choice.
         if File != "None":
-            self.filechoice.Append(File)
-            self.filechoice.SetStringSelection(File)
+            self.BackupFileChoice.Append(File)
+            self.BackupFileChoice.SetStringSelection(File)
+
         else:
-            self.filechoice.SetSelection(0)
+            self.BackupFileChoice.SetSelection(0)
 
         #Target device file choice.
         if TargetDevice != "None":
-            self.targetchoice.Append(TargetDevice)
-            self.targetchoice.SetStringSelection(TargetDevice)
+            self.TargetDeviceChoice.Append(TargetDevice)
+            self.TargetDeviceChoice.SetStringSelection(TargetDevice)
+
         else:
-            self.targetchoice.SetSelection(0)
+            self.TargetDeviceChoice.SetSelection(0)
 
     def SelectFile(self, Event=None):
         #Grab Image path.
@@ -2155,7 +2196,7 @@ class RestoreWindow(wx.Frame):
         global RestorePartitionTable
         global PartitionTableBackupType
 
-        File = self.filechoice.GetStringSelection()
+        File = self.BackupFileChoice.GetStringSelection()
 
         #Determine what to do here.
         if File == "-- Please Select --":
@@ -2163,23 +2204,23 @@ class RestoreWindow(wx.Frame):
             Restore = False
 
         elif File == "Specify File Path...":
-            if self.Type == "BootSector":
-                Dlg = wx.FileDialog(self.Panel, "Select Boot Sector File...", wildcard="All Files/Devices (*)|*|GPT Backup File (*.gpt)|*.gpt|MBR Backup File (*.mbr)|*.mbr|IMG Image file (*.img)|*.img", style=wx.OPEN)
-            else:
-                Dlg = wx.FileDialog(self.Panel, "Select Partition Table File...", wildcard="All Files/Devices (*)|*|GPT Backup File (*.gpt)|*.gpt|MBR Backup File (*.mbr)|*.mbr|IMG Image file (*.img)|*.img", style=wx.OPEN)
+            Dlg = wx.FileDialog(self.Panel, "Select "+self.Type+" File...", wildcard="All Files/Devices (*)|*|GPT Backup File (*.gpt)|*.gpt|MBR Backup File (*.mbr)|*.mbr|IMG Image file (*.img)|*.img", style=wx.OPEN)
 
             if Dlg.ShowModal() == wx.ID_OK:
                 Restore = True
                 File = Dlg.GetPath()
-                self.filechoice.Append(File)
-                self.filechoice.SetStringSelection(File)
+                self.BackupFileChoice.Append(File)
+                self.BackupFileChoice.SetStringSelection(File)
+
             else:
                 File = "None"
                 Restore = False
-                self.filechoice.SetStringSelection("-- Please Select --")
+                self.BackupFileChoice.SetStringSelection("-- Please Select --")
+
+            Dlg.Destroy()
 
         else:
-            File = self.filechoice.GetStringSelection()
+            File = self.BackupFileChoice.GetStringSelection()
             Restore = True
 
         #Detect backup type, if files are selected.
@@ -2188,43 +2229,54 @@ class RestoreWindow(wx.Frame):
             Temp = os.stat(File).st_size
             if Temp < 512:
                 #Bad file.
-                wx.MessageDialog(self.Panel, "The size of the selected file is less than 512 bytes! This is cannot be a backup file. Please select a new backup file.", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition).ShowModal()
+                dlg = wx.MessageDialog(self.Panel, "The size of the selected file is less than 512 bytes! This isn't a valid backup file. Please select a new backup file.", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                dlg.ShowModal()
+                dlg.Destroy()
                 File = "None"
                 Restore = "False"
                 BackupType = "None"
-                self.autodetectradio.SetValue(True)
-                Temp = self.filechoice.GetSelection()
-                self.filechoice.Delete(Temp)
-                self.filechoice.SetStringSelection("-- Please Select --")
+                self.AutoDetectTypeRadio.SetValue(True)
+                Temp = self.BackupFileChoice.GetSelection()
+                self.BackupFileChoice.Delete(Temp)
+                self.BackupFileChoice.SetStringSelection("-- Please Select --")
                 return
+
             elif Temp == 512:
                 #Backup is MBR(msdos)
                 BackupType = "msdos"
-                self.msdosradio.SetValue(True)
+                self.MBRBackupTypeRadio.SetValue(True)
+
             elif Temp > 512 and Temp < 20000:
                 #Backup is GPT  
                 BackupType = "gpt"
-                self.gptradio.SetValue(True)
+                self.GPTBackupTypeRadio.SetValue(True)
+
             else:
                 #Backup is *PROBABLY* GPT, but might not be a backup file! If this is the BootSector, it's fine, because for that we backup the UEFI partition.
                 BackupType = "gpt"
-                self.gptradio.SetValue(True)
-                if self.Type == "PartTable":
-                    wx.MessageDialog(self.Panel, "Your backup file type is probably valid, but WxFixBoot isn't sure, as the file size is odd. Please ensure that this is your backup file!", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
+                self.GPTBackupTypeRadio.SetValue(True)
 
-            wx.MessageDialog(self.Panel, "Your backup file type was detected as: "+BackupType+". If this is correct, then continuing is safe. If not, ensure you made the backup file with WxFixBoot and that it is the correct backup file, and manually set the right backup type. If you made the backup with another program, please use that program to restore it instead to avoid problems.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+                if self.Type == "PartTable":
+                    dlg = wx.MessageDialog(self.Panel, "Your backup file type is probably valid, but WxFixBoot isn't sure, as the file size is odd. Please ensure that this is your backup file!", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
+                    dlg.ShowModal()
+                    dlg.Destroy()
+
+            dlg = wx.MessageDialog(self.Panel, "Your backup file type was detected as: "+BackupType+". If this is correct, then continuing is safe. If not, ensure you made the backup file with WxFixBoot and that it is the correct backup file, and manually set the right backup type. If you made the backup with another program, please use that program to restore it instead to avoid problems.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
 
         else:
             BackupType = "None"
-            self.autodetectradio.SetValue(True)
+            self.AutoDetectTypeRadio.SetValue(True)
 
         #Save File, Restoring, and BackupType to the correct global variables, depending on which purpose this class is serving (Boot Sector Restoration Window, or Partition Table Restoration Window).
         logger.info("RestoreWindow().SelectFile(): Current config: File = "+File+", Restore = "+unicode(Restore)+", BackupType = "+BackupType+"...")
 
-        if self.Type == "BootSector":
+        if self.Type == "Boot Sector":
             BootSectorFile = File
             RestoreBootSector = Restore
             BootSectorBackupType = BackupType
+
         else:
             PartitionTableFile = File
             RestorePartitionTable = Restore
@@ -2238,30 +2290,35 @@ class RestoreWindow(wx.Frame):
         global BootSectorTargetDevice
         global PartitionTableTargetDevice
 
-        TargetDevice = self.targetchoice.GetStringSelection()
+        TargetDevice = self.TargetDeviceChoice.GetStringSelection()
 
         #Determine what to do here.
         if TargetDevice == "-- Please Select --":
             TargetDevice = "None"
+
         elif TargetDevice[0:4] == "Auto":
             TargetDevice = RootDevice
+
         elif TargetDevice == "Specify File Path...":
             Dlg = wx.FileDialog(self.Panel, "Select Target Device...", wildcard="All Files/Devices (*)|*", defaultDir='/dev', style=wx.OPEN)
             if Dlg.ShowModal() == wx.ID_OK:
                 TargetDevice = Dlg.GetPath()
-                self.targetchoice.Append(TargetDevice)
-                self.targetchoice.SetStringSelection(TargetDevice)
+                self.TargetDeviceChoice.Append(TargetDevice)
+                self.TargetDeviceChoice.SetStringSelection(TargetDevice)
+
             else:
                 TargetDevice = "None"
-                self.targetchoice.SetStringSelection("-- Please Select --")
+                self.TargetDeviceChoice.SetStringSelection("-- Please Select --")
+
         else:
-            TargetDevice = self.targetchoice.GetStringSelection()
+            TargetDevice = self.TargetDeviceChoice.GetStringSelection()
 
         #Save TargetDevice to the correct global variable, depending on which purpose this class is serving (Boot Sector Restoration Window, or Partition Table Restoration Window).
         logger.info("RestoreWindow().SelectTargetDevice(): Current config: TargetDevice = "+TargetDevice+"...")
 
         if self.Type == "BootSector":
             BootSectorTargetDevice = TargetDevice
+
         else:
             PartitionTableTargetDevice = TargetDevice
 
@@ -2270,6 +2327,7 @@ class RestoreWindow(wx.Frame):
             File = BootSectorFile
             Restore = RestoreBootSector
             TargetDevice = BootSectorTargetDevice
+
         else:
             File = PartitionTableFile
             Restore = RestorePartitionTable
@@ -2278,30 +2336,29 @@ class RestoreWindow(wx.Frame):
         if File != "None" and Restore and TargetDevice != "None":
             #Show an info message.
             dlg = wx.MessageDialog(self.Panel, "Do you want to continue? This operation can cause data loss. Only continue if you are certain you've selected the right target device and backup file, and if the backup was created with WxFixBoot. If you restore a partition table or bootsector some options, such as installing a different bootloader and reinstalling or updating your bootloader will be disabled. If you want to change other settings, you can always restart WxFixBoot afterwards and then change them.", "WxFixBoot - Information", style=wx.YES_NO | wx.ICON_EXCLAMATION, pos=wx.DefaultPosition)
+
             if dlg.ShowModal() == wx.ID_YES:
                 #Send a message to OptionsDlg1, so it can show itself again.
                 wx.CallAfter(self.ParentWindow.RefreshOptionsDlg1, "Closed.")
 
                 #Exit.
+                dlg.Destroy()
                 self.Destroy()
+
+            dlg.Destroy()
 
         elif File != "None" or Restore or TargetDevice != "None":
-            if self.Type == "Bootsector":
-                wx.MessageDialog(self.Panel, "You haven't entered all of the required settings! Please either enter all required settings to do this operation, or no settings at all to disable boot sector resoration.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
-
-            else:
-                wx.MessageDialog(self.Panel, "You haven't entered all of the required settings! Please either enter all required settings to do this operation, or no settings at all to disable partition table restoration.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
+            dlg = wx.MessageDialog(self.Panel, "You haven't entered all of the required settings! Please either enter all required settings to do this operation, or no settings at all to disable resoration.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
 
         else:
-            dlg = wx.MessageDialog(self.Panel, "Do you want to exit this window?", "WxFixBoot - Information", style=wx.YES_NO | wx.ICON_EXCLAMATION, pos=wx.DefaultPosition)
+            logger.debug("RestoreWindow().ExitWindow(): Restore "+self.Type+" Window Closing.")
+            #Send a message to OptionsDlg1, so it can show itself again.
+            wx.CallAfter(self.ParentWindow.RefreshOptionsDlg1, "Closed.")
 
-            if dlg.ShowModal() == wx.ID_YES:
-                logger.debug("RestoreWindow().ExitWindow(): Restore Boot Sector/Partion Table Window Closing.")
-                #Send a message to OptionsDlg1, so it can show itself again.
-                wx.CallAfter(self.ParentWindow.RefreshOptionsDlg1, "Closed.")
-
-                #Exit.
-                self.Destroy()
+            #Exit.
+            self.Destroy()
 
 #End Restore Window
 #Begin Progress Window
