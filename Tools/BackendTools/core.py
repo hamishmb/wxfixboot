@@ -23,20 +23,19 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main(): #*** These need refactoring and proper testing ***
-    def StartThreadProcess(self, ExecCmds, Piping=False, ShowOutput=True, ReturnOutput=False): #*** Will soon be replaced in coretools ***
+    def StartThreadProcess(self, ExecCmds, Piping=False, ShowOutput=True, ReturnOutput=False): #*** Get rid of this in favour of CoreTools().StartProcess() ***
         """Start a process given a list with commands to execute, specifically for this thread, as it also sends the output to ParentWindow.UpdateOutputBox()."""
         #This now uses a set of default values, to keep it simple. It can be called with self.StartThreadProcess(ExecCmds=[], ShowOutput=True) etc. Only ExecCmds is compulsory.
         #Reset templog
         templog = []
 
         #Run the cmd.
-        if Piping == False:
-            logger.debug("CoreBackendTools: Main().StartThreadProcess(): Starting process: "+' '.join(ExecCmds))
-            runcmd = subprocess.Popen(ExecCmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if Piping:
+            #*** Temporary abstraction in preparation to switch to CoreTools().StartProcess() ***
+            ExecCmds = ' '.join(ExecCmds)
 
-        else:
-            logger.debug("CoreBackendTools: Main()..StartThreadProcess(): Starting process: "+ExecCmds)
-            runcmd = subprocess.Popen(ExecCmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        logger.debug("CoreBackendTools: Main()..StartThreadProcess(): Starting process: "+ExecCmds)
+        runcmd = subprocess.Popen(ExecCmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
         while runcmd.poll() == None:
             #Send given line to the outputbox and Log it too, if ShowOutput == True or if FullVerbose == True 
@@ -131,7 +130,7 @@ class Main(): #*** These need refactoring and proper testing ***
         logger.debug("CoreBackendTools: Main().TearDownChroot(): Finished removing chroot at MountPoint: "+MountPoint+"...")
 
     def GetPartitionUUID(self, Partition):
-        """Retrive the given partition's UUID""" #*** Will be removed/moved to startuptools soon after switching to dictionaries ***
+        """Retrive the given partition's UUID""" #*** Will be removed/moved to startuptools soon after switching to dictionaries *** *** Give full path? ***
         logger.info("CoreBackendTools: Main().GetPartitionUUID(): Getting UUID for partition: "+Partition+"...")
 
         Temp = self.StartThreadProcess(['blkid', '-o', 'list'], ShowOutput=False, ReturnOutput=True)
@@ -160,7 +159,7 @@ class Main(): #*** These need refactoring and proper testing ***
             return UUID
 
     def GetDeviceID(self, Device):
-        """Retrive the given partition's/device's ID.""" #*** Will be removed/moved to startuptools soon after switching to dictionaries ***
+        """Retrive the given partition's/device's ID.""" #*** Will be removed/moved to startuptools soon after switching to dictionaries *** *** Give full path? ***
         logger.info("CoreBackendTools: Main().GetDeviceID(): Getting ID for partition/device: "+Device+"...")
 
         Temp = CoreBackendTools().StartThreadProcess(['ls', '-l', '/dev/disk/by-id/'], ShowOutput=False, ReturnOutput=True)

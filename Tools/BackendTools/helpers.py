@@ -69,46 +69,42 @@ class Main():
         return DisableBootloaderOperations
 
     def FindMissingFSCKModules(self, PartitionListWithFSType):
-        """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc), based on the FS types in PartitionListWithFSType.""" #*** Will need modification after switching to dictionaries ***
+        """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc), based on the FS types in PartitionListWithFSType.""" #*** Test this again *** *** Will need modification after switching to dictionaries ***
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Looking for missing FSCK modules to ignore...")
         FailedList = []
 
         for FSType in PartitionListWithFSType:
-            #Check if we're looking at a FSType, not a device, and that we've not marked it "Unknown". Otherwise ignore it.
+            #Check if we're looking at a FSType, not a device, and that we've not marked it "Unknown". Otherwise ignore it. *** Some checks can be removed once switched to dictionaries ***
             if FSType[0] != "/" and FSType != "Unknown":
-                try:
-                    runcmd = subprocess.Popen(["fsck."+FSType], stdout=subprocess.PIPE, stderr=subprocess.STDOUT) #*** Don't call subprocess directly ***
-                    stdout, stderr = runcmd.communicate()
+                #Check if this module is present.
+                Retval = CoreBackendTools().StartThreadProcess(["fsck."+FSType], ShowOutput=False)
 
-                except OSError:
+                if Retval != 0:
                     #OS probably couldn't find it, add it to the failed list.
                     logger.warning("HelperBackendTools: Main().FSCKModules(): Couldn't find FSCK module: fsck."+FSType+"! Adding it to the list of missing modules...")
                     FailedList.append("fsck."+FSType)
 
                 else:
-                    if unicode(stderr) != "None":
-                        #It was found, but errored for an unknown reason. Add it to the failed list. *** Remove this check later, use return code instead ***
-                        logger.warning("HelperBackendTools: Main().FindMissingFSCKModules(): Found FSCK module: fsck."+FSType+", but it errored for an unknown reason! Adding it to the list of missing modules...")
-                        FailedList.append("fsck."+FSType)
+                    logger.debug("HelperBackendTools: Main().FSCKModules(): Found fsck."+FSType+"...")
 
         #Return the list, so FSCheck functions know which FSes to ignore.
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
         return FailedList
 
-    def LookForAPTOnPartition(self, APTExecList): #*** Maybe move to startup tools ***
+    def LookForAPTOnPartition(self, APTExecList): #*** Test again *** *** Maybe move to startup tools on switch to dictionaries ***
         """Look for apt using the command lists given (they include the partition, by the way)."""
-        logger.debug("HelperBackendTools: Main().LookForAPTOnPartition() has been triggered...") #*** Use better log message and log the result ***
+        logger.debug("HelperBackendTools: Main().LookForAPTOnPartition(): Running "+APTExecList+"...")
 
-        #Check for APT
-        try:
-            subprocess.check_output(APTExecList) #*** Don't call subprocess directly *** 
+        Retval = CoreBackendTools().StartThreadProcess(APTExecList, SowOutput=False)
 
-        except:
+        if Retval != 0:
             #Couldn't find apt!
+            logger.info("HelperBackendTools: Main().LookForAPTOnPartition(): Didn't find apt...")
             return False
 
         else:
             #Found APT!
+            logger.info("HelperBackendTools: Main().LookForAPTOnPartition(): Found apt...")
             return True
 
     def LookForBootloaderOnPartition(self, PackageManager, MountPoint, UsingChroot):

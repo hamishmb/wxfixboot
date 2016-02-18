@@ -210,7 +210,7 @@ class Main():
             logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def CheckForUEFIPartition(self, LiveDisk): #*** There is a UEFI system partition flag to check for instead, which would speed this up *** *** This will need a LOT of modification when I switch to dictionaries *** **** May be largely unneeded when using getdevinfo package *** 
+    def CheckForUEFIPartition(self, LiveDisk): #*** There is a UEFI system partition flag to check for instead, which would speed this up *** *** This will need a LOT of modification when I switch to dictionaries *** *** May be largely unneeded when using getdevinfo package *** 
         """Find the UEFI system partition and return it"""
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
         FatPartitions = []

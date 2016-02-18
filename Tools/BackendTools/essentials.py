@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#################### These functions are run before any others in the list of operations to do *** ####################
+#################### These functions are run before any others in the list of operations to do ####################
 
 #Begin Main Class.
 class Main(): #*** These need refactoring and proper testing ***

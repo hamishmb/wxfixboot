@@ -44,7 +44,7 @@ from wx.animate import AnimationCtrl
 
 #Define the version number and the release date as global variables.
 Version = "1.1~pre1"
-ReleaseDate = "17/2/2016"
+ReleaseDate = "18/2/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -148,7 +148,7 @@ Tools.StartupTools.main.os = os
 Tools.BackendTools.core.wx = wx
 Tools.BackendTools.core.CoreTools = CoreTools
 Tools.BackendTools.core.logger = logger
-Tools.BackendTools.core.subprocess = subprocess #*** Remove this later ***
+Tools.BackendTools.core.subprocess = subprocess #*** Keep until switch to using CoreTools().StartProcess() in all BackendThread functions ***
 
 #BackendTools Package (Helpers)
 Tools.BackendTools.helpers.wx = wx
@@ -156,7 +156,6 @@ Tools.BackendTools.helpers.CoreTools = CoreTools
 Tools.BackendTools.helpers.logger = logger
 Tools.BackendTools.helpers.DialogTools = DialogTools
 Tools.BackendTools.helpers.CoreBackendTools = CoreBackendTools
-Tools.BackendTools.helpers.subprocess = subprocess #*** Remove this later ***
 Tools.BackendTools.helpers.LooseVersion = LooseVersion
 
 #BackendTools Package (Essentials)
@@ -165,7 +164,6 @@ Tools.BackendTools.essentials.CoreTools = CoreTools
 Tools.BackendTools.essentials.logger = logger
 Tools.BackendTools.essentials.DialogTools = DialogTools
 Tools.BackendTools.essentials.CoreBackendTools = CoreBackendTools
-Tools.BackendTools.essentials.subprocess = subprocess #*** Remove this later ***
 Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools
 
 #BackendTools Package (Main).
