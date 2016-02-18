@@ -15,7 +15,7 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Make note of this: when 'cp' errors, the quotes it uses cause this error "UnicodeDecodeError" (use unicode(thing, , errors='ignore')) ***
-#*** Mount filesystems inside the temporary directory instead of in /mnt, to keep them out of the way of interference ***
+#*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixboottmpmountpoints/, to keep them out of the way of interference ***
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
 #*** Maybe use parted with the '-m' flag because we get lots of info in a easy to process way that way ***
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
