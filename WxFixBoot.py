@@ -24,6 +24,7 @@
 #*** Don't use grep, use python's text processing features ***
 #*** Don't use find, use os.walk() instead ***
 #*** Don't use parted, all it's being used for is getting partition schemes, something lshw will do with dictionaries soon ***
+#*** Kaybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import

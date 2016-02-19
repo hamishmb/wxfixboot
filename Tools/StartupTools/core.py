@@ -215,8 +215,14 @@ class Main():
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
         FatPartitions = []
 
-        #Get a list of partitions of type vfat, if any.
-        OutputList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE | grep 'vfat'", ReturnOutput=True)[1].split() #*** Use python's text processing features ***
+        #Get a list of partitions of type vfat, if any. *** Tidy this up a bit maybe ***
+        TempList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE", ReturnOutput=True)[1].split("\n")
+        OutputList = []
+
+        for Line in TempList:
+            if "vfat" in Line:
+                OutputList.append(Line.split()[0])
+                OutputList.append(Line.split()[1])
 
         #Create another list of only the disks. Ignore anything else.
         for element in OutputList:
