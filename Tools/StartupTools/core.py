@@ -107,11 +107,13 @@ class Main():
         return UEFISYSPMountPoint
 
     def CheckForGRUBBIOS(self):
-        """Check for the GRUB BIOS bootloader"""
-        #Check for GRUB (2 and Legacy) *** Try to find a way of distinguishing between them here, rather than later ***
-        Temp = CoreTools().StartProcess("cat /tmp/wxfixboot/mbrbootsect | grep 'GRUB'", ReturnOutput=True)[1].replace('\n', '') #*** Use python's internal text processing features, which IS possible I checked :P ***
+        """Check for the GRUB (v2 and legacy) BIOS bootloader"""
+        #*** Try to find a way of distinguishing between them here, rather than later *** *** Save MBR to a variable, rather than a file *** *** Test again ***
+        MBRBootSectorFile = open("/tmp/wxfixboot/mbrbootsector", "r")
+        MBRBootSector = MBRBootSectorFile.read()
+        MBRBootSectorFile.close()
 
-        if Temp == "Binary file (standard input) matches":
+        if "GRUB" in MBRBootSector:
             #Bootloader is GRUB MBR
             return True
 
@@ -119,9 +121,12 @@ class Main():
             return False
 
     def CheckForLILO(self):
-        """Check for LILO in MBR"""
-        Temp = CoreTools().StartProcess("cat /tmp/wxfixboot/mbrbootsect | grep 'LILO'", ReturnOutput=True)[1].replace('\n', '') #*** Use python's internal text processing features, which IS possible I checked :P ***
-        if Temp == "Binary file (standard input) matches":
+        """Check for LILO in MBR""" #*** Save MBR to a variable, rather than a file *** *** Test again ***
+        MBRBootSectorFile = open("/tmp/wxfixboot/mbrbootsector", "r")
+        MBRBootSector = MBRBootSectorFile.read()
+        MBRBootSectorFile.close()
+
+        if "LILO" in MBRBootSector:
             #Bootloader is LILO in MBR
             return True
 
