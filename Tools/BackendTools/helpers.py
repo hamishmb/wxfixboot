@@ -107,7 +107,7 @@ class Main():
             logger.info("HelperBackendTools: Main().LookForAPTOnPartition(): Found apt...")
             return True
 
-    def LookForBootloaderOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Use python's text processing features ***
+    def LookForBootloaderOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Use python's text processing features *** *** Do later ***
         """Look for the currently installed bootloader in the given mount point."""
         logger.debug("HelperBackendTools: Main().LookForBootloaderOnPartition() has been triggered...")
 

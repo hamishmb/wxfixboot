@@ -109,11 +109,11 @@ class Main():
     def CheckForGRUBBIOS(self):
         """Check for the GRUB (v2 and legacy) BIOS bootloader"""
         #*** Try to find a way of distinguishing between them here, rather than later *** *** Save MBR to a variable, rather than a file *** *** Test again ***
-        MBRBootSectorFile = open("/tmp/wxfixboot/mbrbootsector", "r")
+        MBRBootSectorFile = open("/tmp/wxfixboot/mbrbootsect", "r")
         MBRBootSector = MBRBootSectorFile.read()
         MBRBootSectorFile.close()
 
-        if "GRUB" in MBRBootSector:
+        if str("GRUB") in str(MBRBootSector): #*** Avoid UnicodeDecodeError ***
             #Bootloader is GRUB MBR
             return True
 
@@ -122,11 +122,11 @@ class Main():
 
     def CheckForLILO(self):
         """Check for LILO in MBR""" #*** Save MBR to a variable, rather than a file *** *** Test again ***
-        MBRBootSectorFile = open("/tmp/wxfixboot/mbrbootsector", "r")
+        MBRBootSectorFile = open("/tmp/wxfixboot/mbrbootsect", "r")
         MBRBootSector = MBRBootSectorFile.read()
         MBRBootSectorFile.close()
 
-        if "LILO" in MBRBootSector:
+        if str("LILO") in str(MBRBootSector): #*** Avoid UnicodeDecodeError ***
             #Bootloader is LILO in MBR
             return True
 
@@ -235,16 +235,21 @@ class Main():
                 FatPartitions.append("/dev/"+element)
 
         if LiveDisk == False:
-            try:
-                UEFISystemPartition = "/dev/"+CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE,MOUNTPOINT,LABEL | grep '/boot'", ReturnOutput=True)[1].split()[0] #*** Use python's text processing features ***
+            TempList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE,MOUNTPOINT,LABEL", ReturnOutput=True)[1].split("\n")
+            UEFISystemPartition = None
 
-            except IndexError:
+            for Line in TempList:
+                if "/boot/efi" in Line:
+                    UEFISystemPartition = "/dev/"+Line.split()[0]
+
+            if UEFISystemPartition == None:
                 logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): Failed to find the UEFI Partition. Trying another way...")
                 #Try a second way to get the UEFI system partition.
-                try:
-                    UEFISystemPartition = "/dev/"+CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE,MOUNTPOINT,LABEL | grep 'ESP'", ReturnOutput=True)[1].split()[0] #*** Use python's text processing features ***
+                for Line in TempList:
+                    if "ESP" in Line:
+                        UEFISystemPartition = "/dev/"+Line.split()[0]
 
-                except IndexError:
+                if UEFISystemPartition == None:
                     #Ask the user where it is.
                     logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): Couldn't autodetermine UEFI Partition. Asking the user instead...")
                     AskForUEFIPartition = True
@@ -265,7 +270,7 @@ class Main():
 
                 if Result == "I don't have one":
                     logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): User said no UEFI Partition exists. Continuing...")
-                    return "None", FatPartitions
+                    return "None", FatPartitions #*** Why return "None" and not None? ***
 
                 else:
                     logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): User reported UEFI partition at: "+Result+". Continuing...")

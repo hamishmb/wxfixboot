@@ -80,7 +80,7 @@ class Main():
         #Create a list for the partitions.
         PartitionListWithFSType = []
 
-        OutputList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE | grep -v 'NAME'", ReturnOutput=True)[1].split() #*** Do text processing in python ***
+        OutputList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE", ReturnOutput=True)[1].replace("NAME FSTYPE\n", "").split()
 
         #Populate the device list, and the Partition List including FS Type.
         for Disk in OutputList:
@@ -147,12 +147,19 @@ class Main():
         return PartitionListWithFSType, DeviceList, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList
 
     def DetectLinuxPartitions(self):
-        """Get a list of partitions of type ext (2,3 or 4) / btrfs / xfs / jfs / zfs / minix / reiserfs."""
+        """Get a list of partitions of type ext (1,2,3 or 4) / btrfs / xfs / jfs / zfs / minix / reiserfs."""
         #*** A fair bit of this info can be gathered using DDRescue-GUI's getdevinfo package ***
         LinuxPartList = []
 
         #Run the command to find them, and save the results in a list.
-        OutputList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE | grep 'ext\|btrfs\|xfs\|jfs\|zfs\|minix\|reiserfs'", ReturnOutput=True)[1].split() #*** Use python's text processing features ***
+        TempList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE", ReturnOutput=True)[1].split("\n")
+
+        OutputList = []
+
+        for Line in TempList:
+            if ("ext" or "btrfs" or "xfs" or "jfs" or "zfs" or "minix" or "reiserfs") in Line:
+                OutputList.append(Line.split()[0])
+                OutputList.append(Line.split()[1])
 
         #Create a list of only the partitions in the list.
         for Partition in OutputList:
@@ -302,9 +309,9 @@ class Main():
     def GetFirmwareType(self):
         """Get the firmware type"""
         #Check if the firmware type is UEFI.
-        Retval = CoreTools().StartProcess("dmidecode -q -t BIOS | grep 'UEFI'") #*** Use python's text processing features ***
+        Output = CoreTools().StartProcess("dmidecode -q -t BIOS", ReturnOutput=True)[1]
 
-        if Retval != 0:
+        if "UEFI" not in Output:
             #It's BIOS.
             logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as BIOS...")
             FirmwareType = "BIOS"

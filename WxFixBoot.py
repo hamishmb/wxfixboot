@@ -24,7 +24,8 @@
 #*** Don't use grep, use python's text processing features ***
 #*** Don't use find, use os.walk() instead ***
 #*** Don't use parted, all it's being used for is getting partition schemes, something lshw will do with dictionaries soon ***
-#*** Kaybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
+#*** Maybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
+#*** If /tmp/wxfixboot is present on startup it isn't recreated ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -136,12 +137,12 @@ Tools.dialogtools.wx = wx
 Tools.dialogtools.logger = logger
 Tools.dialogtools.time = time
 
-#StartupTools Package (Core). *** Grep used here *** *** find used here *** *** parted used here ***
+#StartupTools Package (Core). *** find used here *** *** parted used here ***
 Tools.StartupTools.core.logger = logger
 Tools.StartupTools.core.CoreTools = CoreTools
 Tools.StartupTools.core.DialogTools = DialogTools
 
-#StartupTools Package (Main). *** Grep used here ***
+#StartupTools Package (Main).
 Tools.StartupTools.main.logger = logger
 Tools.StartupTools.main.os = os
 Tools.StartupTools.main.CoreTools = CoreTools
@@ -1363,9 +1364,9 @@ class OptionsWindow1(wx.Frame):
         AllSettingsSizer.Add(AdvancedSettingsSizer, 3, wx.LEFT|wx.EXPAND, 5)
 
         #Add items to the bootloader options sizer. #*** Sort out alignment ***
-        BootloaderOptionsSizer.Add(self.BootloaderToInstallText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        BootloaderOptionsSizer.Add(self.BootloaderToInstallText, 1, wx.RIGHT|wx.EXPAND, 5)
         BootloaderOptionsSizer.Add(self.BootloaderOptionsButton, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        BootloaderOptionsSizer.Add(self.FirmwareTypeText, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        BootloaderOptionsSizer.Add(self.FirmwareTypeText, 1, wx.LEFT|wx.EXPAND, 5)
 
         #Add items to the bottom button sizer.
         BottomButtonSizer.Add(self.RestoreBootsectorButton, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
