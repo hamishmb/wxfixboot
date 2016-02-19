@@ -77,7 +77,7 @@ class Main():
             #Check if we're looking at a FSType, not a device, and that we've not marked it "Unknown". Otherwise ignore it. *** Some checks can be removed once switched to dictionaries ***
             if FSType[0] != "/" and FSType != "Unknown":
                 #Check if this module is present.
-                Retval = CoreBackendTools().StartThreadProcess(["fsck."+FSType], ShowOutput=False)
+                Retval = CoreBackendTools().StartThreadProcess(["which", "fsck."+FSType], ShowOutput=False)
 
                 if Retval != 0:
                     #OS probably couldn't find it, add it to the failed list.

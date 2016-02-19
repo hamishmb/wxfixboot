@@ -91,7 +91,7 @@ class Main():
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
         return FailedList
 
-    def LookForAPTOnPartition(self, APTExecList): #*** Test again *** *** Maybe move to startup tools on switch to dictiona***
+    def LookForAPTOnPartition(self, APTExecList): #*** Test again *** *** Maybe move to startup tools on switch to dictionaries ***
         """Look for apt using the command lists given (they include the partition, by the way)."""
         logger.debug("HelperBackendTools: Main().LookForAPTOnPartition(): Running "+APTExecList+"...")
 

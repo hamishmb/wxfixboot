@@ -239,7 +239,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Restoring the Boot Sector...###\n")
         logger.info("EssentialBackendTools: Main().RestoreBootSector(): Finished restoring the boot sector!")
 
-    def QuickFileSystemCheck(self): #*** This is very duplicated with BadSectorCheck, can we merge them and put a check in? *** *** Will need lots of work when we switch to dictionaries ***
+    def QuickFileSystemCheck(self): #*** This is very duplicated with BadSectorCheck, can we merge them and put a check in? *** *** Will need lots of work when we switch to dictionaries *** *** Attempts to check mounted filesystems sometimes! ***
         """Quickly check all filesystems."""
         logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Starting...")
 
@@ -310,7 +310,7 @@ class Main(): #*** These need refactoring and proper testing ***
                     global OSsForBootloaderRemoval
                     global OSsForBootloaderInstallation
 
-                    OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools().HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
+                    #*** Disabled temporarily due to the above vars causing problems *** OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools().HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Remounting Partition: "+Partition+" Read-Write...")
@@ -324,7 +324,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Quick Filesystem Check!###\n")
 
-    def BadSectorCheck(self): #*** This is very duplicated with QuickFSCheck, can we merge them and put a check in? ***
+    def BadSectorCheck(self): #*** This is very duplicated with QuickFSCheck, can we merge them and put a check in? *** *** Attempts to check mounted filesystems sometimes! ***
         """Check all filesystems for bad sectors."""
         logger.debug("EssentialBackendTools: Main().BadSectorCheck(): Starting...")
 

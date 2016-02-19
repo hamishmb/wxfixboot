@@ -45,7 +45,7 @@ from wx.animate import AnimationCtrl
 
 #Define the version number and the release date as global variables.
 Version = "1.1~pre1"
-ReleaseDate = "18/2/2016"
+ReleaseDate = "19/2/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -161,6 +161,7 @@ Tools.BackendTools.helpers.LooseVersion = LooseVersion
 
 #BackendTools Package (Essentials)
 Tools.BackendTools.essentials.wx = wx
+Tools.BackendTools.essentials.time = time
 Tools.BackendTools.essentials.CoreTools = CoreTools
 Tools.BackendTools.essentials.logger = logger
 Tools.BackendTools.essentials.DialogTools = DialogTools
@@ -678,6 +679,8 @@ class MainWindow(wx.Frame):
             self.UpdateBootloaderCB.SetValue(0)
             self.UpdateBootloaderCBwaschecked = False
 
+        self.SaveMainOpts()
+
     def Opts(self, Event=None):
         global OptionsDlg1Run
         logger.debug("MainWindow().Opts(): Starting Options Window 1 and hiding MainWindow...")
@@ -878,7 +881,73 @@ class MainWindow(wx.Frame):
         else:
             UpdateBootloader = False
 
-        logger.debug("MainWindow().SaveMainOpts(): MainWindow options saved!")
+        logger.debug("MainWindow().SaveMainOpts(): MainWindow options saved! Counting operations to do...")
+        self.CountOperations()
+
+    def CountOperations(self):
+        """Count the number of operations to do."""
+        global NumberOfOperations
+        global Operations
+
+        #List to contain operations (and their functions) to run.
+        Operations = []
+
+        #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
+        #Do essential processes first.
+        if BackupPartitionTable:
+            Operations.append(EssentialBackendTools().BackupPartitionTable)            
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().BackupPartitionTable to Operations...")
+
+        if BackupBootSector:
+            Operations.append(EssentialBackendTools().BackupBootSector)
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().BackupBootSector to Operations...")
+
+        if RestorePartitionTable:
+            Operations.append(EssentialBackendTools().RestorePartitionTable)
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().RestorePartitionTable to Operations...")
+
+        if RestoreBootSector:
+            Operations.append(EssentialBackendTools().RestoreBootSector)
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().RestoreBootSector to Operations...")
+
+        if QuickFSCheck:
+            Operations.append(EssentialBackendTools().QuickFileSystemCheck)
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().QuickFileSystemCheck to Operations...")
+
+        if BadSectCheck:
+            Operations.append(EssentialBackendTools().BadSectorCheck)
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().BadSectorCheck to Operations...")
+
+        #Now do other processes
+        if BootloaderToInstall != "None":
+            Operations.append(MainBootloaderTools().ManageBootloaders)
+            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().ManageBootloaders to Operations...")
+
+        if ReinstallBootloader:
+            Operations.append(MainBootloaderTools().ReinstallBootloader)
+            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().ReinstallBootloader to Operations...")
+
+        if UpdateBootloader:
+            Operations.append(MainBootloaderTools().UpdateBootloader)
+            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().UpdateBootloader to Operations...")
+
+        #Check if we need to prepare to install a new bootloader, and do so first if needed. *** Log this ***
+        for element in (MainBootloaderTools().ManageBootloaders, MainBootloaderTools().ReinstallBootloader, MainBootloaderTools().UpdateBootloader):
+            if element in Operations:
+                Operations.insert(0, MainBootloaderTools().PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations ***
+
+        NumberOfOperations = len(Operations)
+
+        #Log gathered operations to do, and the number (verbose mode, default).
+        logger.info("MainWindow().CountOperations(): Number of operations: "+unicode(NumberOfOperations))
+
+        if NumberOfOperations == 0:
+            self.ApplyOperationsButton.SetLabel("No Operations Enabled")
+            self.ApplyOperationsButton.Disable()
+
+        else:
+            self.ApplyOperationsButton.SetLabel("Apply All Operations")
+            self.ApplyOperationsButton.Enable()
 
     def OnExit(self, Event=None):
         #Shut down.
@@ -2510,7 +2579,7 @@ class ProgressWindow(wx.Frame):
         #Do total progress.
         #This is called when self.CurrentOperationProgressBar reaches 100 (aka full).
         if self.OverallProgressBar.GetValue() < 100:
-            self.OverallProgressBar.SetValue(self.OverallProgressBar.GetValue()+(100/NumberOfOperationsToDo))
+            self.OverallProgressBar.SetValue(self.OverallProgressBar.GetValue()+(100/NumberOfOperations))
 
     def UpdateCurrentOpText(self, Message):
         #Function to keep the current operations status text up to date.
@@ -2587,7 +2656,6 @@ class BackendThread(threading.Thread):
 
     def run(self):
         #Do setup
-        self.templog = [] #*** Do we need this? ***
         time.sleep(1)
 
         #*** Temporarily do this until I switch to dictionaries ***
@@ -2600,171 +2668,169 @@ class BackendThread(threading.Thread):
         KernelOptions = "quiet splash nomodeset"
  
         #Log the BackendThread start event (in debug mode).
-        logger.debug("BackendThread().run(): Started. Calculating Operations to do...")
+        logger.debug("BackendThread().run(): Started. Doing Operations...")
 
-        self.CountOperations()
         self.StartOperations()
-
-    def CountOperations(self):
-        #Count the number of operations to do. *** Check this before going to progress window ***
-        global NumberOfOperationsToDo
-
-        #List to contain operations (and their functions) to run.
-        self.OperationsToDo = []
-
-        #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
-        #Do essential processes first.
-        if BackupPartitionTable:
-            self.OperationsToDo.append(EssentialBackendTools().BackupPartitionTable)            
-            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().BackupPartitionTable to self.OperationsToDo...")
-
-        if BackupBootSector:
-            self.OperationsToDo.append(EssentialBackendTools().BackupBootSector)
-            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().BackupBootSector to self.OperationsToDo...")
-
-        if RestorePartitionTable:
-            self.OperationsToDo.append(EssentialBackendTools().RestorePartitionTable)
-            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().RestorePartitionTable to self.OperationsToDo...")
-
-        if RestoreBootSector:
-            self.OperationsToDo.append(EssentialBackendTools().RestoreBootSector)
-            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().RestoreBootSector to self.OperationsToDo...")
-
-        if QuickFSCheck:
-            self.OperationsToDo.append(EssentialBackendTools().QuickFileSystemCheck)
-            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().QuickFileSystemCheck to self.OperationsToDo...")
-
-        if BadSectCheck:
-            self.OperationsToDo.append(EssentialBackendTools().BadSectorCheck)
-            logger.info("BackendThread().CountOperations(): Added EssentialBackendTools().BadSectorCheck to self.OperationsToDo...")
-
-        #Now do other processes
-        if BootloaderToInstall != "None":
-            self.OperationsToDo.append(MainBootloaderTools().ManageBootloaders)
-            logger.info("BackendThread().CountOperations(): Added MainBootloaderTools().ManageBootloaders to self.OperationsToDo...")
-
-        if ReinstallBootloader:
-            self.OperationsToDo.append(MainBootloaderTools().ReinstallBootloader)
-            logger.info("BackendThread().CountOperations(): Added MainBootloaderTools().ReinstallBootloader to self.OperationsToDo...")
-
-        if UpdateBootloader:
-            self.OperationsToDo.append(MainBootloaderTools().UpdateBootloader)
-            logger.info("BackendThread().CountOperations(): Added MainBootloaderTools().UpdateBootloader to self.OperationsToDo...")
-
-        #Check if we need to prepare to install a new bootloader, and do so first if needed. *** Log this ***
-        for element in (MainBootloaderTools().ManageBootloaders, MainBootloaderTools().ReinstallBootloader, MainBootloaderTools().UpdateBootloader):
-            if element in self.OperationsToDo:
-                self.OperationsToDo.insert(0, MainBootloaderTools().PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations ***
-
-        NumberOfOperationsToDo = len(self.OperationsToDo)
-
-        #Log gathered operations to do, and the number (verbose mode, default).
-        logger.info("BackendThread().CountOperations(): Number of operations: "+unicode(NumberOfOperationsToDo))
-        logger.info("BackendThread().CountOperations(): Starting Operation Running Code...")
 
     def StartOperations(self):
         #Start doing operations.
-        if NumberOfOperationsToDo == 0:
-            DialogTools().ShowMsgDlg(Kind="error", Message="You didn't select any operations! Please restart WxFixBoot to select any operations you wish to perform.")
+        DialogTools().ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may also see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
 
-        else:
-            DialogTools().ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may also see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
+        #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
+        for function in Operations:
+            #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
+            #*** We temporarily neeed global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
+            #*** Essential backend tools ***
+            Tools.BackendTools.essentials.RootDevice = RootDevice
+            Tools.BackendTools.essentials.DeviceList = DeviceList
+            Tools.BackendTools.essentials.PartSchemeList = PartSchemeList
+            Tools.BackendTools.essentials.PartitionTableFile = PartitionTableFile
+            Tools.BackendTools.essentials.PartitionTableBackupType = PartitionTableBackupType
+            Tools.BackendTools.essentials.PartitionTableTargetDevice = PartitionTableTargetDevice
+            Tools.BackendTools.essentials.BootSectorFile = BootSectorFile
+            Tools.BackendTools.essentials.BootSectorBackupType = BootSectorBackupType
+            Tools.BackendTools.essentials.BootSectorTargetDevice = BootSectorTargetDevice
+            Tools.BackendTools.essentials.UEFISystemPartition = UEFISystemPartition
+            Tools.BackendTools.essentials.PartitionListWithFSType = PartitionListWithFSType
+            Tools.BackendTools.essentials.LiveDisk = LiveDisk
+            Tools.BackendTools.essentials.AutoRootFS = AutoRootFS
 
-            #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even ith the extra code after running the function ***
-            for function in self.OperationsToDo:
-                #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
-                #*** We temporarily neeed global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
-                #*** Essential backend tools ***
-                Tools.BackendTools.essentials.RootDevice = RootDevice
-                Tools.BackendTools.essentials.DeviceList = DeviceList
-                Tools.BackendTools.essentials.PartSchemeList = PartSchemeList
-                Tools.BackendTools.essentials.PartitionTableFile = PartitionTableFile
-                Tools.BackendTools.essentials.PartitionTableBackupType = PartitionTableBackupType
-                Tools.BackendTools.essentials.PartitionTableTargetDevice = PartitionTableTargetDevice
-                Tools.BackendTools.essentials.BootSectorFile = BootSectorFile
-                Tools.BackendTools.essentials.BootSectorBackupType = BootSectorBackupType
-                Tools.BackendTools.essentials.BootSectorTargetDevice = BootSectorTargetDevice
-                Tools.BackendTools.essentials.UEFISystemPartition = UEFISystemPartition
-                Tools.BackendTools.essentials.PartitionListWithFSType = PartitionListWithFSType
-                Tools.BackendTools.essentials.LiveDisk = LiveDisk
-                Tools.BackendTools.essentials.AutoRootFS = AutoRootFS
+            try:
                 Tools.BackendTools.essentials.OSsForBootloaderRemoval = OSsForBootloaderRemoval
                 Tools.BackendTools.essentials.OSsForBootloaderInstallation = OSsForBootloaderInstallation
 
-                #*** Main Bootloader Tools (in Backend Tools package) ***
+            except UnboundLocalError: pass
+
+            #*** Main Bootloader Tools (in Backend Tools package) ***
+            try:
                 Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
                 Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
-                Tools.BackendTools.BootloaderTools.main.LiveDisk = LiveDisk
-                Tools.BackendTools.BootloaderTools.main.AutoRootFS = AutoRootFS
-                Tools.BackendTools.BootloaderTools.main.Bootloader = Bootloader
-                Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
-                Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
+
+            except UnboundLocalError: pass
+
+            Tools.BackendTools.BootloaderTools.main.LiveDisk = LiveDisk
+            Tools.BackendTools.BootloaderTools.main.AutoRootFS = AutoRootFS
+            Tools.BackendTools.BootloaderTools.main.Bootloader = Bootloader
+            Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
+            Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
+
+            try:
                 Tools.BackendTools.BootloaderTools.main.DisableBootloaderOperations = DisableBootloaderOperations
+
+            except NameError: pass
+
+            try:
                 Tools.BackendTools.BootloaderTools.main.BootloaderToInstall = BootloaderToInstall
 
-                #*** Bootloader Configuration Obtaining Tools (in Backend Tools package) ***
+            except UnboundLocalError: pass
+
+            #*** Bootloader Configuration Obtaining Tools (in Backend Tools package) ***
+            try:
                 Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout = BootloaderTimeout
                 Tools.BackendTools.BootloaderTools.getconfigtools.KernelOptions = KernelOptions
-                Tools.BackendTools.BootloaderTools.getconfigtools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
-                Tools.BackendTools.BootloaderTools.getconfigtools.LiveDisk = LiveDisk
-                Tools.BackendTools.BootloaderTools.getconfigtools.AutoRootFS = AutoRootFS
-                Tools.BackendTools.BootloaderTools.getconfigtools.Bootloader = Bootloader
 
-                #*** Bootloader Removal Tools (in Backend Tools package) ***
+            except UnboundLocalError: pass
+
+            try:
+                Tools.BackendTools.BootloaderTools.getconfigtools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
+
+            except UnboundLocalError: pass
+
+            Tools.BackendTools.BootloaderTools.getconfigtools.LiveDisk = LiveDisk
+            Tools.BackendTools.BootloaderTools.getconfigtools.AutoRootFS = AutoRootFS
+            Tools.BackendTools.BootloaderTools.getconfigtools.Bootloader = Bootloader
+
+            #*** Bootloader Removal Tools (in Backend Tools package) ***
+            try:
                 Tools.BackendTools.BootloaderTools.removaltools.OSsForBootloaderInstallation = OSsForBootloaderInstallation
                 Tools.BackendTools.BootloaderTools.removaltools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
-                Tools.BackendTools.BootloaderTools.removaltools.LiveDisk = LiveDisk
-                Tools.BackendTools.BootloaderTools.removaltools.AutoRootFS = AutoRootFS
-                Tools.BackendTools.BootloaderTools.removaltools.Bootloader = Bootloader
 
-                #*** Bootloader Installation Tools (in Backend Tools package) ***
-                Tools.BackendTools.BootloaderTools.installationtools.RootDevice = RootDevice
+            except UnboundLocalError: pass
+
+            Tools.BackendTools.BootloaderTools.removaltools.LiveDisk = LiveDisk
+            Tools.BackendTools.BootloaderTools.removaltools.AutoRootFS = AutoRootFS
+            Tools.BackendTools.BootloaderTools.removaltools.Bootloader = Bootloader
+
+            #*** Bootloader Installation Tools (in Backend Tools package) ***
+            Tools.BackendTools.BootloaderTools.installationtools.RootDevice = RootDevice
+
+            try:
                 Tools.BackendTools.BootloaderTools.installationtools.OSsForBootloaderInstallation = OSsForBootloaderInstallation
                 Tools.BackendTools.BootloaderTools.installationtools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
-                Tools.BackendTools.BootloaderTools.installationtools.LiveDisk = LiveDisk
-                Tools.BackendTools.BootloaderTools.installationtools.AutoRootFS = AutoRootFS
-                Tools.BackendTools.BootloaderTools.installationtools.Bootloader = Bootloader
 
-                #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
-                Tools.BackendTools.BootloaderTools.setconfigtools.OSList = OSList
+            except UnboundLocalError: pass
+
+            Tools.BackendTools.BootloaderTools.installationtools.LiveDisk = LiveDisk
+            Tools.BackendTools.BootloaderTools.installationtools.AutoRootFS = AutoRootFS
+            Tools.BackendTools.BootloaderTools.installationtools.Bootloader = Bootloader
+
+            #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
+            Tools.BackendTools.BootloaderTools.setconfigtools.OSList = OSList
+
+            try:
                 Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderTimeout = BootloaderTimeout
                 Tools.BackendTools.BootloaderTools.setconfigtools.KernelOptions = KernelOptions
+
+            except UnboundLocalError: pass
+
+            try:
                 Tools.BackendTools.BootloaderTools.setconfigtools.OSsForBootloaderInstallation = OSsForBootloaderInstallation
                 Tools.BackendTools.BootloaderTools.setconfigtools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
-                Tools.BackendTools.BootloaderTools.setconfigtools.LiveDisk = LiveDisk
-                Tools.BackendTools.BootloaderTools.setconfigtools.AutoRootFS = AutoRootFS
-                Tools.BackendTools.BootloaderTools.setconfigtools.Bootloader = Bootloader
+
+            except UnboundLocalError: pass
+
+            Tools.BackendTools.BootloaderTools.setconfigtools.LiveDisk = LiveDisk
+            Tools.BackendTools.BootloaderTools.setconfigtools.AutoRootFS = AutoRootFS
+            Tools.BackendTools.BootloaderTools.setconfigtools.Bootloader = Bootloader
+
+            try:
                 Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderToInstall = BootloaderToInstall
-                Tools.BackendTools.BootloaderTools.setconfigtools.UEFISystemPartition = UEFISystemPartition
 
-                #Run the function.
-                function()
+            except UnboundLocalError: pass
 
-                #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set the vars global to this file) ***
-                #*** Essential backend tools ***
-                OSsForBootloaderRemoval = Tools.BackendTools.Essentials.OSsForBootloaderRemoval
-                OSsForBootloaderInstallation = Tools.BackendTools.Essentials.OSsForBootloaderInstallation
-    
-                #*** Main Bootloader Tools (in Backend Tools package) ***
+            Tools.BackendTools.BootloaderTools.setconfigtools.UEFISystemPartition = UEFISystemPartition
+
+            #Run the function.
+            function()
+
+            #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set the vars global to this file) ***
+            #*** Essential backend tools ***
+            try:
+                OSsForBootloaderRemoval = Tools.BackendTools.essentials.OSsForBootloaderRemoval
+                OSsForBootloaderInstallation = Tools.BackendTools.essentials.OSsForBootloaderInstallation
+
+            except AttributeError: pass
+  
+            #*** Main Bootloader Tools (in Backend Tools package) ***
+            try:
                 OSsForBootloaderRemoval = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval
                 OSsForBootloaderInstallation = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation
+
+            except AttributeError: pass
+
+            try:
                 BootloaderToInstall = Tools.BackendTools.BootloaderTools.main.BootloaderToInstall
 
-                #*** Bootloader Configuration Obtaining Tools (in Backend Tools Package) ***
+            except AttributeError: pass
+
+            #*** Bootloader Configuration Obtaining Tools (in Backend Tools Package) ***
+            try:
                 BootloaderTimeout = Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout
                 KernelOptions = Tools.BackendTools.BootloaderTools.getconfigtools.KernelOptions
 
-            logger.info("BackendThread().StartOperations(): Finished Operation Running Code.")
+            except AttributeError: pass
 
-            #Save a system report if needed.
-            if MakeSystemSummary:
-                logger.info("BackendThread().StartOperations(): Generating System Report...")
-                self.GenerateSystemReport()
-                logger.info("BackendThread().StartOperations(): Done, finished all operations.")
+        logger.info("BackendThread().StartOperations(): Finished Operation Running Code.")
 
-            wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished!")
+        #Save a system report if needed. *** Do this check earlier on ***
+        if MakeSystemSummary:
+            logger.info("BackendThread().StartOperations(): Generating System Report...")
+            self.GenerateSystemReport()
+            logger.info("BackendThread().StartOperations(): Done, finished all operations.")
 
-            DialogTools().ShowMsgDlg(Kind="info", Message="Your operations are all done! Thank you for using WxFixBoot. If you performed any bootloader operations, please now reboot your system.") #*** Check this and customise message if needed ***
+        wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished!")
+
+        DialogTools().ShowMsgDlg(Kind="info", Message="Your operations are all done! Thank you for using WxFixBoot. If you performed any bootloader operations, please now reboot your system.") #*** Check this and customise message if needed ***
 
         wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
@@ -2878,7 +2944,7 @@ class BackendThread(threading.Thread):
             ReportList.write("\n\tSave Terminal Output in Report: "+unicode(SaveOutput)+"\n")
             ReportList.write("\tSystem Report Target File: "+ReportFile+"\n\n")
 
-        ReportList.write("Number of operations to do: "+unicode(NumberOfOperationsToDo)+"\n")
+        ReportList.write("Number of operations to do: "+unicode(NumberOfOperations)+"\n")
 
         #Save terminal output.
         if SaveOutput:

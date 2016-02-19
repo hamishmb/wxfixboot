@@ -310,7 +310,7 @@ class Main(): #*** These need refactoring and proper testing ***
                     global OSsForBootloaderRemoval
                     global OSsForBootloaderInstallation
 
-                    OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools().HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
+                    #*** Disabled temporarily due to the above vars causing problems *** OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools().HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Remounting Partition: "+Partition+" Read-Write...")

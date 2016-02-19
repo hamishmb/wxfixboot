@@ -30,11 +30,11 @@ class Main(): #*** These need refactoring and proper testing ***
         templog = []
 
         #Run the cmd.
-        if Piping:
+        if Piping == False:
             #*** Temporary abstraction in preparation to switch to CoreTools().StartProcess() ***
             ExecCmds = ' '.join(ExecCmds)
 
-        logger.debug("CoreBackendTools: Main()..StartThreadProcess(): Starting process: "+ExecCmds)
+        logger.debug("CoreBackendTools: Main().StartThreadProcess(): Starting process: "+ExecCmds)
         runcmd = subprocess.Popen(ExecCmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
         while runcmd.poll() == None:
@@ -55,19 +55,11 @@ class Main(): #*** These need refactoring and proper testing ***
 
         #Log this info in a debug message.
         try:
-            if Piping:
-                logger.debug("CoreBackendTools: Main().StartThreadProcess(): Process: "+ExecCmds+": Return Value: "+unicode(retval)+", Output: \"\n\n"+''.join(templog)+"\"\n")
-
-            else:
-                logger.debug("CoreBackendTools: Main().StartThreadProcess(): Process: "+' '.join(ExecCmds)+": Return Value: "+unicode(retval)+", Output: \"\n\n"+''.join(templog)+"\"\n")
+            logger.debug("CoreBackendTools: Main().StartThreadProcess(): Process: "+ExecCmds+": Return Value: "+unicode(retval)+", Output: \"\n\n"+''.join(templog)+"\"\n")
 
         except UnicodeDecodeError:
 	        #Skip logging the output, but do note we couldn't log the output.
-            if Piping:
-                logger.debug("CoreBackendTools: Main().StartThreadProcess(): Process: "+ExecCmds+": Return Value: "+unicode(retval)+", Output: \"\n\nCouldn't write data due to unicode decode error\"\n")
-
-            else:
-                logger.debug("CoreBackendTools: Main().StartThreadProcess(): Process: "+' '.join(ExecCmds)+": Return Value: "+unicode(retval)+", Output: \"\n\nCouldn't write data due to unicode decode error\"\n")
+            logger.debug("CoreBackendTools: Main().StartThreadProcess(): Process: "+ExecCmds+": Return Value: "+unicode(retval)+", Output: \"\n\nCouldn't write data due to unicode decode error\"\n")
 
         if ReturnOutput == False:
             #Return the return code back to whichever function ran this process, so it can handle any errors.
