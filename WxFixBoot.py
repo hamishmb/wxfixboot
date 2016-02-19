@@ -21,6 +21,9 @@
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
 #*** Make sure to use "//" when we want int division (/ used to be int division before future imports) ***
 #*** Put docstrings in all functions/methods ***
+#*** Don't use grep, use python's text processing features ***
+#*** Don't use find, use os.walk() instead ***
+#*** Don't use parted, all it's being used for is getting partition schemes, something lshw will do with dictionaries soon ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -119,8 +122,8 @@ from Tools.BackendTools.BootloaderTools.setconfigtools import Main as SetConfigB
 #Setup custom-made modules (make global variables accessible inside the packages). *** Continue to add stuff as needed *** *** Cut/rejig these later ***
 #GetDevInfo Package.
 GetDevInfo.getdevinfo.subprocess = subprocess
-GetDevInfo.getdevinfo.re = re
 GetDevInfo.getdevinfo.logger = logger
+GetDevInfo.getdevinfo.re = re
 
 #CoreTools Module.
 Tools.coretools.subprocess = subprocess
@@ -129,91 +132,85 @@ Tools.coretools.os = os
 
 #DialogTools Module.
 Tools.dialogtools.wx = wx
-Tools.dialogtools.time = time
 Tools.dialogtools.logger = logger
+Tools.dialogtools.time = time
 
-#StartupTools Package (Core).
-Tools.StartupTools.core.CoreTools = CoreTools
+#StartupTools Package (Core). *** Grep used here *** *** find used here *** *** parted used here ***
 Tools.StartupTools.core.logger = logger
+Tools.StartupTools.core.CoreTools = CoreTools
 Tools.StartupTools.core.DialogTools = DialogTools
 
-#StartupTools Package (Main).
-Tools.StartupTools.main.CoreTools = CoreTools
+#StartupTools Package (Main). *** Grep used here ***
 Tools.StartupTools.main.logger = logger
-Tools.StartupTools.main.DialogTools = DialogTools
-Tools.StartupTools.main.CoreStartupTools = CoreStartupTools
-Tools.StartupTools.main.time = time
 Tools.StartupTools.main.os = os
+Tools.StartupTools.main.CoreTools = CoreTools
+Tools.StartupTools.main.CoreStartupTools = CoreStartupTools
+Tools.StartupTools.main.DialogTools = DialogTools
 
 #BackendTools Package (Core).
-Tools.BackendTools.core.wx = wx
-Tools.BackendTools.core.CoreTools = CoreTools
-Tools.BackendTools.core.logger = logger
+Tools.BackendTools.core.wx = wx #*** Keep until switch to using CoreTools().StartProcess() in all BackendThread functions ***
 Tools.BackendTools.core.subprocess = subprocess #*** Keep until switch to using CoreTools().StartProcess() in all BackendThread functions ***
+Tools.BackendTools.core.logger = logger
+Tools.BackendTools.core.CoreTools = CoreTools
 
-#BackendTools Package (Helpers)
-Tools.BackendTools.helpers.wx = wx
-Tools.BackendTools.helpers.CoreTools = CoreTools
+#BackendTools Package (Helpers) *** Grep used here ***
+Tools.BackendTools.helpers.wx = wx #*** Keep until CheckInternetConnection is moved to essentials ***
 Tools.BackendTools.helpers.logger = logger
-Tools.BackendTools.helpers.DialogTools = DialogTools
+Tools.BackendTools.helpers.CoreTools = CoreTools
 Tools.BackendTools.helpers.CoreBackendTools = CoreBackendTools
+Tools.BackendTools.helpers.DialogTools = DialogTools
 Tools.BackendTools.helpers.LooseVersion = LooseVersion
 
 #BackendTools Package (Essentials)
 Tools.BackendTools.essentials.wx = wx
-Tools.BackendTools.essentials.time = time
-Tools.BackendTools.essentials.CoreTools = CoreTools
 Tools.BackendTools.essentials.logger = logger
-Tools.BackendTools.essentials.DialogTools = DialogTools
+Tools.BackendTools.essentials.CoreTools = CoreTools
 Tools.BackendTools.essentials.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools
+Tools.BackendTools.essentials.DialogTools = DialogTools
 
-#BackendTools Package (Main).
-Tools.BackendTools.main.CoreTools = CoreTools
+#BackendTools Package (Main). *** Nothing in here yet, move some stuff out of bootloader tools ***
 Tools.BackendTools.main.logger = logger
+Tools.BackendTools.main.CoreTools = CoreTools
 
 #BootloaderTools Package (Main)
-Tools.BackendTools.BootloaderTools.main.CoreTools = CoreTools
-Tools.BackendTools.BootloaderTools.main.logger = logger
-Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
-Tools.BackendTools.BootloaderTools.main.HelperBackendTools = HelperBackendTools
-Tools.BackendTools.BootloaderTools.main.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.BootloaderTools.main.wx = wx
+Tools.BackendTools.BootloaderTools.main.logger = logger
+Tools.BackendTools.BootloaderTools.main.CoreTools = CoreTools
+Tools.BackendTools.BootloaderTools.main.CoreBackendTools = CoreBackendTools
+Tools.BackendTools.BootloaderTools.main.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.main.GetConfigBootloaderTools = GetConfigBootloaderTools
 Tools.BackendTools.BootloaderTools.main.BootloaderRemovalTools = BootloaderRemovalTools
 Tools.BackendTools.BootloaderTools.main.BootloaderInstallationTools = BootloaderInstallationTools
+Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
 
 #BootloaderTools Package (GetConfigTools)
-Tools.BackendTools.BootloaderTools.getconfigtools.CoreTools = CoreTools
+Tools.BackendTools.BootloaderTools.getconfigtools.wx = wx #*** Keep until moving GetOldBootloader config to MainBackendTools ***
 Tools.BackendTools.BootloaderTools.getconfigtools.logger = logger
-Tools.BackendTools.BootloaderTools.getconfigtools.DialogTools = DialogTools
-Tools.BackendTools.BootloaderTools.getconfigtools.HelperBackendTools = HelperBackendTools
-Tools.BackendTools.BootloaderTools.getconfigtools.CoreBackendTools = CoreBackendTools
-Tools.BackendTools.BootloaderTools.getconfigtools.wx = wx
+Tools.BackendTools.BootloaderTools.getconfigtools.CoreTools = CoreTools #*** Keep until moving GetOldBootloader config to MainBackendTools ***
+Tools.BackendTools.BootloaderTools.getconfigtools.DialogTools = DialogTools #*** Keep until moving GetOldBootloader config to MainBackendTools ***
 
 #BootloaderTools Package (RemovalTools)
-Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools
-Tools.BackendTools.BootloaderTools.removaltools.logger = logger
-Tools.BackendTools.BootloaderTools.removaltools.DialogTools = DialogTools
-Tools.BackendTools.BootloaderTools.removaltools.HelperBackendTools = HelperBackendTools
-Tools.BackendTools.BootloaderTools.removaltools.CoreBackendTools = CoreBackendTools
-Tools.BackendTools.BootloaderTools.removaltools.wx = wx
+Tools.BackendTools.BootloaderTools.removaltools.wx = wx #*** Keep until moving RemoveOldBootloader to MainBackendTools ***
+Tools.BackendTools.BootloaderTools.removaltools.logger = logger #*** Keep until moving RemoveOldBootloader to MainBackendTools ***
+Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools #*** Keep until moving RemoveOldBootloader to MainBackendTools *** *** Keep after too cos of switch to CoreTools().StartProcess() ***
+Tools.BackendTools.BootloaderTools.removaltools.CoreBackendTools = CoreBackendTools #*** Keep until moving RemoveOldBootloader to MainBackendTools, and until switch to CoreTools().StartProcess() ***
+Tools.BackendTools.BootloaderTools.removaltools.DialogTools = DialogTools #*** Keep until moving RemoveOldBootloader to MainBackendTools ***
 
 #BootloaderTools Package (InstallationTools)
-Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools
-Tools.BackendTools.BootloaderTools.installationtools.logger = logger
-Tools.BackendTools.BootloaderTools.installationtools.DialogTools = DialogTools
-Tools.BackendTools.BootloaderTools.installationtools.HelperBackendTools = HelperBackendTools
-Tools.BackendTools.BootloaderTools.installationtools.CoreBackendTools = CoreBackendTools
-Tools.BackendTools.BootloaderTools.installationtools.wx = wx
+Tools.BackendTools.BootloaderTools.installationtools.wx = wx #*** Keep until moving InstallNewBootloader to MainBackendTools ***
+Tools.BackendTools.BootloaderTools.installationtools.logger = logger #*** Keep until moving InstallNewBootloader to MainBackendTools ***
+Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools #*** Keep until moving InstallNewBootloader to MainBackendTools *** *** Keep after too cos of switch to CoreTools().StartProcess() ***
+Tools.BackendTools.BootloaderTools.installationtools.CoreBackendTools = CoreBackendTools #*** Keep until moving InstallNewBootloader to MainBackendTools, and until switch to CoreTools().StartProcess() ***
+Tools.BackendTools.BootloaderTools.installationtools.DialogTools = DialogTools #*** Keep until moving InstallNewBootloader to MainBackendTools ***
 
-#BootloaderTools Package (SetConfigTools)
-Tools.BackendTools.BootloaderTools.setconfigtools.CoreTools = CoreTools
+#BootloaderTools Package (SetConfigTools) *** Grep used here ***
+Tools.BackendTools.BootloaderTools.setconfigtools.wx = wx #*** Keep until moving SetNewBootloaderConfig to MainBackendTools ***
 Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
-Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
-Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
+Tools.BackendTools.BootloaderTools.setconfigtools.CoreTools = CoreTools #*** Keep until moving SetNewBootloaderConfig to MainBackendTools ***
 Tools.BackendTools.BootloaderTools.setconfigtools.CoreBackendTools = CoreBackendTools
-Tools.BackendTools.BootloaderTools.setconfigtools.wx = wx
+Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
+Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):

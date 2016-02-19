@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** These need testing and refactoring ***
 class Main():
-    def CheckInternetConnection(self): #*** Log more stuff here  ***
+    def CheckInternetConnection(self): #*** Move to essentials *** #*** Log more stuff here  ***
         """Check the internet connection."""
         DialogTools().ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations.")
         Retry = True
@@ -107,7 +107,7 @@ class Main():
             logger.info("HelperBackendTools: Main().LookForAPTOnPartition(): Found apt...")
             return True
 
-    def LookForBootloaderOnPartition(self, PackageManager, MountPoint, UsingChroot):
+    def LookForBootloaderOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Use python's text processing features ***
         """Look for the currently installed bootloader in the given mount point."""
         logger.debug("HelperBackendTools: Main().LookForBootloaderOnPartition() has been triggered...")
 
@@ -441,7 +441,7 @@ class Main():
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Done!")
 
     def FindLatestVersion(self, Directory, Type):
-        """Try the find the latest kernel/initrd in the given directory.""" #*** Refactor this and use some kind of looping to make it shorter ***
+        """Try the find the latest kernel/initrd in the given directory.""" #*** Refactor this and use some kind of looping to make it shorter *** *** Would it be easier to use os.walk()? ***
         FileList = os.listdir(Directory)
 
         if Type == "Kernel":

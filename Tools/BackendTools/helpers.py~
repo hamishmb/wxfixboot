@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** These need testing and refactoring ***
 class Main():
-    def CheckInternetConnection(self): #*** Log more stuff here  ***
+    def CheckInternetConnection(self): #*** Move to essentials *** #*** Log more stuff here  ***
         """Check the internet connection."""
         DialogTools().ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations.")
         Retry = True
@@ -77,7 +77,7 @@ class Main():
             #Check if we're looking at a FSType, not a device, and that we've not marked it "Unknown". Otherwise ignore it. *** Some checks can be removed once switched to dictionaries ***
             if FSType[0] != "/" and FSType != "Unknown":
                 #Check if this module is present.
-                Retval = CoreBackendTools().StartThreadProcess(["fsck."+FSType], ShowOutput=False)
+                Retval = CoreBackendTools().StartThreadProcess(["which", "fsck."+FSType], ShowOutput=False)
 
                 if Retval != 0:
                     #OS probably couldn't find it, add it to the failed list.
@@ -107,7 +107,7 @@ class Main():
             logger.info("HelperBackendTools: Main().LookForAPTOnPartition(): Found apt...")
             return True
 
-    def LookForBootloaderOnPartition(self, PackageManager, MountPoint, UsingChroot):
+    def LookForBootloaderOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Use python's text processing features ***
         """Look for the currently installed bootloader in the given mount point."""
         logger.debug("HelperBackendTools: Main().LookForBootloaderOnPartition() has been triggered...")
 

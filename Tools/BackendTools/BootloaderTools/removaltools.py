@@ -16,7 +16,7 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 class Main(): #*** Refactor and test all of these ***
-    def RemoveOldBootloader(self): #*** Reduce code duplication if possible ***
+    def RemoveOldBootloader(self): #*** Reduce code duplication if possible *** *** Handle return values ***
         """Remove the currently installed bootloader."""
         logger.debug("BootloaderRemovalTools: Main().RemoveOldBootloader(): Preparing to remove old bootloaders...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Removing old bootloaders...")

@@ -270,8 +270,6 @@ class Main(): #*** These need refactoring and proper testing ***
             wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking Partition: "+Partition)
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30+((50/CheckListLength)*(CheckList.index(Element)+1)))
 
-            time.sleep(1)
-
             #Create a command list that will work based on the fstype of this partition. If there aren't any use cases for the fstype, display a message to the user and skip it.
             if FSType == "jfs":
                 ExecList = ['fsck.jfs', '-vf', Partition]
@@ -354,8 +352,6 @@ class Main(): #*** These need refactoring and proper testing ***
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking Partition: "+Partition+"###\n")
             wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking Partition: "+Partition)
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30+((50/CheckListLength)*(CheckList.index(Element)+1)))
-
-            time.sleep(1)
 
             #Run a command that will work based on the fstype of this partition. If there aren't any use cases for the fstype, display a message to the user and skip it. Ignore return values.
             if FSType == "jfs":

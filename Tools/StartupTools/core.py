@@ -25,7 +25,7 @@ from __future__ import unicode_literals
 class Main():
     def GetDevPartScheme(self, Device):
         """Get the partition type on the given Device, and return it."""
-        return CoreTools().StartProcess("parted -s "+Device+" print", ReturnOutput=True)[1].split("\n")[3].split()[-1] #*** Maybe use python-parted module *** *** Might be unnecessary when switching to dictionaries and new device detection system ***
+        return CoreTools().StartProcess("parted -s "+Device+" print", ReturnOutput=True)[1].split("\n")[3].split()[-1] #*** Unnecessary when switching to dictionaries and new device detection system ***
 
     def DetermineOSArchitecture(self, Partition, Chroot):
         """Look for OS architecture on given partition, looking for 64-bit first, then 32-bit."""

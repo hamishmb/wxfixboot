@@ -25,7 +25,7 @@ from __future__ import unicode_literals
 class Main():
     def CheckDepends(self):
         """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
-        #Create a temporary list to allow WxFixBoot to notify of particular unmet dependencies.
+        #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies. *** Remove grep, find, and parted soon ***
         CmdList = ("mount -V", "parted -v", "lsb_release -v", "dmidecode -V", "grep -V", "lsblk --help", "chroot --version", "dd --version", "find --version")
 
         #Create a list to contain names of failed commands.
@@ -283,7 +283,6 @@ class Main():
                         OSList.append(OSName+' '+OSArch+' on partition '+Partition)
 
                 #Unmount the filesystem.
-                time.sleep(0.2) #*** Why is this here? ***
                 Retval = CoreTools().Unmount("/mnt"+Partition) #*** Check the return value so we can take action if this doesn't work! Otherwise we may delete data from a drive! Mind, it looks like rm won't let you fortunately. ***
 
                 #Remove the temporary mountpoint
