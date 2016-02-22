@@ -113,7 +113,7 @@ class Main():
 
         #Okay, let's run a command in the chroot that was set up in self.FindBootloaderRemovalOSs(), depending on which package manager this OS uses, and which bootloader is currently installed.
         #To do this, we need to tell CoreBackendTools().StartThreadProcess() that we're going to be using pipes on the commandline, so we can use shell=True.
-        if PackageManager = "apt-get":
+        if PackageManager == "apt-get":
             Cmd = "dpkg --get-selections"
 
         if UsingChroot:
