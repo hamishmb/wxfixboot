@@ -1427,7 +1427,7 @@ class SettingsWindow(wx.Frame):
         #Open the Firmware Options window
         logger.debug("SettingsWindow().LaunchblOpts(): Starting Bootloader Settings Window...")
         self.Hide()
-        OptionsWindow2(self).Show()
+        BootloaderOptionsWindow(self).Show()
 
     def LaunchBootSectWindow(self, Event=None):
         #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first.
@@ -1596,9 +1596,9 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().SaveOptions(): SettingsWindow is closing. Revealing MainWindow...")
         self.Destroy()
 
-#End Options window 1
-#Begin Options window 2 *** Maybe say what the changes will be before closing to make it easier for the user *** *** The partitioning stuff can be changed and made better when we switch to dictionaries ***
-class OptionsWindow2(wx.Frame):
+#End Settings Window
+#Begin Bootloader Options Window *** Maybe say what the changes will be before closing to make it easier for the user *** *** The partitioning stuff can be changed and made better when we switch to dictionaries ***
+class BootloaderOptionsWindow(wx.Frame):
     def __init__(self,ParentWindow):
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Bootloader Options", size=(450,330), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
@@ -1615,7 +1615,7 @@ class OptionsWindow2(wx.Frame):
         self.SetupSizers()
         self.BindEvents()
 
-        logger.debug("OptionsWindow2().__init__(): OptionsWindow2 Started.")
+        logger.debug("BootloaderOptionsWindow().__init__(): BootloaderOptionsWindow Started.")
 
     def CreateButtons(self):
         self.RescanForBootloadersButton = wx.Button(self.Panel, -1, "Rescan For Bootloaders")
@@ -1632,7 +1632,6 @@ class OptionsWindow2(wx.Frame):
         self.OptionsText = wx.StaticText(self.Panel, -1, "Options:")
         self.PartitioningText = wx.StaticText(self.Panel, -1, "Partitioning on "+RootDevice+":")
         self.BootloaderToInstallText = wx.StaticText(self.Panel, -1, "Bootloader to install:")
-        self.UEFIPartitionText = wx.StaticText(self.Panel, -1, "UEFI Partition:")
  
     def CreateRadios(self):
         #Create radio buttons.
@@ -1664,7 +1663,7 @@ class OptionsWindow2(wx.Frame):
     def SetDefaults(self):
         global BootloaderToInstall
     
-        logger.debug("OptionsWindow2().SetDefaults(): Setting up OptionsWindow2...")
+        logger.debug("BootloaderOptionsWindow().SetDefaults(): Setting up BootloaderOptionsWindow...")
         #Check if the dialog has already been run, or if the bootloader setting has changed (so it must discard the setting to avoid errors).
         if BLOptsDlgRun == False or Bootloader != PrevBootloaderSetting:
             #Use defaults.
@@ -1747,7 +1746,7 @@ class OptionsWindow2(wx.Frame):
 
             self.PartitionTypeChoice.SetSelection(0)
 
-        logger.debug("OptionsWindow2().SetDefaults(): OptionsDlg2 Set up!")
+        logger.debug("BootloaderOptionsWindow().SetDefaults(): OptionsDlg2 Set up!")
 
     def SetupSizers(self):
         """Setup sizers for bootloader options window"""
@@ -1820,7 +1819,7 @@ class OptionsWindow2(wx.Frame):
         self.Bind(wx.EVT_RADIOBUTTON, self.ActivateOptsforBIOSFW, self.BIOSFirmwareTypeRadioButton)
 
     def ActivateOptsforAutoFW(self, Event=None):
-        logger.debug("OptionsWindow2().ActivateOptsForAutoFW() has been triggered...")
+        logger.debug("BootloaderOptionsWindow().ActivateOptsForAutoFW() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and UpdateBootloader == False:
             self.UEFItoBIOSCheckBox.SetValue(False)
             self.UEFItoBIOSCheckBox.Disable()
@@ -1830,7 +1829,7 @@ class OptionsWindow2(wx.Frame):
             self.AutoDetermineCheckBox.SetValue(True)
 
     def ActivateOptsforUEFIFW(self, Event=None):
-        logger.debug("OptionsWindow2().ActivateOptsForUEFIFW() has been triggered...")
+        logger.debug("BootloaderOptionsWindow().ActivateOptsForUEFIFW() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and Bootloader != "GRUB-LEGACY" and UpdateBootloader == False:
             self.AutoDetermineCheckBox.SetValue(False)
             self.AutoDetermineCheckBox.Disable()
@@ -1844,7 +1843,7 @@ class OptionsWindow2(wx.Frame):
             self.AutoDetermineCheckBox.SetValue(True)
 
     def ActivateOptsforBIOSFW(self, Event=None):
-        logger.debug("OptionsWindow2().ActivateOptsForBIOSFW() has been triggered...")
+        logger.debug("BootloaderOptionsWindow().ActivateOptsForBIOSFW() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and Bootloader != "GRUB-LEGACY" and UpdateBootloader == False:
             self.UEFItoBIOSCheckBox.SetValue(True)
             self.UEFItoBIOSCheckBox.Enable()
@@ -1858,7 +1857,7 @@ class OptionsWindow2(wx.Frame):
             self.AutoDetermineCheckBox.SetValue(True)
 
     def ActivateOptsforNoModification(self, Event=None):
-        logger.debug("OptionsWindow2().ActivateOptsForNoModification() has been triggered...")
+        logger.debug("BootloaderOptionsWindow().ActivateOptsForNoModification() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and UpdateBootloader == False:
             self.UEFItoBIOSCheckBox.SetValue(False)
             self.UEFItoBIOSCheckBox.Disable()
@@ -1888,7 +1887,7 @@ class OptionsWindow2(wx.Frame):
             self.BIOStoUEFICheckBox.Disable()
 
     def BlToInstallChoiceChange(self, Event=None):
-        logger.debug("OptionsWindow2().BLToInstallChoiceChange() has been triggered...")
+        logger.debug("BootloaderOptionsWindow().BLToInstallChoiceChange() has been triggered...")
         if self.BootloaderToInstallChoice.GetSelection() == 0 and self.BootloaderToInstallChoicelastvalue != self.BootloaderToInstallChoice.GetStringSelection():
             self.BootloaderToInstallChoicelastvalue = self.BootloaderToInstallChoice.GetStringSelection()
             self.DoNotChangeBootloaderCheckBox.Enable()
@@ -1936,9 +1935,9 @@ class OptionsWindow2(wx.Frame):
         AutoUEFISystemPartition = "None"
         FatPartitions=['None']
 
-        logger.info("OptionsWindow2().UEFISysyPChoiceChange(): Determining The Bootloader...")
+        logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
         Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition, FatPartitions = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
-        logger.info("OptionsWindow2().UEFISysyPChoiceChange(): Bootloader is: "+Bootloader)
+        logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+Bootloader)
 
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
         #Send a message to OptionsDlg1, so it can show itself again.
@@ -1950,7 +1949,7 @@ class OptionsWindow2(wx.Frame):
     def CheckOpts(self, Event=None):
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.UEFItoBIOSCheckBox.IsChecked() == False and self.AutoDetermineCheckBox.IsChecked() == False and self.BIOStoUEFICheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0:
             #Do nothing, as settings are invalid.
-            logger.error("OptionsWindow2().CheckOpts(): No options selected, although the 'do not modify' checkbox is unticked, or the options selected are invalid. Won't save options, waitng for user change...")
+            logger.error("BootloaderOptionsWindow().CheckOpts(): No options selected, although the 'do not modify' checkbox is unticked, or the options selected are invalid. Won't save options, waitng for user change...")
             wx.MessageDialog(self.Panel, "Your current selection suggests a modification will take place, but it doesn't specify which modification to do! Please select a valid modification to do.", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition).ShowModal()
 
         else:
@@ -1965,14 +1964,14 @@ class OptionsWindow2(wx.Frame):
         global FirmwareType
         global AutoFirmwareType
 
-        logger.info("OptionsWindow2().SaveBLOpts(): Saving Options...")
+        logger.info("BootloaderOptionsWindow().SaveBLOpts(): Saving Options...")
 
         BootloaderList = ('GRUB-LEGACY', 'GRUB-UEFI','GRUB2','ELILO','LILO')
 
         #Partition scheme choice.
         if self.PartitionTypeChoice.GetStringSelection()[0:6] == "Manual":
             #No action required.
-            logger.info("OptionsWindow2().SaveBLOpts(): No Change in any PartScheme values...")
+            logger.info("BootloaderOptionsWindow().SaveBLOpts(): No Change in any PartScheme values...")
 
         else:
             #Figure out which entry in PartSchemeList to change and then delete and recreate it using the options in the dlg (msdos, or gpt)
@@ -1980,10 +1979,10 @@ class OptionsWindow2(wx.Frame):
             PartSchemeList.pop(tempnum)
             PartSchemeList.insert(tempnum, self.PartitionTypeChoice.GetStringSelection().split()[-1])
             if self.PartitionTypeChoice.GetStringSelection()[0:4] != "Auto":
-                logger.info("OptionsWindow2().SaveBLOpts(): Changed value of PartScheme for device: "+RootDevice+" to: "+PartSchemeList[tempnum])
+                logger.info("BootloaderOptionsWindow().SaveBLOpts(): Changed value of PartScheme for device: "+RootDevice+" to: "+PartSchemeList[tempnum])
 
             else:
-                logger.info("OptionsWindow2().SaveBLOpts(): Changed value of PartScheme for device: "+RootDevice+" to: "+PartSchemeList[tempnum]+" the default...")
+                logger.info("BootloaderOptionsWindow().SaveBLOpts(): Changed value of PartScheme for device: "+RootDevice+" to: "+PartSchemeList[tempnum]+" the default...")
 
         #Firmware Choice.
         if self.UEFIFirmwareTypeRadioButton.GetValue():
@@ -1996,7 +1995,7 @@ class OptionsWindow2(wx.Frame):
             #Use auto value.
             FirmwareType = AutoFirmwareType
 
-        logger.info("OptionsWindow2().SaveBLOpts(): Value of FirmwareType is: "+FirmwareType)
+        logger.info("BootloaderOptionsWindow().SaveBLOpts(): Value of FirmwareType is: "+FirmwareType)
 
         #Bootloader to install choice.
         #Offer some warnings here if needed. This is a little complicated, but is still fairly easy to read.
@@ -2093,13 +2092,13 @@ class OptionsWindow2(wx.Frame):
         #Avoid an error situation.
         PrevBootloaderSetting = Bootloader
 
-        logger.info("OptionsWindow2().SaveBLOpts(): Value of BootloaderToInstall is: "+BootloaderToInstall)
-        logger.info("OptionsWindow2().SaveBLOpts(): Finished saving options.")
+        logger.info("BootloaderOptionsWindow().SaveBLOpts(): Value of BootloaderToInstall is: "+BootloaderToInstall)
+        logger.info("BootloaderOptionsWindow().SaveBLOpts(): Finished saving options.")
 
         self.CloseBLOpts()
         
     def CloseBLOpts(self):
-        logger.debug("OptionsWindow2().CloseBLOpts(): OptionsWindow2 Closing.")
+        logger.debug("BootloaderOptionsWindow().CloseBLOpts(): BootloaderOptionsWindow Closing.")
         #Save that this window has been run once, so it can update itself with the new info if it's started again.
         global BLOptsDlgRun
         BLOptsDlgRun = True
@@ -2110,7 +2109,7 @@ class OptionsWindow2(wx.Frame):
         #Exit.
         self.Destroy()
 
-#End Options window 2
+#End Bootloader Options Window
 #Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later ***
 class RestoreWindow(wx.Frame):
     def __init__(self, ParentWindow, Type):
