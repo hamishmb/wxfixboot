@@ -25,15 +25,15 @@ from __future__ import unicode_literals
 class Main():
     def CheckDepends(self):
         """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
-        #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies. *** Remove find and parted soon *** *** Maybe remove lsblk later ***
-        CmdList = ("mount -V", "parted -v", "lsb_release -v", "dmidecode -V", "lsblk --help", "chroot --version", "dd --version", "find --version")
+        #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies. *** Remove parted soon *** *** Maybe remove lsblk later ***
+        CmdList = ("mount", "parted", "lsb_release", "dmidecode", "lsblk", "chroot", "dd")
 
         #Create a list to contain names of failed commands.
         FailedList = []
 
         for Command in CmdList:
             #Run the command with its argument and log the output (if in debug mode)
-            Retval, Output = CoreTools().StartProcess(Command, ReturnOutput=True)
+            Retval, Output = CoreTools().StartProcess("which "+Command, ReturnOutput=True)
 
             if Retval != 0:
                 logger.error("MainStartupTools: Main().CheckDepends(): Dependency problems! Command: "+Command+" failed to execute or wasn't found.")

@@ -281,9 +281,9 @@ class Main():
     def CheckForGRUBUEFI(self, UEFISYSPMountPoint):
         """Check for GRUB-UEFI"""
         #Look for GRUB's UEFI file.
-        Temp = CoreTools().StartProcess("find "+UEFISYSPMountPoint+" -iname '*grub*.efi'", ReturnOutput=True)[1].replace('\n', '')
+        Temp = CoreTools().Find(r"(.*)grub(.*).efi", UEFISYSPMountPoint)
 
-        if Temp != "":
+        if Temp != []:
             #Bootloader is GRUB-UEFI.
             GrubEFI = True
             HelpfulUEFIPartition = True
@@ -297,9 +297,9 @@ class Main():
     def CheckForELILO(self, UEFISYSPMountPoint):
         """Check for ELILO"""
         #Look for LILO's UEFI file.
-        Temp = CoreTools().StartProcess("find "+UEFISYSPMountPoint+" -iname '*elilo*.efi'", ReturnOutput=True)[1].replace('\n', '')
+        Temp = CoreTools().Find(r"(.*)elilo(.*).efi", UEFISYSPMountPoint)
 
-        if Temp != "":
+        if Temp != []:
             #Bootloader is ELILO.
             ELILO = True
             HelpfulUEFIPartition = True

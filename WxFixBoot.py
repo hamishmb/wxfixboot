@@ -132,13 +132,14 @@ GetDevInfo.getdevinfo.re = re
 Tools.coretools.subprocess = subprocess
 Tools.coretools.logger = logger
 Tools.coretools.os = os
+Tools.coretools.re = re
 
 #DialogTools Module.
 Tools.dialogtools.wx = wx
 Tools.dialogtools.logger = logger
 Tools.dialogtools.time = time
 
-#StartupTools Package (Core). *** find used here *** *** parted used here ***
+#StartupTools Package (Core). *** parted used here ***
 Tools.StartupTools.core.logger = logger
 Tools.StartupTools.core.CoreTools = CoreTools
 Tools.StartupTools.core.DialogTools = DialogTools
