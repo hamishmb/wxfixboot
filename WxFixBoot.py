@@ -26,6 +26,7 @@
 #*** Don't use parted, all it's being used for is getting partition schemes, something lshw will do with dictionaries soon ***
 #*** Maybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
 #*** If /tmp/wxfixboot is present on startup it isn't recreated ***
+#*** If LiveDisk == True and BootLoader == "GRUB-LEGACY" then crashes ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -50,7 +51,7 @@ from wx.animate import AnimationCtrl
 
 #Define the version number and the release date as global variables.
 Version = "1.1~pre1"
-ReleaseDate = "19/2/2016"
+ReleaseDate = "22/2/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -280,7 +281,7 @@ class InitialWindow(wx.Frame):
 
         #Start the Initalization Thread, which performs all necessary startup scripts and checks, and let it know this is the first start.
         logger.debug("Starting InitThread()...")
-        InitThread(self, Starting=True)       
+        InitThread(self)       
 
     def CreateProgressBarAndText(self):
         #Create a progressbar.
@@ -331,17 +332,14 @@ class InitialWindow(wx.Frame):
 #End Initalization Frame.
 #Begin Initaization Thread.
 class InitThread(threading.Thread):
-    def __init__(self, ParentWindow, Starting):
+    def __init__(self, ParentWindow):
         """Make a temporary directory for data used by this program. If it already exists, delete it and recreate it, unless this isn't first run."""
-        self.Starting = Starting
+        if os.path.isdir("/tmp/wxfixboot"):
+            shutil.rmtree("/tmp/wxfixboot")
+            logger.debug("InitThread(): Cleared WxFixBoot's temporary folder. Most of the time this doesn't need to be done, but it's probably not a problem. Logging this purely for paranoia's sake :)")
 
-        if self.Starting:
-            if os.path.isdir("/tmp/wxfixboot"):
-                shutil.rmtree("/tmp/wxfixboot")
-                logger.debug("InitThread(): Cleared WxFixBoot's temporary folder. Most of the time this doesn't need to be done, but it's probably not a problem. Logging this purely for paranoia's sake :)")
-
-            else:
-                os.mkdir("/tmp/wxfixboot")
+        else:
+            os.mkdir("/tmp/wxfixboot")
 
         #Set up dialog tools.
         Tools.dialogtools.ParentWindow = ParentWindow
@@ -352,191 +350,184 @@ class InitThread(threading.Thread):
         self.start()
 
     def run(self):
-        if self.Starting:
-            #Set some default settings and wait for the GUI to initialize.
-            logger.debug("InitThread(): Starting...")
+        #Set some default settings and wait for the GUI to initialize.
+        logger.debug("InitThread(): Starting...")
 
-            #Check for dependencies
-            logger.info("InitThread(): Checking For Dependencies...")
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking For Dependencies...")
-            MainStartupTools().CheckDepends()
-            wx.CallAfter(self.ParentWindow.UpdateProgressBar, "9")
-            logger.info("InitThread(): Done Checking For Dependencies!")
+        #Check for dependencies
+        logger.info("InitThread(): Checking For Dependencies...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking For Dependencies...")
+        MainStartupTools().CheckDepends()
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "9")
+        logger.info("InitThread(): Done Checking For Dependencies!")
 
-            #Unmount all filesystems, to avoid any data corruption.
-            logger.info("InitThread(): Unmounting Filesystems...")
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Unmounting Filesystems...")
-            MainStartupTools().UnmountAllFS()
-            wx.CallAfter(self.ParentWindow.UpdateProgressBar, "18")
-            logger.info("InitThread(): Done Unmounting Filsystems!")
+        #Unmount all filesystems, to avoid any data corruption.
+        logger.info("InitThread(): Unmounting Filesystems...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Unmounting Filesystems...")
+        MainStartupTools().UnmountAllFS()
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "18")
+        logger.info("InitThread(): Done Unmounting Filsystems!")
 
-            #Check filesystems.
-            logger.info("InitThread(): Checking Filesystems...")
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Filesystems...")
-            MainStartupTools().CheckFS()
-            wx.CallAfter(self.ParentWindow.UpdateProgressBar, "27")
-            logger.info("InitThread(): Filesystems Checked!")
+        #Check filesystems.
+        logger.info("InitThread(): Checking Filesystems...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Filesystems...")
+        MainStartupTools().CheckFS()
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "27")
+        logger.info("InitThread(): Filesystems Checked!")
 
-            #Mount all filesystems.
-            logger.info("InitThread(): Mounting Core Filesystems...")
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Mounting Core Filesystems...")
-            MainStartupTools().MountCoreFS()
-            wx.CallAfter(self.ParentWindow.UpdateProgressBar, "36")
-            logger.info("InitThread(): Done Mounting Core Filsystems!")
+        #Mount all filesystems.
+        logger.info("InitThread(): Mounting Core Filesystems...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Mounting Core Filesystems...")
+        MainStartupTools().MountCoreFS()
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "36")
+        logger.info("InitThread(): Done Mounting Core Filsystems!")
 
-            #Detect Devices, Partitions, and Partition Schemes
-            #Define Global Variables. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
-            global PartitionListWithFSType
-            global DeviceList
-            global PartSchemeList
-            global AutoPartSchemeList
-            global GPTInAutoPartSchemeList
-            global MBRInAutoPartSchemeList
+        #Detect Devices, Partitions, and Partition Schemes
+        #Define Global Variables. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
+        global PartitionListWithFSType
+        global DeviceList
+        global PartSchemeList
+        global AutoPartSchemeList
+        global GPTInAutoPartSchemeList
+        global MBRInAutoPartSchemeList
 
-            logger.info("InitThread(): Detecting Devices, Partitions, and PartSchemes...")
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Getting Device Information...")
-            PartitionListWithFSType, DeviceList, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList = MainStartupTools().DetectDevicesPartitionsAndPartSchemes()
-            wx.CallAfter(self.ParentWindow.UpdateProgressBar, "46")
-            logger.info("InitThread(): Finished Detecting Devices, Partitions, and PartSchemes!")
+        logger.info("InitThread(): Detecting Devices, Partitions, and PartSchemes...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Getting Device Information...")
+        PartitionListWithFSType, DeviceList, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList = MainStartupTools().DetectDevicesPartitionsAndPartSchemes()
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "46")
+        logger.info("InitThread(): Finished Detecting Devices, Partitions, and PartSchemes!")
 
-            #Detect Linux Partitions. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
-            #Define Global Variables.
-            global LinuxPartList
+        #Detect Linux Partitions. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
+        #Define Global Variables.
+        global LinuxPartList
 
-            logger.info("InitThread(): Detecting Linux Partitions...")
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Detecting Linux Partitions...")
-            LinuxPartList = MainStartupTools().DetectLinuxPartitions()
-            wx.CallAfter(self.ParentWindow.UpdateProgressBar, "55")
-            logger.info("InitThread(): Finished Detecting Linux Partitions!")
+        logger.info("InitThread(): Detecting Linux Partitions...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Detecting Linux Partitions...")
+        LinuxPartList = MainStartupTools().DetectLinuxPartitions()
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "55")
+        logger.info("InitThread(): Finished Detecting Linux Partitions!")
   
-            #Get the root filesystem and root device. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
-            #Define Global Variables.
-            global AutoRootFS
-            global RootFS
-            global AutoRootDevice
-            global RootDevice
-            global LiveDisk
-            global AutoDefaultOS
-            global DefaultOS
-            global OSList
+        #Get the root filesystem and root device. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
+        #Define Global Variables.
+        global AutoRootFS
+        global RootFS
+        global AutoRootDevice
+        global RootDevice
+        global LiveDisk
+        global AutoDefaultOS
+        global DefaultOS
+        global OSList
 
-            logger.info("InitThread(): Determining Root Filesystem and Root Device...")
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining default OS...")
-            AutoRootFS, RootFS, AutoRootDevice, RootDevice, LiveDisk, AutoDefaultOS, DefaultOS, OSList = MainStartupTools().GetRootFSandRootDev(LinuxPartList)
-            wx.CallAfter(self.ParentWindow.UpdateProgressBar, "64")
-            logger.info("InitThread(): Determined Root Filesystem as: "+RootFS+ " , Root Device is "+RootDevice)
+        logger.info("InitThread(): Determining Root Filesystem and Root Device...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining default OS...")
+        AutoRootFS, RootFS, AutoRootDevice, RootDevice, LiveDisk, AutoDefaultOS, DefaultOS, OSList = MainStartupTools().GetRootFSandRootDev(LinuxPartList)
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "64")
+        logger.info("InitThread(): Determined Root Filesystem as: "+RootFS+ " , Root Device is "+RootDevice)
 
-            #Get a list of Linux OSs (if LiveDisk = True, this has already been run). *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
-            logger.info("InitThread(): Finding Linux OSs...")
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Linux Operating Systems...")
-            if LiveDisk == False:
-                OSList, DefaultOS, AutoDefaultOS = MainStartupTools().GetLinuxOSs(LinuxPartList, LiveDisk, AutoRootFS)
+        #Get a list of Linux OSs (if LiveDisk = True, this has already been run). *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
+        logger.info("InitThread(): Finding Linux OSs...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Linux Operating Systems...")
+        if LiveDisk == False:
+            OSList, DefaultOS, AutoDefaultOS = MainStartupTools().GetLinuxOSs(LinuxPartList, LiveDisk, AutoRootFS)
 
-            wx.CallAfter(self.ParentWindow.UpdateProgressBar, "73")
-            logger.info("InitThread(): Found all Linux OSs. Default: "+DefaultOS)
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "73")
+        logger.info("InitThread(): Found all Linux OSs. Default: "+DefaultOS)
 
-            #Get the firmware type. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
-            #Define global variables.
-            global FirmwareType
-            global AutoFirmwareType
-            global UEFIVariables
+        #Get the firmware type. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
+        #Define global variables.
+        global FirmwareType
+        global AutoFirmwareType
+        global UEFIVariables
 
-            logger.info("InitThread(): Determining Firmware Type...")
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining Filesystem Type...")
-            FirmwareType, AutoFirmwareType, UEFIVariables = MainStartupTools().GetFirmwareType()
-            wx.CallAfter(self.ParentWindow.UpdateProgressBar, "82")
-            logger.info("InitThread(): Determined Firmware Type as: "+FirmwareType)
+        logger.info("InitThread(): Determining Firmware Type...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining Filesystem Type...")
+        FirmwareType, AutoFirmwareType, UEFIVariables = MainStartupTools().GetFirmwareType()
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "82")
+        logger.info("InitThread(): Determined Firmware Type as: "+FirmwareType)
 
-            #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
-            #Define global variables.
-            global Bootloader
-            global AutoBootloader
-            global PrevBootloaderSetting
-            global AutoUEFISystemPartition
-            global UEFISystemPartition
-            global HelpfulUEFIPartition #*** Is this var actually helpful? ***
-            global FatPartitions
+        #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
+        #Define global variables.
+        global Bootloader
+        global AutoBootloader
+        global PrevBootloaderSetting
+        global AutoUEFISystemPartition
+        global UEFISystemPartition
+        global HelpfulUEFIPartition #*** Is this var actually helpful? ***
+        global FatPartitions
 
-            #Initialise them.
-            HelpfulUEFIPartition = False
-            PrevBootloaderSetting = "None"
-            UEFISystemPartition = "None"
-            AutoUEFISystemPartition = "None"
-            FatPartitions=['None']
+        #Initialise them.
+        HelpfulUEFIPartition = False
+        PrevBootloaderSetting = "None"
+        UEFISystemPartition = "None"
+        AutoUEFISystemPartition = "None"
+        FatPartitions=['None']
 
-            logger.info("InitThread(): Determining The Bootloader...")
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-            Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition, FatPartitions = MainStartupTools().GetBootloader(self.Starting, RootDevice, LiveDisk, FirmwareType)
-            wx.CallAfter(self.ParentWindow.UpdateProgressBar, "91")
-            logger.info("InitThread(): Bootloader is: "+Bootloader)
+        logger.info("InitThread(): Determining The Bootloader...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition, FatPartitions = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "91")
+        logger.info("InitThread(): Bootloader is: "+Bootloader)
 
-            #Perform final check.
-            logger.info("InitThread(): Doing Final Check for error situations...")
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-            AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LiveDisk, PartitionListWithFSType, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition)
-            wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
-            logger.info("InitThread(): Done Final Check!")
+        #Perform final check.
+        logger.info("InitThread(): Doing Final Check for error situations...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
+        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LiveDisk, PartitionListWithFSType, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition)
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
+        logger.info("InitThread(): Done Final Check!")
 
-            #Set some other variables to default values, avoiding problems down the line.
-            #Define globals.
-            global ReinstallBootloader
-            global UpdateBootloader
-            global QuickFSCheck
-            global BadSectCheck
-            global SaveOutput
-            global FullVerbose
-            global Verify
-            global BackupBootSector
-            global BackupPartitionTable
-            global MakeSystemSummary
-            global BootloaderTimeout
-            global BootloaderToInstall
-            global BLOptsDlgRun
-            global RestoreBootSector
-            global BootSectorFile
-            global BootSectorTargetDevice
-            global BootSectorBackupType
-            global RestorePartitionTable
-            global PartitionTableFile
-            global PartitionTableTargetDevice
-            global PartitionTableBackupType
-            global OptionsDlg1Run
+        #Set some other variables to default values, avoiding problems down the line.
+        #Define globals.
+        global ReinstallBootloader
+        global UpdateBootloader
+        global QuickFSCheck
+        global BadSectCheck
+        global SaveOutput
+        global FullVerbose
+        global Verify
+        global BackupBootSector
+        global BackupPartitionTable
+        global MakeSystemSummary
+        global BootloaderTimeout
+        global BootloaderToInstall
+        global BLOptsDlgRun
+        global RestoreBootSector
+        global BootSectorFile
+        global BootSectorTargetDevice
+        global BootSectorBackupType
+        global RestorePartitionTable
+        global PartitionTableFile
+        global PartitionTableTargetDevice
+        global PartitionTableBackupType
+        global OptionsDlg1Run
 
-            #Initialise them.
-            ReinstallBootloader = ""
-            UpdateBootloader = ""
-            QuickFSCheck = ""
-            BadSectCheck = ""
-            SaveOutput = ""
-            FullVerbose = ""
-            Verify = ""
-            BackupBootSector = ""
-            BackupPartitionTable = ""
-            MakeSystemSummary = ""
-            BootloaderTimeout = ""
-            BootloaderToInstall = ""
-            BLOptsDlgRun = ""
-            RestoreBootSector = ""
-            BootSectorFile = ""
-            BootSectorTargetDevice = ""
-            BootSectorBackupType = ""
-            RestorePartitionTable = ""
-            PartitionTableFile = ""
-            PartitionTableTargetDevice = ""
-            PartitionTableBackupType = ""
-            OptionsDlg1Run = ""
+        #Initialise them.
+        ReinstallBootloader = ""
+        UpdateBootloader = ""
+        QuickFSCheck = ""
+        BadSectCheck = ""
+        SaveOutput = ""
+        FullVerbose = ""
+        Verify = ""
+        BackupBootSector = ""
+        BackupPartitionTable = ""
+        MakeSystemSummary = ""
+        BootloaderTimeout = ""
+        BootloaderToInstall = ""
+        BLOptsDlgRun = ""
+        RestoreBootSector = ""
+        BootSectorFile = ""
+        BootSectorTargetDevice = ""
+        BootSectorBackupType = ""
+        RestorePartitionTable = ""
+        PartitionTableFile = ""
+        PartitionTableTargetDevice = ""
+        PartitionTableBackupType = ""
+        OptionsDlg1Run = ""
 
-            logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-            ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run = MainStartupTools().SetDefaults()
+        logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
+        ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run = MainStartupTools().SetDefaults()
 
-            wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
-            logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
-
-        else:
-            #Get the Bootloader. It reads self.Starting for itself. **** This is broken, but soon we won't need self.Starting, cos GetBootloader can be called directly now it's in MainStartupTools() ***
-            logger.info("InitThread(): Determining The Bootloader...")
-            self.GetBootloader()
-            logger.info("InitThread(): Bootloader is: "+Bootloader)
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
+        logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
 
 #End Initalization Thread.
 #Begin Main Window
@@ -1627,6 +1618,7 @@ class OptionsWindow2(wx.Frame):
         logger.debug("OptionsWindow2().__init__(): OptionsWindow2 Started.")
 
     def CreateButtons(self):
+        self.RescanForBootloadersButton = wx.Button(self.Panel, -1, "Rescan For Bootloaders")
         self.ExitButton = wx.Button(self.Panel, -1, "Close")
 
     def CreateCheckboxes(self): #*** Change the text here to make it clearer ***
@@ -1668,14 +1660,11 @@ class OptionsWindow2(wx.Frame):
             self.BootloaderToInstallChoice = wx.Choice(self.Panel, -1, choices=['Auto', 'GRUB-UEFI', 'GRUB2', 'ELILO', 'LILO'])
 
         self.BootloaderToInstallChoice.SetSelection(0)
-        self.EFISystemPartitionChoice = wx.Choice(self.Panel, -1, choices=["None"]+FatPartitions) #*** Add auto here ***
 
     def SetDefaults(self):
         global BootloaderToInstall
     
         logger.debug("OptionsWindow2().SetDefaults(): Setting up OptionsWindow2...")
-        self.EFISystemPartitionChoice.SetStringSelection(UEFISystemPartition)
-
         #Check if the dialog has already been run, or if the bootloader setting has changed (so it must discard the setting to avoid errors).
         if BLOptsDlgRun == False or Bootloader != PrevBootloaderSetting:
             #Use defaults.
@@ -1797,15 +1786,11 @@ class OptionsWindow2(wx.Frame):
         BootloaderToInstallSizer.Add(self.BootloaderToInstallText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
         BootloaderToInstallSizer.Add(self.BootloaderToInstallChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
 
-        #Add items to the UEFI partition sizer.
-        UEFIPartitionSizer.Add(self.UEFIPartitionText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        UEFIPartitionSizer.Add(self.EFISystemPartitionChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-
         #Add items to the other options sizer.
         OtherOptionsSizer.Add(self.OptionsText, 0, wx.TOP|wx.BOTTOM, 10)
         OtherOptionsSizer.Add(PartitionSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
         OtherOptionsSizer.Add(BootloaderToInstallSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
-        OtherOptionsSizer.Add(UEFIPartitionSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
+        OtherOptionsSizer.Add(self.RescanForBootloadersButton, 1, wx.BOTTOM|wx.EXPAND, 10)
 
         #Add items to the all option sizer.
         AllOptionsSizer.Add(FirmwareOptionsSizer, 1, wx.RIGHT|wx.EXPAND, 5)
@@ -1829,7 +1814,7 @@ class OptionsWindow2(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.CheckOpts)
         self.Bind(wx.EVT_CHECKBOX, self.ActivateOptsforNoModification, self.DoNotChangeBootloaderCheckBox)
         self.Bind(wx.EVT_CHOICE, self.BlToInstallChoiceChange, self.BootloaderToInstallChoice)
-        self.Bind(wx.EVT_CHOICE, self.UEFISysPChoiceChange, self.EFISystemPartitionChoice) 
+        self.Bind(wx.EVT_CHOICE, self.RescanForBootloaders, self.RescanForBootloadersButton) 
         self.Bind(wx.EVT_RADIOBUTTON, self.ActivateOptsforAutoFW, self.AutoFirmwareTypeRadioButton)
         self.Bind(wx.EVT_RADIOBUTTON, self.ActivateOptsforUEFIFW, self.UEFIFirmwareTypeRadioButton)
         self.Bind(wx.EVT_RADIOBUTTON, self.ActivateOptsforBIOSFW, self.BIOSFirmwareTypeRadioButton)
@@ -1928,36 +1913,33 @@ class OptionsWindow2(wx.Frame):
             self.DoNotChangeBootloaderCheckBox.SetValue(False)
             self.DoNotChangeBootloaderCheckBox.Disable()
 
-    def UEFISysPChoiceChange(self, Event=None):
-        #Function to handle selection of new UEFI system partition. It's pretty self-explanatory.
+    def RescanForBootloaders(self, Event=None):
+        """Handle selection of new UEFI system partition. It's pretty self-explanatory.""" #*** Do we need to reset stuff/go back to mainwindow here? ***
+        dlg = wx.MessageDialog(self.Panel, "WxFixBoot will now rescan for bootloaders, please wait a few seconds.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+        #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
+        #Define global variables.
+        global Bootloader
+        global AutoBootloader
+        global PrevBootloaderSetting
+        global AutoUEFISystemPartition
         global UEFISystemPartition
-        logger.debug("OptionsWindow2().UEFISysPChoiceChange() has been triggered...")
-        if self.EFISystemPartitionChoice.GetStringSelection() == UEFISystemPartition:
-            logger.debug("OptionsWindow2().UEFISysPChoiceChange(): No action required, UEFISystemPartition unchanged...")
+        global HelpfulUEFIPartition #*** Is this var actually helpful? ***
+        global FatPartitions
 
-        elif self.EFISystemPartitionChoice.GetStringSelection() == "None":
-            logger.debug("OptionsWindow2().UEFISysPChoiceChange(): UEFISystemPartition changed to None. Disabling UEFI Bootloader installation, rescanning for bootloaders, and exiting OptionsWindow2()...")
-            UEFISystemPartition = self.EFISystemPartitionChoice.GetStringSelection()
+        #Initialise them.
+        HelpfulUEFIPartition = False
+        PrevBootloaderSetting = "None"
+        UEFISystemPartition = "None"
+        AutoUEFISystemPartition = "None"
+        FatPartitions=['None']
 
-            wx.MessageDialog(self.Panel, "As you have selected no UEFI partition, WxFixBoot will disable UEFI bootloaders. Please wait a few seconds while your system is scanned for bootloaders. If none are found, you will be prompted to enter one manually. After that, you will be returned to the first options window with any new bootloader settings detected. Any other settings you have set here will be ignored, unless you go back and set them again.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+        logger.info("OptionsWindow2().UEFISysyPChoiceChange(): Determining The Bootloader...")
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition, FatPartitions = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
+        logger.info("OptionsWindow2().UEFISysyPChoiceChange(): Bootloader is: "+Bootloader)
 
-            self.Hide()
-
-            #Check for bootloaders on the suggested UEFI partition.
-            InitThread(self, False)
-
-        else:
-            logger.debug("OptionsWindow2().UEFISysPChoiceChange(): UEFISystemPartition changed! Rescanning for UEFI bootloaders and exiting OptionsWindow2()...")
-            UEFISystemPartition = self.EFISystemPartitionChoice.GetStringSelection()
-
-            wx.MessageDialog(self.Panel, "You have selected a different UEFI Partition. Please wait a few seconds while it is scanned for bootloaders. If none are found, you will be prompted to enter one manually. After that, you will be returned to the first options window with any new bootloader settings detected. Any other settings you have set here will be ignored, unless you go back and set them again.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
-
-            self.Hide()
-
-            #Check for bootloaders on the suggested UEFI partition.
-            InitThread(self, False)
-
-    def UEFIPartitionScanned(self,msg):
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
         #Send a message to OptionsDlg1, so it can show itself again.
         wx.CallAfter(self.ParentWindow.RefreshOptionsDlg1, "Closed.")

@@ -360,7 +360,7 @@ class Main():
 
         return FirmwareType, AutoFirmwareType, UEFIVariables
 
-    def GetBootloader(self, Starting, RootDevice, LiveDisk, FirmwareType):
+    def GetBootloader(self, RootDevice, LiveDisk, FirmwareType):
         """Determine the current bootloader."""
         #*** Do some of this for each OS *** *** Will need a LOT of modification when I switch to dictionaries ***
         logger.debug("MainStartupTools: Main().GetBootloader(): Trying to determine bootloader...")
@@ -371,33 +371,30 @@ class Main():
 
         #Wrap this in a loop, so once a Bootloader is found, searching can stop.
         while True:
-            #Check for a UEFI partition, but only if this is the first run.
-            #Otherwise, skip some stuff.
-            if Starting == True:
-                #Check for a UEFI system partition.
-                logger.debug("MainStartupTools: Main().GetBootloader(): Checking For a UEFI partition...")
-                AutoUEFISystemPartition, FatPartitions = CoreStartupTools().CheckForUEFIPartition(LiveDisk)
-                UEFISystemPartition = AutoUEFISystemPartition
+            #Check for a UEFI partition.
+            #Check for a UEFI system partition.
+            logger.debug("MainStartupTools: Main().GetBootloader(): Checking For a UEFI partition...")
+            AutoUEFISystemPartition, FatPartitions = CoreStartupTools().CheckForUEFIPartition(LiveDisk)
+            UEFISystemPartition = AutoUEFISystemPartition
 
             #If there is no UEFI partition, ask the user.
             if UEFISystemPartition == "None":
                 #There is no UEFI partition.
-                #If Starting = True, then we'll look for BIOS bootloaders here.
-                if Starting == True:
-                    #Check for GRUB in the MBR
-                    logger.debug("MainStartupTools: Main().GetBootloader(): Checking for GRUB in bootsector...")
-                    if CoreStartupTools().CheckForGRUBBIOS():
-                        #We have GRUB BIOS, now figure out which version we have!
-                        AutoBootloader = CoreStartupTools().DetermineGRUBBIOSVersion(LiveDisk=LiveDisk)
-                        break
+                #Look for BIOS bootloaders here.
+                #Check for GRUB in the MBR
+                logger.debug("MainStartupTools: Main().GetBootloader(): Checking for GRUB in bootsector...")
+                if CoreStartupTools().CheckForGRUBBIOS():
+                    #We have GRUB BIOS, now figure out which version we have!
+                    AutoBootloader = CoreStartupTools().DetermineGRUBBIOSVersion(LiveDisk=LiveDisk)
+                    break
 
-                    #Check for LILO in MBR
-                    logger.debug("MainStartupTools: Main().GetBootloader(): Checking for LILO in bootsector...")
-                    if CoreStartupTools().CheckForLILO():
-                        #We have LILO!
-                        AutoBootloader = "LILO"
-                        logger.info("MainStartupTools: Main().GetBootloader(): Found LILO in MBR (shown as LILO in GUI. Continuing...")
-                        break
+                #Check for LILO in MBR
+                logger.debug("MainStartupTools: Main().GetBootloader(): Checking for LILO in bootsector...")
+                if CoreStartupTools().CheckForLILO():
+                    #We have LILO!
+                    AutoBootloader = "LILO"
+                    logger.info("MainStartupTools: Main().GetBootloader(): Found LILO in MBR (shown as LILO in GUI. Continuing...")
+                    break
 
                 #No bootloader was found, so ask the user instead.
                 #Do a manual selection of the bootloader.
@@ -411,7 +408,7 @@ class Main():
             logger.info("MainStartupTools: Main().GetBootloader(): UEFI Partition mounted at: "+UEFISYSPMountPoint+". Continuing to look for UEFI bootloaders...")
 
             #Attempt to figure out which bootloader is present.
-            #Check for GRUB-UEFI
+            #Check for GRUB-UEFI.
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking for GRUB-UEFI in UEFI Partition...")
             GrubEFI, HelpfulUEFIPartition = CoreStartupTools().CheckForGRUBUEFI(UEFISYSPMountPoint)
 
@@ -443,10 +440,6 @@ class Main():
         Bootloader = AutoBootloader
 
         return Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition, FatPartitions
-
-        #If this was started after selecting a new bootloader, send a message to OptionsWindow2, so the program continues. *** This is broken for now, but soon we won't need it ***
-        if Starting == False:
-            wx.CallAfter(self.ParentWindow.UEFIPartitionScanned, AutoBootloader)
 
     def SetDefaults(self):
         #Options in MainWindow
