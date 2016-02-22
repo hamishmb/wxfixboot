@@ -673,7 +673,7 @@ class MainWindow(wx.Frame):
 
     def Opts(self, Event=None):
         global OptionsDlg1Run
-        logger.debug("MainWindow().Opts(): Starting Options Window 1 and hiding MainWindow...")
+        logger.debug("MainWindow().Opts(): Starting Settings Window 1 and hiding MainWindow...")
 
         if self.ReinstallBootloaderCBwaschecked or self.UpdateBootloaderCBwaschecked:
             dlg = wx.MessageDialog(self.Panel, "Do you want to continue? If you reinstall or update your bootloader, some options, such as installing a different bootloader, and restoring backups of the bootsector and partition table, will be reset and disabled. If you want to change other settings, you can always do it after restarting WxFixBoot.", "WxFixBoot - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
@@ -696,7 +696,7 @@ class MainWindow(wx.Frame):
 
         OptionsDlg1Run = True
         self.Hide()
-        OptionsWindow1(self).Show()
+        SettingsWindow(self).Show()
 
     def DevInfo(self, Event=None):
         logger.debug("MainWindow().DevInfo(): Starting Device Info Window...")
@@ -711,7 +711,7 @@ class MainWindow(wx.Frame):
             ProgressFrame.Show(True)
             self.Destroy()
         else:
-            wx.MessageDialog(self.Panel, "Please check the settings in the Options Window before continuing, especially after changing the options in the Main Window!", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition).ShowModal()
+            wx.MessageDialog(self.Panel, "Please check the settings in the Settings Window before continuing, especially after changing the options in the Main Window!", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition).ShowModal()
 
     def RefreshMainWindow(self,msg):
         #Refresh the main window to reflect changes in the options, or after a restart.
@@ -1126,10 +1126,10 @@ class DevInfoWindow(wx.Frame):
         self.Destroy()
 
 #End Disk Info Window
-#Begin Options Window 1
-class OptionsWindow1(wx.Frame):
+#Begin Settings Window
+class SettingsWindow(wx.Frame):
     def __init__(self, ParentWindow):
-        wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - Options", size=(600,360), style=wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - Settings", size=(600,360), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(600,360))
         self.ParentWindow = ParentWindow
@@ -1145,7 +1145,7 @@ class OptionsWindow1(wx.Frame):
         self.SetupSizers()
         self.BindEvents()
 
-        logger.debug("OptionsWindow1().__init__(): OptionsWindow1 Started.")
+        logger.debug("SettingsWindow().__init__(): SettingsWindow Started.")
 
     def CreateButtons(self):
         #Create Some buttons.
@@ -1156,7 +1156,7 @@ class OptionsWindow1(wx.Frame):
 
     def CreateText(self):
         #Create the text, aligning it where needed.
-        self.WelcomeText = wx.StaticText(self.Panel, -1, "Welcome to Options. Please give all the settings a once-over.")
+        self.WelcomeText = wx.StaticText(self.Panel, -1, "Welcome to Settings. Please give everything a once-over.")
         self.BasicSettingsText = wx.StaticText(self.Panel, -1, "Basic Settings:")
         self.InstalledBootloaderText = wx.StaticText(self.Panel, -1, "Installed Bootloader:")
         self.DefaultOSText = wx.StaticText(self.Panel, -1, "Default OS to boot:")
@@ -1201,7 +1201,7 @@ class OptionsWindow1(wx.Frame):
 
     def SetupOptions(self):
         #Load all Options here.
-        logger.debug("OptionsWindow1().SetupOptions(): Setting up options in OptionsDlg1...")
+        logger.debug("SettingsWindow().SetupOptions(): Setting up options...")
 
         global BootloaderToInstall
         global DefaultOS
@@ -1283,7 +1283,7 @@ class OptionsWindow1(wx.Frame):
             self.RestoreBootsectorButton.Disable()
             self.RestorePartitionTableButton.Disable()
 
-        logger.debug("OptionsWindow1().SetupOptions(): Options in OptionsDlg1 set up!")
+        logger.debug("SettingsWindow().SetupOptions(): Finished!")
 
     def SetupSizers(self):
         """Setup all sizers for OptionsWindow"""
@@ -1381,7 +1381,7 @@ class OptionsWindow1(wx.Frame):
     def UpdateBLOptsText(self):
         #Recreate the Bootloader options text, and make sure it's in the right place. *** Get rid of this and just call the function on the wx.StaticTexts ***
         #We have to lie about the Panel's Width here, so the text is placed where we want it.
-        logger.debug("OptionsWindow1().UpdateBLOptsText(): Updating Bootloader Options text in OptionsDlg1...")
+        logger.debug("SettingsWindow().UpdateBLOptsText(): Updating Bootloader Options text...")
 
         #Do the Bootloader to install text first.
         self.BootloaderToInstallText.SetLabel("Installed Bootloader: "+BootloaderToInstall)
@@ -1389,7 +1389,7 @@ class OptionsWindow1(wx.Frame):
         #Do the Firmware Type Text now.
         self.FirmwareTypeText.SetLabel("Selected Firmware Type: "+FirmwareType)
 
-        logger.debug("OptionsWindow1().UpdateBLOptsText(): Bootloader Options text in OptionsDlg1 updated!")
+        logger.debug("SettingsWindow().UpdateBLOptsText(): Finished!")
 
     def BindEvents(self):
         self.Bind(wx.EVT_BUTTON, self.CloseOpts, self.ExitButton)
@@ -1425,7 +1425,7 @@ class OptionsWindow1(wx.Frame):
         wx.MessageDialog(self.Panel, "Most of the settings in the following dialog do not need to be and shouldn't be touched, with the exception of autodetermining the bootloader, or manually selecting one. The firmware type and partition schemes should not normally be changed. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
 
         #Open the Firmware Options window
-        logger.debug("OptionsWindow1().LaunchblOpts(): Starting Options Window 2 (aka Bootloader Options Dlg)...")
+        logger.debug("SettingsWindow().LaunchblOpts(): Starting Bootloader Settings Window...")
         self.Hide()
         OptionsWindow2(self).Show()
 
@@ -1433,7 +1433,7 @@ class OptionsWindow1(wx.Frame):
         #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first.
         self.SaveOptions()
 
-        logger.debug("OptionsWindow1().LaunchBootSectWindow(): Starting Restore Bootsector Window...")
+        logger.debug("SettingsWindow().LaunchBootSectWindow(): Starting Restore Bootsector Window...")
         #Show helpful info if the root device uses gpt.
         Tempnum = DeviceList.index(RootDevice)
         Temp = PartSchemeList[Tempnum]
@@ -1448,13 +1448,13 @@ class OptionsWindow1(wx.Frame):
         #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first.
         self.SaveOptions()
 
-        logger.debug("OptionsWindow1().LaunchPartTableWindow(): Starting Restore Partition Table Window...")
+        logger.debug("SettingsWindow().LaunchPartTableWindow(): Starting Restore Partition Table Window...")
         self.Hide()
         RestoreWindow(ParentWindow=self, Type="Partition Table").Show()
 
     def RefreshOptionsDlg1(self,msg):
         #Check if the partition table or boot sector are to be restored.
-        logger.debug("OptionsWindow1().RefreshOptionsDlg1(): Refreshing OptionsDlg1...")
+        logger.debug("SettingsWindow().RefreshOptionsDlg1(): Refreshing SettingsWindow...")
         if RestorePartitionTable or RestoreBootSector:
             #Disable/reset some options.
             self.BootloaderOptionsButton.Disable()
@@ -1507,7 +1507,7 @@ class OptionsWindow1(wx.Frame):
         global RootFS
         global BootloaderTimeout
 
-        logger.info("OptionsWindow1().SaveOptions(): Saving Options...")
+        logger.info("SettingsWindow().SaveOptions(): Saving Options...")
         
         #Checkboxes.
 
@@ -1516,42 +1516,42 @@ class OptionsWindow1(wx.Frame):
             SaveOutput = True
         else:
             SaveOutput = False
-        logger.debug("OptionsWindow1().SaveOptions(): Value of SaveOutput is: "+unicode(SaveOutput))
+        logger.debug("SettingsWindow().SaveOptions(): Value of SaveOutput is: "+unicode(SaveOutput))
 
         #Check FS cb
         if self.FullVerboseCheckBox.IsChecked():
             FullVerbose = True
         else:
             FullVerbose = False
-        logger.debug("OptionsWindow1().SaveOptions(): Value of FullVerbose is: "+unicode(FullVerbose))
+        logger.debug("SettingsWindow().SaveOptions(): Value of FullVerbose is: "+unicode(FullVerbose))
 
         #Remount FS CB
         if self.LogOutputCheckBox.IsChecked():
             SaveOutput = True
         else:
             SaveOutput = False
-        logger.debug("OptionsWindow1().SaveOptions(): Value of SaveOutput is: "+unicode(SaveOutput))
+        logger.debug("SettingsWindow().SaveOptions(): Value of SaveOutput is: "+unicode(SaveOutput))
 
         #Backup BootSector checkbox.
         if self.BackupBootsectorCheckBox.IsChecked():
             BackupBootSector = True
         else:
             BackupBootSector = False
-        logger.debug("OptionsWindow1().SaveOptions(): Value of BackupBootSector is: "+unicode(BackupBootSector))
+        logger.debug("SettingsWindow().SaveOptions(): Value of BackupBootSector is: "+unicode(BackupBootSector))
 
         #Backup Partition Table checkbox.
         if self.BackupPartitionTableCheckBox.IsChecked():
             BackupPartitionTable = True
         else:
             BackupPartitionTable = False
-        logger.debug("OptionsWindow1().SaveOptions(): Value of BackupPartitionTable is: "+unicode(BackupPartitionTable))
+        logger.debug("SettingsWindow().SaveOptions(): Value of BackupPartitionTable is: "+unicode(BackupPartitionTable))
 
         #Use chroot in operations checkbox
         if self.MakeSummaryCheckBox.IsChecked():
             MakeSystemSummary = True
         else:
             MakeSystemSummary = False
-        logger.debug("OptionsWindow1().SaveOptions(): Value of MakeSystemSummary is: "+unicode(MakeSystemSummary))
+        logger.debug("SettingsWindow().SaveOptions(): Value of MakeSystemSummary is: "+unicode(MakeSystemSummary))
 
         #ChoiceBoxes
         #Currently Installed Bootloader ChoiceBox
@@ -1561,15 +1561,15 @@ class OptionsWindow1(wx.Frame):
         else:
             #Set it to the auto value, using AutoBootloader
             Bootloader = AutoBootloader
-        logger.debug("OptionsWindow1().SaveOptions(): Value of Bootloader is: "+Bootloader)
+        logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+Bootloader)
 
         #Default OS choicebox
         DefaultOS = self.DefaultOSChoice.GetStringSelection()
-        logger.debug("OptionsWindow1().SaveOptions(): Value of DefaultOS is: "+DefaultOS)
+        logger.debug("SettingsWindow().SaveOptions(): Value of DefaultOS is: "+DefaultOS)
 
         #Root Filesystem.
         RootFS = self.DefaultOSChoice.GetStringSelection().split()[-1]
-        logger.debug("OptionsWindow1().SaveOptions(): Value of RootFS is: "+RootFS)
+        logger.debug("SettingsWindow().SaveOptions(): Value of RootFS is: "+RootFS)
 
         #Root device ChoiceBox
         if self.RootDeviceChoice.GetSelection() != 0:
@@ -1577,13 +1577,13 @@ class OptionsWindow1(wx.Frame):
         else:
             #Set it to the auto value, in case this has already been changed.
             RootDevice = AutoRootDevice
-        logger.debug("OptionsWindow1().SaveOptions(): Value of RootDevice is: "+RootDevice)
+        logger.debug("SettingsWindow().SaveOptions(): Value of RootDevice is: "+RootDevice)
 
         #Spinner
         BootloaderTimeout = int(self.BootloaderTimeoutSpinner.GetValue())
-        logger.debug("OptionsWindow1().SaveOptions(): Value of BootloaderTimeout is: "+unicode(BootloaderTimeout))
+        logger.debug("SettingsWindow().SaveOptions(): Value of BootloaderTimeout is: "+unicode(BootloaderTimeout))
 
-        logger.info("OptionsWindow1().SaveOptions(): Saved options.")
+        logger.info("SettingsWindow().SaveOptions(): Saved options.")
 
     def CloseOpts(self, Event=None):
         #Save the options first.
@@ -1593,7 +1593,7 @@ class OptionsWindow1(wx.Frame):
         wx.CallAfter(self.ParentWindow.RefreshMainWindow, "Closed")
 
         #Exit options window 1.
-        logger.debug("OptionsWindow1().SaveOptions(): OptionsWindow1 is closing. Revealing MainWindow...")
+        logger.debug("SettingsWindow().SaveOptions(): SettingsWindow is closing. Revealing MainWindow...")
         self.Destroy()
 
 #End Options window 1
