@@ -17,7 +17,6 @@
 #*** Make note of this: when 'cp' errors, the quotes it uses cause this error "UnicodeDecodeError" (use unicode(thing, , errors='ignore')) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixboottmpmountpoints/, to keep them out of the way of interference ***
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
-#*** Maybe use parted with the '-m' flag because we get lots of info in a easy to process way that way ***
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
 #*** Make sure to use "//" when we want int division (/ used to be int division before future imports) ***
 #*** Put docstrings in all functions/methods ***

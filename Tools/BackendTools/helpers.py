@@ -23,9 +23,9 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** These need testing and refactoring ***
 class Main():
-    def CheckInternetConnection(self): #*** Move to essentials *** #*** Log more stuff here  ***
+    def CheckInternetConnection(self): #*** Move to essentials *** *** Log more stuff here  ***
         """Check the internet connection."""
-        DialogTools().ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations.")
+        DialogTools().ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations.") #*** Note what we're pinging so the user knows exactly what we're doing ***
         Retry = True
 
         logger.info("HelperBackendTools: Main().CheckInternetConnection(): Checking the Internet Connection...")
@@ -107,57 +107,69 @@ class Main():
             logger.info("HelperBackendTools: Main().LookForAPTOnPartition(): Found apt...")
             return True
 
-    def LookForBootloaderOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Use python's text processing features *** *** Do later ***
+    def LookForBootloaderOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Test again ***
         """Look for the currently installed bootloader in the given mount point."""
         logger.debug("HelperBackendTools: Main().LookForBootloaderOnPartition() has been triggered...")
 
         #Okay, let's run a command in the chroot that was set up in self.FindBootloaderRemovalOSs(), depending on which package manager this OS uses, and which bootloader is currently installed.
         #To do this, we need to tell CoreBackendTools().StartThreadProcess() that we're going to be using pipes on the commandline, so we can use shell=True.
+        if PackageManager = "apt-get":
+            Cmd = "dpkg --get-selections"
+
+        if UsingChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
 
         if Bootloader == "GRUB-LEGACY":
-            if UsingChroot:
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" dpkg --get-selections | grep -w 'grub'", Piping=True, ShowOutput=False)
+            Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
 
-            else:
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("dpkg --get-selections | grep -w 'grub'", Piping=True, ShowOutput=False)
+            Packages = []
+
+            for Package in Output:
+                if "grub" in Package and "install" in Package and "grub2" not in Package:
+                    Packages.append(Package.split()[0])
 
         elif Bootloader == "GRUB2":
-            if UsingChroot:
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" dpkg --get-selections | grep 'grub-pc' | grep -w 'install'", Piping=True, ShowOutput=False)
+            Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
 
-            else:
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("dpkg --get-selections | grep 'grub-pc' | grep -w 'install'", Piping=True, ShowOutput=False)
+            Packages = []
+
+            for Package in Output:
+                if "grub-pc" in Package and "install" in Package:
+                    Packages.append(Package.split()[0])
 
         elif Bootloader == "LILO":
-            if UsingChroot:
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" dpkg --get-selections | grep -w 'lilo' | grep -w 'install'", Piping=True, ShowOutput=False)
+            Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
 
-            else:
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("dpkg --get-selections | grep -w 'lilo' | grep -w 'install'", Piping=True, ShowOutput=False)
+            Packages = []
+
+            for Package in Output:
+                if "lilo" in Package and "install" in Package:
+                    Packages.append(Package.split()[0])
 
         elif Bootloader == "GRUB-UEFI":
-            if UsingChroot:
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" dpkg --get-selections | grep 'grub-efi' | grep -w 'install'", Piping=True, ShowOutput=False)
+            Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
 
-            else:
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("dpkg --get-selections | grep 'grub-efi' | grep -w 'install'", Piping=True, ShowOutput=False)
+            Packages = []
+
+            for Package in Output:
+                if "grub-efi" in Package and "install" in Package:
+                    Packages.append(Package.split()[0])
 
         elif Bootloader == "ELILO":
-            if UsingChroot:
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" dpkg --get-selections | grep  -w 'elilo' | grep -w 'install'", Piping=True, ShowOutput=False)
+            Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
 
-            else:
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("dpkg --get-selections | grep -w 'elilo' | grep -w 'install'", Piping=True, ShowOutput=False)
+            Packages = []
+
+            for Package in Output:
+                if "elilo" in Package and "install" in Package:
+                    Packages.append(Package.split()[0])
+
+        #*** Temporary code to make things work ***
+        if Packages != []:
+            retval = 0
+
+        else:
+            retval = 1
 
         #Now we can check the return value. If it's 0, the bootloader is present in this OS. Otherwise, it isn't.
         if retval == 0:
