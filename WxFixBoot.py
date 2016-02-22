@@ -26,6 +26,7 @@
 #*** Maybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
 #*** If /tmp/wxfixboot is present on startup it isn't recreated ***
 #*** If LiveDisk == True and BootLoader == "GRUB-LEGACY" then crashes ***
+#*** Re-evaluate dependencies at packaging time ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -206,7 +207,7 @@ Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools #*** 
 Tools.BackendTools.BootloaderTools.installationtools.CoreBackendTools = CoreBackendTools #*** Keep until moving InstallNewBootloader to MainBackendTools, and until switch to CoreTools().StartProcess() ***
 Tools.BackendTools.BootloaderTools.installationtools.DialogTools = DialogTools #*** Keep until moving InstallNewBootloader to MainBackendTools ***
 
-#BootloaderTools Package (SetConfigTools) *** Grep used here ***
+#BootloaderTools Package (SetConfigTools)
 Tools.BackendTools.BootloaderTools.setconfigtools.wx = wx #*** Keep until moving SetNewBootloaderConfig to MainBackendTools ***
 Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
 Tools.BackendTools.BootloaderTools.setconfigtools.CoreTools = CoreTools #*** Keep until moving SetNewBootloaderConfig to MainBackendTools ***
