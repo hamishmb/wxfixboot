@@ -155,7 +155,7 @@ Tools.BackendTools.core.subprocess = subprocess #*** Keep until switch to using 
 Tools.BackendTools.core.logger = logger
 Tools.BackendTools.core.CoreTools = CoreTools
 
-#BackendTools Package (Helpers) *** Grep used here ***
+#BackendTools Package (Helpers)
 Tools.BackendTools.helpers.wx = wx #*** Keep until CheckInternetConnection is moved to essentials ***
 Tools.BackendTools.helpers.logger = logger
 Tools.BackendTools.helpers.CoreTools = CoreTools

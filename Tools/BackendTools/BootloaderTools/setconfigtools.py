@@ -294,23 +294,27 @@ class Main(): #*** Refactor and test all of these ***
 
     def SetGRUB2DefaultOS(self, OS, PackageManager, MountPoint): #*** Do logging stuff ***
         """Set GRUB2's (both BIOS and EFI/UEFI) default OS to boot"""
-        #I couldn't find a reliable way of doing this automatically, so give the user a choice box instead. *** Do this before release of final v1.1, probably in the 1st or 2nd rc ***
+        #I couldn't find a reliable way of doing this automatically, so give the user a choice box instead. *** Do this before release of final v1.1, probably in the 1st or 2nd rc. Maybe use disk names and save grub's name for each one ***
         global DefaultOS
 
         #Make a list of OSs grub2 found (hopefully all of them).
-        if MountPoint == "":
-            if PackageManager == "apt-get":
-                Temp = CoreBackendTools().StartThreadProcess(["grep", '-w', "menuentry", "/boot/grub/grub.cfg"], ShowOutput=False, ReturnOutput=True) #*** Use python's text processing features ***
-                retcode = Temp[0]
-                GrubMenuEntries = Temp[1]
+        GrubConfigFilePath = "/boot/grub/grub.cfg"
 
-        else:
-            if PackageManager == "apt-get":
-                Temp = CoreBackendTools().StartThreadProcess(["grep", '-w', "menuentry", MountPoint+"/boot/grub/grub.cfg"], ShowOutput=False, ReturnOutput=True) #*** Use python's text processing features ***
-                retcode = Temp[0]
-                GrubMenuEntries = Temp[1]
+        if MountPoint != "":
+            GrubConfigFilePath = MountPoint+GrubConfigFilePath
 
-        if retcode != 0:
+        GrubMenuEntries = ""
+
+        if PackageManager == "apt-get":
+            GrubConfigFile = open("/boot/grub/grub.cfg", "r")
+            GrubConfig = GrubCfgFile.read()
+            GrubConfigFile.close()
+
+        for Line in GrubConfig.split("\n"):
+            if "menuentry " in Line:
+                GrubMenuEntries += Line+"\n"
+
+        if GrubMenuEntries == "":
             #Don't set the default OS.
             DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set the default OS. This doesn't really matter. Click okay to continue.")
 
@@ -318,7 +322,7 @@ class Main(): #*** Refactor and test all of these ***
             #Now finally make the list of grub's OS names.
             GRUBOSNameList = []
 
-            #Split with each newline character found in the returned string.
+            #Split with each newline character found in the returned string. *** Do this earlier ***
             GrubMenuEntriesList = GrubMenuEntries.split('\n')
 
             for OSName in GrubMenuEntriesList:
