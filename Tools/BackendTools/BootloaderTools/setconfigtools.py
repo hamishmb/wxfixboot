@@ -92,11 +92,11 @@ class Main(): #*** Refactor and test all of these ***
         #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition. *** Do we always want to do that? ***
         if MountPoint == "":
             if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['grub-install', '--force', RootDevice], ShowOutput=False)
+                retval = CoreBackendTools().StartThreadProcess("grub-install --force "+RootDevice, Piping=True, ShowOutput=False)
 
         else:
             if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'grub-install', '--force', RootDevice], ShowOutput=False)
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" grub-install --force "+RootDevice, Piping=True, ShowOutput=False)
 
         #Return the return value.
         return retval
@@ -106,11 +106,11 @@ class Main(): #*** Refactor and test all of these ***
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if MountPoint == "":
             if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['grub-install', '--efi-directory='+UEFISystemPartitionMountPoint, '--target='+Arch+'-efi'], ShowOutput=False)
+                retval = CoreBackendTools().StartThreadProcess("grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi", Piping=True, ShowOutput=False)
 
         else:
             if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'grub-install', '--efi-directory=/boot/efi', '--target='+Arch+'-efi'], ShowOutput=False)
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi", Piping=True, ShowOutput=False)
 
         #Return the return value.
         return retval
@@ -120,11 +120,11 @@ class Main(): #*** Refactor and test all of these ***
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if MountPoint == "":
             if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['update-grub'], ShowOutput=False)
+                retval = CoreBackendTools().StartThreadProcess("update-grub", Piping=True, ShowOutput=False)
 
         else:
             if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'update-grub'], ShowOutput=False)
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" update-grub", Piping=True, ShowOutput=False)
 
         #Return the return value.
         return retval
@@ -175,17 +175,11 @@ class Main(): #*** Refactor and test all of these ***
             if LiveDisk == False and MountPoint == "":
                 #If the OS is AutoRootFS, and we're not on a live disk, do it differently.
                 if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess(["grub-set-default", DefaultOS], ShowOutput=False)
-
-                else:
-                    retval = CoreBackendTools().StartThreadProcess(["grub2-set-default", DefaultOS], ShowOutput=False)
+                    retval = CoreBackendTools().StartThreadProcess("grub-set-default "+DefaultOS, Piping=True, ShowOutput=False)
 
             else:
                 if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess(["chroot", MountPoint, "grub-set-default", DefaultOS], ShowOutput=False)
-
-                else:
-                    retval = CoreBackendTools().StartThreadProcess(["chroot", MountPoint, "grub2-set-default", DefaultOS], ShowOutput=False)
+                    retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" grub-set-default "+DefaultOS, Piping=True, ShowOutput=False)
 
             #Return the return value.
             return retval
@@ -561,10 +555,10 @@ class Main(): #*** Refactor and test all of these ***
     def InstallLILOToMBR(self, PackageManager, MountPoint): #*** Will need changing when we switch to always using shell=True *** Will need changing when we get rid of the Root Device concept ***
         """Install LILO to the MBR of RootDev."""
         if MountPoint == "":
-            retval = CoreBackendTools().StartThreadProcess(['lilo'], ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("lilo", Piping=True, ShowOutput=False)
 
         else:
-            retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'lilo'], ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" lilo", Piping=True, ShowOutput=False)
 
         #Return the return value.
         return retval
@@ -574,11 +568,11 @@ class Main(): #*** Refactor and test all of these ***
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if MountPoint == "":
             if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['elilo', '-b', UEFISystemPartition, '--efiboot'], ShowOutput=False)
+                retval = CoreBackendTools().StartThreadProcess("elilo -b "+UEFISystemPartition+" --efiboot", Piping=True, ShowOutput=False)
 
         else:
             if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'elilo', '-b', UEFISystemPartition, '--efiboot'], ShowOutput=False)
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" elilo -b "+UEFISystemPartition+" --efiboot", Piping=True, ShowOutput=False)
 
         #Return the return value.
         return retval
