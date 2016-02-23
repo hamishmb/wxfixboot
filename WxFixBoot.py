@@ -174,10 +174,10 @@ Tools.BackendTools.essentials.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.essentials.DialogTools = DialogTools
 
-#BackendTools Package (Main). *** Nothing in here yet, move some stuff out of bootloader tools *** *** Reorganise ***
+#BackendTools Package (Main).
 Tools.BackendTools.main.wx = wx
-Tools.BackendTools.main.os = os
 Tools.BackendTools.main.logger = logger
+Tools.BackendTools.main.os = os
 Tools.BackendTools.main.CoreTools = CoreTools
 Tools.BackendTools.main.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.main.DialogTools = DialogTools
@@ -205,9 +205,7 @@ Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools #*** 
 Tools.BackendTools.BootloaderTools.installationtools.CoreBackendTools = CoreBackendTools #*** Keep until switch to CoreTools().StartProcess() ***
 
 #BootloaderTools Package (SetConfigTools)
-Tools.BackendTools.BootloaderTools.setconfigtools.wx = wx #*** Keep until moving SetNewBootloaderConfig to MainBackendTools ***
 Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
-Tools.BackendTools.BootloaderTools.setconfigtools.CoreTools = CoreTools #*** Keep until moving SetNewBootloaderConfig to MainBackendTools ***
 Tools.BackendTools.BootloaderTools.setconfigtools.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
@@ -2622,9 +2620,6 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.essentials.ParentWindow = ParentWindow
         Tools.BackendTools.main.ParentWindow = ParentWindow
         Tools.BackendTools.BootloaderTools.main.ParentWindow = ParentWindow
-        Tools.BackendTools.BootloaderTools.removaltools.ParentWindow = ParentWindow
-        Tools.BackendTools.BootloaderTools.installationtools.ParentWindow = ParentWindow
-        Tools.BackendTools.BootloaderTools.setconfigtools.ParentWindow = ParentWindow
 
         #Start the main part of this thread.
         threading.Thread.__init__(self)
@@ -2716,10 +2711,16 @@ class BackendThread(threading.Thread):
 
             except UnboundLocalError: pass
 
+            try:
+                Tools.BackendTools.main.BootloaderToInstall = BootloaderToInstall
+
+            except UnboundLocalError: pass
+
             Tools.BackendTools.main.LiveDisk = LiveDisk
             Tools.BackendTools.main.AutoRootFS = AutoRootFS
             Tools.BackendTools.main.Bootloader = Bootloader
             Tools.BackendTools.main.UEFISystemPartition = UEFISystemPartition
+            Tools.BackendTools.main.OSList = OSList
 
             #*** Bootloader Config getting tools (in Backend Tools package) ***
             try:
@@ -2728,6 +2729,9 @@ class BackendThread(threading.Thread):
             except UnboundLocalError: pass
 
             #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
+            Tools.BackendTools.BootloaderTools.setconfigtools.RootDevice = RootDevice
+            Tools.BackendTools.BootloaderTools.setconfigtools.DefaultOS = DefaultOS
+            Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderToInstall = BootloaderToInstall
             Tools.BackendTools.BootloaderTools.setconfigtools.OSList = OSList
 
             try:
@@ -2735,23 +2739,6 @@ class BackendThread(threading.Thread):
                 Tools.BackendTools.BootloaderTools.setconfigtools.KernelOptions = KernelOptions
 
             except UnboundLocalError: pass
-
-            try:
-                Tools.BackendTools.BootloaderTools.setconfigtools.OSsForBootloaderInstallation = OSsForBootloaderInstallation
-                Tools.BackendTools.BootloaderTools.setconfigtools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
-
-            except UnboundLocalError: pass
-
-            Tools.BackendTools.BootloaderTools.setconfigtools.LiveDisk = LiveDisk
-            Tools.BackendTools.BootloaderTools.setconfigtools.AutoRootFS = AutoRootFS
-            Tools.BackendTools.BootloaderTools.setconfigtools.Bootloader = Bootloader
-
-            try:
-                Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderToInstall = BootloaderToInstall
-
-            except UnboundLocalError: pass
-
-            Tools.BackendTools.BootloaderTools.setconfigtools.UEFISystemPartition = UEFISystemPartition
 
             #Run the function.
             function()
@@ -2780,6 +2767,11 @@ class BackendThread(threading.Thread):
             try:
                 BootloaderTimeout = Tools.BackendTools.main.BootloaderTimeout
                 KernelOptions = Tools.BackendTools.main.KernelOptions
+
+            except AttributeError: pass
+
+            try:
+                DefaultOS = Tools.BackendTools.main.DefaultOS
 
             except AttributeError: pass
 
