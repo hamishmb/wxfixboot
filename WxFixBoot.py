@@ -159,7 +159,6 @@ Tools.BackendTools.core.logger = logger
 Tools.BackendTools.core.CoreTools = CoreTools
 
 #BackendTools Package (Helpers)
-Tools.BackendTools.helpers.wx = wx #*** Keep until CheckInternetConnection is moved to essentials ***
 Tools.BackendTools.helpers.logger = logger
 Tools.BackendTools.helpers.CoreTools = CoreTools
 Tools.BackendTools.helpers.CoreBackendTools = CoreBackendTools
@@ -197,11 +196,11 @@ Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
 Tools.BackendTools.BootloaderTools.getconfigtools.logger = logger
 
 #BootloaderTools Package (RemovalTools)
-Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools #*** Keep after too cos of switch to CoreTools().StartProcess() ***
+Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools #*** Keep cos of switch to CoreTools().StartProcess() ***
 Tools.BackendTools.BootloaderTools.removaltools.CoreBackendTools = CoreBackendTools #*** Keep until switch to CoreTools().StartProcess() ***
 
 #BootloaderTools Package (InstallationTools)
-Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools #*** Keep after too cos of switch to CoreTools().StartProcess() ***
+Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools #*** Keep cos of switch to CoreTools().StartProcess() ***
 Tools.BackendTools.BootloaderTools.installationtools.CoreBackendTools = CoreBackendTools #*** Keep until switch to CoreTools().StartProcess() ***
 
 #BootloaderTools Package (SetConfigTools)

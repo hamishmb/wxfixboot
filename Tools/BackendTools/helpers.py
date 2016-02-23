@@ -23,51 +23,6 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** These need testing and refactoring ***
 class Main():
-    def CheckInternetConnection(self): #*** Move to essentials *** *** Log more stuff here  ***
-        """Check the internet connection."""
-        DialogTools().ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations.") #*** Note what we're pinging so the user knows exactly what we're doing ***
-        Retry = True
-
-        logger.info("HelperBackendTools: Main().CheckInternetConnection(): Checking the Internet Connection...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking the Internet Connection...")
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking the Internet Connection...###\n")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 5)
-        DisableBootloaderOperations = False
-
-        while True:
-            #Test the internet connection by pinging an OpenDNS DNS server.
-            PacketLoss = "100%"
-
-            try:
-                Output = CoreBackendTools().StartThreadProcess(['ping', '-c', '5', '-i', '0.5', '208.67.222.222'], ShowOutput=False, ReturnOutput=True)[1].split("\n")
-                #Get the % packet loss.
-                for Line in Output:
-                    if 'packet loss' in Line:
-                        PacketLoss = Line.split()[-5]
-
-            except IndexError:
-                #This errored for some reason. Probably no internet connection.
-                PacketLoss = "100%"
-
-            if PacketLoss == "0%":
-                #Good! We have a reliable internet connection.
-                break
-
-            else:
-                #Uh oh! We DON'T have a reliable internet connection! Ask the user to either try again, or skip Bootloader operations.
-                Result = DialogTools().ShowYesNoDlg(Message="Your Internet Connection failed the test! Without a working internet connection, you cannot perform bootloader operations! Click yes to try again, and click no to give up and skip bootloader operations.", Title="WxFixBoot - Disable Bootloader Operations?")
-
-                if Result == False:
-                    DisableBootloaderOperations = True
-                    break
-
-                else:
-                    #We'll just run the loop again.
-                    pass
-
-        #Exit, and return with a bool stating whether or not to disable Bootloader Operations.
-        return DisableBootloaderOperations
-
     def FindMissingFSCKModules(self, PartitionListWithFSType):
         """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc), based on the FS types in PartitionListWithFSType.""" #*** Test this again *** *** Will need modification after switching to dictionaries ***
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Looking for missing FSCK modules to ignore...")

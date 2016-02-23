@@ -163,7 +163,7 @@ class Main(): #*** Refactor and test all of these ***
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader's configuration...###\n")
 
             #Get the bootloader's config.
-            GetConfigBootloaderTools().GetOldBootloaderConfig()
+            MainBackendTools().GetOldBootloaderConfig()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
 
             #Set the bootloaders new config.
@@ -188,7 +188,7 @@ class Main(): #*** Refactor and test all of these ***
             MainBackendTools().GetOldBootloaderConfig()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
 
-            BootloaderRemovalTools().RemoveOldBootloader()
+            MainBackendTools().RemoveOldBootloader()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
 
             BootloaderInstallSucceded = BootloaderInstallationTools().InstallNewBootloader()

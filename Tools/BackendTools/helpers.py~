@@ -453,7 +453,7 @@ class Main():
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Done!")
 
     def FindLatestVersion(self, Directory, Type):
-        """Try the find the latest kernel/initrd in the given directory.""" #*** Refactor this and use some kind of looping to make it shorter *** *** Would it be easier to use CoreTools.Find()? ***
+        """Try the find the latest kernel/initrd in the given directory.""" #*** Refactor this and use some kind of looping to make it shorter *** *** Would it be easier to use CoreTools().Find()? ***
         FileList = os.listdir(Directory)
 
         if Type == "Kernel":

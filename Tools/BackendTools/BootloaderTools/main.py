@@ -25,7 +25,7 @@ class Main(): #*** Refactor and test all of these ***
     def PrepareForBootloaderInstallation(self):
         """Run checks, gather information, and prepare for bootloader operations.""" #*** Make this more customisable *** 
         #First, check the Internet connection.
-        DisableBootloaderOperations = HelperBackendTools().CheckInternetConnection()
+        DisableBootloaderOperations = EssentialBackendTools().CheckInternetConnection()
 
         #*** Temporarily define these as global until switch to dictionaries ***
         global OSsForBootloaderRemoval
