@@ -46,11 +46,11 @@ class Main():
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
         return FailedList
 
-    def LookForAPTOnPartition(self, APTExecList): #*** Test again *** *** Maybe move to startup tools on switch to dictionaries ***
+    def LookForAPTOnPartition(self, APTExecCmds): #*** Test again *** *** Maybe move to startup tools on switch to dictionaries *** *** Does this need to be in a fuc
         """Look for apt using the command lists given (they include the partition, by the way)."""
-        logger.debug("HelperBackendTools: Main().LookForAPTOnPartition(): Running "+APTExecList+"...")
+        logger.debug("HelperBackendTools: Main().LookForAPTOnPartition(): Running "+APTExecCmds+"...")
 
-        Retval = CoreBackendTools().StartThreadProcess(APTExecList, Piping=True, ShowOutput=False)
+        Retval = CoreBackendTools().StartThreadProcess(APTExecCmds, Piping=True, ShowOutput=False)
 
         if Retval != 0:
             #Couldn't find apt!

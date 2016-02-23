@@ -86,7 +86,7 @@ class Main(): #*** Refactor and test all of these ***
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
 
-    def InstallGRUB2ToMBR(self, PackageManager, MountPoint): #*** Needs to change when we switch to always using shell=True *** *** Will need changing when we get rid of the Root Device concept ***
+    def InstallGRUB2ToMBR(self, PackageManager, MountPoint): #*** Will need changing when we get rid of the Root Device concept ***
         """Install GRUB2 (BIOS version) into the MBR of the hard drive"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the MBR.
         #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition. *** Do we always want to do that? ***
@@ -101,7 +101,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def InstallGRUBUEFIToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch): #*** Needs to change when we switch to always using shell=True *** *** Change the name to "InstallGRUB2ToEFIPartition" ***
+    def InstallGRUBUEFIToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch): #*** Change the name to "InstallGRUB2ToEFIPartition" ***
         """Install GRUB2 (EFI/UEFI version) into the EFI/UEFI partition"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if MountPoint == "":
@@ -115,7 +115,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def UpdateGRUB2(self, PackageManager, MountPoint): #*** Needs to change when we switch to always using shell=True ***
+    def UpdateGRUB2(self, PackageManager, MountPoint):
         """Run 'update-grub' to update GRUB2's (BIOS and EFI/UEFI) configuration and bootloader menu"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if MountPoint == "":
@@ -552,7 +552,7 @@ class Main(): #*** Refactor and test all of these ***
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
 
-    def InstallLILOToMBR(self, PackageManager, MountPoint): #*** Will need changing when we switch to always using shell=True *** Will need changing when we get rid of the Root Device concept ***
+    def InstallLILOToMBR(self, PackageManager, MountPoint): #*** Will need changing when we get rid of the Root Device concept ***
         """Install LILO to the MBR of RootDev."""
         if MountPoint == "":
             retval = CoreBackendTools().StartThreadProcess("lilo", Piping=True, ShowOutput=False)
@@ -563,7 +563,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def InstallELILOToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch): #*** Will need changing when we switch to always using shell=True *** *** Do we need Arch or UEFISystemPartitionMountPoint here? ***
+    def InstallELILOToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch): #*** Do we need Arch or UEFISystemPartitionMountPoint here? ***
         """Install ELILO to the EFI/UEFI Partition"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if MountPoint == "":

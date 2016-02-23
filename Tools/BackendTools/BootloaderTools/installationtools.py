@@ -22,7 +22,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 class Main(): #*** Refactor and test all of these ***
-    def UpdatePackageLists(self, PackageManager, UseChroot, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+    def UpdatePackageLists(self, PackageManager, UseChroot, MountPoint="None"):
         """Update the package lists so the required packages can always be found."""
         if PackageManager == "apt-get":
             if UseChroot == False:
@@ -34,7 +34,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def InstallGRUB2(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+    def InstallGRUB2(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         """Install GRUB2."""
         if PackageManager == "apt-get":
             if UseChroot == False:
@@ -46,7 +46,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def InstallLILO(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+    def InstallLILO(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         """Install LILO."""
         if PackageManager == "apt-get":
             if UseChroot == False:
@@ -58,7 +58,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def InstallGRUBUEFI(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+    def InstallGRUBUEFI(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         """Install GRUB-UEFI."""
         if PackageManager == "apt-get":
             if UseChroot == False:
@@ -70,7 +70,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def InstallELILO(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+    def InstallELILO(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         """Install ELILO."""
         if PackageManager == "apt-get":
             if UseChroot == False:
