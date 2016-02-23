@@ -958,6 +958,10 @@ class MainWindow(wx.Frame):
             Operations.append(MainBootloaderTools().UpdateBootloader)
             logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().UpdateBootloader to Operations...")
 
+        if MakeSystemSummary:
+            Operations.append(BackendThread().GenerateSystemReport)
+            logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
+
         #Check if we need to prepare to install a new bootloader, and do so first if needed. *** Log this ***
         for element in (MainBootloaderTools().ManageBootloaders, MainBootloaderTools().ReinstallBootloader, MainBootloaderTools().UpdateBootloader):
             if element in Operations:
@@ -1176,7 +1180,6 @@ class SettingsWindow(wx.Frame):
 
         self.CreateButtons()
         self.CreateText()
-        self.UpdateBLOptsText()
         self.CreateCBs()
         self.CreateChoiceBs()
         self.CreateSpinners()
@@ -1203,8 +1206,8 @@ class SettingsWindow(wx.Frame):
         self.BootloaderTimeoutText2 = wx.StaticText(self.Panel, -1, "(seconds, -1 represents current value)") 
         self.AdvancedSettingsText = wx.StaticText(self.Panel, -1, "Advanced Settings:")
         self.RootDeviceText = wx.StaticText(self.Panel, -1, "Root device:")
-        self.BootloaderToInstallText = wx.StaticText(self.Panel, -1, "Bootloader To Install:")
-        self.FirmwareTypeText = wx.StaticText(self.Panel, -1, "Selected Firmware Type:")
+        self.BootloaderToInstallText = wx.StaticText(self.Panel, -1, "Bootloader To Install: "+BootloaderToInstall)
+        self.FirmwareTypeText = wx.StaticText(self.Panel, -1, "Selected Firmware Type: "+FirmwareType)
 
     def CreateCBs(self):
         """Create the checkboxes"""
@@ -1430,19 +1433,6 @@ class SettingsWindow(wx.Frame):
         MainSizer.SetMinSize(wx.Size(600,360))
         MainSizer.SetSizeHints(self)
 
-    def UpdateBLOptsText(self):
-        #Recreate the Bootloader options text, and make sure it's in the right place. *** Get rid of this and just call the function on the wx.StaticTexts ***
-        #We have to lie about the Panel's Width here, so the text is placed where we want it.
-        logger.debug("SettingsWindow().UpdateBLOptsText(): Updating Bootloader Options text...")
-
-        #Do the Bootloader to install text first.
-        self.BootloaderToInstallText.SetLabel("Installed Bootloader: "+BootloaderToInstall)
-
-        #Do the Firmware Type Text now.
-        self.FirmwareTypeText.SetLabel("Selected Firmware Type: "+FirmwareType)
-
-        logger.debug("SettingsWindow().UpdateBLOptsText(): Finished!")
-
     def BindEvents(self):
         """Bind events for SettingsWindow"""
         self.Bind(wx.EVT_BUTTON, self.CloseOpts, self.ExitButton)
@@ -1557,7 +1547,8 @@ class SettingsWindow(wx.Frame):
         self.Panel.Layout()
 
         #Update the BootloaderToInstall and FirmwareType text.
-        self.UpdateBLOptsText()
+        self.BootloaderToInstallText.SetLabel("Bootloader To Install: "+BootloaderToInstall)
+        self.FirmwareTypeText.SetLabel("Selected Firmware Type: "+FirmwareType)
 
         #Show OptionsDlg1.
         self.Show()
@@ -1683,7 +1674,7 @@ class SettingsWindow(wx.Frame):
         self.Destroy()
 
 #End Settings Window
-#Begin Bootloader Options Window *** Maybe say what the changes will be before closing to make it easier for the user *** *** The partitioning stuff can be changed and made better when we switch to dictionaries ***
+#Begin Bootloader Options Window *** Fix some bugs and use get/set selection instead of get/set string selection where possible, maybe write some code from scratch *** *** The partitioning stuff can be changed and made better when we switch to dictionaries ***
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self,ParentWindow):
         """Initialise Bootloader options window"""
@@ -1707,12 +1698,16 @@ class BootloaderOptionsWindow(wx.Frame):
     def CreateButtons(self):
         """Create the buttons"""
         self.RescanForBootloadersButton = wx.Button(self.Panel, -1, "Rescan For Bootloaders")
+        self.CheckButton = wx.Button(self.Panel, -1, "Check Options")
         self.ExitButton = wx.Button(self.Panel, -1, "Close")
+
+        #Disable self.ExitButton.
+        self.ExitButton.Disable()
 
     def CreateCheckboxes(self): #*** Change the text here to make it clearer ***
         """Create the checkboxes"""
-        self.UEFItoBIOSCheckBox = wx.CheckBox(self.Panel, -1, "Replace an EFI bootloader with the BIOS version")
-        self.BIOStoUEFICheckBox = wx.CheckBox(self.Panel, -1, "Replace a BIOS bootloader with the UEFI version")
+        self.UEFItoBIOSCheckBox = wx.CheckBox(self.Panel, -1, "Replace an EFI bootloader with the BIOS version") #*** Get rid of this ***
+        self.BIOStoUEFICheckBox = wx.CheckBox(self.Panel, -1, "Replace a BIOS bootloader with the UEFI version") #*** Get rid of this ***
         self.AutoDetermineCheckBox = wx.CheckBox(self.Panel, -1, "Automatically determine the bootloader to install")
         self.DoNotChangeBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Do not install a new bootloader")
 
@@ -1893,6 +1888,7 @@ class BootloaderOptionsWindow(wx.Frame):
         MainSizer.Add(self.BIOStoUEFICheckBox, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM, 10)
         MainSizer.Add(self.AutoDetermineCheckBox, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM, 10)
         MainSizer.Add(self.DoNotChangeBootloaderCheckBox, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM, 10)
+        MainSizer.Add(self.CheckButton, 0, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         MainSizer.Add(self.ExitButton, 0, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
 
         #Get the sizer set up for the frame.
@@ -1902,7 +1898,8 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def BindEvents(self):
         """Bind all events for Bootloader Options Window"""
-        self.Bind(wx.EVT_BUTTON, self.CheckOpts, self.ExitButton)
+        self.Bind(wx.EVT_BUTTON, self.CloseWindow, self.ExitButton)
+        self.Bind(wx.EVT_BUTTON, self.CheckOpts, self.CheckButton)
         self.Bind(wx.EVT_CLOSE, self.CheckOpts)
         self.Bind(wx.EVT_CHECKBOX, self.ActivateOptsforNoModification, self.DoNotChangeBootloaderCheckBox)
         self.Bind(wx.EVT_CHOICE, self.BlToInstallChoiceChange, self.BootloaderToInstallChoice)
@@ -1913,6 +1910,11 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def ActivateOptsforAutoFW(self, Event=None):
         """Sets the window up for autodetermining the firmware type"""
+        #Disable self.ExitButton.
+        self.ExitButton.Disable()
+
+        self.BootloaderToInstallChoice.SetStringSelection("Auto")
+
         logger.debug("BootloaderOptionsWindow().ActivateOptsForAutoFW() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and UpdateBootloader == False:
             self.UEFItoBIOSCheckBox.SetValue(False)
@@ -1924,6 +1926,11 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def ActivateOptsforUEFIFW(self, Event=None):
         """Sets the window up for the UEFI firmware type"""
+        #Disable self.ExitButton.
+        self.ExitButton.Disable()
+
+        self.BootloaderToInstallChoice.SetStringSelection("Auto")
+
         logger.debug("BootloaderOptionsWindow().ActivateOptsForUEFIFW() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and Bootloader != "GRUB-LEGACY" and UpdateBootloader == False:
             self.AutoDetermineCheckBox.SetValue(False)
@@ -1939,6 +1946,11 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def ActivateOptsforBIOSFW(self, Event=None):
         """Sets the window up for the BIOS firmware type"""
+        #Disable self.ExitButton.
+        self.ExitButton.Disable()
+
+        self.BootloaderToInstallChoice.SetStringSelection("Auto")
+
         logger.debug("BootloaderOptionsWindow().ActivateOptsForBIOSFW() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and Bootloader != "GRUB-LEGACY" and UpdateBootloader == False:
             self.UEFItoBIOSCheckBox.SetValue(True)
@@ -1954,6 +1966,11 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def ActivateOptsforNoModification(self, Event=None):
         """Sets the window up for no modification"""
+        #Disable self.ExitButton.
+        self.ExitButton.Disable()
+
+        self.BootloaderToInstallChoice.SetStringSelection("Auto")
+
         logger.debug("BootloaderOptionsWindow().ActivateOptsForNoModification() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and UpdateBootloader == False:
             self.UEFItoBIOSCheckBox.SetValue(False)
@@ -1985,6 +2002,9 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def BlToInstallChoiceChange(self, Event=None):
         """Handles manual selection of bootloader to install"""
+        #Disable self.ExitButton.
+        self.ExitButton.Disable()
+
         logger.debug("BootloaderOptionsWindow().BLToInstallChoiceChange() has been triggered...")
         if self.BootloaderToInstallChoice.GetSelection() == 0 and self.BootloaderToInstallChoicelastvalue != self.BootloaderToInstallChoice.GetStringSelection():
             self.BootloaderToInstallChoicelastvalue = self.BootloaderToInstallChoice.GetStringSelection()
@@ -2054,7 +2074,7 @@ class BootloaderOptionsWindow(wx.Frame):
         else:
             self.SaveBLOpts()
 
-    def SaveBLOpts(self):
+    def SaveBLOpts(self): #*** Tidy this up and refactor it ***
         """Save all selected Operations"""
         global BootloaderToInstall
         global PrevBootloaderSetting
@@ -2188,17 +2208,20 @@ class BootloaderOptionsWindow(wx.Frame):
             if GPTInAutoPartSchemeList and BootloaderToInstall == "LILO":
                 wx.MessageDialog(self.Panel, "LILO is going to be installed, but at least one device connected to this computer uses an incompatble partition system! LILO will not boot from that device, so this may be a bad idea, in case you boot from it. Please consider installing GRUB2 instead as it will boot from that device.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
 
+        self.BootloaderToInstallChoice.SetStringSelection(BootloaderToInstall)
+
         #Avoid an error situation.
         PrevBootloaderSetting = Bootloader
 
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Value of BootloaderToInstall is: "+BootloaderToInstall)
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Finished saving options.")
 
-        self.CloseBLOpts()
+        #Enable self.ExitButton.
+        self.ExitButton.Enable()
         
-    def CloseBLOpts(self):
+    def CloseWindow(self, Event=None):
         """Close Bootloader Options Window, and call the refresh function to show Settings Window again"""
-        logger.debug("BootloaderOptionsWindow().CloseBLOpts(): BootloaderOptionsWindow Closing.")
+        logger.debug("BootloaderOptionsWindow().CloseWindow(): BootloaderOptionsWindow Closing.")
         #Save that this window has been run once, so it can update itself with the new info if it's started again.
         global BLOptsDlgRun
         BLOptsDlgRun = True
@@ -2767,7 +2790,7 @@ class BackendThread(threading.Thread):
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
         for function in Operations:
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
-            #*** We temporarily neeed global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
+            #*** We temporarily need global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
             #*** Might need to add logging stuff here temporarily for when it fails for debugging purposes ***
 
             #*** Essential backend tools ***
@@ -2892,12 +2915,6 @@ class BackendThread(threading.Thread):
             except AttributeError: pass
 
         logger.info("BackendThread().StartOperations(): Finished Operation Running Code.")
-
-        #Save a system report if needed. *** Do this check earlier on ***
-        if MakeSystemSummary:
-            logger.info("BackendThread().StartOperations(): Generating System Report...")
-            self.GenerateSystemReport()
-            logger.info("BackendThread().StartOperations(): Done, finished all operations.")
 
         wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished!")
 
