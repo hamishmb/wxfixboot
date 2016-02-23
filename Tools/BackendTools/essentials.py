@@ -41,7 +41,7 @@ class Main(): #*** These need refactoring and proper testing ***
             PacketLoss = "100%"
 
             try:
-                Output = CoreBackendTools().StartThreadProcess(['ping', '-c', '5', '-i', '0.5', '208.67.222.222'], ShowOutput=False, ReturnOutput=True)[1].split("\n")
+                Output = CoreBackendTools().StartThreadProcess("ping -c 5 -i 0.5 208.67.222.222", Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
                 #Get the % packet loss.
                 for Line in Output:
                     if 'packet loss' in Line:
@@ -97,7 +97,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
             #Backup the MBR of RootDevice.
             logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Backing up MBR partition table to file: "+PartitionTableBackupFile+", from device: "+RootDevice+"...")
-            retval = CoreBackendTools().StartThreadProcess(['dd', 'if='+RootDevice, 'of='+PartitionTableBackupFile, 'bs=512', 'count=1'], ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("dd if="+RootDevice+" of="+PartitionTableBackupFile+" bs=512 count=1", Piping=True, ShowOutput=False)
 
         else:
             #Let's backup the GPT, but we need to ask where to back it up first.
@@ -113,7 +113,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
             #Backup the GPT.
             logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Backing up GPT partition table to file: "+PartitionTableBackupFile+", from device: "+RootDevice+"...")
-            retval = CoreBackendTools().StartThreadProcess(['sgdisk', '--backup='+PartitionTableBackupFile, RootDevice], ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("sgdisk --backup="+PartitionTableBackupFile+" "+RootDevice, Piping=True, ShowOutput=False)
 
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Backing up Partition Table!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
@@ -147,7 +147,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
             #Backup the MBR of RootDevice.
             logger.info("EssentialBackendTools: Main().BackupBootSector(): Backing up MBR bootsector to file: "+BootSectorBackupFile+", from device: "+RootDevice+"...")
-            retval = CoreBackendTools().StartThreadProcess(['dd', 'if='+RootDevice, 'of='+BootSectorBackupFile, 'bs=512', 'count=1'], ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("dd if="+RootDevice+" of="+BootSectorBackupFile+" bs=512 count=1", Piping=True, ShowOutput=False)
 
         else:
             #Let's backup the UEFISystemPartition, but check there is one first.
@@ -168,7 +168,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
                 #Backup the UEFISystemPartition.
                 logger.info("EssentialBackendTools: Main().BackupBootSector(): Backing up UEFI System Partition ("+UEFISystemPartition+") to file: "+BootSectorBackupFile+"...")
-                retval = CoreBackendTools().StartThreadProcess(['dd', 'if='+UEFISystemPartition, 'of='+BootSectorBackupFile], ShowOutput=False)
+                retval = CoreBackendTools().StartThreadProcess("dd if="+UEFISystemPartition+" of="+BootSectorBackupFile, Piping=True, ShowOutput=False)
 
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Backing up the Boot Sector!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
@@ -210,11 +210,11 @@ class Main(): #*** These need refactoring and proper testing ***
             #Let's restore the MBR Partition Table.
             logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Restoring MBR partition table from file: "+PartitionTableFile+" to device: "+PartitionTableTargetDevice+"...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
-            retval = CoreBackendTools().StartThreadProcess(['dd', 'if='+PartitionTableFile, 'of='+PartitionTableTargetDevice, 'bs=1', 'count=64', 'skip=446', 'seek=446'], ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("dd if="+PartitionTableFile+" of="+PartitionTableTargetDevice+" bs=1 count=64 skip=446 seek=446", Piping=True, ShowOutput=False)
 
         else:
             #Let's restore the GPT.
-            retval = CoreBackendTools().StartThreadProcess(['sgdisk', '--load-backup='+PartitionTableFile, PartitionTableTargetDevice], ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("sgdisk --load-backup="+PartitionTableFile+" "+PartitionTableTargetDevice, Piping=True, ShowOutput=False)
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
             logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Restoring GPT partition table from file: "+PartitionTableFile+" to device: "+PartitionTableTargetDevice+"...")
 
@@ -265,13 +265,13 @@ class Main(): #*** These need refactoring and proper testing ***
             #Let's restore the MBR bootsector.
             logger.info("EssentialBackendTools: Main().RestoreBootSector(): Restoring MBR boot sector from file: "+BootSectorFile+" to device: "+BootSectorTargetDevice+"...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
-            CoreBackendTools().StartThreadProcess(['dd', 'if='+BootSectorFile, 'of='+BootSectorTargetDevice, 'bs=446', 'count=1'], ShowOutput=False)
+            CoreBackendTools().StartThreadProcess("dd if="+BootSectorFile+" of="+BootSectorTargetDevice+" bs=446 count=1", Piping=True, ShowOutput=False)
 
         else:
             #Restore the UEFISystemPartition.
             logger.info("EssentialBackendTools: Main().RestoreBootSector(): Restoring UEFI Partition ("+UEFISystemPartition+") from file: "+BootSectorFile+"...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
-            CoreBackendTools().StartThreadProcess(['dd', 'if='+BootSectorFile, 'of='+UEFISystemPartition], ShowOutput=False)
+            CoreBackendTools().StartThreadProcess("dd if="+BootSectorFile+" of="+UEFISystemPartition, Piping=True, ShowOutput=False)
 
         #Unmount the partition containing the file, if there is one. *** Is this necessary? ***
         if MountedFS != "None":
@@ -317,31 +317,31 @@ class Main(): #*** These need refactoring and proper testing ***
 
             #Create a command list that will work based on the fstype of this partition. If there aren't any use cases for the fstype, display a message to the user and skip it.
             if FSType == "jfs":
-                ExecList = ['fsck.jfs', '-vf', Partition]
+                ExecCmds = "fsck.jfs -vf "+Partition
 
             elif FSType == "minix":
-                ExecList = ['fsck.minix', '-avf', Partition]
+                ExecCmds = "fsck.minix -avf "+Partition
 
             elif FSType == "reiserfs":
-                ExecList = ['fsck.reiserfs', '-apf', Partition]
+                ExecCmds = "fsck.reiserfs -apf "+Partition
 
             elif FSType == "xfs":
-                ExecList = ['xfs_repair', '-Pvd', Partition]
+                ExecCmds = "xfs_repair -Pvd "+Partition
 
             elif FSType == "vfat":
-                ExecList = ['fsck.vfat', '-yv', Partition]
+                ExecCmds = "fsck.vfat -yv "+Partition]
 
             elif FSType in ('ext2', 'ext3', 'ext4', 'ext4dev'):
-                ExecList = ['fsck.'+FSType, '-yvf', Partition]
+                ExecCmds = "fsck."+FSType+" -yvf "+Partition
 
             else:
-                ExecList = ['None']
+                ExecCmds = ""
                 logger.warning("EssentialBackendTools: Main().QuickFileSystemCheck(): Skipping Partition: "+Partition+", as WxFixBoot doesn't support checking it yet...")
                 DialogTools().ShowMsgDlg(Kind="error", Message="The filesystem on partition: "+Partition+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Partition+" will now be skipped.")
 
             #Run the command with Piping = False, if ExecList != ['None'], otherwise do nothing, but do remount the partition if needed.
-            if ExecList != ['None']:
-                retval = CoreBackendTools().StartThreadProcess(ExecList)
+            if ExecCmds != "":
+                retval = CoreBackendTools().StartThreadProcess(ExecCmds, Piping=True)
 
                 #Check the return values, and run the handler if needed.
                 if retval == 0:
@@ -353,7 +353,7 @@ class Main(): #*** These need refactoring and proper testing ***
                     global OSsForBootloaderRemoval
                     global OSsForBootloaderInstallation
 
-                    #*** Disabled temporarily due to the above vars causing problems *** OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools().HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
+                    #*** Disabled temporarily due to the above vars causing problems *** *** Needs to change to use strings *** OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools().HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Remounting Partition: "+Partition+" Read-Write...")
@@ -402,33 +402,33 @@ class Main(): #*** These need refactoring and proper testing ***
             if FSType == "jfs":
                 #No support for bad sector check in jfs. Notify the user and do a normal check instead.
                 DialogTools().ShowMsgDlg(Kind="info", Message="The filesystem type on partition: "+Partition+" (jfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
-                ExecList = ['fsck.jfs', '-vf', Partition]
+                ExecCmds = "fsck.jfs -vf "+Partition
 
             elif FSType == "minix":
                 DialogTools().ShowMsgDlg(Kind="info", Message="The filesystem type on partition: "+Partition+" (minix) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
-                ExecList = ['fsck.minix', '-avf', Partition]
+                ExecCmds = "fsck.minix -avf "+Partition
 
             elif FSType == "reiserfs":
                 DialogTools().ShowMsgDlg(Kind="info", Message="The filesystem type on partition: "+Partition+" (reiserfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
-                ExecList = ['fsck.reiserfs', '-apf', Partition]
+                ExecCmds = "fsck.reiserfs -apf "+Partition
 
             elif FSType == "xfs":
                 DialogTools().ShowMsgDlg(Kind="info", Message="The filesystem type on partition: "+Partition+" (xfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
-                ExecList = ['xfs_repair', '-Pvd', Partition]
+                ExecCmds = "xfs_repair -Pvd "+Partition
 
             elif FSType == "vfat":
-                ExecList = ['fsck.vfat', '-yvt', Partition]
+                ExecCmds = "fsck.vfat -yvt "+Partition
 
             elif FSType in ('ext2', 'ext3', 'ext4', 'ext4dev'):
-                ExecList = ['fsck.'+FSType, '-yvcf', Partition]
+                ExecCmds = "fsck."+FSType+" -yvcf "+Partition
 
             else:
-                ExecList = ['None']
+                ExecCmds = ""
                 DialogTools().ShowMsgDlg(Kind="info", Message="The filesystem on partition: "+Partition+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Partition+" will now be skipped.")
 
             #Run the command with Piping = False, if ExecList != ['None'], otherwise do nothing, but do remount the partition if needed.
-            if ExecList != ['None']:
-                retval = CoreBackendTools().StartThreadProcess(ExecList)
+            if ExecCmds != "":
+                retval = CoreBackendTools().StartThreadProcess(ExecCmds, Piping=True)
 
                 #Check the return values, and run the handler if needed.
                 if retval == 0:
@@ -440,7 +440,7 @@ class Main(): #*** These need refactoring and proper testing ***
                     global OSsForBootloaderRemoval
                     global OSsForBootloaderInstallation
 
-                    OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools().HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
+                    #*** Disabled temporarily due to the above vars causing problems *** *** Needs to change to use strings *** OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools().HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().BadSectorCheck(): Remounting Partition: "+Partition+" Read-Write...")
