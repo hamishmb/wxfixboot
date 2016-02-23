@@ -257,7 +257,7 @@ class Main():
                     CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
 
                     #If there's a seperate /boot partition for this OS, make sure it's mounted. *** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this *** *** this might mount other stuff and interfere too ***
-                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'mount', '-av'], ShowOutput=False)
+                    CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" mount -av", Piping=True, ShowOutput=False)
 
                     #Remove the bootloader.
                     if Bootloader == "GRUB-LEGACY":
@@ -361,7 +361,7 @@ class Main():
                     CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
 
                     #If there's a seperate /boot partition for this OS, make sure it's mounted.
-                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'mount', '-av'], ShowOutput=False) #*** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this ***
+                    CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" mount -av", Piping=True, ShowOutput=False) #*** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this ***
 
                     #Update the package lists.
                     retval = BootloaderInstallationTools().UpdatePackageLists(PackageManager=PackageManager, UseChroot=True, MountPoint=MountPoint)
@@ -517,10 +517,10 @@ class Main():
                 #Make LILO's config file.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making LILO's configuration file...")
                 if MountPoint == "":
-                    CoreBackendTools().StartThreadProcess(['liloconfig', '-f'], ShowOutput=False)
+                    CoreBackendTools().StartThreadProcess("liloconfig -f", Piping=True, ShowOutput=False)
 
                 else:
-                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'liloconfig', '-f'], ShowOutput=False)
+                    CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" liloconfig -f", Piping=True, ShowOutput=False)
 
                 #Check the config file exists for lilo. *** What do we do if it doesn't? Check the last command ran successfully ***
                 if os.path.isfile(MountPoint+"/etc/lilo.conf"):
@@ -544,10 +544,10 @@ class Main():
                 #Make ELILO's config file.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making ELILO's configuration file...")
                 if MountPoint == "":
-                    CoreBackendTools().StartThreadProcess(['elilo', '-b', UEFISystemPartition, '--autoconf'], ShowOutput=False)
+                    CoreBackendTools().StartThreadProcess("elilo -b "+UEFISystemPartition+" --autoconf", Piping=True, ShowOutput=False)
 
                 else:
-                    CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'elilo', '-b', UEFISystemPartition, '--autoconf'], ShowOutput=False)
+                    CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" elilo -b "+UEFISystemPartition+" --autoconf", Piping=True, ShowOutput=False)
 
                 #Check elilo's config file exists. *** What do we do if it doesn't? Check the last command ran successfully ***
                 if os.path.isfile(MountPoint+"/etc/elilo.conf"):
