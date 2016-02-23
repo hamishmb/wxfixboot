@@ -126,7 +126,7 @@ class Main():
 
                 except NameError: pass
 
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 2+(14/len(OSsForBootloaderRemoval)))
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 2+(14//len(OSsForBootloaderRemoval)))
 
         #We're finished getting the config.
         logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Finished looking for configuration in OSs marked for bootloader removal.")
@@ -285,7 +285,7 @@ class Main():
                 logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+Bootloader+" from OS: "+OS+"! We'll continue anyway. Warn the user.")
                 DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+Bootloader+" from: "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that OS after WxFixBoot finishes its operations.")
 
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27+(22/len(OSsForBootloaderRemoval)))
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27+(22//len(OSsForBootloaderRemoval)))
 
         #Log and notify the user that we're finished remving bootloaders.
         logger.info("MainBackendTools: Main().RemoveOldBootloader(): Finished removing bootloaders...")

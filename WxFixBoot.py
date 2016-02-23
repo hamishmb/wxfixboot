@@ -18,13 +18,11 @@
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
-#*** Make sure to use "//" when we want int division (/ used to be int division before future imports) ***
 #*** Don't use parted, all it's being used for is getting partition schemes, something lshw will do with dictionaries soon ***
 #*** Maybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
 #*** If /tmp/wxfixboot is present on startup it isn't recreated ***
 #*** If LiveDisk == True and BootLoader == "GRUB-LEGACY" then crashes ***
 #*** Re-evaluate dependencies at packaging time ***
-#*** Rescan for bootloaders button does nothing ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -2667,7 +2665,7 @@ class ProgressWindow(wx.Frame):
         """Update the progress of the overall progress progress bar"""
         #This is called when self.CurrentOperationProgressBar reaches 100 (aka full).
         if self.OverallProgressBar.GetValue() < 100:
-            self.OverallProgressBar.SetValue(self.OverallProgressBar.GetValue()+(100/NumberOfOperations))
+            self.OverallProgressBar.SetValue(self.OverallProgressBar.GetValue()+(100//NumberOfOperations))
 
     def UpdateCurrentOpText(self, Message):
         """Keep the current operations status text up to date."""

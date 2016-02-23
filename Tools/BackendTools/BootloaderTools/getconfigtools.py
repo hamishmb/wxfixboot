@@ -104,7 +104,7 @@ class Main(): #*** Refactor and test all of these ***
                     if Temp.isdigit():
                         #Great! We got it.
                         #However, because lilo and elilo save this in 10ths of a second, divide it by ten first.
-                        Timeout = int(Temp)/10
+                        Timeout = int(Temp)//10
 
             #Look for kernel options used globally in all the boot options.
             elif 'append' in line and '=' in line:
