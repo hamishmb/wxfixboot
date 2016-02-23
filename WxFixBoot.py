@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#*** Make note of this: when 'cp' errors, the quotes it uses cause this error "UnicodeDecodeError" (use unicode(thing, , errors='ignore')) ***
+#*** Re-evaluate dependencies at packaging time ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
@@ -22,7 +22,6 @@
 #*** Maybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
 #*** If /tmp/wxfixboot is present on startup it isn't recreated ***
 #*** If LiveDisk == True and BootLoader == "GRUB-LEGACY" then crashes ***
-#*** Re-evaluate dependencies at packaging time ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -113,12 +112,12 @@ from Tools.BackendTools.essentials import Main as EssentialBackendTools
 from Tools.BackendTools.main import Main as MainBackendTools
 
 from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderTools
-from Tools.BackendTools.BootloaderTools.getconfigtools import Main as GetConfigBootloaderTools #*** Change this name? ***
+from Tools.BackendTools.BootloaderTools.getconfigtools import Main as BootloaderConfigObtainingTools
 from Tools.BackendTools.BootloaderTools.removaltools import Main as BootloaderRemovalTools
 from Tools.BackendTools.BootloaderTools.installationtools import Main as BootloaderInstallationTools
-from Tools.BackendTools.BootloaderTools.setconfigtools import Main as SetConfigBootloaderTools #*** Change this name? ***
+from Tools.BackendTools.BootloaderTools.setconfigtools import Main as BootloaderConfigSettingTools
 
-#Setup custom-made modules (make global variables accessible inside the packages). *** Continue to change stuff as needed *** *** Cut/rejig these later ***
+#Setup custom-made modules (make global variables accessible inside the packages). *** Continue to change stuff as needed ***
 #GetDevInfo Package.
 GetDevInfo.getdevinfo.subprocess = subprocess
 GetDevInfo.getdevinfo.logger = logger
@@ -182,7 +181,7 @@ Tools.BackendTools.BootloaderTools.main.logger = logger
 Tools.BackendTools.BootloaderTools.main.CoreTools = CoreTools
 Tools.BackendTools.BootloaderTools.main.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.BootloaderTools.main.HelperBackendTools = HelperBackendTools
-Tools.BackendTools.BootloaderTools.main.GetConfigBootloaderTools = GetConfigBootloaderTools
+Tools.BackendTools.BootloaderTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
 Tools.BackendTools.BootloaderTools.main.BootloaderRemovalTools = BootloaderRemovalTools
 Tools.BackendTools.BootloaderTools.main.BootloaderInstallationTools = BootloaderInstallationTools
 Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools

@@ -25,7 +25,7 @@ class Main(): #*** Refactor and test all of these ***
     def PrepareForBootloaderInstallation(self):
         """Run checks, gather information, and prepare for bootloader operations.""" #*** Make this more customisable *** 
         #First, check the Internet connection.
-        DisableBootloaderOperations = HelperBackendTools().CheckInternetConnection()
+        DisableBootloaderOperations = EssentialBackendTools().CheckInternetConnection()
 
         #*** Temporarily define these as global until switch to dictionaries ***
         global OSsForBootloaderRemoval
@@ -56,7 +56,7 @@ class Main(): #*** Refactor and test all of these ***
                 if LiveDisk == False and Partition == AutoRootFS:
                     #Find the package manager on this partition, if one exists.
                     #This is the RootFS, so don't use chroot in the given command lists.
-                    APT = HelperBackendTools().LookForAPTOnPartition(APTExecList=["apt-get", "-h"])
+                    APT = HelperBackendTools().LookForAPTOnPartition(APTExecCmds="which apt-get")
 
                     #Add the OS and its package manager to the list, if there is one.
                     if APT:
@@ -77,7 +77,7 @@ class Main(): #*** Refactor and test all of these ***
                 else:
                     #Find the package manager on this partition, if one exists.
                     #This isn't the RootFS, so use chroot in the given command lists.
-                    APT = HelperBackendTools().LookForAPTOnPartition(APTExecList=["chroot", "/mnt"+Partition, "apt-get", "-h"])
+                    APT = HelperBackendTools().LookForAPTOnPartition(APTExecCmds="chroot /mnt"+Partition+" which apt-get")
 
                     #Add the OS and its package manager to the list, if there is one.
                     if APT:

@@ -75,13 +75,13 @@ class Main():
                 #Check MountPoint/boot/grub/menu.lst exists.
                 if os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
                     #It does, we'll run the function to find the config now.
-                    timeout = GetConfigBootloaderTools().GetGRUBLEGACYConfig(filetoopen=MountPoint+"/boot/grub/menu.lst")
+                    timeout = BootloaderConfigObtainingTools().GetGRUBLEGACYConfig(filetoopen=MountPoint+"/boot/grub/menu.lst")
                     
             elif Bootloader in ('GRUB2', 'GRUB-UEFI'):
                 #Check MountPoint/etc/default/grub exists, which should be for either GRUB2 or GRUB-UEFI.
                 if os.path.isfile(MountPoint+"/etc/default/grub"):
                     #It does, we'll run the function to find the config now.
-                    Temp = GetConfigBootloaderTools().GetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
+                    Temp = BootloaderConfigObtainingTools().GetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
                     timeout = Temp[0]
                     kopts = Temp[1]
 
@@ -89,13 +89,13 @@ class Main():
                 #Check the config file exists for both lilo and elilo.
                 if Bootloader == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
                     #It does, we'll run the function to find the config now.
-                    Temp = GetConfigBootloaderTools().GetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf")
+                    Temp = BootloaderConfigObtainingTools().GetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf")
                     timeout = Temp[0]
                     kopts = Temp[1]
 
                 elif Bootloader == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
                     #It does, we'll run the function to find the config now.
-                    Temp = GetConfigBootloaderTools().GetLILOConfig(filetoopen=MountPoint+"/etc/elilo.conf")
+                    Temp = BootloaderConfigObtainingTools().GetLILOConfig(filetoopen=MountPoint+"/etc/elilo.conf")
                     timeout = Temp[0]
                     kopts = Temp[1]
 
@@ -470,37 +470,37 @@ class Main():
                 if os.path.isfile(MountPoint+"/etc/default/grub"):
                     #It does, we'll run the function to set the config now.
                     logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
-                    SetConfigBootloaderTools().SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
+                    BootloaderConfigSettingTools().SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
 
                 #Now Install GRUB2 to the MBR.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to MBR...")
-                SetConfigBootloaderTools().InstallGRUB2ToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
+                BootloaderConfigSettingTools().InstallGRUB2ToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
 
                 #Update GRUB.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
-                SetConfigBootloaderTools().UpdateGRUB2(PackageManager=PackageManager, MountPoint=MountPoint)
+                BootloaderConfigSettingTools().UpdateGRUB2(PackageManager=PackageManager, MountPoint=MountPoint)
 
                 #Set the default OS.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
-                SetConfigBootloaderTools().SetGRUB2DefaultOS(OS=OS, PackageManager=PackageManager, MountPoint=MountPoint)
+                BootloaderConfigSettingTools().SetGRUB2DefaultOS(OS=OS, PackageManager=PackageManager, MountPoint=MountPoint)
 
             elif BootloaderToInstall == "GRUB-UEFI":
                 #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
                 if os.path.isfile(MountPoint+"/etc/default/grub"):
                     #It does, we'll run the function to set the config now.
                     logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-UEFI Configuration...")
-                    SetConfigBootloaderTools().SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
+                    BootloaderConfigSettingTools().SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
 
                 #Mount the UEFI partition at MountPoint/boot/efi.
                 CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") #*** Check it worked! ***
 
                 #Now Install GRUB-UEFI to the UEFI Partition.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to UEFISystemPartition...")
-                SetConfigBootloaderTools().InstallGRUBUEFIToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=Arch)
+                BootloaderConfigSettingTools().InstallGRUBUEFIToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=Arch)
 
                 #Update GRUB.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
-                SetConfigBootloaderTools().UpdateGRUB2(PackageManager=PackageManager, MountPoint=MountPoint)
+                BootloaderConfigSettingTools().UpdateGRUB2(PackageManager=PackageManager, MountPoint=MountPoint)
 
                 #Make an entry in fstab for the UEFI Partition, if needed.
                 HelperBackendTools().WriteFSTABEntryForUEFIPartition(MountPoint=MountPoint, UEFISystemPartition=UEFISystemPartition)
@@ -511,7 +511,7 @@ class Main():
 
                 #Set the default OS.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
-                SetConfigBootloaderTools().SetGRUB2DefaultOS(OS=OS, PackageManager=PackageManager, MountPoint=MountPoint)
+                BootloaderConfigSettingTools().SetGRUB2DefaultOS(OS=OS, PackageManager=PackageManager, MountPoint=MountPoint)
 
             elif BootloaderToInstall == "LILO":
                 #Make LILO's config file.
@@ -526,15 +526,15 @@ class Main():
                 if os.path.isfile(MountPoint+"/etc/lilo.conf"):
                     #It does, we'll run the function to set the config now.
                     logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting LILO Configuration...")
-                    SetConfigBootloaderTools().SetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
+                    BootloaderConfigSettingTools().SetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
     
                     #Also, set the OS entries.
                     logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating LILO OS Entries...")
-                    SetConfigBootloaderTools().MakeLILOOSEntries(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
+                    BootloaderConfigSettingTools().MakeLILOOSEntries(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
 
                 #Now Install LILO to the MBR.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing LILO to the MBR...")
-                SetConfigBootloaderTools().InstallLILOToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
+                BootloaderConfigSettingTools().InstallLILOToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
 
             elif BootloaderToInstall == "ELILO":
                 #Unmount the UEFI Partition now, and update mtab in the chroot.
@@ -553,15 +553,15 @@ class Main():
                 if os.path.isfile(MountPoint+"/etc/elilo.conf"):
                     #It does, we'll run the function to set the config now.
                     logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting ELILO Configuration...")
-                    SetConfigBootloaderTools().SetELILOConfig(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
+                    BootloaderConfigSettingTools().SetELILOConfig(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
 
                     #Also, set the OS entries.
                     logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating ELILO OS Entries...")
-                    SetConfigBootloaderTools().MakeLILOOSEntries(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
+                    BootloaderConfigSettingTools().MakeLILOOSEntries(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
 
                 #Now Install ELILO to the UEFI Partition.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing ELILO to UEFISystemPartition...")
-                SetConfigBootloaderTools().InstallELILOToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=Arch)
+                BootloaderConfigSettingTools().InstallELILOToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=Arch)
 
                 #Mount the UEFI partition at MountPoint/boot/efi.
                 CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") #*** Check it worked! ***

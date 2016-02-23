@@ -56,7 +56,7 @@ class Main():
         #Save runcmd.returncode, as it tends to reset fairly quickly.
         Retval = int(cmd.returncode)
 
-        #Log this info in a debug message. #*** Fix this error ***
+        #Log this info in a debug message. #*** Fix this error *** *** Make note of this: when 'cp' errors, the quotes it uses cause this error "UnicodeDecodeError" (use unicode(thing, , errors='ignore')) ***
         try:
             logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+'\n'.join(LineList)+"\"\n")
 

@@ -167,7 +167,7 @@ class Main(): #*** Refactor and test all of these ***
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
 
             #Set the bootloaders new config.
-            SetConfigBootloaderTools().SetNewBootloaderConfig()
+            BootloaderConfigSettingTools().SetNewBootloaderConfig()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Done!")
@@ -195,7 +195,7 @@ class Main(): #*** Refactor and test all of these ***
 
             if BootloaderInstallSucceded:
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
-                SetConfigBootloaderTools().SetNewBootloaderConfig()
+                BootloaderConfigSettingTools().SetNewBootloaderConfig()
 
             else:
                 #Bootloader installation failed for at least one OS! *** Clarify this message with better info ***
@@ -204,7 +204,7 @@ class Main(): #*** Refactor and test all of these ***
                 if Result:
                     #Continue and configure bootloaders. Otherwise, do nothing.
                     wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
-                    SetConfigBootloaderTools().SetNewBootloaderConfig()
+                    BootloaderConfigSettingTools().SetNewBootloaderConfig()
 
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
