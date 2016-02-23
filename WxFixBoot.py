@@ -201,11 +201,8 @@ Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools #*** Keep 
 Tools.BackendTools.BootloaderTools.removaltools.CoreBackendTools = CoreBackendTools #*** Keep until switch to CoreTools().StartProcess() ***
 
 #BootloaderTools Package (InstallationTools)
-Tools.BackendTools.BootloaderTools.installationtools.wx = wx #*** Keep until moving InstallNewBootloader to MainBackendTools ***
-Tools.BackendTools.BootloaderTools.installationtools.logger = logger #*** Keep until moving InstallNewBootloader to MainBackendTools ***
-Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools #*** Keep until moving InstallNewBootloader to MainBackendTools *** *** Keep after too cos of switch to CoreTools().StartProcess() ***
-Tools.BackendTools.BootloaderTools.installationtools.CoreBackendTools = CoreBackendTools #*** Keep until moving InstallNewBootloader to MainBackendTools, and until switch to CoreTools().StartProcess() ***
-Tools.BackendTools.BootloaderTools.installationtools.DialogTools = DialogTools #*** Keep until moving InstallNewBootloader to MainBackendTools ***
+Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools #*** Keep after too cos of switch to CoreTools().StartProcess() ***
+Tools.BackendTools.BootloaderTools.installationtools.CoreBackendTools = CoreBackendTools #*** Keep until switch to CoreTools().StartProcess() ***
 
 #BootloaderTools Package (SetConfigTools)
 Tools.BackendTools.BootloaderTools.setconfigtools.wx = wx #*** Keep until moving SetNewBootloaderConfig to MainBackendTools ***
@@ -2660,6 +2657,8 @@ class BackendThread(threading.Thread):
         for function in Operations:
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
             #*** We temporarily neeed global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
+            #*** Might need to add logging stuff here temporarily for when it fails for debugging purposes ***
+
             #*** Essential backend tools ***
             Tools.BackendTools.essentials.RootDevice = RootDevice
             Tools.BackendTools.essentials.DeviceList = DeviceList
@@ -2720,25 +2719,13 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.main.LiveDisk = LiveDisk
             Tools.BackendTools.main.AutoRootFS = AutoRootFS
             Tools.BackendTools.main.Bootloader = Bootloader
+            Tools.BackendTools.main.UEFISystemPartition = UEFISystemPartition
 
             #*** Bootloader Config getting tools (in Backend Tools package) ***
             try:
                 Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout = BootloaderTimeout
 
             except UnboundLocalError: pass
-
-            #*** Bootloader Installation Tools (in Backend Tools package) ***
-            Tools.BackendTools.BootloaderTools.installationtools.RootDevice = RootDevice
-
-            try:
-                Tools.BackendTools.BootloaderTools.installationtools.OSsForBootloaderInstallation = OSsForBootloaderInstallation
-                Tools.BackendTools.BootloaderTools.installationtools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
-
-            except UnboundLocalError: pass
-
-            Tools.BackendTools.BootloaderTools.installationtools.LiveDisk = LiveDisk
-            Tools.BackendTools.BootloaderTools.installationtools.AutoRootFS = AutoRootFS
-            Tools.BackendTools.BootloaderTools.installationtools.Bootloader = Bootloader
 
             #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.setconfigtools.OSList = OSList
