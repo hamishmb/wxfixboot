@@ -22,62 +22,62 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 class Main(): #*** Refactor and test all of these ***
-    def RemoveGRUBLEGACY(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+    def RemoveGRUBLEGACY(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         """Remove GRUB-LEGACY."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'grub', 'grub-legacy-doc', 'grub-common'], ShowOutput=False)
+                retval = CoreBackendTools().StartThreadProcess("apt-get remove -y grub grub-legacy-doc grub-common", Piping=True, ShowOutput=False)
 
             else:
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'grub', 'grub-legacy-doc', 'grub-common'], ShowOutput=False)
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" apt-get remove -y grub grub-legacy-doc grub-common", Piping=True, ShowOutput=False)
         
         #Return the return value.
         return retval
 
-    def RemoveGRUB2(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+    def RemoveGRUB2(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         """Remove GRUB2."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'grub-pc', 'grub-pc-bin', 'grub-common'])
+                retval = CoreBackendTools().StartThreadProcess("apt-get remove -y grub-pc grub-pc-bin grub-common", Piping=True, ShowOutput=False)
 
             else:
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'grub-pc', 'grub-pc-bin', 'grub-common'])
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" apt-get remove -y grub-pc grub-pc-bin grub-common", Piping=True, ShowOutput=False)
         
         #Return the return value.
         return retval
 
-    def RemoveLILO(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+    def RemoveLILO(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         """Remove lilo."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'lilo'])
+                retval = CoreBackendTools().StartThreadProcess("apt-get remove -y lilo", Piping=True, ShowOutput=False)
 
             else:
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'lilo'])
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" apt-get remove -y lilo", Piping=True, ShowOutput=False)
         
         #Return the return value.
         return retval
 
-    def RemoveGRUBUEFI(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+    def RemoveGRUBUEFI(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         """Remove GRUB-UEFI."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'grub-efi', 'grub-efi-amd64', 'grub-efi-amd64-bin', 'grub-efi-ia32', 'grub-efi-ia32-bin', 'grub-common', 'grub2-common'])
+                retval = CoreBackendTools().StartThreadProcess("apt-get remove -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common", Piping=True, ShowOutput=False)
 
             else:
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'grub-efi', 'grub-efi-amd64', 'grub-efi-amd64-bin', 'grub-efi-ia32', 'grub-efi-ia32-bin', 'grub-common', 'grub2-common'])
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" apt-get remove -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common", Piping=True, ShowOutput=False)
         
         #Return the return value.
         return retval
 
-    def RemoveELILO(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
+    def RemoveELILO(self, PackageManager, UseChroot, Arch, MountPoint="None"):
         """Remove ELILO."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess(['apt-get', 'remove', '-y', 'elilo'])
+                retval = CoreBackendTools().StartThreadProcess("apt-get remove -y elilo", Piping=True, ShowOutput=False)
 
             else:
-                retval = CoreBackendTools().StartThreadProcess(['chroot', MountPoint, 'apt-get', 'remove', '-y', 'elilo'])
+                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" apt-get remove -y elilo", Piping=True, ShowOutput=False)
         
         #Return the return value.
         return retval
