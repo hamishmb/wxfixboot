@@ -216,7 +216,6 @@ class AuthWindow(wx.Frame):
         self.Destroy()
 
 #End Authentication Window.
-
 if __name__ == "__main__":
     app = wx.App(False)
     MainFrame = AuthWindow()

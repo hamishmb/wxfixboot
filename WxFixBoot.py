@@ -19,9 +19,6 @@
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
 #*** Make sure to use "//" when we want int division (/ used to be int division before future imports) ***
-#*** Put docstrings in all functions/methods ***
-#*** Don't use grep, use python's text processing features ***
-#*** Don't use find, use os.walk() instead ***
 #*** Don't use parted, all it's being used for is getting partition schemes, something lshw will do with dictionaries soon ***
 #*** Maybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
 #*** If /tmp/wxfixboot is present on startup it isn't recreated ***
@@ -226,6 +223,7 @@ class GetDiskInformation(threading.Thread):
 #Begin Starter Class
 class WxFixBoot(wx.App):
     def OnInit(self):
+        """Starts InitialWindow()"""
         InitialWindow().Show()
         return True
 
@@ -233,6 +231,7 @@ class WxFixBoot(wx.App):
 #Begin Initialization Panel.
 class InitialPanel(wx.Panel):
     def __init__(self, parent):
+        """Initialises the panel"""
         wx.Panel.__init__(self, parent=parent)
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.frame = parent
@@ -255,6 +254,7 @@ class InitialPanel(wx.Panel):
 #Begin Initialization Frame.
 class InitialWindow(wx.Frame):
     def __init__(self):
+        """Initialises InitialWindow"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot", size=(600,420), style=wx.SIMPLE_BORDER)
         self.Panel = InitialPanel(self)
         self.SetClientSize(wx.Size(600,420))
@@ -278,7 +278,7 @@ class InitialWindow(wx.Frame):
         InitThread(self)       
 
     def CreateProgressBarAndText(self):
-        #Create a progressbar.
+        """Create a progressbar and some progress text"""
         self.ProgressBar = wx.Gauge(self.Panel, -1, 100)
         self.ProgressBar.SetBezelFace(3)
         self.ProgressBar.SetShadowWidth(3)
@@ -301,27 +301,30 @@ class InitialWindow(wx.Frame):
         MainSizer.SetSizeHints(self)
 
     def UpdateProgressBar(self, Value):
+        """Update the progress bar with the given value"""
         self.ProgressBar.SetValue(int(Value))
 
         if self.ProgressBar.GetValue() == 100:
             self.FinishedInit()
 
     def UpdateProgressText(self, Message):
+        """Update the progress text with the given string"""
         self.ProgressText.SetLabel(Message)
         self.Panel.Layout()
 
     def FinishedInit(self, Event=None):
+        """Starts MainWindow, called when StartupScripts are finished"""
         logger.info("Closing Initial Window and Starting Main Window...")
 
         #Show the user some important information
         wx.MessageDialog(self.Panel, "Make sure you have a working internet connection before performing any operations. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
 
-        MainFrame = MainWindow()
-        app.SetTopWindow(MainFrame)
+        MainGUI = MainWindow()
+        app.SetTopWindow(MainGUI)
         self.Destroy()
 
         #Start MainFrame.
-        MainFrame.Show(True)    
+        MainGUI.Show(True)    
 
 #End Initalization Frame.
 #Begin Initaization Thread.
@@ -344,7 +347,7 @@ class InitThread(threading.Thread):
         self.start()
 
     def run(self):
-        #Set some default settings and wait for the GUI to initialize.
+        """Set some default settings and wait for the GUI to initialize."""
         logger.debug("InitThread(): Starting...")
 
         #Check for dependencies
@@ -527,6 +530,7 @@ class InitThread(threading.Thread):
 #Begin Main Window
 class MainWindow(wx.Frame):
     def __init__(self):
+        """Initialise MainWindow"""
         wx.Frame.__init__(self,None,title="WxFixBoot", size=(400,300),style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(400,300))
@@ -561,6 +565,7 @@ class MainWindow(wx.Frame):
         logger.debug("MainWindow().__init__(): Started. Waiting for events...")
 
     def MakeStatusBar(self):
+        """Create the status bar"""
         self.statusbar = self.CreateStatusBar()
         self.StatusBar.SetFieldsCount(2)
         self.StatusBar.SetStatusWidths([-1, 150])
@@ -568,6 +573,7 @@ class MainWindow(wx.Frame):
         self.StatusBar.SetStatusText("v"+Version+" ("+ReleaseDate+")", 1)
 
     def CreateText(self):
+        """Create the text"""
         self.SettingsText = wx.StaticText(self.Panel, -1, "Please set the basic settings here first.")
         self.WelcomeText = wx.StaticText(self.Panel, -1, "Welcome to WxFixBoot!")
 
@@ -576,12 +582,14 @@ class MainWindow(wx.Frame):
         self.Logo = wx.StaticBitmap(self.Panel, -1, wx.BitmapFromImage(img))
 
     def CreateButtons(self):
+        """Create the buttons"""
         self.AboutButton = wx.Button(self.Panel, wx.ID_ANY, "About")
         self.ExitButton = wx.Button(self.Panel, wx.ID_ANY, "Quit")
         self.OptionsButton = wx.Button(self.Panel, wx.ID_ANY, "View Program Options")
         self.ApplyOperationsButton = wx.Button(self.Panel, wx.ID_ANY, "Apply All Operations")
 
     def CreateCBs(self):
+        """Create the checkboxes"""
         self.BadSectorCheckCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Check All File Systems (thorough)")
         self.CheckFileSystemsCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Check All File Systems (quick)")
         self.ReinstallBootloaderCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Reinstall/Fix Bootloader")
@@ -592,16 +600,19 @@ class MainWindow(wx.Frame):
             self.DisableBLOptsGrubLegacy()
 
     def DisableBLOptsGrubLegacy(self):
+        """Called to disable bootloader operations if the bootloader is grub legacy"""
         self.ReinstallBootloaderCB.Disable()
         self.UpdateBootloaderCB.Disable()
 
     def EnableBLOptsNoGrubLegacy(self):
+        """Called to re-enable bootloader operations if the bootloader isn't grub legacy"""
         self.ReinstallBootloaderCB.Enable()
         self.ReinstallBootloaderCB.SetValue(False)
         self.UpdateBootloaderCB.Enable()
         self.UpdateBootloaderCB.SetValue(False)
 
     def CreateMenus(self):
+        """Create the menus"""
         filemenu = wx.Menu()
         viewmenu = wx.Menu()
         editmenu = wx.Menu()
@@ -626,16 +637,19 @@ class MainWindow(wx.Frame):
         self.SetMenuBar(menuBar)
 
     def OnCheckBox(self, Event=None):
+        """Called when one of the checkboxes is checked/unchecked to make sure te options stay valid"""
         logger.debug("MainWindow().OnCheckBox() was triggered.")
         #Bad Sector Check Choicebox
         if self.BadSectorCheckCB.IsChecked():
             self.CheckFileSystemsCB.Disable()
+
         else:
             self.CheckFileSystemsCB.Enable()
 
         #Quick Disk Check Choicebox
         if self.CheckFileSystemsCB.IsChecked():
             self.BadSectorCheckCB.Disable()
+
         else:
             self.BadSectorCheckCB.Enable()
 
@@ -644,9 +658,11 @@ class MainWindow(wx.Frame):
             self.ReinstallBootloaderCBwaschecked = True
             self.UpdateBootloaderCB.SetValue(0)
             self.UpdateBootloaderCB.Disable()
+
         elif self.ReinstallBootloaderCB.IsChecked() == False and Bootloader != "GRUB-LEGACY" and RestorePartitionTable == False and RestoreBootSector == False:
             self.UpdateBootloaderCB.Enable()
             self.ReinstallBootloaderCBwaschecked = False
+
         else:
             self.ReinstallBootloaderCB.SetValue(0)
             self.ReinstallBootloaderCBwaschecked = False
@@ -656,9 +672,11 @@ class MainWindow(wx.Frame):
             self.UpdateBootloaderCBwaschecked = True
             self.ReinstallBootloaderCB.SetValue(0)
             self.ReinstallBootloaderCB.Disable()
+
         elif self.UpdateBootloaderCB.IsChecked() == False and Bootloader != "GRUB-LEGACY" and RestorePartitionTable == False and RestoreBootSector == False:
             self.ReinstallBootloaderCB.Enable()
             self.UpdateBootloaderCBwaschecked = False
+
         else:
             self.UpdateBootloaderCB.SetValue(0)
             self.UpdateBootloaderCBwaschecked = False
@@ -666,37 +684,56 @@ class MainWindow(wx.Frame):
         self.SaveMainOpts()
 
     def Opts(self, Event=None):
+        """Starts Settings Window"""
         global OptionsDlg1Run
-        logger.debug("MainWindow().Opts(): Starting Settings Window 1 and hiding MainWindow...")
+        logger.debug("MainWindow().Opts(): Starting Settings Window and hiding MainWindow...")
 
         if self.ReinstallBootloaderCBwaschecked or self.UpdateBootloaderCBwaschecked:
             dlg = wx.MessageDialog(self.Panel, "Do you want to continue? If you reinstall or update your bootloader, some options, such as installing a different bootloader, and restoring backups of the bootsector and partition table, will be reset and disabled. If you want to change other settings, you can always do it after restarting WxFixBoot.", "WxFixBoot - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
 
             if dlg.ShowModal() == wx.ID_NO:
-                wx.MessageDialog(self.Panel, "You will now be returned to the Main Window.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+                dlg.Destroy()
+
+                dlg = wx.MessageDialog(self.Panel, "You will now be returned to the Main Window.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+                dlg.ShowModal()
+                dlg.Destroy()
                 return
+
+            dlg.Destroy()
 
         self.SaveMainOpts()
 
         if UEFISystemPartition == "None":
-            wx.MessageDialog(self.Panel, "Seeing as you have no UEFI partition, you will be unable to select a UEFI bootloader to install, or as your current bootloader. However, in the bootloader options window, you can select a new UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+            dlg = wx.MessageDialog(self.Panel, "Seeing as you have no UEFI partition, you will be unable to select a UEFI bootloader to install, or as your current bootloader. However, in the bootloader options window, you can select a new UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
+
         elif HelpfulUEFIPartition == False:
-            wx.MessageDialog(self.Panel, "No bootloaders were found on your UEFI partition. However, you will still be able to select a UEFI bootloader to install, or as your current bootloader, as UEFI bootloader detection is a little bit sketchy. In the bootloader options window, you can select a different UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+            dlg = wx.MessageDialog(self.Panel, "No bootloaders were found on your UEFI partition. However, you will still be able to select a UEFI bootloader to install, or as your current bootloader, as UEFI bootloader detection is a little bit sketchy. In the bootloader options window, you can select a different UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
 
         if FirmwareType == "BIOS":
-            wx.MessageDialog(self.Panel, "Make sure you set the Root Device correctly here! Chances are, you won't need to change it, but it always needs to be set to the device your system boots off (usually the first hard drive in the system). You can see this information in the default OS selection in the following window. For example if your OS boots off /dev/sdc3, the root device should be set to /dev/sdc. The root device here will also be the device that's backed up if either backup option is selected. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+            dlg = wx.MessageDialog(self.Panel, "Make sure you set the Root Device correctly here! Chances are, you won't need to change it, but it always needs to be set to the device your system boots off (usually the first hard drive in the system). You can see this information in the default OS selection in the following window. For example if your OS boots off /dev/sdc3, the root device should be set to /dev/sdc. The root device here will also be the device that's backed up if either backup option is selected. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+
         else:
-            wx.MessageDialog(self.Panel, "Make sure you set the Root Device correctly here, because it will be the device that's backed up if you choose to back up the partition table. The boot sector to backup in this case is the UEFI System Partition, if there is one. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+            dlg = wx.MessageDialog(self.Panel, "Make sure you set the Root Device correctly here, because it will be the device that's backed up if you choose to back up the partition table. The boot sector to backup in this case is the UEFI System Partition, if there is one. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+
+        dlg.Destroy()
 
         OptionsDlg1Run = True
         self.Hide()
         SettingsWindow(self).Show()
 
     def DevInfo(self, Event=None):
+        """Start DevInfoWindow"""
         logger.debug("MainWindow().DevInfo(): Starting Device Info Window...")
         DevInfoWindow(self).Show()
 
     def ProgressWindow(self, Event=None):
+        """Starts Progress Window"""
         if OptionsDlg1Run and self.ReinstallBootloaderCBwaschecked == False and self.UpdateBootloaderCBwaschecked == False:
             logger.debug("MainWindow().ProgressWindow(): Starting Progress Window...")
             self.SaveMainOpts()
@@ -704,16 +741,20 @@ class MainWindow(wx.Frame):
             app.SetTopWindow(ProgressFrame)
             ProgressFrame.Show(True)
             self.Destroy()
+
         else:
-            wx.MessageDialog(self.Panel, "Please check the settings in the Settings Window before continuing, especially after changing the options in the Main Window!", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition).ShowModal()
+            dlg = wx.MessageDialog(self.Panel, "Please check the settings in the Settings Window before continuing, especially after changing the options in the Main Window!", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
 
     def RefreshMainWindow(self,msg):
-        #Refresh the main window to reflect changes in the options, or after a restart.
+        """Refresh the main window to reflect changes in the options, or after a restart."""
         logger.debug("MainWindow().RefreshMainWindow(): Refreshing MainWindow...")
             
         #Bootloader options. Also check if the partition table or boot sector are to be restored
         if Bootloader == "GRUB-LEGACY" or RestorePartitionTable or RestoreBootSector:
             self.DisableBLOptsGrubLegacy()
+
         else:
             self.EnableBLOptsNoGrubLegacy()
 
@@ -736,6 +777,7 @@ class MainWindow(wx.Frame):
         self.Show()
 
     def OnAbout(self, Event=None):
+        """Shows the About Box"""
         logger.debug("MainWindow().OnAbout(): Showing About Box...")
         aboutbox = wx.AboutDialogInfo()
         aboutbox.Name = "WxFixBoot"
@@ -792,7 +834,7 @@ class MainWindow(wx.Frame):
         MainSizer.SetSizeHints(self)
 
     def BindEvents(self): 
-        #Bind all mainwindow events in a seperate function
+        """Bind all mainwindow events"""
         self.Bind(wx.EVT_MENU, self.OnAbout, self.menuAbout)
         self.Bind(wx.EVT_MENU, self.OnExit, self.menuExit)
         self.Bind(wx.EVT_CLOSE, self.OnExit)
@@ -810,7 +852,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.BadSectorCheckCB)
 
     def SaveMainOpts(self):
-        #Save all options here.
+        """Save all options"""
         logger.debug("MainWindow().SaveMainOpts(): Saving Options on MainWindow...")
         global BootloaderToInstall
         global BootSectorFile
@@ -827,6 +869,7 @@ class MainWindow(wx.Frame):
         if self.BadSectorCheckCB.IsChecked():
             self.CheckFileSystemsCB.Disable()
             BadSectCheck = True
+
         else:
             self.CheckFileSystemsCB.Enable()
             BadSectCheck = False
@@ -835,6 +878,7 @@ class MainWindow(wx.Frame):
         if self.CheckFileSystemsCB.IsChecked():
             self.BadSectorCheckCB.Disable()
             QuickFSCheck = True
+
         else:
             self.BadSectorCheckCB.Enable()
             QuickFSCheck = False
@@ -849,6 +893,7 @@ class MainWindow(wx.Frame):
             RestoreBootSector = False
             PartitionTableFile = "None"
             RestorePartitionTable = False
+
         else:
             ReinstallBootloader = False
 
@@ -862,6 +907,7 @@ class MainWindow(wx.Frame):
             RestoreBootSector = False
             PartitionTableFile = "None"
             RestorePartitionTable = False
+
         else:
             UpdateBootloader = False
 
@@ -869,7 +915,7 @@ class MainWindow(wx.Frame):
         self.CountOperations()
 
     def CountOperations(self):
-        """Count the number of operations to do."""
+        """Count the number of operations to do. Called by self.MainMainOpts()"""
         global NumberOfOperations
         global Operations
 
@@ -933,9 +979,10 @@ class MainWindow(wx.Frame):
             self.ApplyOperationsButton.SetLabel("Apply All Operations")
             self.ApplyOperationsButton.Enable()
 
-    def OnExit(self, Event=None):
-        #Shut down.
+    def OnExit(self, Event=None): #*** Pull new code in from DDRescue-GUI v1.5 ***
+        """Shut down."""
         Dlg = wx.MessageDialog(self.Panel, 'Are you sure you want to exit?', 'WxFixBoot - Question!', wx.YES_NO | wx.ICON_QUESTION)
+
         if Dlg.ShowModal() == wx.ID_YES:
             logger.debug("MainWindow().OnExit(): Exiting...")
 
@@ -1123,6 +1170,7 @@ class DevInfoWindow(wx.Frame):
 #Begin Settings Window
 class SettingsWindow(wx.Frame):
     def __init__(self, ParentWindow):
+        """Initialise SettingsWindow"""
         wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - Settings", size=(600,360), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(600,360))
@@ -1142,14 +1190,14 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().__init__(): SettingsWindow Started.")
 
     def CreateButtons(self):
-        #Create Some buttons.
+        """Create Some buttons."""
         self.ExitButton = wx.Button(self.Panel, -1, "Apply these Settings and Close")
         self.BootloaderOptionsButton = wx.Button(self.Panel, -1, "View Bootloader Options")
         self.RestoreBootsectorButton = wx.Button(self.Panel, -1, "Restore Boot Sector")
         self.RestorePartitionTableButton = wx.Button(self.Panel, -1, "Restore Partition Table")
 
     def CreateText(self):
-        #Create the text, aligning it where needed.
+        """Create the text."""
         self.WelcomeText = wx.StaticText(self.Panel, -1, "Welcome to Settings. Please give everything a once-over.")
         self.BasicSettingsText = wx.StaticText(self.Panel, -1, "Basic Settings:")
         self.InstalledBootloaderText = wx.StaticText(self.Panel, -1, "Installed Bootloader:")
@@ -1162,6 +1210,7 @@ class SettingsWindow(wx.Frame):
         self.FirmwareTypeText = wx.StaticText(self.Panel, -1, "Selected Firmware Type:")
 
     def CreateCBs(self):
+        """Create the checkboxes"""
         #Basic settings
         self.FullVerboseCheckBox = wx.CheckBox(self.Panel, -1, "Show diagnostic terminal output")
 
@@ -1172,6 +1221,7 @@ class SettingsWindow(wx.Frame):
         self.BackupPartitionTableCheckBox = wx.CheckBox(self.Panel, -1, "Backup the Partition Table of "+RootDevice)
 
     def CreateChoiceBs(self):
+        """Create the choice boxes"""
         #Basic settings
         self.DefaultOSChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=OSList)
 
@@ -1179,22 +1229,24 @@ class SettingsWindow(wx.Frame):
         self.RootDeviceChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=["Auto: "+AutoRootDevice]+DeviceList)
 
     def CreateSpinners(self):
-        #Basic option here.
+        """Create the bootloader time out spinner"""
+        #Basic setting.
         self.BootloaderTimeoutSpinner = wx.SpinCtrl(self.Panel, -1, "")
         self.BootloaderTimeoutSpinner.SetRange(-1,100)
         self.BootloaderTimeoutSpinner.SetValue(-1)
 
     def OnCheckBox(self, Event=None):
-        #Manage the checkboxes states.
+        """Manage the checkboxes' states"""
         if self.MakeSummaryCheckBox.IsChecked():
             self.LogOutputCheckBox.Enable()
             self.LogOutputCheckBox.SetValue(True)
+
         else:
             self.LogOutputCheckBox.SetValue(False)
             self.LogOutputCheckBox.Disable()
 
     def SetupOptions(self):
-        #Load all Options here.
+        """Load all Options here, and create self.InstalledBootloaderChoice"""
         logger.debug("SettingsWindow().SetupOptions(): Setting up options...")
 
         global BootloaderToInstall
@@ -1207,41 +1259,48 @@ class SettingsWindow(wx.Frame):
         #Diagnostic output checkbox.
         if FullVerbose:
             self.FullVerboseCheckBox.SetValue(True)
+
         else:
             self.FullVerboseCheckBox.SetValue(False)
 
         #Backup Boot Sector CheckBox
         if BackupBootSector:
             self.BackupBootsectorCheckBox.SetValue(True)
+
         else:
             self.BackupBootsectorCheckBox.SetValue(False)
 
         #Backup Partition Table CheckBox
         if BackupPartitionTable:
             self.BackupPartitionTableCheckBox.SetValue(True)
+
         else:
             self.BackupPartitionTableCheckBox.SetValue(False)
 
         #System Summary checkBox
         if MakeSystemSummary:
             self.MakeSummaryCheckBox.SetValue(True)
+
         else:
             self.MakeSummaryCheckBox.SetValue(False)
 
         #Save output checkbox.
         if SaveOutput:
             self.LogOutputCheckBox.SetValue(True)
+
         else:
             self.LogOutputCheckBox.SetValue(False)
 
         if UEFISystemPartition == "None":
             self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['Auto: '+AutoBootloader, 'GRUB-LEGACY', 'GRUB2', 'LILO'])
+
         else:
             self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['Auto: '+AutoBootloader, 'GRUB-LEGACY', 'GRUB2', 'GRUB-UEFI', 'LILO', 'ELILO'])
 
         #Installed Bootloader
         if Bootloader != AutoBootloader:
             self.InstalledBootloaderChoice.SetStringSelection(Bootloader)
+
         else:
             self.InstalledBootloaderChoice.SetSelection(0)
 
@@ -1251,6 +1310,7 @@ class SettingsWindow(wx.Frame):
         #Root Device
         if RootDevice != AutoRootDevice:
             self.RootDeviceChoice.SetStringSelection(RootDevice)
+
         else:
             self.RootDeviceChoice.SetSelection(0)
 
@@ -1265,6 +1325,7 @@ class SettingsWindow(wx.Frame):
             #Reset some settings.
             BootloaderToInstall = "None"
             DefaultOS = AutoDefaultOS
+
         else:
             #Enable some options.
             self.BootloaderOptionsButton.Enable()
@@ -1386,6 +1447,7 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().UpdateBLOptsText(): Finished!")
 
     def BindEvents(self):
+        """Bind events for SettingsWindow"""
         self.Bind(wx.EVT_BUTTON, self.CloseOpts, self.ExitButton)
         self.Bind(wx.EVT_CLOSE, self.CloseOpts)
         self.Bind(wx.EVT_BUTTON, self.LaunchblOpts, self.BootloaderOptionsButton)
@@ -1394,29 +1456,41 @@ class SettingsWindow(wx.Frame):
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.MakeSummaryCheckBox)
 
     def LaunchblOpts(self, Event=None):
-        #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first. *** Destroy dialogs here ***
+        """Start the Bootloader Options Window"""
+        #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first.
         self.SaveOptions()
 
         #Give some warnings here if needed.
         #Tell the user some options will be disabled if the bootloader is to be reinstalled or updated.
         if ReinstallBootloader or UpdateBootloader:
-            wx.MessageDialog(self.Panel, "Your current bootloader is to be reinstalled or updated, therefore almost all bootloader-related options here will be disabled. If you want to install a different bootloader, please uncheck the reinstall or update bootloader option in the main window.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+            dlg = wx.MessageDialog(self.Panel, "Your current bootloader is to be reinstalled or updated, therefore almost all bootloader-related options here will be disabled. If you want to install a different bootloader, please uncheck the reinstall or update bootloader option in the main window.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
 
         #Recommend a MBR bootloader on BIOS systems.
         if FirmwareType == "BIOS":
-            wx.MessageDialog(self.Panel, "Your firmware type is BIOS. Unless you're sure WxFixBoot has misdetected this, and it's actually UEFI, it's recommended that you install an BIOS bootloader, if you are installing a bootloader, such as GRUB2 or LILO, or your system might not boot correctly.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+            dlg = wx.MessageDialog(self.Panel, "Your firmware type is BIOS. Unless you're sure WxFixBoot has misdetected this, and it's actually UEFI, it's recommended that you install an BIOS bootloader, if you are installing a bootloader, such as GRUB2 or LILO, or your system might not boot correctly.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
 
         #Recommend a UEFI boot loader on UEFI systems, if needed.
-        elif FirmwareType == "UEFI":
-            wx.MessageDialog(self.Panel, "Your firmware type is UEFI. Unless you're sure WxFixBoot has misdetected this, and it's actually BIOS, it's recommended that you install a UEFI bootloader, if you are installing a bootloader, such as GRUB-UEFI or ELILO, or your system might not boot correctly.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+        else:
+            dlg = wx.MessageDialog(self.Panel, "Your firmware type is UEFI. Unless you're sure WxFixBoot has misdetected this, and it's actually BIOS, it's recommended that you install a UEFI bootloader, if you are installing a bootloader, such as GRUB-UEFI or ELILO, or your system might not boot correctly.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+
+        dlg.ShowModal()
+        dlg.Destroy()
 
         if UEFISystemPartition == "None" and Bootloader in ('GRUB-UEFI', 'ELILO'):
-            wx.MessageDialog(self.Panel, "You have a UEFI Bootloader, but no UEFI Partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled. Did you change your selected UEFI Partition?", "WxFixBoot - ERROR", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition).ShowModal()
+            dlg = wx.MessageDialog(self.Panel, "You have a UEFI Bootloader, but no UEFI Partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled. Did you change your selected UEFI Partition?", "WxFixBoot - ERROR", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
 
         elif UEFISystemPartition == "None":
-            wx.MessageDialog(self.Panel, "You have no UEFI Partition. If you wish to install a UEFI bootloader, you'll need to create one first. WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+            dlg = wx.MessageDialog(self.Panel, "You have no UEFI Partition. If you wish to install a UEFI bootloader, you'll need to create one first. WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
 
-        wx.MessageDialog(self.Panel, "Most of the settings in the following dialog do not need to be and shouldn't be touched, with the exception of autodetermining the bootloader, or manually selecting one. The firmware type and partition schemes should not normally be changed. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+        dlg = wx.MessageDialog(self.Panel, "Most of the settings in the following dialog do not need to be and shouldn't be touched, with the exception of autodetermining the bootloader, or manually selecting one. The firmware type and partition schemes should not normally be changed. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+        dlg.ShowModal()
+        dlg.Destroy()
 
         #Open the Firmware Options window
         logger.debug("SettingsWindow().LaunchblOpts(): Starting Bootloader Settings Window...")
@@ -1424,6 +1498,7 @@ class SettingsWindow(wx.Frame):
         BootloaderOptionsWindow(self).Show()
 
     def LaunchBootSectWindow(self, Event=None):
+        """Launch RestoreWindow in boot sector mode"""
         #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first.
         self.SaveOptions()
 
@@ -1432,13 +1507,16 @@ class SettingsWindow(wx.Frame):
         Tempnum = DeviceList.index(RootDevice)
         Temp = PartSchemeList[Tempnum]
 
-        if Temp == "gpt":
-             wx.MessageDialog(self.Panel, "Because the selected root device uses gpt, the Target Device selection in the following dialog will be ignored, though you must still set it, and the backup will always be restored to the UEFI Partition. Please keep this in mind and be sure that the UEFI Partition chosen is correct. You can check and change this in the Bootloader Options.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+        if Temp == "gpt": #*** This is silly ***
+            dlg = wx.MessageDialog(self.Panel, "Because the selected root device uses gpt, the Target Device selection in the following dialog will be ignored, though you must still set it, and the backup will always be restored to the UEFI Partition. Please keep this in mind and be sure that the UEFI Partition chosen is correct. You can check and change this in the Bootloader Options.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
 
         self.Hide()
         RestoreWindow(ParentWindow=self, Type="Boot Sector").Show()
 
     def LaunchPartTableWindow(self, Event=None):
+        """Launch RestoreWindow in partition table mode"""
         #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first.
         self.SaveOptions()
 
@@ -1447,6 +1525,7 @@ class SettingsWindow(wx.Frame):
         RestoreWindow(ParentWindow=self, Type="Partition Table").Show()
 
     def RefreshOptionsDlg1(self,msg):
+        """Refresh the settings in SettingsWindow before re-showing it"""
         #Check if the partition table or boot sector are to be restored.
         logger.debug("SettingsWindow().RefreshOptionsDlg1(): Refreshing SettingsWindow...")
         if RestorePartitionTable or RestoreBootSector:
@@ -1487,7 +1566,7 @@ class SettingsWindow(wx.Frame):
         self.Show()
 
     def SaveOptions(self, Event=None):
-        #Save all options in this window here.
+        """Save all options"""
         global SaveOutput
         global FullVerbose
         global SaveOutput
@@ -1504,47 +1583,58 @@ class SettingsWindow(wx.Frame):
         logger.info("SettingsWindow().SaveOptions(): Saving Options...")
         
         #Checkboxes.
-
         #Create Log checkbox.
         if self.LogOutputCheckBox.IsChecked():
             SaveOutput = True
+
         else:
             SaveOutput = False
+
         logger.debug("SettingsWindow().SaveOptions(): Value of SaveOutput is: "+unicode(SaveOutput))
 
         #Check FS cb
         if self.FullVerboseCheckBox.IsChecked():
             FullVerbose = True
+
         else:
             FullVerbose = False
+
         logger.debug("SettingsWindow().SaveOptions(): Value of FullVerbose is: "+unicode(FullVerbose))
 
         #Remount FS CB
         if self.LogOutputCheckBox.IsChecked():
             SaveOutput = True
+
         else:
             SaveOutput = False
+
         logger.debug("SettingsWindow().SaveOptions(): Value of SaveOutput is: "+unicode(SaveOutput))
 
         #Backup BootSector checkbox.
         if self.BackupBootsectorCheckBox.IsChecked():
             BackupBootSector = True
+
         else:
             BackupBootSector = False
+
         logger.debug("SettingsWindow().SaveOptions(): Value of BackupBootSector is: "+unicode(BackupBootSector))
 
         #Backup Partition Table checkbox.
         if self.BackupPartitionTableCheckBox.IsChecked():
             BackupPartitionTable = True
+
         else:
             BackupPartitionTable = False
+
         logger.debug("SettingsWindow().SaveOptions(): Value of BackupPartitionTable is: "+unicode(BackupPartitionTable))
 
         #Use chroot in operations checkbox
         if self.MakeSummaryCheckBox.IsChecked():
             MakeSystemSummary = True
+
         else:
             MakeSystemSummary = False
+
         logger.debug("SettingsWindow().SaveOptions(): Value of MakeSystemSummary is: "+unicode(MakeSystemSummary))
 
         #ChoiceBoxes
@@ -1552,9 +1642,11 @@ class SettingsWindow(wx.Frame):
         PrevBootloaderSetting = Bootloader
         if self.InstalledBootloaderChoice.GetSelection() != 0:
             Bootloader = self.InstalledBootloaderChoice.GetStringSelection()
+
         else:
             #Set it to the auto value, using AutoBootloader
             Bootloader = AutoBootloader
+
         logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+Bootloader)
 
         #Default OS choicebox
@@ -1567,10 +1659,12 @@ class SettingsWindow(wx.Frame):
 
         #Root device ChoiceBox
         if self.RootDeviceChoice.GetSelection() != 0:
-            RootDevice = self.RootDeviceChoice.GetStringSelection()            
+            RootDevice = self.RootDeviceChoice.GetStringSelection()
+
         else:
             #Set it to the auto value, in case this has already been changed.
             RootDevice = AutoRootDevice
+
         logger.debug("SettingsWindow().SaveOptions(): Value of RootDevice is: "+RootDevice)
 
         #Spinner
@@ -1580,6 +1674,7 @@ class SettingsWindow(wx.Frame):
         logger.info("SettingsWindow().SaveOptions(): Saved options.")
 
     def CloseOpts(self, Event=None):
+        """Save options and close SettingsWindow"""
         #Save the options first.
         self.SaveOptions()
 
@@ -1594,6 +1689,7 @@ class SettingsWindow(wx.Frame):
 #Begin Bootloader Options Window *** Maybe say what the changes will be before closing to make it easier for the user *** *** The partitioning stuff can be changed and made better when we switch to dictionaries ***
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self,ParentWindow):
+        """Initialise Bootloader options window"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Bootloader Options", size=(450,330), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(450,330))
@@ -1612,32 +1708,36 @@ class BootloaderOptionsWindow(wx.Frame):
         logger.debug("BootloaderOptionsWindow().__init__(): BootloaderOptionsWindow Started.")
 
     def CreateButtons(self):
+        """Create the buttons"""
         self.RescanForBootloadersButton = wx.Button(self.Panel, -1, "Rescan For Bootloaders")
         self.ExitButton = wx.Button(self.Panel, -1, "Close")
 
     def CreateCheckboxes(self): #*** Change the text here to make it clearer ***
-        self.UEFItoBIOSCheckBox = wx.CheckBox(self.Panel, -1, "Replace a UEFI bootloader with the BIOS equivalent")
-        self.BIOStoUEFICheckBox = wx.CheckBox(self.Panel, -1, "Replace a BIOS bootloader with the UEFI equivalent")
+        """Create the checkboxes"""
+        self.UEFItoBIOSCheckBox = wx.CheckBox(self.Panel, -1, "Replace an EFI bootloader with the BIOS version")
+        self.BIOStoUEFICheckBox = wx.CheckBox(self.Panel, -1, "Replace a BIOS bootloader with the UEFI version")
         self.AutoDetermineCheckBox = wx.CheckBox(self.Panel, -1, "Automatically determine the bootloader to install")
         self.DoNotChangeBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Do not install a new bootloader")
 
     def CreateText(self):
+        """Create the text"""
         self.FirmwareTypeText = wx.StaticText(self.Panel, -1, "Firmware type:")
         self.OptionsText = wx.StaticText(self.Panel, -1, "Options:")
         self.PartitioningText = wx.StaticText(self.Panel, -1, "Partitioning on "+RootDevice+":")
         self.BootloaderToInstallText = wx.StaticText(self.Panel, -1, "Bootloader to install:")
  
     def CreateRadios(self):
-        #Create radio buttons.
+        """Create radio buttons"""
         self.AutoFirmwareTypeRadioButton = wx.RadioButton(self.Panel, -1, "Auto: "+AutoFirmwareType, style=wx.RB_GROUP)
         self.UEFIFirmwareTypeRadioButton = wx.RadioButton(self.Panel, -1, "EFI/UEFI")
         self.BIOSFirmwareTypeRadioButton = wx.RadioButton(self.Panel, -1, "BIOS/Legacy")
 
     def CreateChoiceBs(self):
-        #Make sure the right device's partition scheme is used here.
+        """Create the choice boxes"""
+        #Make sure the right device's partition scheme is used here. *** No need to do this we we switch to dictionaries ***
         tempnum = DeviceList.index(RootDevice)
 
-        #Set up self.PartitionTypeChoice based on whether that value has been changed for this device.
+        #Set up self.PartitionTypeChoice based on whether that value has been changed for this device. *** Use a seperate window to do this ***
         if PartSchemeList[tempnum] == AutoPartSchemeList[tempnum]:
             self.PartitionTypeChoice = wx.Choice(self.Panel, -1, choices=['Auto: '+PartSchemeList[tempnum], 'msdos', 'gpt'])
 
@@ -1655,6 +1755,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.BootloaderToInstallChoice.SetSelection(0)
 
     def SetDefaults(self):
+        """Sets up default values for Bootloader Options Window. Call on first launch, and again if the installed bootloader settings has been changed"""
         global BootloaderToInstall
     
         logger.debug("BootloaderOptionsWindow().SetDefaults(): Setting up BootloaderOptionsWindow...")
@@ -1803,16 +1904,18 @@ class BootloaderOptionsWindow(wx.Frame):
         MainSizer.SetSizeHints(self)
 
     def BindEvents(self):
+        """Bind all events for Bootloader Options Window"""
         self.Bind(wx.EVT_BUTTON, self.CheckOpts, self.ExitButton)
         self.Bind(wx.EVT_CLOSE, self.CheckOpts)
         self.Bind(wx.EVT_CHECKBOX, self.ActivateOptsforNoModification, self.DoNotChangeBootloaderCheckBox)
         self.Bind(wx.EVT_CHOICE, self.BlToInstallChoiceChange, self.BootloaderToInstallChoice)
-        self.Bind(wx.EVT_CHOICE, self.RescanForBootloaders, self.RescanForBootloadersButton) 
+        self.Bind(wx.EVT_BUTTON, self.RescanForBootloaders, self.RescanForBootloadersButton) 
         self.Bind(wx.EVT_RADIOBUTTON, self.ActivateOptsforAutoFW, self.AutoFirmwareTypeRadioButton)
         self.Bind(wx.EVT_RADIOBUTTON, self.ActivateOptsforUEFIFW, self.UEFIFirmwareTypeRadioButton)
         self.Bind(wx.EVT_RADIOBUTTON, self.ActivateOptsforBIOSFW, self.BIOSFirmwareTypeRadioButton)
 
     def ActivateOptsforAutoFW(self, Event=None):
+        """Sets the window up for autodetermining the firmware type"""
         logger.debug("BootloaderOptionsWindow().ActivateOptsForAutoFW() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and UpdateBootloader == False:
             self.UEFItoBIOSCheckBox.SetValue(False)
@@ -1823,6 +1926,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.AutoDetermineCheckBox.SetValue(True)
 
     def ActivateOptsforUEFIFW(self, Event=None):
+        """Sets the window up for the UEFI firmware type"""
         logger.debug("BootloaderOptionsWindow().ActivateOptsForUEFIFW() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and Bootloader != "GRUB-LEGACY" and UpdateBootloader == False:
             self.AutoDetermineCheckBox.SetValue(False)
@@ -1837,6 +1941,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.AutoDetermineCheckBox.SetValue(True)
 
     def ActivateOptsforBIOSFW(self, Event=None):
+        """Sets the window up for the BIOS firmware type"""
         logger.debug("BootloaderOptionsWindow().ActivateOptsForBIOSFW() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and Bootloader != "GRUB-LEGACY" and UpdateBootloader == False:
             self.UEFItoBIOSCheckBox.SetValue(True)
@@ -1851,6 +1956,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.AutoDetermineCheckBox.SetValue(True)
 
     def ActivateOptsforNoModification(self, Event=None):
+        """Sets the window up for no modification"""
         logger.debug("BootloaderOptionsWindow().ActivateOptsForNoModification() has been triggered...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and UpdateBootloader == False:
             self.UEFItoBIOSCheckBox.SetValue(False)
@@ -1881,6 +1987,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.BIOStoUEFICheckBox.Disable()
 
     def BlToInstallChoiceChange(self, Event=None):
+        """Handles manual selection of bootloader to install"""
         logger.debug("BootloaderOptionsWindow().BLToInstallChoiceChange() has been triggered...")
         if self.BootloaderToInstallChoice.GetSelection() == 0 and self.BootloaderToInstallChoicelastvalue != self.BootloaderToInstallChoice.GetStringSelection():
             self.BootloaderToInstallChoicelastvalue = self.BootloaderToInstallChoice.GetStringSelection()
@@ -1941,6 +2048,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.Destroy()
 
     def CheckOpts(self, Event=None):
+        """Refuse to save options if they're invalid, otherwise call self.SaveBLOpts()"""
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.UEFItoBIOSCheckBox.IsChecked() == False and self.AutoDetermineCheckBox.IsChecked() == False and self.BIOStoUEFICheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0:
             #Do nothing, as settings are invalid.
             logger.error("BootloaderOptionsWindow().CheckOpts(): No options selected, although the 'do not modify' checkbox is unticked, or the options selected are invalid. Won't save options, waitng for user change...")
@@ -1950,7 +2058,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.SaveBLOpts()
 
     def SaveBLOpts(self):
-        #Save all selected Operations here.
+        """Save all selected Operations"""
         global BootloaderToInstall
         global PrevBootloaderSetting
         global PartSchemeList
@@ -2092,6 +2200,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.CloseBLOpts()
         
     def CloseBLOpts(self):
+        """Close Bootloader Options Window, and call the refresh function to show Settings Window again"""
         logger.debug("BootloaderOptionsWindow().CloseBLOpts(): BootloaderOptionsWindow Closing.")
         #Save that this window has been run once, so it can update itself with the new info if it's started again.
         global BLOptsDlgRun
@@ -2107,6 +2216,7 @@ class BootloaderOptionsWindow(wx.Frame):
 #Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later ***
 class RestoreWindow(wx.Frame):
     def __init__(self, ParentWindow, Type):
+        """Initialise RetsoreWindow"""
         logger.debug("RestoreWindow().__init__(): Restore "+Type+" Window Started.")
         title = "WxFixBoot - Restore the "+Type
 
@@ -2131,7 +2241,7 @@ class RestoreWindow(wx.Frame):
         self.SetupOptions()
 
     def CreateText(self):
-        #Create text, and centre it.
+        """Create the text"""
         if self.Type == "BootSector":
             WelcomeText1Text = "What type of Boot Sector backup do you have?"
             WelcomeText2Text = "Easily restore your bootsector here!"
@@ -2147,18 +2257,18 @@ class RestoreWindow(wx.Frame):
         self.TargetDeviceText = wx.StaticText(self.Panel, -1, "Target Device:")
 
     def CreateRadios(self):
-        #Create Radio Buttons
+        """Create Radio Buttons"""
         self.AutoDetectTypeRadio = wx.RadioButton(self.Panel, -1, "Autodetect", style=wx.RB_GROUP)
         self.MBRBackupTypeRadio = wx.RadioButton(self.Panel, -1, "MBR")
         self.GPTBackupTypeRadio = wx.RadioButton(self.Panel, -1, "GPT")  
 
     def CreateChoiceBs(self):
-        #Create ChoiceBoxes
+        """Create Choice Boxes"""
         self.BackupFileChoice = wx.Choice(self.Panel, -1, size=(150,30), choices=['-- Please Select --', 'Specify File Path...'])
         self.TargetDeviceChoice = wx.Choice(self.Panel, -1, size=(150,30), choices=['-- Please Select --', 'Auto: '+AutoRootDevice]+DeviceList+['Specify Path...'])
 
     def CreateButtons(self):
-        #Create Buttons
+        """Create Buttons"""
         self.ExitButton = wx.Button(self.Panel, -1, "Close and Save Options")
 
     def SetupSizers(self):
@@ -2198,14 +2308,14 @@ class RestoreWindow(wx.Frame):
         MainSizer.SetSizeHints(self)
 
     def BindEvents(self):
-        #Bind events
+        """Bind events"""
         self.Bind(wx.EVT_BUTTON, self.ExitWindow, self.ExitButton)
         self.Bind(wx.EVT_CLOSE, self.ExitWindow)
         self.Bind(wx.EVT_CHOICE, self.SelectFile, self.BackupFileChoice)
         self.Bind(wx.EVT_CHOICE, self.SelectTargetDevice, self.TargetDeviceChoice)
 
     def SetupOptions(self):
-        #Set up the choiceboxes according to the values of the variables.
+        """Set up the choiceboxes according to the values of the variables."""
         if self.Type == "Boot Sector":
             File = BootSectorFile
             TargetDevice = BootSectorTargetDevice
@@ -2231,7 +2341,7 @@ class RestoreWindow(wx.Frame):
             self.TargetDeviceChoice.SetSelection(0)
 
     def SelectFile(self, Event=None):
-        #Grab Image path.
+        """Grab Image path"""
         logger.debug("RestoreWindow().SelectFile() has been triggered...")
 
         #Set up global variables.
@@ -2329,7 +2439,7 @@ class RestoreWindow(wx.Frame):
             PartitionTableBackupType = BackupType
 
     def SelectTargetDevice(self, Event=None):
-        #Grab Boot Sector Image path.
+        """Grab Boot Sector/Partition Table Image path."""
         logger.debug("RestoreWindow().SelectTargetDevice() has been triggered...")
 
         #Set up global variables.
@@ -2369,6 +2479,7 @@ class RestoreWindow(wx.Frame):
             PartitionTableTargetDevice = TargetDevice
 
     def ExitWindow(self, Event=None):
+        """Exits Restore Window, or shows a warning to the user if needed"""
         if self.Type == "BootSector":
             File = BootSectorFile
             Restore = RestoreBootSector
@@ -2410,6 +2521,7 @@ class RestoreWindow(wx.Frame):
 #Begin Progress Window
 class ProgressWindow(wx.Frame):
     def __init__(self):
+        """Initialse Progress Window"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot - Operations Progress", size=(500,300), style=wx.CAPTION|wx.MINIMIZE|wx.RESIZE_BORDER)
         self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(500,300))
@@ -2436,7 +2548,7 @@ class ProgressWindow(wx.Frame):
         BackendThread(self)
 
     def CreateText(self):
-        #Create Text, and centre it.
+        """Create the Text"""
         self.PerformingOperationsText = wx.StaticText(self.Panel, -1, "WxFixBoot is performing operations... Please wait.")
         self.CurrentOperationHeadingText = wx.StaticText(self.Panel, -1, "Current Operation:")
         self.CurrentOperationText = wx.StaticText(self.Panel, -1, "Initializating...")
@@ -2444,7 +2556,7 @@ class ProgressWindow(wx.Frame):
         self.OverallProgressText = wx.StaticText(self.Panel, -1, "Overall Progress:")
 
     def CreateButtons(self):
-        #Create buttons.
+        """Create buttons."""
         self.ShowOutputButton = wx.ToggleButton(self.Panel, -1, "Show Terminal Output")
         self.RestartButton = wx.Button(self.Panel, -1, "Restart WxFixBoot")
         self.ExitButton = wx.Button(self.Panel, -1, "Exit")
@@ -2452,6 +2564,7 @@ class ProgressWindow(wx.Frame):
         self.ExitButton.Disable()
 
     def CreateProgressBars(self):
+        """Create both progres bars"""
         #Create the progress bar for the current operation.
         self.CurrentOperationProgressBar = wx.Gauge(self.Panel, -1, 100)
         self.CurrentOperationProgressBar.SetBezelFace(3)
@@ -2507,6 +2620,7 @@ class ProgressWindow(wx.Frame):
         self.MainSizer.SetSizeHints(self)
 
     def BindEvents(self):
+        """Bind events for Progress Window"""
         self.Bind(wx.EVT_TOGGLEBUTTON, self.ShowOutput, self.ShowOutputButton)
         self.Bind(wx.EVT_BUTTON, self.RestartWxFixBoot, self.RestartButton)
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.ExitButton)
@@ -2536,11 +2650,11 @@ class ProgressWindow(wx.Frame):
         self.MainSizer.SetSizeHints(self)
 
     def UpdateOutputBox(self,msg):
-        """Adds a line of text to the output box""" #*** Add output box stuff from ddrescue-gui v1.5***
+        """Adds a line of text to the output box""" #*** Add output box stuff from ddrescue-gui v1.5 ***
         self.OutputBox.AppendText(msg)
 
     def UpdateCurrentProgress(self,msg):
-        #Do current progress.
+        """Update the progress of the current progress progress bar"""
         #Called at various points during operation code.
         self.CurrentOperationProgressBar.SetValue(int(msg))
         if self.CurrentOperationProgressBar.GetValue() == 100:
@@ -2550,22 +2664,23 @@ class ProgressWindow(wx.Frame):
                 self.CurrentOperationProgressBar.SetValue(0)
 
     def UpdateTotalProgress(self):
-        #Do total progress.
+        """Update the progress of the overall progress progress bar"""
         #This is called when self.CurrentOperationProgressBar reaches 100 (aka full).
         if self.OverallProgressBar.GetValue() < 100:
             self.OverallProgressBar.SetValue(self.OverallProgressBar.GetValue()+(100/NumberOfOperations))
 
     def UpdateCurrentOpText(self, Message):
-        #Function to keep the current operations status text up to date.
+        """Keep the current operations status text up to date."""
         self.CurrentOperationText.SetLabel(Message)
         self.Panel.Layout()
 
     def BackendThreadFinished(self):
+        """Called when the BackendThread is finished, enables self.RestartButton and self.ExitButton"""
         self.RestartButton.Enable()
         self.ExitButton.Enable()
 
     def RestartWxFixBoot(self, Event=None):
-        #Restart WxFixBoot
+        """Restart WxFixBoot"""
         logger.debug("ProgressWindow().RestartWxFixBoot(): Restarting WxFixBoot...")
         self.Hide()
 
@@ -2598,14 +2713,19 @@ class ProgressWindow(wx.Frame):
         self.Destroy()
 
     def OnExit(self, Event=None): #*** Add logfile moving stuff here ***
-        #No need to check if operations are running, the button isn't clickable if any are.
-        exitdlg = wx.MessageDialog(self.Panel, 'Are you sure you want to exit?', 'WxFixBoot -- Question!', wx.YES_NO | wx.ICON_QUESTION).ShowModal()
-        if exitdlg == wx.ID_YES:
+        """Exits the programs, and sorts out log file saving/deleting stuff"""
+
+        dlg = wx.MessageDialog(self.Panel, 'Are you sure you want to exit?', 'WxFixBoot -- Question!', wx.YES_NO | wx.ICON_QUESTION)
+        if dlg.ShowModal() == wx.ID_YES:
+            dlg.Destroy()
             #Run the exit sequence
             logger.debug("ProgressWindow().OnExit(): User triggered exit sequence. Exiting...")
             if os.path.isdir("/tmp/wxfixboot"):
                 shutil.rmtree('/tmp/wxfixboot')
+
             self.Destroy()
+
+        dlg.Destroy()
 
 #End Progress Window
 #Begin Backend Thread
@@ -2626,8 +2746,8 @@ class BackendThread(threading.Thread):
         self.start()
 
     def run(self):
-        #Do setup
-        time.sleep(1)
+        """Do setup, and call self.StartOperations()"""
+        time.sleep(1) #*** Why sleep here? ***
 
         #*** Temporarily do this until I switch to dictionaries ***
         #Define global vars
@@ -2644,7 +2764,7 @@ class BackendThread(threading.Thread):
         self.StartOperations()
 
     def StartOperations(self):
-        #Start doing operations.
+        """Start doing operations."""
         DialogTools().ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
 
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
@@ -2789,7 +2909,7 @@ class BackendThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
     def GenerateSystemReport(self): #*** Leave this here until switch to dictionaries cos otherwise this'll be a mighty pain in the backside! :) ***
-        #Function to create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary.
+        """Create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary."""
         DialogTools().ShowMsgDlg(Kind="info", Message="WxFixBoot will now create your system report. Click okay to continue.")
 
         #Ask the user where to save the file.

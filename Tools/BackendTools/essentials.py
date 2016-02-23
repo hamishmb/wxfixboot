@@ -329,7 +329,7 @@ class Main(): #*** These need refactoring and proper testing ***
                 ExecCmds = "xfs_repair -Pvd "+Partition
 
             elif FSType == "vfat":
-                ExecCmds = "fsck.vfat -yv "+Partition]
+                ExecCmds = "fsck.vfat -yv "+Partition
 
             elif FSType in ('ext2', 'ext3', 'ext4', 'ext4dev'):
                 ExecCmds = "fsck."+FSType+" -yvf "+Partition

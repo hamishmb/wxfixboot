@@ -191,8 +191,8 @@ class Main():
             logger.debug("CoreStartupTools: Main().DetermineGRUBVersion(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def ManualBootloaderSelect(self, UEFISystemPartition, FirmwareType):
-        #*** This will need modification when switching to dictionaries ***
+    def ManualBootloaderSelect(self, UEFISystemPartition, FirmwareType): #*** This will need modification when switching to dictionaries ***
+        """Presents the user with a wx.ChoiceBox to select the bootloader manually"""
         logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): Manually selecting bootloader...")
 
         #Offer different selection based on the current state of the system.
