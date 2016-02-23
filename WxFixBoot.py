@@ -51,7 +51,7 @@ from wx.animate import AnimationCtrl
 
 #Define the version number and the release date as global variables.
 Version = "1.1~pre1"
-ReleaseDate = "22/2/2016"
+ReleaseDate = "23/2/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -174,8 +174,11 @@ Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.essentials.DialogTools = DialogTools
 
 #BackendTools Package (Main). *** Nothing in here yet, move some stuff out of bootloader tools ***
+Tools.BackendTools.main.wx = wx
+Tools.BackendTools.os = os
 Tools.BackendTools.main.logger = logger
 Tools.BackendTools.main.CoreTools = CoreTools
+Tools.BackendTools.main.DialogTools = DialogTools
 
 #BootloaderTools Package (Main)
 Tools.BackendTools.BootloaderTools.main.wx = wx
@@ -2624,8 +2627,8 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.core.ParentWindow = ParentWindow
         Tools.BackendTools.helpers.ParentWindow = ParentWindow
         Tools.BackendTools.essentials.ParentWindow = ParentWindow
+        Tools.BackendTools.main.ParentWindow = ParentWindow
         Tools.BackendTools.BootloaderTools.main.ParentWindow = ParentWindow
-        Tools.BackendTools.BootloaderTools.getconfigtools.ParentWindow = ParentWindow
         Tools.BackendTools.BootloaderTools.removaltools.ParentWindow = ParentWindow
         Tools.BackendTools.BootloaderTools.installationtools.ParentWindow = ParentWindow
         Tools.BackendTools.BootloaderTools.setconfigtools.ParentWindow = ParentWindow
@@ -2645,7 +2648,7 @@ class BackendThread(threading.Thread):
         global KernelOptions
 
         #Set to default values
-        BootloaderTimeout = 10
+        BootloaderTimeout = 10 #*** Does this override SettingsWindow? If so remove this line. ***
         KernelOptions = "quiet splash nomodeset"
  
         #Log the BackendThread start event (in debug mode).
@@ -2655,7 +2658,7 @@ class BackendThread(threading.Thread):
 
     def StartOperations(self):
         #Start doing operations.
-        DialogTools().ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may also see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
+        DialogTools().ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
 
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
         for function in Operations:
@@ -2705,21 +2708,27 @@ class BackendThread(threading.Thread):
 
             except UnboundLocalError: pass
 
-            #*** Bootloader Configuration Obtaining Tools (in Backend Tools package) ***
+            #*** Main Backend Tools ***
+            try:
+                Tools.BackendTools.main.BootloaderTimeout = BootloaderTimeout
+                Tools.BackendTools.main.KernelOptions = KernelOptions
+
+            except UnboundLocalError: pass
+
+            try:
+                Tools.BackendTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
+
+            except UnboundLocalError: pass
+
+            Tools.BackendTools.main.LiveDisk = LiveDisk
+            Tools.BackendTools.main.AutoRootFS = AutoRootFS
+            Tools.BackendTools.main.Bootloader = Bootloader
+
+            #*** Bootloader Config getting tools (in Backend Tools package) ***
             try:
                 Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout = BootloaderTimeout
-                Tools.BackendTools.BootloaderTools.getconfigtools.KernelOptions = KernelOptions
 
             except UnboundLocalError: pass
-
-            try:
-                Tools.BackendTools.BootloaderTools.getconfigtools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
-
-            except UnboundLocalError: pass
-
-            Tools.BackendTools.BootloaderTools.getconfigtools.LiveDisk = LiveDisk
-            Tools.BackendTools.BootloaderTools.getconfigtools.AutoRootFS = AutoRootFS
-            Tools.BackendTools.BootloaderTools.getconfigtools.Bootloader = Bootloader
 
             #*** Bootloader Removal Tools (in Backend Tools package) ***
             try:
@@ -2794,10 +2803,10 @@ class BackendThread(threading.Thread):
 
             except AttributeError: pass
 
-            #*** Bootloader Configuration Obtaining Tools (in Backend Tools Package) ***
+            #*** Main Backend Tools ***
             try:
-                BootloaderTimeout = Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout
-                KernelOptions = Tools.BackendTools.BootloaderTools.getconfigtools.KernelOptions
+                BootloaderTimeout = Tools.BackendTools.main.BootloaderTimeout
+                KernelOptions = Tools.BackendTools.main.KernelOptions
 
             except AttributeError: pass
 
