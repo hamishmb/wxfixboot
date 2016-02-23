@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 class Main(): #*** Refactor and test all of these ***
     def RemoveGRUBLEGACY(self, PackageManager, UseChroot, Arch, MountPoint="None"): #*** Change when we switch to always using shell=True ***
         """Remove GRUB-LEGACY."""

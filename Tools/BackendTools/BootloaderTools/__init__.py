@@ -19,3 +19,4 @@ from . import main
 from . import getconfigtools
 from . import removaltools
 from . import installationtools
+from . import setconfigtools

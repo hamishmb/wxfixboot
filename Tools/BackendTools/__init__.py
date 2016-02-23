@@ -19,3 +19,4 @@ from . import core
 from . import helpers
 from . import essentials
 from . import main
+from . import BootloaderTools
