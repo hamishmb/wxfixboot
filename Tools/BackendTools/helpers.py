@@ -32,7 +32,7 @@ class Main():
             #Check if we're looking at a FSType, not a device, and that we've not marked it "Unknown". Otherwise ignore it. *** Some checks can be removed once switched to dictionaries ***
             if FSType[0] != "/" and FSType != "Unknown":
                 #Check if this module is present.
-                Retval = CoreBackendTools().StartThreadProcess(["which", "fsck."+FSType], ShowOutput=False)
+                Retval = CoreBackendTools().StartThreadProcess("which fsck."+FSType, Piping=True, ShowOutput=False)
 
                 if Retval != 0:
                     #OS probably couldn't find it, add it to the failed list.
@@ -50,7 +50,7 @@ class Main():
         """Look for apt using the command lists given (they include the partition, by the way)."""
         logger.debug("HelperBackendTools: Main().LookForAPTOnPartition(): Running "+APTExecList+"...")
 
-        Retval = CoreBackendTools().StartThreadProcess(APTExecList, SowOutput=False)
+        Retval = CoreBackendTools().StartThreadProcess(APTExecList, Piping=True, ShowOutput=False)
 
         if Retval != 0:
             #Couldn't find apt!
@@ -515,7 +515,7 @@ class Main():
 
         #Now do Windows's files, if they exist.
         if os.path.isfile(MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi"):
-            retval = CoreBackendTools().StartThreadProcess(['cp', '-v', MountPoint+'/boot/efi/EFI/Microsoft/boot/bootmgfw.efi', MountPoint+'/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi'], ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", Piping=True, ShowOutput=False)
 
         else:
             #This doesn't exist. This doesn't matter then, so set retval to 0.
@@ -534,22 +534,22 @@ class Main():
 
         #First, let's check if EFI/boot already exists. This is a fat32/fat16 filesystem, so case doesn't matter.
         if os.path.isdir(MountPoint+"/boot/efi/EFI/boot"):
-            UEFIBootDir = MountPoint+"/boot/efi/EFI/boot/"
+            UEFIBootDir = MountPoint+"/boot/efi/EFI/boot"
 
         else:
             #It doesn't, so we'll create it.
-            UEFIBootDir = MountPoint+"/boot/efi/EFI/boot/"
+            UEFIBootDir = MountPoint+"/boot/efi/EFI/boot"
             os.mkdir(UEFIBootDir)
 
         #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
         if BootloaderToInstall == "ELILO":
             #We need to copy both elilo.efi, and elilo.conf to UEFIBootDir.
-            retval = CoreBackendTools().StartThreadProcess(['cp', '-v', MountPoint+'/boot/efi/EFI/ubuntu/elilo.efi', UEFIBootDir+'bootx64.efi'], ShowOutput=False)
-            retval = CoreBackendTools().StartThreadProcess(['cp', '-v', MountPoint+'/boot/efi/EFI/ubuntu/elilo.conf', UEFIBootDir], ShowOutput=False) #*** We're ignoring the last return value here! ***
+            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.efi "+UEFIBootDir+"/bootx64.efi", Piping=True, ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.conf "+UEFIBootDir+"/", Piping=True, ShowOutput=False) #*** We're ignoring the last return value here! ***
 
         elif BootloaderToInstall == "GRUB-UEFI":
             #We need to copy grub*.efi to UEFIBootDir.
-            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/grub*.efi "+UEFIBootDir+"bootx64.efi", Piping=True, ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/grub*.efi "+UEFIBootDir+"/bootx64.efi", Piping=True, ShowOutput=False)
 
         else:
             #Something has gone badly wrong here! The variable showing the UEFI bootloader now installed has been reset. Warning the user and exiting! *** This is REALLY unhelpful to the user! ***

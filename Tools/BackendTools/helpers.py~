@@ -23,51 +23,6 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** These need testing and refactoring ***
 class Main():
-    def CheckInternetConnection(self): #*** Move to essentials *** *** Log more stuff here  ***
-        """Check the internet connection."""
-        DialogTools().ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations.") #*** Note what we're pinging so the user knows exactly what we're doing ***
-        Retry = True
-
-        logger.info("HelperBackendTools: Main().CheckInternetConnection(): Checking the Internet Connection...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking the Internet Connection...")
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking the Internet Connection...###\n")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 5)
-        DisableBootloaderOperations = False
-
-        while True:
-            #Test the internet connection by pinging an OpenDNS DNS server.
-            PacketLoss = "100%"
-
-            try:
-                Output = CoreBackendTools().StartThreadProcess(['ping', '-c', '5', '-i', '0.5', '208.67.222.222'], ShowOutput=False, ReturnOutput=True)[1].split("\n")
-                #Get the % packet loss.
-                for Line in Output:
-                    if 'packet loss' in Line:
-                        PacketLoss = Line.split()[-5]
-
-            except IndexError:
-                #This errored for some reason. Probably no internet connection.
-                PacketLoss = "100%"
-
-            if PacketLoss == "0%":
-                #Good! We have a reliable internet connection.
-                break
-
-            else:
-                #Uh oh! We DON'T have a reliable internet connection! Ask the user to either try again, or skip Bootloader operations.
-                Result = DialogTools().ShowYesNoDlg(Message="Your Internet Connection failed the test! Without a working internet connection, you cannot perform bootloader operations! Click yes to try again, and click no to give up and skip bootloader operations.", Title="WxFixBoot - Disable Bootloader Operations?")
-
-                if Result == False:
-                    DisableBootloaderOperations = True
-                    break
-
-                else:
-                    #We'll just run the loop again.
-                    pass
-
-        #Exit, and return with a bool stating whether or not to disable Bootloader Operations.
-        return DisableBootloaderOperations
-
     def FindMissingFSCKModules(self, PartitionListWithFSType):
         """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc), based on the FS types in PartitionListWithFSType.""" #*** Test this again *** *** Will need modification after switching to dictionaries ***
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Looking for missing FSCK modules to ignore...")
@@ -77,7 +32,7 @@ class Main():
             #Check if we're looking at a FSType, not a device, and that we've not marked it "Unknown". Otherwise ignore it. *** Some checks can be removed once switched to dictionaries ***
             if FSType[0] != "/" and FSType != "Unknown":
                 #Check if this module is present.
-                Retval = CoreBackendTools().StartThreadProcess(["which", "fsck."+FSType], ShowOutput=False)
+                Retval = CoreBackendTools().StartThreadProcess("which fsck."+FSType, Piping=True, ShowOutput=False)
 
                 if Retval != 0:
                     #OS probably couldn't find it, add it to the failed list.
@@ -95,7 +50,7 @@ class Main():
         """Look for apt using the command lists given (they include the partition, by the way)."""
         logger.debug("HelperBackendTools: Main().LookForAPTOnPartition(): Running "+APTExecList+"...")
 
-        Retval = CoreBackendTools().StartThreadProcess(APTExecList, SowOutput=False)
+        Retval = CoreBackendTools().StartThreadProcess(APTExecList, Piping=True, ShowOutput=False)
 
         if Retval != 0:
             #Couldn't find apt!
@@ -560,7 +515,7 @@ class Main():
 
         #Now do Windows's files, if they exist.
         if os.path.isfile(MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi"):
-            retval = CoreBackendTools().StartThreadProcess(['cp', '-v', MountPoint+'/boot/efi/EFI/Microsoft/boot/bootmgfw.efi', MountPoint+'/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi'], ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", Piping=True, ShowOutput=False)
 
         else:
             #This doesn't exist. This doesn't matter then, so set retval to 0.
@@ -579,22 +534,22 @@ class Main():
 
         #First, let's check if EFI/boot already exists. This is a fat32/fat16 filesystem, so case doesn't matter.
         if os.path.isdir(MountPoint+"/boot/efi/EFI/boot"):
-            UEFIBootDir = MountPoint+"/boot/efi/EFI/boot/"
+            UEFIBootDir = MountPoint+"/boot/efi/EFI/boot"
 
         else:
             #It doesn't, so we'll create it.
-            UEFIBootDir = MountPoint+"/boot/efi/EFI/boot/"
+            UEFIBootDir = MountPoint+"/boot/efi/EFI/boot"
             os.mkdir(UEFIBootDir)
 
         #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
         if BootloaderToInstall == "ELILO":
             #We need to copy both elilo.efi, and elilo.conf to UEFIBootDir.
-            retval = CoreBackendTools().StartThreadProcess(['cp', '-v', MountPoint+'/boot/efi/EFI/ubuntu/elilo.efi', UEFIBootDir+'bootx64.efi'], ShowOutput=False)
-            retval = CoreBackendTools().StartThreadProcess(['cp', '-v', MountPoint+'/boot/efi/EFI/ubuntu/elilo.conf', UEFIBootDir], ShowOutput=False) #*** We're ignoring the last return value here! ***
+            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.efi "+UEFIBootDir+"/bootx64.efi", Piping=True, ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.conf "+UEFIBootDir+"/", Piping=True, ShowOutput=False) #*** We're ignoring the last return value here! ***
 
         elif BootloaderToInstall == "GRUB-UEFI":
             #We need to copy grub*.efi to UEFIBootDir.
-            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/grub*.efi "+UEFIBootDir+"bootx64.efi", Piping=True, ShowOutput=False)
+            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/grub*.efi "+UEFIBootDir+"/bootx64.efi", Piping=True, ShowOutput=False)
 
         else:
             #Something has gone badly wrong here! The variable showing the UEFI bootloader now installed has been reset. Warning the user and exiting! *** This is REALLY unhelpful to the user! ***
