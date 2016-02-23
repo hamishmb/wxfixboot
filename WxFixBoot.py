@@ -27,6 +27,7 @@
 #*** If /tmp/wxfixboot is present on startup it isn't recreated ***
 #*** If LiveDisk == True and BootLoader == "GRUB-LEGACY" then crashes ***
 #*** Re-evaluate dependencies at packaging time ***
+#*** Rescan for bootloaders button does nothing ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -122,7 +123,7 @@ from Tools.BackendTools.BootloaderTools.removaltools import Main as BootloaderRe
 from Tools.BackendTools.BootloaderTools.installationtools import Main as BootloaderInstallationTools
 from Tools.BackendTools.BootloaderTools.setconfigtools import Main as SetConfigBootloaderTools #*** Change this name? ***
 
-#Setup custom-made modules (make global variables accessible inside the packages). *** Continue to add stuff as needed *** *** Cut/rejig these later ***
+#Setup custom-made modules (make global variables accessible inside the packages). *** Continue to change stuff as needed *** *** Cut/rejig these later ***
 #GetDevInfo Package.
 GetDevInfo.getdevinfo.subprocess = subprocess
 GetDevInfo.getdevinfo.logger = logger
@@ -173,11 +174,12 @@ Tools.BackendTools.essentials.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.essentials.DialogTools = DialogTools
 
-#BackendTools Package (Main). *** Nothing in here yet, move some stuff out of bootloader tools ***
+#BackendTools Package (Main). *** Nothing in here yet, move some stuff out of bootloader tools *** *** Reorganise ***
 Tools.BackendTools.main.wx = wx
-Tools.BackendTools.os = os
+Tools.BackendTools.main.os = os
 Tools.BackendTools.main.logger = logger
 Tools.BackendTools.main.CoreTools = CoreTools
+Tools.BackendTools.main.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.main.DialogTools = DialogTools
 
 #BootloaderTools Package (Main)
@@ -192,17 +194,11 @@ Tools.BackendTools.BootloaderTools.main.BootloaderInstallationTools = Bootloader
 Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
 
 #BootloaderTools Package (GetConfigTools)
-Tools.BackendTools.BootloaderTools.getconfigtools.wx = wx #*** Keep until moving GetOldBootloader config to MainBackendTools ***
 Tools.BackendTools.BootloaderTools.getconfigtools.logger = logger
-Tools.BackendTools.BootloaderTools.getconfigtools.CoreTools = CoreTools #*** Keep until moving GetOldBootloader config to MainBackendTools ***
-Tools.BackendTools.BootloaderTools.getconfigtools.DialogTools = DialogTools #*** Keep until moving GetOldBootloader config to MainBackendTools ***
 
 #BootloaderTools Package (RemovalTools)
-Tools.BackendTools.BootloaderTools.removaltools.wx = wx #*** Keep until moving RemoveOldBootloader to MainBackendTools ***
-Tools.BackendTools.BootloaderTools.removaltools.logger = logger #*** Keep until moving RemoveOldBootloader to MainBackendTools ***
-Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools #*** Keep until moving RemoveOldBootloader to MainBackendTools *** *** Keep after too cos of switch to CoreTools().StartProcess() ***
-Tools.BackendTools.BootloaderTools.removaltools.CoreBackendTools = CoreBackendTools #*** Keep until moving RemoveOldBootloader to MainBackendTools, and until switch to CoreTools().StartProcess() ***
-Tools.BackendTools.BootloaderTools.removaltools.DialogTools = DialogTools #*** Keep until moving RemoveOldBootloader to MainBackendTools ***
+Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools #*** Keep after too cos of switch to CoreTools().StartProcess() ***
+Tools.BackendTools.BootloaderTools.removaltools.CoreBackendTools = CoreBackendTools #*** Keep until switch to CoreTools().StartProcess() ***
 
 #BootloaderTools Package (InstallationTools)
 Tools.BackendTools.BootloaderTools.installationtools.wx = wx #*** Keep until moving InstallNewBootloader to MainBackendTools ***
@@ -2717,6 +2713,7 @@ class BackendThread(threading.Thread):
 
             try:
                 Tools.BackendTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
+                Tools.BackendTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
 
             except UnboundLocalError: pass
 
@@ -2729,17 +2726,6 @@ class BackendThread(threading.Thread):
                 Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout = BootloaderTimeout
 
             except UnboundLocalError: pass
-
-            #*** Bootloader Removal Tools (in Backend Tools package) ***
-            try:
-                Tools.BackendTools.BootloaderTools.removaltools.OSsForBootloaderInstallation = OSsForBootloaderInstallation
-                Tools.BackendTools.BootloaderTools.removaltools.OSsForBootloaderRemoval = OSsForBootloaderRemoval
-
-            except UnboundLocalError: pass
-
-            Tools.BackendTools.BootloaderTools.removaltools.LiveDisk = LiveDisk
-            Tools.BackendTools.BootloaderTools.removaltools.AutoRootFS = AutoRootFS
-            Tools.BackendTools.BootloaderTools.removaltools.Bootloader = Bootloader
 
             #*** Bootloader Installation Tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.installationtools.RootDevice = RootDevice

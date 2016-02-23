@@ -17,7 +17,6 @@
 class Main(): #*** Refactor and test all of these ***
     def InstallNewBootloader(self): #*** Reduce code duplication ***
         """Install a new bootloader."""
-        #Install the new bootloader on the chosen OS.
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to install the new bootloader(s)...") #*** Does this need to be here? ***
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 52)  
         BootloaderInstallSucceded = True     

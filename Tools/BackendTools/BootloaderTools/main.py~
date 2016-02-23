@@ -185,7 +185,7 @@ class Main(): #*** Refactor and test all of these ***
 
         else:
             #First remove the old bootloader, then install the new one.
-            GetConfigBootloaderTools().GetOldBootloaderConfig()
+            MainBackendTools().GetOldBootloaderConfig()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
 
             BootloaderRemovalTools().RemoveOldBootloader()
