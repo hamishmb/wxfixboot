@@ -1397,7 +1397,7 @@ class SettingsWindow(wx.Frame):
 
         #Add items to the all settings sizer.
         AllSettingsSizer.Add(BasicSettingsSizer, 4, wx.RIGHT|wx.EXPAND, 5)
-        AllSettingsSizer.Add(wx.StaticLine(self.Panel), 0, wx.EXPAND) #*** Check if this works on wx 3 or not ***
+        AllSettingsSizer.Add(wx.StaticLine(self.Panel), 0, wx.EXPAND)
         AllSettingsSizer.Add(AdvancedSettingsSizer, 3, wx.LEFT|wx.EXPAND, 5)
 
         #Add items to the bootloader options sizer. #*** Sort out alignment ***
@@ -1706,7 +1706,6 @@ class BootloaderOptionsWindow(wx.Frame):
         """Create the text"""
         self.FirmwareTypeText = wx.StaticText(self.Panel, -1, "Firmware type:")
         self.OptionsText = wx.StaticText(self.Panel, -1, "Options:")
-        self.PartitioningText = wx.StaticText(self.Panel, -1, "Partitioning on "+RootDevice+":")
         self.BootloaderToInstallText = wx.StaticText(self.Panel, -1, "Bootloader to install:")
  
     def CreateRadios(self):
@@ -1716,18 +1715,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.BIOSFirmwareTypeRadioButton = wx.RadioButton(self.Panel, -1, "BIOS/Legacy")
 
     def CreateChoiceBs(self):
-        """Create the choice boxes"""
-        #Make sure the right device's partition scheme is used here. *** No need to do this we we switch to dictionaries ***
-        tempnum = DeviceList.index(RootDevice)
-
-        #Set up self.PartitionTypeChoice based on whether that value has been changed for this device. *** Use a seperate window to do this ***
-        if PartSchemeList[tempnum] == AutoPartSchemeList[tempnum]:
-            self.PartitionTypeChoice = wx.Choice(self.Panel, -1, choices=['Auto: '+PartSchemeList[tempnum], 'msdos', 'gpt'])
-
-        else:
-            self.PartitionTypeChoice = wx.Choice(self.Panel, -1, choices=['Auto: '+AutoPartSchemeList[tempnum], 'Manual Value: '+PartSchemeList[tempnum], 'msdos', 'gpt'])  
-            self.PartitionTypeChoice.SetSelection(1)     
-
+        """Create the choice boxes"""   
         #Disable UEFI bootloaders if there is no UEFI system partition.
         if UEFISystemPartition == "None":
             self.BootloaderToInstallChoice = wx.Choice(self.Panel, -1, choices=['Auto', 'GRUB2', 'LILO'])
@@ -1777,7 +1765,6 @@ class BootloaderOptionsWindow(wx.Frame):
                 self.AutoFirmwareTypeRadioButton.SetValue(True)
                 self.UEFIFirmwareTypeRadioButton.SetValue(False)
                 self.BIOSFirmwareTypeRadioButton.SetValue(False)
-                self.PartitionTypeChoice.SetSelection(0)
 
         else:
             #Setup using the previous options.
@@ -1822,7 +1809,6 @@ class BootloaderOptionsWindow(wx.Frame):
                 self.BlToInstallChoiceChange()
                 self.ActivateOptsforNoModification()
 
-            self.PartitionTypeChoice.SetSelection(0)
 
         logger.debug("BootloaderOptionsWindow().SetDefaults(): OptionsDlg2 Set up!")
 
@@ -1840,9 +1826,6 @@ class BootloaderOptionsWindow(wx.Frame):
         #Create the other options sizer.
         OtherOptionsSizer = wx.BoxSizer(wx.VERTICAL)
 
-        #Create the partitioning sizer.
-        PartitionSizer = wx.BoxSizer(wx.HORIZONTAL)
-
         #Create the bootloader to install sizer.
         BootloaderToInstallSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -1855,17 +1838,12 @@ class BootloaderOptionsWindow(wx.Frame):
         FirmwareOptionsSizer.Add(self.UEFIFirmwareTypeRadioButton, 1, wx.BOTTOM, 10)
         FirmwareOptionsSizer.Add(self.BIOSFirmwareTypeRadioButton, 1, wx.BOTTOM, 10)
 
-        #Add items to the partitioning sizer.
-        PartitionSizer.Add(self.PartitioningText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        PartitionSizer.Add(self.PartitionTypeChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-
         #Add items to the bootloader to install sizer.
         BootloaderToInstallSizer.Add(self.BootloaderToInstallText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
         BootloaderToInstallSizer.Add(self.BootloaderToInstallChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
 
         #Add items to the other options sizer.
         OtherOptionsSizer.Add(self.OptionsText, 0, wx.TOP|wx.BOTTOM, 10)
-        OtherOptionsSizer.Add(PartitionSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
         OtherOptionsSizer.Add(BootloaderToInstallSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
         OtherOptionsSizer.Add(self.RescanForBootloadersButton, 1, wx.BOTTOM|wx.EXPAND, 10)
 
@@ -2077,22 +2055,6 @@ class BootloaderOptionsWindow(wx.Frame):
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Saving Options...")
 
         BootloaderList = ('GRUB-LEGACY', 'GRUB-UEFI','GRUB2','ELILO','LILO')
-
-        #Partition scheme choice.
-        if self.PartitionTypeChoice.GetStringSelection()[0:6] == "Manual":
-            #No action required.
-            logger.info("BootloaderOptionsWindow().SaveBLOpts(): No Change in any PartScheme values...")
-
-        else:
-            #Figure out which entry in PartSchemeList to change and then delete and recreate it using the options in the dlg (msdos, or gpt)
-            tempnum = DeviceList.index(RootDevice)
-            PartSchemeList.pop(tempnum)
-            PartSchemeList.insert(tempnum, self.PartitionTypeChoice.GetStringSelection().split()[-1])
-            if self.PartitionTypeChoice.GetStringSelection()[0:4] != "Auto":
-                logger.info("BootloaderOptionsWindow().SaveBLOpts(): Changed value of PartScheme for device: "+RootDevice+" to: "+PartSchemeList[tempnum])
-
-            else:
-                logger.info("BootloaderOptionsWindow().SaveBLOpts(): Changed value of PartScheme for device: "+RootDevice+" to: "+PartSchemeList[tempnum]+" the default...")
 
         #Firmware Choice.
         if self.UEFIFirmwareTypeRadioButton.GetValue():
