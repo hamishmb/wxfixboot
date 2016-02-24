@@ -380,6 +380,8 @@ class Main():
             #If there is no UEFI partition, ask the user.
             if UEFISystemPartition == "None":
                 #There is no UEFI partition.
+                HelpfulUEFIPartition = False
+
                 #Look for BIOS bootloaders here.
                 #Check for GRUB in the MBR
                 logger.debug("MainStartupTools: Main().GetBootloader(): Checking for GRUB in bootsector...")

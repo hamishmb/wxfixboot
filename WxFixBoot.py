@@ -46,7 +46,7 @@ from wx.animate import AnimationCtrl
 
 #Define the version number and the release date as global variables.
 Version = "1.1~pre1"
-ReleaseDate = "23/2/2016"
+ReleaseDate = "24/2/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -958,9 +958,10 @@ class MainWindow(wx.Frame):
             Operations.append(MainBootloaderTools().UpdateBootloader)
             logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().UpdateBootloader to Operations...")
 
-        if MakeSystemSummary:
-            Operations.append(BackendThread().GenerateSystemReport)
-            logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
+        #*** Disabled temporarily ***
+        #if MakeSystemSummary:
+        #    Operations.append(BackendThread(self).GenerateSystemReport)
+        #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
 
         #Check if we need to prepare to install a new bootloader, and do so first if needed. *** Log this ***
         for element in (MainBootloaderTools().ManageBootloaders, MainBootloaderTools().ReinstallBootloader, MainBootloaderTools().UpdateBootloader):
