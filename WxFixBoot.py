@@ -21,7 +21,6 @@
 #*** Don't use parted, all it's being used for is getting partition schemes, something lshw will do with dictionaries soon ***
 #*** Maybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
 #*** If /tmp/wxfixboot is present on startup it isn't recreated ***
-#*** If LiveDisk == True and BootLoader == "GRUB-LEGACY" then crashes ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -327,13 +326,7 @@ class InitialWindow(wx.Frame):
 #Begin Initaization Thread.
 class InitThread(threading.Thread):
     def __init__(self, ParentWindow):
-        """Make a temporary directory for data used by this program. If it already exists, delete it and recreate it, unless this isn't first run."""
-        if os.path.isdir("/tmp/wxfixboot"):
-            shutil.rmtree("/tmp/wxfixboot")
-            logger.debug("InitThread(): Cleared WxFixBoot's temporary folder. Most of the time this doesn't need to be done, but it's probably not a problem. Logging this purely for paranoia's sake :)")
-
-        else:
-            os.mkdir("/tmp/wxfixboot")
+        """Make a temporary directory for mountpoints used by this program *** TODO ***. If it already exists, delete it and recreate it, unless this isn't first run."""
 
         #Set up dialog tools.
         Tools.dialogtools.ParentWindow = ParentWindow
@@ -988,9 +981,7 @@ class MainWindow(wx.Frame):
         if Dlg.ShowModal() == wx.ID_YES:
             logger.debug("MainWindow().OnExit(): Exiting...")
 
-            #Run the exit sequence *** Check if filesystems here are unmounted first! ***
-            if os.path.isdir("/tmp/wxfixboot"):
-                shutil.rmtree('/tmp/wxfixboot')
+            #Run the exit sequence *** Check if filesystems are unmounted here first! ***
 
             #Prompt user to save the log file.
             dlg = wx.MessageDialog(self.Panel, "Do you want to keep WxFixBoot's log file? For privacy reasons, WxFixBoot will delete its log file when closing. If you want to save it, which is helpful for debugging if something went wrong, click yes, and otherwise click no.", "WxFixBoot - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
@@ -2741,8 +2732,6 @@ class ProgressWindow(wx.Frame):
             dlg.Destroy()
             #Run the exit sequence
             logger.debug("ProgressWindow().OnExit(): User triggered exit sequence. Exiting...")
-            if os.path.isdir("/tmp/wxfixboot"):
-                shutil.rmtree('/tmp/wxfixboot')
 
             self.Destroy()
 
