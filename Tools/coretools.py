@@ -34,7 +34,7 @@ class Main():
 
         #Get ready to run the command(s).
         Counter = 0
-        Line = ""
+        Line = str("")
         LineList = []
 
         #Run the command(s).
@@ -46,12 +46,12 @@ class Main():
                 Counter += 1
 
             Char = cmd.stdout.read(1)
-            Line += Char
+            Line += str(Char)
 
-            if Char in ("\n", "\r"):
-                LineList.append(Line.replace("\n", "").replace("\r", ""))
+            if Char in (str("\n"), str("\r")):
+                LineList.append(Line.replace(str("\n"), str("")).replace(str("\r"), str("")))
                 #Reset Line.
-                Line = ""
+                Line = str("")
 
         #Save runcmd.returncode, as it tends to reset fairly quickly.
         Retval = int(cmd.returncode)

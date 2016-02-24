@@ -367,7 +367,7 @@ class Main():
 
         #Run some inital scripts
         logger.debug("MainStartupTools: Main().GetBootloader(): Copying MBR bootsector to /tmp/wxfixboot/mbrbootsect...")
-        CoreTools().StartProcess("dd if="+RootDevice+" bs=512 count=1 > /tmp/wxfixboot/mbrbootsect") #*** See if we can save it to memory instead *** *** We probably need to do this for each and every device with a partition containing an OS, as the rootdevice principle falls apart here ***
+        MBR = CoreTools().StartProcess("dd if="+RootDevice+" bs=512 count=1") #*** We probably need to do this for each and every device with a partition containing an OS, as the rootdevice principle falls apart here ***
 
         #Wrap this in a loop, so once a Bootloader is found, searching can stop.
         while True:
@@ -385,14 +385,14 @@ class Main():
                 #Look for BIOS bootloaders here.
                 #Check for GRUB in the MBR
                 logger.debug("MainStartupTools: Main().GetBootloader(): Checking for GRUB in bootsector...")
-                if CoreStartupTools().CheckForGRUBBIOS():
+                if CoreStartupTools().CheckForGRUBBIOS(MBR):
                     #We have GRUB BIOS, now figure out which version we have!
                     AutoBootloader = CoreStartupTools().DetermineGRUBBIOSVersion(LiveDisk=LiveDisk)
                     break
 
                 #Check for LILO in MBR
                 logger.debug("MainStartupTools: Main().GetBootloader(): Checking for LILO in bootsector...")
-                if CoreStartupTools().CheckForLILO():
+                if CoreStartupTools().CheckForLILO(MBR):
                     #We have LILO!
                     AutoBootloader = "LILO"
                     logger.info("MainStartupTools: Main().GetBootloader(): Found LILO in MBR (shown as LILO in GUI. Continuing...")

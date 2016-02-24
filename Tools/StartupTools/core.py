@@ -106,14 +106,10 @@ class Main():
         
         return UEFISYSPMountPoint
 
-    def CheckForGRUBBIOS(self):
+    def CheckForGRUBBIOS(self, MBR):
         """Check for the GRUB (v2 and legacy) BIOS bootloader"""
-        #*** Try to find a way of distinguishing between them here, rather than later *** *** Save MBR to a variable, rather than a file *** *** Test again ***
-        MBRBootSectorFile = open("/tmp/wxfixboot/mbrbootsect", "r")
-        MBRBootSector = MBRBootSectorFile.read()
-        MBRBootSectorFile.close()
-
-        if str("GRUB") in str(MBRBootSector): #*** Avoid UnicodeDecodeError ***
+        #*** Try to find a way of distinguishing between them here, rather than later *** *** Test again ***
+        if str("GRUB") in str(MBR): #*** Avoid UnicodeDecodeError ***
             #Bootloader is GRUB MBR
             return True
 
@@ -121,12 +117,8 @@ class Main():
             return False
 
     def CheckForLILO(self):
-        """Check for LILO in MBR""" #*** Save MBR to a variable, rather than a file *** *** Test again ***
-        MBRBootSectorFile = open("/tmp/wxfixboot/mbrbootsect", "r")
-        MBRBootSector = MBRBootSectorFile.read()
-        MBRBootSectorFile.close()
-
-        if str("LILO") in str(MBRBootSector): #*** Avoid UnicodeDecodeError ***
+        """Check for LILO in MBR""" #*** Test again ***
+        if str("LILO") in str(MBR): #*** Avoid UnicodeDecodeError ***
             #Bootloader is LILO in MBR
             return True
 
