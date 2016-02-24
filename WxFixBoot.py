@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# WxFixBoot Version 1.1~pre1
+# WxFixBoot Version 2.0~pre1
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
@@ -20,7 +20,6 @@
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
 #*** Don't use parted, all it's being used for is getting partition schemes, something lshw will do with dictionaries soon ***
 #*** Maybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
-#*** If /tmp/wxfixboot is present on startup it isn't recreated ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -44,7 +43,7 @@ from wx.animate import Animation
 from wx.animate import AnimationCtrl
 
 #Define the version number and the release date as global variables.
-Version = "1.1~pre1"
+Version = "2.0~pre1"
 ReleaseDate = "24/2/2016"
 
 def usage():

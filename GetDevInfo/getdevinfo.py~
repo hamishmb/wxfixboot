@@ -387,11 +387,12 @@ class Main():
         except ValueError:
             #It didn't, this is probably a file, not a Disk.
             logger.warning("GetDevInfo: Main().GetBlockSize(): Couldn't get blocksize for Disk: "+Disk+"! Returning None...")
-                return None
-            else:
-                #It did.
-                logger.info("GetDevInfo: Main().GetBlockSize(): Blocksize for Disk: "+Disk+": "+Result+". Returning it...")
-                return Result
+            return None
+
+        else:
+            #It did.
+            logger.info("GetDevInfo: Main().GetBlockSize(): Blocksize for Disk: "+Disk+": "+Result+". Returning it...")
+            return Result
 
 #End Main Class.
 
@@ -406,16 +407,6 @@ if __name__ == "__main__":
     #Set up basic logging to stdout.
     logger = logging
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=logging.DEBUG)
-
-    #Determine if running on Linux or Mac.
-    global Linux
-    if platform.system() == 'Linux':
-        Linux = True
-
-    elif platform.system() == "Darwin":
-        Linux = False
-
-    logger.info("Running on Linux: "+str(Linux))
 
     Info = Main().GetInfo()
 
