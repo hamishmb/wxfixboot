@@ -25,6 +25,7 @@ from __future__ import unicode_literals
 class Main():
     def CheckDepends(self):
         """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
+        logger.info("MainStartupTools(): Main().CheckDepends(): Checking dependencies...")
         #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies. *** Remove parted soon *** *** Maybe remove lsblk later ***
         CmdList = ("mount", "parted", "lsb_release", "dmidecode", "lsblk", "chroot", "dd")
 
@@ -52,25 +53,32 @@ class Main():
     def UnmountAllFS(self):
         """Unmount any unnecessary filesystems, to prevent data corruption."""
         #Warn about removing devices. *** Clarify this message ***
+        logger.info("MainStartupTools: Main().UnmountAllFS(): Unmounting all Filesystems...")
         DialogTools().ShowMsgDlg(Kind="info", Message="Unnecessary filesystems will now be unmounted. Please remove all unneeded devices connected to your computer and close any other running programs, then click okay. *** This won't apply anymore when changing device info gatherer *** If you're doing a disk check, please plug in any devices you wish to check. However, if you are doing other operations, please do them seperately.")
 
         #Attempt unmount of all filesystems.
+        logger.debug("MainStartupTools: Main().UnmountAllFS(): Running 'unmount -ad'...")
         CoreTools().StartProcess("umount -ad") #*** Check it worked! ***
 
-        #Make sure that we still have rw access on live disks.
+        #Make sure that we still have rw access on live disks. *** Check if we're on a live disk maybe? ***
+        logger.info("MainStartupTools: Main().UnmountAllFS(): Attempting to remount '/' to make sure it's still rw on a live disk.")
         CoreTools().RemountPartition("/") #*** Check it worked! ***
 
     def CheckFS(self):
         """Check all unmounted filesystems."""
+        logger.info("MainStartupTools: Main().CheckFS(): Checking filesystems if possible. Running 'fsck -ARMp'...")
         CoreTools().StartProcess("fsck -ARMp") #*** Check it worked! ***
 
     def MountCoreFS(self):
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
+        logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
         CoreTools().StartProcess("mount -avw") #*** Check it worked! ***
 
     def DetectDevicesPartitionsAndPartSchemes(self):
         """Detect all devices, partitions, and their partition schemes.""" #*** This will need serious work as I change the way wxfixboot handles disks with dictionaries and stuff ***
         #*** A fair bit of this info can be gathered using DDRescue-GUI's getdevinfo package ***
+        logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): Gathering info...")
+
         #Create a list for the devices.
         DeviceList = []
 
@@ -80,11 +88,13 @@ class Main():
         #Create a list for the partitions.
         PartitionListWithFSType = []
 
+        logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): Calling 'lsblk -r -o NAME,FSTYPE'...")
         OutputList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE", ReturnOutput=True)[1].replace("NAME FSTYPE\n", "").split()
 
         #Populate the device list, and the Partition List including FS Type.
+        logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): Populating DeviceList and PartitionListWithFSType...")
         for Disk in OutputList:
-            #Check if the disk is a hard drive, and doesn't end with a digit (isn't a partition).
+            #Check if the disk is a hard drive, and doesn't end with a digit (isn't a partition). *** Use if x in y instead of try:... except:... ***
             if Disk[0:2] in ('sd', 'hd') and Disk[-1].isdigit() == False:
 
                 #First AutoPartSchemeList
@@ -122,8 +132,7 @@ class Main():
         PartSchemeList = AutoPartSchemeList[:]
 
         logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): DeviceList, PartitionListWithFSType and PartSchemeList Populated okay. Contents (respectively): "+', '.join(DeviceList)+" and: "+', '.join(PartitionListWithFSType)+" and: "+', '.join(PartSchemeList))
-
-        #Finally, save two variables showing whether there are any mbr or gpt entries on the disks. *** This will almost definitely be unneeded. Is this even helpful? ***
+        #Finally, save two variables showing whether there are mbr or gpt entries on the disks. *** This will almost definitely be unneeded. Is this even helpful? ***
         #GPT
         try:
             PartSchemeList.index("gpt")
@@ -148,10 +157,12 @@ class Main():
 
     def DetectLinuxPartitions(self):
         """Get a list of partitions of type ext (1,2,3 or 4) / btrfs / xfs / jfs / zfs / minix / reiserfs."""
+        logger.debug("MainStartupTools: Main().DetectLinuxPartitions(): Finding all Linux (ext/btrfs/xfs/jfs/minix/reiserfs) partitions...")
         #*** A fair bit of this info can be gathered using DDRescue-GUI's getdevinfo package ***
         LinuxPartList = []
 
         #Run the command to find them, and save the results in a list.
+        logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): Running 'lsblk -r -o NAME,FSTYPE'...")
         TempList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE", ReturnOutput=True)[1].split("\n")
 
         OutputList = []
@@ -181,7 +192,7 @@ class Main():
 
     def GetRootFSandRootDev(self, LinuxPartList):
         """Determine RootFS, and RootDevice"""
-        #*** This should be done for each OS installed and stored that way, preventing unwanted config and damaged bootloaders. Major work needed here. *** *** Maybe add more logging messages ***
+        #*** This should be done for each OS installed and stored that way, preventing unwanted config and damaged bootloaders. Major work needed here. ***
         Result = DialogTools().ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk, or Parted Magic?", Title="WxFixBoot - Live Disk?")
         
         if Result:
@@ -203,9 +214,9 @@ class Main():
             AutoRootDevice = RootDevice
 
         else:
-            logger.warning("MainStartupTools: Main().GetRootFSandRootDev(): User reported WxFixBoot isn't on a live disk...")
+            logger.warning("MainStartupTools: Main().GetRootFSandRootDev(): User reported WxFixBoot isn't on a live disk. Using current OS as default OS...")
 
-            DialogTools().ShowMsgDlg(Kind="info", Message="Your current OS will be taken as the default OS. You can reset this later if you wish.")
+            DialogTools().ShowMsgDlg(Kind="info", Message="Your current OS will be taken as the default OS. You can reset this later if you wish.") #*** Why not offer now? ***
 
             #By the way the default OS in this case is set later, when OS detection takes place. *** Maybe get rid of this try statement when I change/remove this *** *** Badly written, what if we get a UUID? Use the heirachy when I switch ***
             try:
@@ -229,7 +240,7 @@ class Main():
     def GetLinuxOSs(self, LinuxPartList, LiveDisk, AutoRootFS):
         """Get the names of all Linux OSs on the HDDs."""
         #*** This will need changing, but will not need too much work to adapt it to using dictionaries ***
-        #*** Crashes at log line in __init__() if we couldn't detect the current OS ***
+        #*** Crashes at log line in InitThread().run() if we couldn't detect the current OS ***
         logger.debug("MainStartupTools: Main().GetLinuxOSs(): Finding Linux operating systems...")
         OSList = []
         DefaultOS = ""
