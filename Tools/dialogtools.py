@@ -21,10 +21,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. #*** On wx 3 and newer we can customise buttons ***
+#Begin Main Class. #*** On wx 3 and newer we can customise buttons *** *** Add wrapper for wx.MultiChoiceDialog ***
 class Main():
     def ShowThreadMsgDlg(self, msg, kind="info"):
         """Shows a message dialog from a thread upon instruction"""
+        logger.debug("DialogTools: Main().ShowThreadMessageDlg(): Showing Thread Message Dialog...")
         if kind == "info":
             title = "WxFixBoot - Information"
             style = wx.OK | wx.ICON_INFORMATION
@@ -60,6 +61,7 @@ class Main():
 
     def ShowThreadYesNoDlg(self, msg, title="WxFixBoot - Question"):
         """Shows a yes/no dialog from a thread upon instruction"""
+        logger.debug("DialogTools: Main().ShowThreadYesNoDlg(): Showing Thread Yes/No Dialog...")
         dlg = wx.MessageDialog(ParentWindow.Panel, msg, title, wx.YES_NO | wx.ICON_QUESTION)
 
         #Where possible, destroy just before setting self.DlgResult to avoid potential race conditions.
@@ -91,6 +93,7 @@ class Main():
 
     def ShowThreadChoiceDlg(self, msg, choices, title="WxFixBoot - Select an Option"):
         """Shows a choice dialog from a thread upon instruction"""
+        logger.debug("DialogTools: Main().ShowThreadChoiceDlg(): Showing Thread Choice Dialog...")
         dlg = wx.SingleChoiceDialog(ParentWindow.Panel, msg, title, choices, pos=wx.DefaultPosition)
 
         #Where possible, destroy just before setting self.DlgResult to avoid potential race conditions.
@@ -120,7 +123,7 @@ class Main():
             while self.DlgResult == None:
                 time.sleep(0.5)
 
-            #Don't let the user bypass any choice dialogs.
+            #Don't let the user bypass any choice dialogs. #*** Add optional kwarg to allow this? ***
             if self.DlgResult in ("", False):
                 logger.warning("DialogTools: Main().ShowChoiceDlg(): User closed dialog without answering. Warning user and asking again...")
                 self.ShowMsgDlg(Kind="warning", Message="Please select an option.")
@@ -130,6 +133,7 @@ class Main():
 
     def ShowThreadTextEntryDlg(self, msg, title="WxFixBoot - Text Entry"):
         """Shows a text entry dialog from a thread upon instruction"""
+        logger.debug("DialogTools: Main().ShowThreadTextEntryDlg(): Showing Thread Text Entry Dialog...")
         dlg = wx.TextEntryDialog(ParentWindow.Panel, msg, title, "", style=wx.OK|wx.CANCEL, pos=wx.DefaultPosition)
 
         #Where possible, destroy just before setting self.DlgResult to avoid potential race conditions.
@@ -167,6 +171,7 @@ class Main():
 
     def ShowThreadSaveFiledlg(self, title="WxFixBoot - Select A File", wildcard="All Files/Devices (*)|*"):
         """Shows a save file choice dialog from a thread upon instruction"""
+        logger.debug("DialogTools: Main().ShowThreadSaveFileDlg(): Showing Thread Save File Dialog...")
         dlg = wx.FileDialog(ParentWindow.Panel, message=title, defaultDir="/home", wildcard=wildcard, style=wx.SAVE|wx.OVERWRITE_PROMPT)
 
         #Where possible, destroy just before setting self.DlgResult to avoid potential race conditions.
@@ -178,7 +183,7 @@ class Main():
             dlg.Destroy()
             self.DlgResult = False
 
-        logger.debug("DialogTools: Main().ShowThreadFileDlg(): Result of Thread File Dialog was: "+unicode(self.DlgResult))
+        logger.debug("DialogTools: Main().ShowThreadSaveFileDlg(): Result of Thread Save File Dialog was: "+unicode(self.DlgResult))
 
     def ShowSaveFileDlg(self, Title="WxFixBoot - Select A File", Wildcard="All Files/Devices (*)|*"):
         """Handle showing thread file dialogs, reducing code duplication and compilications and errors.
