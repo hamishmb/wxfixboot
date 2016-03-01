@@ -72,7 +72,7 @@ class Main():
             #Return the return code, as well as the output.
             return (Retval, '\n'.join(LineList))
 
-    def MountPartition(self, Partition, MountPoint, OnlyCheck=False, Options=""): #*** Check this over: What if our partition is mounted somewhere else? *** *** Test using OnlyCheck=True ***
+    def MountPartition(self, Partition, MountPoint, OnlyCheck=False, Options=""): #*** Check this over: What if our partition is mounted somewhere else? *** *** Test OnlyCheck=True works reliably ***
         """Mounts the given partition.
         Partition is the partition to mount.
         MountPoint is where you want to mount the partition.
@@ -85,12 +85,13 @@ class Main():
         else:
             logger.info("CoreTools: Main().MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with no extra options...")
 
-        if MountPoint in self.StartProcess("mount -l", ReturnOutput=True)[1]:
+        MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
+
+        if MountPoint in MountInfo[1]:
             #There is a partition mounted here. Check if our partition is already mounted in the right place.
             MountPointFound = None
-            Temp = self.StartProcess("mount -l", ReturnOutput=True)[1] #*** Don't call this twice ***
 
-            for Line in Temp.split("\n"):
+            for Line in MountInfo.split("\n"):
                 if Partition in Line:
                     MountPointFound = Line.split()[2]
 
