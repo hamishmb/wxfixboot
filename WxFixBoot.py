@@ -626,8 +626,8 @@ class MainWindow(wx.Frame):
         self.SetMenuBar(menuBar)
 
     def OnCheckBox(self, Event=None):
-        """Called when one of the checkboxes is checked/unchecked to make sure te options stay valid"""
-        logger.debug("MainWindow().OnCheckBox() was triggered.")
+        """Called when one of the checkboxes is checked/unchecked to make sure the options stay valid"""
+        logger.debug("MainWindow().OnCheckBox(): Checkboxes have been changed. Making sure options are valid and don't conflict...")
         #Bad Sector Check Choicebox
         if self.BadSectorCheckCB.IsChecked():
             self.CheckFileSystemsCB.Disable()
@@ -670,6 +670,7 @@ class MainWindow(wx.Frame):
             self.UpdateBootloaderCB.SetValue(0)
             self.UpdateBootloaderCBwaschecked = False
 
+        logger.debug("MainWindow().OnCheckBox(): Done. Calling self.SaveMainOpts()...")
         self.SaveMainOpts()
 
     def Opts(self, Event=None):
@@ -966,10 +967,12 @@ class MainWindow(wx.Frame):
         logger.info("MainWindow().CountOperations(): Number of operations: "+unicode(NumberOfOperations))
 
         if NumberOfOperations == 0:
+            logger.info("MainWindow().CountOperations(): No operations to do. Disabling self.ApplyOperationsButton...")
             self.ApplyOperationsButton.SetLabel("No Operations Enabled")
             self.ApplyOperationsButton.Disable()
 
         else:
+            logger.info("MainWindow().CountOperations(): There are operations to do. Enabling self.ApplyOperationsButton...")
             self.ApplyOperationsButton.SetLabel("Apply All Operations")
             self.ApplyOperationsButton.Enable()
 
@@ -1436,11 +1439,13 @@ class SettingsWindow(wx.Frame):
     def LaunchblOpts(self, Event=None):
         """Start the Bootloader Options Window"""
         #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first.
+        logger.debug("SettingsWindow().LaunchblOpts(): Calling self.SaveOptions()...")
         self.SaveOptions()
 
         #Give some warnings here if needed.
         #Tell the user some options will be disabled if the bootloader is to be reinstalled or updated.
         if ReinstallBootloader or UpdateBootloader:
+            logger.info("SettingsWindow().LaunchblOpts(): Bootloader will be reinstalled or updated, almost all options relating to bootloaders will be disabled.")
             dlg = wx.MessageDialog(self.Panel, "Your current bootloader is to be reinstalled or updated, therefore almost all bootloader-related options here will be disabled. If you want to install a different bootloader, please uncheck the reinstall or update bootloader option in the main window.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
@@ -1457,11 +1462,13 @@ class SettingsWindow(wx.Frame):
         dlg.Destroy()
 
         if UEFISystemPartition == "None" and Bootloader in ('GRUB-UEFI', 'ELILO'):
+            logger.info("SettingsWindow().LaunchblOpts(): UEFI bootloader, but no UEFI partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.")
             dlg = wx.MessageDialog(self.Panel, "You have a UEFI Bootloader, but no UEFI Partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled. Did you change your selected UEFI Partition?", "WxFixBoot - ERROR", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
 
         elif UEFISystemPartition == "None":
+            logger.info("SettingsWindow().LaunchblOpts(): No UEFI partition. Therefore installing UEFI bootloaders will be disabled.")
             dlg = wx.MessageDialog(self.Panel, "You have no UEFI Partition. If you wish to install a UEFI bootloader, you'll need to create one first. WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
@@ -1665,7 +1672,7 @@ class SettingsWindow(wx.Frame):
         self.Destroy()
 
 #End Settings Window
-#Begin Bootloader Options Window *** Fix some bugs and use get/set selection instead of get/set string selection where possible, maybe write some code from scratch *** *** The partitioning stuff can be changed and made better when we switch to dictionaries ***
+#Begin Bootloader Options Window *** Fix some bugs and use get/set selection instead of get/set string selection where possible, maybe write checkbox/radiobutton code from scratch *** *** The partitioning stuff can be changed and made better when we switch to dictionaries ***
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self,ParentWindow):
         """Initialise Bootloader options window"""
@@ -1884,7 +1891,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         self.BootloaderToInstallChoice.SetStringSelection("Auto")
 
-        logger.debug("BootloaderOptionsWindow().ActivateOptsForAutoFW() has been triggered...")
+        logger.debug("BootloaderOptionsWindow().ActivateOptsForAutoFW(): Setting up options as needed...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and UpdateBootloader == False:
             self.UEFItoBIOSCheckBox.SetValue(False)
             self.UEFItoBIOSCheckBox.Disable()
@@ -1900,7 +1907,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         self.BootloaderToInstallChoice.SetStringSelection("Auto")
 
-        logger.debug("BootloaderOptionsWindow().ActivateOptsForUEFIFW() has been triggered...")
+        logger.debug("BootloaderOptionsWindow().ActivateOptsForUEFIFW(): Setting up options as needed...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and Bootloader != "GRUB-LEGACY" and UpdateBootloader == False:
             self.AutoDetermineCheckBox.SetValue(False)
             self.AutoDetermineCheckBox.Disable()
@@ -1940,7 +1947,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         self.BootloaderToInstallChoice.SetStringSelection("Auto")
 
-        logger.debug("BootloaderOptionsWindow().ActivateOptsForNoModification() has been triggered...")
+        logger.debug("BootloaderOptionsWindow().ActivateOptsForNoModification(): Setting up options as needed...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and UpdateBootloader == False:
             self.UEFItoBIOSCheckBox.SetValue(False)
             self.UEFItoBIOSCheckBox.Disable()
@@ -1974,7 +1981,7 @@ class BootloaderOptionsWindow(wx.Frame):
         #Disable self.ExitButton.
         self.ExitButton.Disable()
 
-        logger.debug("BootloaderOptionsWindow().BLToInstallChoiceChange() has been triggered...")
+        logger.debug("BootloaderOptionsWindow().BLToInstallChoiceChange(): Setting up options as needed...")
         if self.BootloaderToInstallChoice.GetSelection() == 0 and self.BootloaderToInstallChoicelastvalue != self.BootloaderToInstallChoice.GetStringSelection():
             self.BootloaderToInstallChoicelastvalue = self.BootloaderToInstallChoice.GetStringSelection()
             self.DoNotChangeBootloaderCheckBox.Enable()
@@ -2001,6 +2008,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def RescanForBootloaders(self, Event=None):
         """Handle selection of new UEFI system partition. It's pretty self-explanatory.""" #*** Do we need to reset stuff/go back to mainwindow here? ***
+        logger.debug("BootloaderOptionsWindow().RescanForBootloaders(): Preparing to rescan for bootloaders...")
         dlg = wx.MessageDialog(self.Panel, "WxFixBoot will now rescan for bootloaders, please wait a few seconds.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
         dlg.ShowModal()
         dlg.Destroy()
@@ -2035,12 +2043,14 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def CheckOpts(self, Event=None):
         """Refuse to save options if they're invalid, otherwise call self.SaveBLOpts()"""
+        logger.info("SettingsWindow().CheckOpts(): Checking options are valid...")
         if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.UEFItoBIOSCheckBox.IsChecked() == False and self.AutoDetermineCheckBox.IsChecked() == False and self.BIOStoUEFICheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0:
             #Do nothing, as settings are invalid.
             logger.error("BootloaderOptionsWindow().CheckOpts(): No options selected, although the 'do not modify' checkbox is unticked, or the options selected are invalid. Won't save options, waitng for user change...")
             wx.MessageDialog(self.Panel, "Your current selection suggests a modification will take place, but it doesn't specify which modification to do! Please select a valid modification to do.", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition).ShowModal()
 
         else:
+            logger.info("BootloaderOptionsWindow().CheckOpts(): Options are valid. Calling self.SaveBLOpts()...")
             self.SaveBLOpts()
 
     def SaveBLOpts(self): #*** Tidy this up and refactor it ***
@@ -2213,6 +2223,8 @@ class RestoreWindow(wx.Frame):
         #Set up the window.
         self.SetupOptions()
 
+        logger.debug("RestoreWindow().__init__(): Ready. Waiting for events...")
+
     def CreateText(self):
         """Create the text"""
         if self.Type == "BootSector":
@@ -2315,7 +2327,7 @@ class RestoreWindow(wx.Frame):
 
     def SelectFile(self, Event=None):
         """Grab Image path"""
-        logger.debug("RestoreWindow().SelectFile() has been triggered...")
+        logger.debug("RestoreWindow().SelectFile(): File selection choice box changed...")
 
         #Set up global variables.
         global BootSectorFile
@@ -2413,7 +2425,7 @@ class RestoreWindow(wx.Frame):
 
     def SelectTargetDevice(self, Event=None):
         """Grab Boot Sector/Partition Table Image path."""
-        logger.debug("RestoreWindow().SelectTargetDevice() has been triggered...")
+        logger.debug("RestoreWindow().SelectTargetDevice(): Target device selection choice box has changed...")
 
         #Set up global variables.
         global BootSectorTargetDevice
@@ -2469,6 +2481,7 @@ class RestoreWindow(wx.Frame):
 
             if dlg.ShowModal() == wx.ID_YES:
                 #Send a message to OptionsDlg1, so it can show itself again.
+                logger.debug("RestoreWindow().ExitWindow(): Restore "+self.Type+" Window Closing...")
                 wx.CallAfter(self.ParentWindow.RefreshOptionsDlg1, "Closed.")
 
                 #Exit.
@@ -2483,7 +2496,7 @@ class RestoreWindow(wx.Frame):
             dlg.Destroy()
 
         else:
-            logger.debug("RestoreWindow().ExitWindow(): Restore "+self.Type+" Window Closing.")
+            logger.debug("RestoreWindow().ExitWindow(): Restore "+self.Type+" Window Closing...")
             #Send a message to OptionsDlg1, so it can show itself again.
             wx.CallAfter(self.ParentWindow.RefreshOptionsDlg1, "Closed.")
 
@@ -2658,7 +2671,7 @@ class ProgressWindow(wx.Frame):
         self.Hide()
 
         #Reset all settings to defaults, except ones like LiveDisk, which won't ever need to change.
-        SetDefaults()
+        SetDefaults() #*** Broken, causes crash ***
 
         global Bootloader
         global FirmwareType
@@ -2730,12 +2743,14 @@ class BackendThread(threading.Thread):
         KernelOptions = "quiet splash nomodeset"
  
         #Log the BackendThread start event (in debug mode).
-        logger.debug("BackendThread().run(): Started. Doing Operations...")
+        logger.debug("BackendThread().run(): Started. Calling self.StartOperations()...")
 
         self.StartOperations()
 
     def StartOperations(self):
         """Start doing operations."""
+        logger.debug("BackendThread().StartOperations(): Running operations...")
+
         DialogTools().ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
 
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
