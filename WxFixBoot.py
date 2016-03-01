@@ -15,6 +15,7 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Re-evaluate dependencies at packaging time ***
+#*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***

@@ -22,7 +22,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 class Main(): #*** Refactor and test all of these ***
-    def RemoveGRUBLEGACY(self, PackageManager, UseChroot, Arch, MountPoint="None"):
+    def RemoveGRUBLEGACY(self, PackageManager, UseChroot, Arch, MountPoint=None):
         """Remove GRUB-LEGACY."""
         if PackageManager == "apt-get":
             if UseChroot == False:
@@ -34,7 +34,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def RemoveGRUB2(self, PackageManager, UseChroot, Arch, MountPoint="None"):
+    def RemoveGRUB2(self, PackageManager, UseChroot, Arch, MountPoint=None):
         """Remove GRUB2."""
         if PackageManager == "apt-get":
             if UseChroot == False:
@@ -46,7 +46,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def RemoveLILO(self, PackageManager, UseChroot, Arch, MountPoint="None"):
+    def RemoveLILO(self, PackageManager, UseChroot, Arch, MountPoint=None):
         """Remove lilo."""
         if PackageManager == "apt-get":
             if UseChroot == False:
@@ -58,7 +58,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def RemoveGRUBUEFI(self, PackageManager, UseChroot, Arch, MountPoint="None"):
+    def RemoveGRUBUEFI(self, PackageManager, UseChroot, Arch, MountPoint=None):
         """Remove GRUB-UEFI."""
         if PackageManager == "apt-get":
             if UseChroot == False:
@@ -70,7 +70,7 @@ class Main(): #*** Refactor and test all of these ***
         #Return the return value.
         return retval
 
-    def RemoveELILO(self, PackageManager, UseChroot, Arch, MountPoint="None"):
+    def RemoveELILO(self, PackageManager, UseChroot, Arch, MountPoint=None):
         """Remove ELILO."""
         if PackageManager == "apt-get":
             if UseChroot == False:

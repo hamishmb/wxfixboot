@@ -94,26 +94,13 @@ class Main():
         #Populate the device list, and the Partition List including FS Type.
         logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): Populating DeviceList and PartitionListWithFSType...")
         for Disk in OutputList:
-            #Check if the disk is a hard drive, and doesn't end with a digit (isn't a partition). *** Use if x in y instead of try:... except:... ***
+            #Check if the disk is a hard drive, and doesn't end with a digit (isn't a partition).
             if Disk[0:2] in ('sd', 'hd') and Disk[-1].isdigit() == False:
 
-                #First AutoPartSchemeList
-                try:
-                    #Check if the disk is already in DeviceList, as if it is, it won't be duplicated in AutoPartSchemeList either this way.
-                    DeviceList.index("/dev/"+Disk)
-
-                except ValueError:
-                    #It isn't, add it.
+                #*** Test this again ***
+                if "/dev/"+Disk not in DeviceList:
                     PartScheme = CoreStartupTools().GetDevPartScheme("/dev/"+Disk)
                     AutoPartSchemeList.append(PartScheme)
-
-                #Now DeviceList
-                try:
-                    #Check if the disk is already in DeviceList.
-                    DeviceList.index(Disk)
-
-                except ValueError:
-                    #It isn't, add it.
                     DeviceList.append("/dev/"+Disk)
 
             #If instead the partition is a partition on a hard drive, add it to the Partition List with FSType, along with the next disk, if it is not a device or partition.
@@ -220,7 +207,7 @@ class Main():
 
             #By the way the default OS in this case is set later, when OS detection takes place. *** Maybe get rid of this try statement when I change/remove this *** *** Badly written, what if we get a UUID? Use the heirachy when I switch ***
             try:
-                RootFS = CoreTools().StartProcess("mount", ReturnOutput=True)[1].split()[0] #*** Change this later ***
+                RootFS = CoreTools().StartProcess("mount", ReturnOutput=True)[1].split()[0] #*** Change this later *** *** Don't call mount directly ***
                 AutoRootFS = RootFS
                 RootDevice = RootFS[0:8]
                 AutoRootDevice = RootDevice
@@ -301,7 +288,7 @@ class Main():
                         OSList.append(OSName+' '+OSArch+' on partition '+Partition)
 
                 #Unmount the filesystem.
-                Retval = CoreTools().Unmount("/mnt"+Partition) #*** Check the return value so we can take action if this doesn't work! Otherwise we may delete data from a drive! Mind, it looks like rm won't let you fortunately. ***
+                Retval = CoreTools().Unmount("/mnt"+Partition) #*** Check the return value so we can take action if this doesn't work! Otherwise we may delete data from a drive! Mind, it looks like os.rmdir won't let you fortunately. ***
 
                 #Remove the temporary mountpoint
                 os.rmdir("/mnt"+Partition)
@@ -355,9 +342,9 @@ class Main():
                 if not os.path.isdir("/sys/firmware/efi/vars"):
                     os.mkdir("/sys/firmware/efi/vars")
 
-                Stdout = CoreTools().StartProcess("mount -t efivarfs efivars /sys/firmware/efi/vars").replace('\n', '') #*** If we can, use the new universal mount function to do this ***
+                Retval = CoreTools().MountPartition(Partition="efivars", MountPoint="/sys/firmware/efi/vars", Options="-t efivarfs") #*** Check this works ***
 
-                if Stdout != "None":
+                if Retval != 0:
                     logger.warning("MainStartupTools: Main().GetFirmwareType(): Failed to mount UEFI vars! Warning user. Ignoring and continuing.")
 
                     #UEFI vars not available or couldn't be mounted.
@@ -389,7 +376,7 @@ class Main():
             UEFISystemPartition = AutoUEFISystemPartition
 
             #If there is no UEFI partition, ask the user.
-            if UEFISystemPartition == "None":
+            if UEFISystemPartition == None:
                 #There is no UEFI partition.
                 HelpfulUEFIPartition = False
 
@@ -519,7 +506,7 @@ class Main():
             wx.Exit() #*** Can we do this from here? Maybe call the parent. Until I fix this the GUI will crash if this happens! ***
             sys.exit("WxFixBoot: Critial Error: Incorrectly set settings:"+', '.join(FailedList)+" Exiting...")
 
-        #Check and warn about conflicting settings. *** These aren't helpful to people who are new and just want to fix it quick. Maybe try to clarify them/automatically deal with this stuff? Perhaps avoid some of these situations completely by improving startup code ***
+        #Check and warn about conflicting settings. *** These aren't helpful to people who are new and just want to fix it quick. Maybe try to clarify them/automatically deal with this stuff? Perhaps avoid some of these situations completely by improving startup code *** *** Check we're doing the right things here ***
         #Firmware type warnings.
         if FirmwareType == "BIOS" and Bootloader in ('GRUB-UEFI', 'ELILO'):
             logger.warning("MainStartupTools: Main().FinalCheck(): Bootloader is UEFI-type, but system firmware is BIOS! Odd, perhaps a migrated drive? Continuing and setting firmware type to UEFI...")

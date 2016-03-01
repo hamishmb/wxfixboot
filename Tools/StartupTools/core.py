@@ -27,10 +27,9 @@ class Main():
         """Get the partition type on the given Device, and return it."""
         return CoreTools().StartProcess("parted -s "+Device+" print", ReturnOutput=True)[1].split("\n")[3].split()[-1] #*** Unnecessary when switching to dictionaries and new device detection system ***
 
-    def DetermineOSArchitecture(self, Partition, Chroot):
+    def DetermineOSArchitecture(self, Partition, Chroot): #*** Return 'i686' and 'x86_64' in future ***
         """Look for OS architecture on given partition, looking for 64-bit first, then 32-bit."""
         logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for OS on "+Partition+"...")
-        #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
         #Look for the 64-bit arch first. 
         WantedArch = "64-bit"
 
@@ -151,7 +150,9 @@ class Main():
                 for version in Stdout.split():
                     try:
                         float(version)
+
                     except ValueError: pass
+
                     else:
                         Temp = version
                         break
@@ -262,7 +263,7 @@ class Main():
 
                 if Result == "I don't have one":
                     logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): User said no UEFI Partition exists. Continuing...")
-                    return "None", FatPartitions #*** Why return "None" and not None? ***
+                    return None, FatPartitions
 
                 else:
                     logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): User reported UEFI partition at: "+Result+". Continuing...")
