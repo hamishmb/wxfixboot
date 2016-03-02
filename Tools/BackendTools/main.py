@@ -171,7 +171,7 @@ class Main():
 
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
 
-    def RemoveOldBootloader(self): #*** Handle return values *** *** Add logging stuff *** *** Check this works ***
+    def RemoveOldBootloader(self): #*** Handle return values *** *** Check this works ***
         """Remove the currently installed bootloader."""
         logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Preparing to remove old bootloaders...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Removing old bootloaders...")
@@ -187,7 +187,7 @@ class Main():
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+Bootloader+" from OS: "+OS+"...")
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing the old bootloader from OS: "+OS+"...###\n")
 
-            #Grab the architecture.
+            #Grab the architecture. *** Change this soon ***
             Arch = OS.split()[-8]
             if Arch == "64-bit":
                 Arch = "x86_64"
@@ -197,13 +197,15 @@ class Main():
             
             #If we're not on a live disk, and the partition is AutoRootFS, let the remover function know that we aren't using chroot.
             if LiveDisk == False and Partition == AutoRootFS:
+                logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Modifying current OS so not using chroot...")
                 UseChroot = False
                 MountPoint = None
 
             else:
+                logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Using chroot to modify another OS...")
                 UseChroot = True
 
-                #Mount the partition using the global mount function.
+                #Mount the partition using the global mount function. *** Note: Do we need to unmount it afterwards? Maybe check if it's mounted first, and do if needed *** 
                 MountPoint = "/mnt"+Partition
                 Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
 
@@ -220,18 +222,23 @@ class Main():
 
             #Remove the bootloader.
             if Bootloader == "GRUB-LEGACY":
+                logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
                 retval = BootloaderRemovalTools().RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint, Arch=Arch)
 
             elif Bootloader == "GRUB2":
+                logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")
                 retval = BootloaderRemovalTools().RemoveGRUB2(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint, Arch=Arch)
 
             elif Bootloader == "LILO":
+                logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing LILO...")
                 retval = BootloaderRemovalTools().RemoveLILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint, Arch=Arch)
 
             elif Bootloader == "GRUB-UEFI":
+                logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-UEFI...")
                 retval = BootloaderRemovalTools().RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint, Arch=Arch)
 
             elif Bootloader == "ELILO":
+                logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing ELILO...")
                 retval = BootloaderRemovalTools().RemoveELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint, Arch=Arch)
 
             #Tear down chroot if needed.
