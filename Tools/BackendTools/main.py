@@ -355,7 +355,7 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
         return BootloaderInstallSucceded #*** Keep the results for each OS here, and note which one(s) failed! ***
 
-    def SetNewBootloaderConfig(self): #*** Reduce duplication and maybe move to MainBackendTools? ***
+    def SetNewBootloaderConfig(self): #*** Check this works ***
         """Manage setting new bootloader config."""
         logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): Preparing to set bootloader config in OS(s): "+', '.join(OSsForBootloaderInstallation)+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to set the new bootloaders' config...")
@@ -372,7 +372,7 @@ class Main():
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to set the new bootloaders' config for OS: "+OS+"...###\n")
 
-            #Grab the architecture.
+            #Grab the architecture. *** Change this soon ***
             Arch = OS.split()[-8]
             if Arch == "64-bit":
                 Arch = "x86_64"
@@ -386,10 +386,12 @@ class Main():
 
             #Check if the Partition is AutoRootFS, if we're not on a live disk.
             if LiveDisk == False and Partition == AutoRootFS:
+                logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're modifying the current OS...")
                 #If so, make sure this will work for this OS too, and avoid setting mountpoint, so the config instructions below look in the right place for the config files.
                 MountPoint = ""
 
             else:
+                logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're Modifying another OS...")
                 #If not, set mountpoint to the actual mountpoint.
                 MountPoint = "/mnt"+Partition
 
@@ -401,9 +403,8 @@ class Main():
                     logger.warning("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount "+Partition+"! Ignoring this partition...")
                     continue
 
-                else:
-                    #Set up chroot.
-                    CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
+                #Set up chroot.
+                CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
 
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
 
@@ -504,7 +505,7 @@ class Main():
 
                 #Now Install ELILO to the UEFI Partition.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing ELILO to UEFISystemPartition...")
-                BootloaderConfigSettingTools().InstallELILOToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=Arch)
+                BootloaderConfigSettingTools().InstallELILOToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartition=UEFISystemPartition)
 
                 #Mount the UEFI partition at MountPoint/boot/efi.
                 CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") #*** Check it worked! ***
