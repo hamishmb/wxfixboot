@@ -45,7 +45,7 @@ from wx.animate import AnimationCtrl
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "24/2/2016"
+ReleaseDate = "2/3/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -438,11 +438,11 @@ class InitThread(threading.Thread):
         global PrevBootloaderSetting
         global AutoUEFISystemPartition
         global UEFISystemPartition
-        global HelpfulUEFIPartition #*** Is this var actually helpful? ***
+        global EmptyEFIPartition #*** Is this var actually helpful? ***
         global FatPartitions
 
         #Initialise them.
-        HelpfulUEFIPartition = False
+        EmptyEFIPartition = False
         PrevBootloaderSetting = "None"
         UEFISystemPartition = "None"
         AutoUEFISystemPartition = "None"
@@ -450,14 +450,14 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition, FatPartitions = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition, FatPartitions = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "91")
         logger.info("InitThread(): Bootloader is: "+Bootloader)
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LiveDisk, PartitionListWithFSType, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition)
+        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LiveDisk, PartitionListWithFSType, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -699,7 +699,7 @@ class MainWindow(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
 
-        elif HelpfulUEFIPartition == False:
+        elif EmptyEFIPartition == False:
             dlg = wx.MessageDialog(self.Panel, "No bootloaders were found on your UEFI partition. However, you will still be able to select a UEFI bootloader to install, or as your current bootloader, as UEFI bootloader detection is a little bit sketchy. In the bootloader options window, you can select a different UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
@@ -2021,18 +2021,18 @@ class BootloaderOptionsWindow(wx.Frame):
         global PrevBootloaderSetting
         global AutoUEFISystemPartition
         global UEFISystemPartition
-        global HelpfulUEFIPartition #*** Is this var actually helpful? ***
+        global EmptyEFIPartition
         global FatPartitions
 
         #Initialise them.
-        HelpfulUEFIPartition = False
+        EmptyEFIPartition = False
         PrevBootloaderSetting = "None"
         UEFISystemPartition = "None"
         AutoUEFISystemPartition = "None"
         FatPartitions=['None']
 
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition, FatPartitions = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition, FatPartitions = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+Bootloader)
 
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
@@ -2666,13 +2666,13 @@ class ProgressWindow(wx.Frame):
         self.RestartButton.Enable()
         self.ExitButton.Enable()
 
-    def RestartWxFixBoot(self, Event=None):
+    def RestartWxFixBoot(self, Event=None): #*** Test this ***
         """Restart WxFixBoot"""
         logger.debug("ProgressWindow().RestartWxFixBoot(): Restarting WxFixBoot...")
         self.Hide()
 
         #Reset all settings to defaults, except ones like LiveDisk, which won't ever need to change.
-        SetDefaults() #*** Broken, causes crash ***
+        MainStartupTools().SetDefaults()
 
         global Bootloader
         global FirmwareType
@@ -2736,11 +2736,9 @@ class BackendThread(threading.Thread):
 
         #*** Temporarily do this until I switch to dictionaries ***
         #Define global vars
-        global BootloaderTimeout
         global KernelOptions
 
         #Set to default values
-        BootloaderTimeout = 10 #*** Does this override SettingsWindow? If so remove this line. ***
         KernelOptions = "quiet splash nomodeset"
  
         #Log the BackendThread start event (in debug mode).
