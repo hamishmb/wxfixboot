@@ -186,14 +186,6 @@ class Main():
 
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+Bootloader+" from OS: "+OS+"...")
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing the old bootloader from OS: "+OS+"...###\n")
-
-            #Grab the architecture. *** Change this soon ***
-            Arch = OS.split()[-8]
-            if Arch == "64-bit":
-                Arch = "x86_64"
-
-            else:
-                Arch = "i686"
             
             #If we're not on a live disk, and the partition is AutoRootFS, let the remover function know that we aren't using chroot.
             if LiveDisk == False and Partition == AutoRootFS:
@@ -223,23 +215,23 @@ class Main():
             #Remove the bootloader.
             if Bootloader == "GRUB-LEGACY":
                 logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
-                retval = BootloaderRemovalTools().RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint, Arch=Arch)
+                retval = BootloaderRemovalTools().RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
             elif Bootloader == "GRUB2":
                 logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")
-                retval = BootloaderRemovalTools().RemoveGRUB2(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint, Arch=Arch)
+                retval = BootloaderRemovalTools().RemoveGRUB2(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
             elif Bootloader == "LILO":
                 logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing LILO...")
-                retval = BootloaderRemovalTools().RemoveLILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint, Arch=Arch)
+                retval = BootloaderRemovalTools().RemoveLILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
             elif Bootloader == "GRUB-UEFI":
                 logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-UEFI...")
-                retval = BootloaderRemovalTools().RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint, Arch=Arch)
+                retval = BootloaderRemovalTools().RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
             elif Bootloader == "ELILO":
                 logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing ELILO...")
-                retval = BootloaderRemovalTools().RemoveELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint, Arch=Arch)
+                retval = BootloaderRemovalTools().RemoveELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
             #Tear down chroot if needed.
             if UseChroot:
@@ -372,13 +364,8 @@ class Main():
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to set the new bootloaders' config for OS: "+OS+"...###\n")
 
-            #Grab the architecture. *** Change this soon ***
+            #Grab the architecture.
             Arch = OS.split()[-8]
-            if Arch == "64-bit":
-                Arch = "x86_64"
-
-            else:
-                Arch = "i686"
 
             wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Setting the new bootloader's config...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 79)

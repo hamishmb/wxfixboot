@@ -27,7 +27,7 @@ class Main():
         """Get the partition type on the given Device, and return it."""
         return CoreTools().StartProcess("parted -s "+Device+" print", ReturnOutput=True)[1].split("\n")[3].split()[-1] #*** Unnecessary when switching to dictionaries and new device detection system ***
 
-    def DetermineOSArchitecture(self, Partition, Chroot): #*** Return 'i686' and 'x86_64' in future ***
+    def DetermineOSArchitecture(self, Partition, Chroot): #*** Tidy this up ***
         """Look for OS architecture on given partition, looking for 64-bit first, then 32-bit."""
         logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for OS on "+Partition+"...")
         #Look for the 64-bit arch first. 
@@ -43,8 +43,14 @@ class Main():
 
             #Now let's check if the OS uses this architecture.
             if WantedArch in CoreTools().StartProcess(cmd, ReturnOutput=True)[1]:
-                logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): OS on "+Partition+" is 64-bit...")
-                PartitionArch = WantedArch
+                if WantedArch == "64-bit":
+                    logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): OS on "+Partition+" is 64-bit...")
+                    OSArch = "x86_64"
+
+                else:
+                    logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): OS on "+Partition+" is 64-bit...")
+                    OSArch = "i686"
+
                 break
 
             elif WantedArch == "64-bit":
@@ -55,11 +61,11 @@ class Main():
             else:
                 #We couldn't find it as either 32-bit or 64-bit!
                 logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Couldn't find architecture for OS on "+Partition+"! Returning None...")
-                PartitionArch = None
+                OSArch = None
                 break
 
         #Return the arch (or None, if we didn't find it).
-        return PartitionArch
+        return OSArch
 
     def AskForOSName(self, Partition, OSArch, AutoRootFS):
         """Ask the user if an OS exists on the given partition.""" #*** There might be a better way of doing this *** *** Will need modification at time of switch to dictionaries as it uses AutoRootFS ***
