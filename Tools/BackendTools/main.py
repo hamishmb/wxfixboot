@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def GetOldBootloaderConfig(self):
+    def GetOldBootloaderConfig(self): #*** Check this works ***
         """Get the old bootloader's config before removing it, so we can reuse it (if possible) with the new one."""
         logger.debug("MainBackendTools: Main().GetOldBootloaderConfig(): Preparing to get bootloader config...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to get bootloader config...")
@@ -37,10 +37,6 @@ class Main():
         #Use two lists for global kernel options and timeouts, so if they differ for each instance of the bootloader (assuming there is more than one), we can ask the user which is best, or go with WxFixBoot's default (timeout=10, kopts="quiet splash nomodeset")
         KernelOptsList = []
         TimeoutsList = []
-
-        #Set two temporary vars.
-        timeout = ""
-        kopts = ""
 
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Getting old bootloader config...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Getting old bootloader config...###\n")
@@ -71,37 +67,21 @@ class Main():
                     continue
 
             #Look for the configuration file, based on which GetConfig() function we're about to run.
-            if Bootloader == "GRUB-LEGACY":
-                #Check MountPoint/boot/grub/menu.lst exists.
-                if os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
-                    #It does, we'll run the function to find the config now.
-                    logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found GRUB-LEGACY config file. Getting bootloader's timeout...")
-                    timeout = BootloaderConfigObtainingTools().GetGRUBLEGACYConfig(filetoopen=MountPoint+"/boot/grub/menu.lst")
+            if Bootloader == "GRUB-LEGACY" and os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
+                logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found GRUB-LEGACY config file. Getting bootloader's timeout...")
+                timeout = BootloaderConfigObtainingTools().GetGRUBLEGACYConfig(filetoopen=MountPoint+"/boot/grub/menu.lst")
                     
-            elif Bootloader in ('GRUB2', 'GRUB-UEFI'):
-                #Check MountPoint/etc/default/grub exists, which should be for either GRUB2 or GRUB-UEFI.
-                if os.path.isfile(MountPoint+"/etc/default/grub"):
-                    #It does, we'll run the function to find the config now.
-                    logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found GRUB2 (BIOS and UEFI) config file. Getting bootloader's timeout and kernel options...")
-                    Temp = BootloaderConfigObtainingTools().GetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
-                    timeout = Temp[0]
-                    kopts = Temp[1]
+            elif Bootloader in ('GRUB2', 'GRUB-UEFI') and os.path.isfile(MountPoint+"/etc/default/grub"):
+                logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found GRUB2 (BIOS and UEFI) config file. Getting bootloader's timeout and kernel options...")
+                timeout, kopts = BootloaderConfigObtainingTools().GetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
 
-            elif Bootloader in ('LILO', 'ELILO'): #*** Why nest if statements here? ***
-                #Check the config file exists for both lilo and elilo.
-                if Bootloader == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
-                    #It does, we'll run the function to find the config now.
-                    logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found LILO config file. Getting bootloader's timeout and kernel options...")
-                    Temp = BootloaderConfigObtainingTools().GetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf")
-                    timeout = Temp[0]
-                    kopts = Temp[1]
+            elif Bootloader == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
+                logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found LILO config file. Getting bootloader's timeout and kernel options...")
+                timeout, kopts = BootloaderConfigObtainingTools().GetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf")
 
-                elif Bootloader == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
-                    #It does, we'll run the function to find the config now.
-                    logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found ELILO config file. Getting bootloader's timeout and kernel options...")
-                    Temp = BootloaderConfigObtainingTools().GetLILOConfig(filetoopen=MountPoint+"/etc/elilo.conf")
-                    timeout = Temp[0]
-                    kopts = Temp[1]
+            elif Bootloader == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
+                logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found ELILO config file. Getting bootloader's timeout and kernel options...")
+                timeout, kopts = BootloaderConfigObtainingTools().GetLILOConfig(filetoopen=MountPoint+"/etc/elilo.conf")
 
             #Unmount the partition, if needed.
             if MountPoint != "":
@@ -109,26 +89,11 @@ class Main():
 
             #Now we have the config, let's add it to the list, if it's unique. This will also catch the NameError exception created if the bootloader's config file wasn't found. 
             #First do timeout.
-            if timeout != "":
-                try:
-                    TimeoutsList.index(timeout)
+            if timeout != "" and timeout not in TimeoutsList:
+                TimeoutsList.append(timeout)
 
-                except ValueError:
-                    #It's unique.
-                    TimeoutsList.append(timeout)
-
-                except NameError: pass
-
-            if kopts != "":
-                #Now kopts.
-                try:
-                    KernelOptsList.index(kopts)
-
-                except ValueError:
-                    #It's unique.
-                    KernelOptsList.append(kopts)
-
-                except NameError: pass
+            if kopts != "" and kopts not in KernelOptsList:
+                KernelOptsList.append(kopts)
 
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 2+(14//len(OSsForBootloaderRemoval)))
 
