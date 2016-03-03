@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Helper Backend Tools in the BackendTools Package for WxFixBoot Version 1.1~pre1
+# Helper Backend Tools in the BackendTools Package for WxFixBoot Version 2.0~pre1
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -46,7 +46,7 @@ class Main():
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
         return FailedList
 
-    def LookForAPTOnPartition(self, APTExecCmds): #*** Test again *** *** Maybe move to startup tools on switch to dictionaries *** *** Does this need to be in a fuc
+    def LookForAPTOnPartition(self, APTExecCmds): #*** Test again *** *** Maybe move to startup tools on switch to dictionaries *** *** Does this need to be in a function? ***
         """Look for apt using the command lists given (they include the partition, by the way)."""
         logger.debug("HelperBackendTools: Main().LookForAPTOnPartition(): Running "+APTExecCmds+"...")
 
@@ -62,9 +62,9 @@ class Main():
             logger.info("HelperBackendTools: Main().LookForAPTOnPartition(): Found apt...")
             return True
 
-    def LookForBootloaderOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Test again ***
+    def LookForBootloaderOnPartition(self, Bootloader, PackageManager, MountPoint, UsingChroot): #*** Test again *** *** Maybe move this to MainStartupTools later ***
         """Look for the currently installed bootloader in the given mount point."""
-        logger.debug("HelperBackendTools: Main().LookForBootloaderOnPartition() has been triggered...")
+        logger.debug("HelperBackendTools: Main().LookForBootloaderOnPartition(): Looking for "+Bootloader+" in "+MountPoint+"...")
 
         #Okay, let's run a command in the chroot that was set up in self.FindBootloaderRemovalOSs(), depending on which package manager this OS uses, and which bootloader is currently installed.
         #To do this, we need to tell CoreBackendTools().StartThreadProcess() that we're going to be using pipes on the commandline, so we can use shell=True.
@@ -74,60 +74,36 @@ class Main():
         if UsingChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
+        Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
+        Packages = []
+
         if Bootloader == "GRUB-LEGACY":
-            Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
-
-            Packages = []
-
             for Package in Output:
                 if "grub" in Package and "install" in Package and "grub2" not in Package:
                     Packages.append(Package.split()[0])
 
         elif Bootloader == "GRUB2":
-            Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
-
-            Packages = []
-
             for Package in Output:
                 if "grub-pc" in Package and "install" in Package:
                     Packages.append(Package.split()[0])
 
         elif Bootloader == "LILO":
-            Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
-
-            Packages = []
-
             for Package in Output:
                 if "lilo" in Package and "install" in Package:
                     Packages.append(Package.split()[0])
 
         elif Bootloader == "GRUB-UEFI":
-            Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
-
-            Packages = []
-
             for Package in Output:
                 if "grub-efi" in Package and "install" in Package:
                     Packages.append(Package.split()[0])
 
         elif Bootloader == "ELILO":
-            Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
-
-            Packages = []
-
             for Package in Output:
                 if "elilo" in Package and "install" in Package:
                     Packages.append(Package.split()[0])
 
-        #*** Temporary code to make things work ***
-        if Packages != []:
-            retval = 0
-
-        else:
-            retval = 1
-
         #Now we can check the return value. If it's 0, the bootloader is present in this OS. Otherwise, it isn't.
-        if retval == 0:
+        if Packages != []:
             logger.info("HelperBackendTools: Main().LookForBootloaderOnPartition(): Found "+Bootloader+" in "+MountPoint+"...")
             return True
 
@@ -135,7 +111,7 @@ class Main():
             logger.info("HelperBackendTools: Main().LookForBootloaderOnPartition(): Didn't find "+Bootloader+" in "+MountPoint+"...")
             return False
 
-    def FindCheckableFileSystems(self, PartitionListWithFSType, LiveDisk, AutoRootFS):
+    def FindCheckableFileSystems(self, PartitionListWithFSType, LiveDisk, AutoRootFS): #*** Tidy this up later ***
         """Find all checkable filesystems, and then return them to MainBackendTools().BadSectorCheck()/MainBackendTools().QuickFSCheck()"""
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Finding and returning all filesystems/partitions that can be checked...")
 
@@ -256,55 +232,25 @@ class Main():
                 DialogTools().ShowMsgDlg(Kind="info", Message="Your bootloader will be updated or reinstalled in all Operating Systems it is installed in ("+', '.join(OSsForBootloaderRemoval)+"). Click okay to continue.")
                 OSsForBootloaderInstallation = OSsForBootloaderRemoval[:]
 
-            else: #*** Use a wx.MultiChoiceDialog here ***
+            else: #*** Check all this works ***
                 logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): There is more than one Operating System with a supported package manager. Asking the user which ones to install the new bootloader in...")
-                DialogTools().ShowMsgDlg(Kind="info", Message="Your bootloader will be removed in all Operating Systems it is installed in ("+', '.join(OSsForBootloaderRemoval)+"). You will now be asked which Operating Systems you want your new bootloader to be installed in. If you want to select more than one, you must select one at a time, click okay and in the following dialog say you want to install the bootloader to another OS as well.")
+                DialogTools().ShowMsgDlg(Kind="info", Message="Your bootloader will be removed in all Operating Systems it is installed in ("+', '.join(OSsForBootloaderRemoval)+"). You will now be asked which Operating Systems you want your new bootloader to be installed in.")
 
-                while True:
-                    #Make a list of candidates to install the bootloader in (only including OSes that will have their bootloaders removed).
-                    BootloaderCandidatesList = []
+                #Make a list of candidates to install the bootloader in (only including OSes that will have their bootloaders removed).
+                BootloaderCandidatesList = OSListWithPackageManagers[:]
 
-                    for OS in OSListWithPackageManagers:
-                        if OS not in OSsForBootloaderInstallation:
-                            BootloaderCandidatesList.append(OS)
+                logger.debug("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Contents of BootloaderCandidatesList: "+', '.join(BootloaderCandidatesList))
+                logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Asking the user which new OS to install the bootloader to...")
 
-                    logger.debug("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Contents of BootloaderCandidatesList: "+', '.join(BootloaderCandidatesList))
+                #Ask the user which candidate(s) to use for bootloader installation. *** Is this bad advice? ***
+                OSsForBootloaderInstallation = DialogTools().ShowMultiChoiceDlg(Message="Please select each OS you'd like to modify or install the bootloader to.\nIdeally, select the ones that you use most frequently.", Title="WxFixBoot - Select Operating Systems For Bootloader Installation", Choices=BootloaderCandidatesList)
 
-                    if len(BootloaderCandidatesList) == 0:
-                        #We've run out of OSs to add. Tell the user and break out of the loop.
-                        logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Run out of OSs to add to OSsForBootloaderInstallation (contents: "+', '.join(OSsForBootloaderInstallation)+"). Continuing...") 
-                        if UpdateBootloader == False:
-                            DialogTools().ShowMsgDlg(Kind="info", Message="There are no more Operating Systems to add to the bootloader installation list. Click okay to continue.")
+                logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): User selected: "+Result+"...")
 
-                        break
+        logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Finished selecting OSs! Modifying or Installing the new bootloader in: "+', '.join(OSsForBootloaderInstallation))
+        return OSsForBootloaderInstallation
 
-                    logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Asking the user which new OS to install the bootloader to...")
-
-                    #Ask the user which candidate(s) to use for bootloader installation.
-                    Result = DialogTools().ShowChoiceDlg(Message="Please select each OS you'd like to modify or install the bootloader to.\nIdeally, select the ones that you use most frequently.", Title="WxFixBoot - Select Operating Systems For Bootloader Installation", Choices=BootloaderCandidatesList)
-
-                    logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): User selected OS: "+Result+"...")
-
-                    #Add the user's suggestion to the new list.
-                    OSsForBootloaderInstallation.append(Result)
-
-                    #If there are more OSes to add, ask the user if he/she wants to add any more.
-                    if len(BootloaderCandidatesList) > 0:
-                        logger.debug("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Asking the user whether to install the bootloader to another OS...")
-                        Result = DialogTools().ShowYesNoDlg(Message="Do you want to modify or install the new bootloader in any other Operating Systems?", Title="WxFixBoot - Install or Modify Bootloader in other OSs?")
-
-                        #Break out of the loop if the user said no.
-                        if Result == False:
-                            logger.debug("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Asking the user which new OS to install the bootloader to... User said no. Terminating loop...")
-                            break
-
-                        else:
-                            logger.debug("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Asking the user which new OS to install the bootloader to... User said yes. Continuing to loop...")
-
-            logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Finished selecting OSs! Modifying or Installing the new bootloader in: "+', '.join(OSsForBootloaderInstallation))
-            return OSsForBootloaderInstallation
-
-    def FindBootloaderRemovalOSs(self, OSListWithPackageManagers, LiveDisk, AutoRootFS, Bootloader):
+    def FindBootloaderRemovalOSs(self, OSListWithPackageManagers, LiveDisk, AutoRootFS, Bootloader): #*** Check this works ***
         """Find the OS(es) that currently have the bootloader installed, so we know where to remove it from."""
         logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Looking for Operating Systems that currently have the bootloader installed, to add to the removal list...")
         #*** Temporarily define this as global until switch to dictionaries ***
@@ -320,12 +266,12 @@ class Main():
 
             #Run some different instructions depending on whether the partition = AutoRootFS or not. *** Use a dictionary key to say which OS is the current one instead of doing this ***
             if LiveDisk == False and Partition == AutoRootFS:
-                #It is! We can skip some steps!
-                #Try to find if this OS has the bootloader installed in it.
-                Found = self.LookForBootloaderOnPartition(PackageManager=PackageManager, MountPoint=MountPoint, UsingChroot=False)
+                UsingChroot = False
 
             else:
                 #Do some additional steps if we're using a live disk.
+                UsingChroot = True
+
                 #Mount the partition.
                 Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
 
@@ -337,10 +283,10 @@ class Main():
 
                 #Set up a chroot.
                 CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
-
-                #Try to find if the OS has the bootloader installed in it.
-                Found = self.LookForBootloaderOnPartition(PackageManager=PackageManager, MountPoint=MountPoint, UsingChroot=True)
                 
+            Found = self.LookForBootloaderOnPartition(Bootloader=Bootloader, PackageManager=PackageManager, MountPoint=MountPoint, UsingChroot=UsingChroot)
+
+            if UsingChroot:
                 #Tear down the chroot.
                 CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
 
@@ -359,7 +305,7 @@ class Main():
 
     def WriteFSTABEntryForUEFIPartition(self, MountPoint, UEFISystemPartition):
         """Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one."""
-        logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Preparing to write an fstab entrie for the UEFI partition ("+UEFISystemPartition+")...")
+        logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Preparing to write an fstab entry for the UEFI partition ("+UEFISystemPartition+")...")
 
         WriteEntry = True
 
@@ -370,7 +316,7 @@ class Main():
         #Get the UEFI System Partition's UUID. *** Will be in dictionary soon ***
         UUID = CoreBackendTools().GetPartitionUUID(UEFISystemPartition)
 
-        #Open the MountPoint/etc/fstab file for reading. If we aren't using chroot, this'll just be /etc/fstab, otherwise, /mnt/dev/sdax/etc/fstab. Also, save its contents in a variable.
+        #Open the MountPoint/etc/fstab file for reading. If we aren't using chroot, this'll just be /etc/fstab, otherwise, /mnt/dev/sdxy/etc/fstab. Also, save its contents in a variable.
         fstab = open(MountPoint+"/etc/fstab", "r")
         NewFileContents = []
 
@@ -408,7 +354,7 @@ class Main():
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Done!")
 
     def FindLatestVersion(self, Directory, Type):
-        """Try the find the latest kernel/initrd in the given directory.""" #*** Refactor this and use some kind of looping to make it shorter *** *** Would it be easier to use CoreTools().Find()? ***
+        """Try the find the latest kernel/initrd in the given directory.""" #*** Refactor this and use some kind of looping to make it shorter *** *** Would it be easier to use CoreTools().Find() and get rid of most of this? ***
         FileList = os.listdir(Directory)
 
         if Type == "Kernel":
@@ -492,7 +438,7 @@ class Main():
 
                 else:
                     #Give up, this is getting impossible!
-                    logger.error("HelperBackendTools: Main().FindLatestVersion(): Couldn't determine the newest kernel! This is either because multple Kernels/Initrds have the highest revision number (!) or an error occoured when determining the revision number...")
+                    logger.error("HelperBackendTools: Main().FindLatestVersion(): Couldn't determine the newest kernel/Initrd! This is either because multple Kernels/Initrds have the highest revision number (!) or an error occoured when determining the revision number...")
                     return "None"
 
     def BackupUEFIFiles(self, MountPoint):
@@ -501,6 +447,7 @@ class Main():
 
         #We'll backup /EFI/boot/bootx64.efi if it exists, and we'll also backup Windows's uefi files, if they exist.
         #First do /EFI/boot/bootx64.efi. Fortunately, the UEFI partition is always a fat32/fat16 filesystem, so case doesn't matter.
+        logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Backing up "+MountPoint+"/boot/efi/boot/boot*.efi...")
         if os.path.isfile(MountPoint+"/boot/efi/EFI/boot/boot*.efi"):
             retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/boot/boot*.efi "+MountPoint+"/boot/efi/EFI/boot/bkpbootx64.efi", Piping=True, ShowOutput=False)
 
@@ -514,11 +461,12 @@ class Main():
             DialogTools().ShowMsgDlg(Kind="error", Message="Error! WxFixBoot failed to save your UEFI boot files to the backup directory! This probably isn't very important. Click okay to continue.")
 
         #Now do Windows's files, if they exist.
+        logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Backing up Windows's boot files if they exist...")
         if os.path.isfile(MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi"):
             retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", Piping=True, ShowOutput=False)
 
         else:
-            #This doesn't exist. This doesn't matter then, so set retval to 0.
+            #They don't exist. This doesn't matter then, so set retval to 0.
             retval = 0
 
         logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Done!")

@@ -52,7 +52,7 @@ class Main():
 
     def UnmountAllFS(self):
         """Unmount any unnecessary filesystems, to prevent data corruption."""
-        #Warn about removing devices. *** Clarify this message ***
+        #Warn about removing devices. *** Remove this message soon ***
         logger.info("MainStartupTools: Main().UnmountAllFS(): Unmounting all Filesystems...")
         DialogTools().ShowMsgDlg(Kind="info", Message="Unnecessary filesystems will now be unmounted. Please remove all unneeded devices connected to your computer and close any other running programs, then click okay. *** This won't apply anymore when changing device info gatherer *** If you're doing a disk check, please plug in any devices you wish to check. However, if you are doing other operations, please do them seperately.")
 
@@ -60,7 +60,7 @@ class Main():
         logger.debug("MainStartupTools: Main().UnmountAllFS(): Running 'unmount -ad'...")
         CoreTools().StartProcess("umount -ad") #*** Check it worked! ***
 
-        #Make sure that we still have rw access on live disks. *** Check if we're on a live disk maybe? ***
+        #Make sure that we still have rw access on live disks. *** Check if we're on a live disk beforehand maybe? ***
         logger.info("MainStartupTools: Main().UnmountAllFS(): Attempting to remount '/' to make sure it's still rw on a live disk.")
         CoreTools().RemountPartition("/") #*** Check it worked! ***
 
@@ -518,11 +518,7 @@ class Main():
             logger.warning("MainStartupTools: Main().FinalCheck(): Firmware is BIOS, but at least one device on the system is using a gpt partition table! This device probably won't be bootable. WxFixBoot suggests repartitioning, if you intend to boot from that device.")
             DialogTools().ShowMsgDlg(Kind="warning", Message="Your computer uses BIOS firmware, but you're using an incompatable partition system on at least one device! BIOS firmware will probably fail to boot your operating system, if it resides on that device, so a repartition may be necessary for that device. You can safely ignore this message if your firmware type has been misdetected, or if you aren't booting from that device.")
 
-        #Partition scheme warnings.
-        if MBRInAutoPartSchemeList == True and Bootloader in ('GRUB-UEFI', 'ELILO'):
-            logger.warning("MainStartupTools: Main().FinalCheck(): MBR partition table on at least one device, and a UEFI bootloader is in use! This might not work properly. WxFixBoot suggests repartitioning.")
-            DialogTools().ShowMsgDlg(Kind="warning", Message="You're using a UEFI-enabled bootloader, but you're using an incompatable partition system on at least one device! Some firmware might not support this setup, especially if the UEFI system partition resides on this device, so it is recommended to repartition the device. Ignore this message if you do not boot from this device.")
-
+        #Partition scheme warnings. *** Be more intelligent with these warnings ***
         if GPTInAutoPartSchemeList == True and Bootloader in ('GRUB2', 'LILO', 'GRUB-LEGACY'):
             logger.warning("MainStartupTools: Main().FinalCheck(): GPT Partition table on at least one device with msdos bootloader! Most BIOS firmware cannot read GPT disks. WxFixBoot suggests repartitioning.")
             DialogTools().ShowMsgDlg(Kind="warning", Message="You're using a BIOS-enabled bootloader, but you're using an incompatable partition system on at least one device! Most firmware will not support this setup. Ignore this message if you do not boot from this device.")

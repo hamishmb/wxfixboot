@@ -106,7 +106,7 @@ class Main():
                         return False
 
                 else:
-                    logger.debug("CoreTools: Main().MountPartition(): Would unmount filesystem in the way at this point, but OnlyCheck == True. Returning False and doing nothing...") #*** Is this the right thing to do here? ***
+                    logger.debug("CoreTools: Main().MountPartition(): Would unmount filesystem in the way at this point, but OnlyCheck == True. Returning False and doing nothing...")
                     return False
 
             else:

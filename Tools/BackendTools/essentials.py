@@ -25,7 +25,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main(): #*** These need refactoring and proper testing ***
-    def CheckInternetConnection(self): #*** Move to essentials *** *** Log more stuff here  ***
+    def CheckInternetConnection(self):
         """Check the internet connection."""
         DialogTools().ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations.") #*** Note what we're pinging so the user knows exactly what we're doing ***
         Retry = True
@@ -41,6 +41,7 @@ class Main(): #*** These need refactoring and proper testing ***
             PacketLoss = "100%"
 
             try:
+                logger.debug("EssentialBackendTools: Main().CheckInternetConnection(): Running 'ping -c 5 -i 0.5 208.67.222.222'...")
                 Output = CoreBackendTools().StartThreadProcess("ping -c 5 -i 0.5 208.67.222.222", Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
                 #Get the % packet loss.
                 for Line in Output:
@@ -49,31 +50,36 @@ class Main(): #*** These need refactoring and proper testing ***
 
             except IndexError:
                 #This errored for some reason. Probably no internet connection.
+                logger.error("EssentialBackendTools: Main().CheckInternetConnection(): Command errored!")
                 PacketLoss = "100%"
 
             if PacketLoss == "0%":
                 #Good! We have a reliable internet connection.
+                logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Internet Connection Test Succeeded!")
                 break
 
             else:
                 #Uh oh! We DON'T have a reliable internet connection! Ask the user to either try again, or skip Bootloader operations.
+                logger.error("EssentialBackendTools: Main().CheckInternetConnection(): Internet Connection test failed! Asking user to try again or disable bootloader operations...")
                 Result = DialogTools().ShowYesNoDlg(Message="Your Internet Connection failed the test! Without a working internet connection, you cannot perform bootloader operations! Click yes to try again, and click no to give up and skip bootloader operations.", Title="WxFixBoot - Disable Bootloader Operations?")
 
                 if Result == False:
+                    logger.warning("EssentialBackendTools: Main().CheckInternetConnection(): Disabling bootloader operations due to bad internet connection...")
                     DisableBootloaderOperations = True
                     break
 
                 else:
-                    #We'll just run the loop again.
+                    #We'll just run the loop again
+                    logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
 
         #Exit, and return with a bool stating whether or not to disable Bootloader Operations.
         return DisableBootloaderOperations
 
-    def BackupPartitionTable(self): #*** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save partition table backup file like this, move to settings window ***
+    def BackupPartitionTable(self): #*** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save partition table backup file like this, move to settings window *** *** Reduce duplication ***
         """Backup the partition table."""
         #For GPT disks, backup with sgdisk -b/--backup=<file> <SOURCEDIRVE>.
-        #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1. *** Do we need to specify the blocksize? ***
+        #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
         #We need to find RootDevice's partition scheme from the PartSchemeList here. *** When we use dictionaries we won't need to do this crap ***
         tempnum = DeviceList.index(RootDevice)
         PartScheme = PartSchemeList[tempnum]
@@ -100,7 +106,7 @@ class Main(): #*** These need refactoring and proper testing ***
             retval = CoreBackendTools().StartThreadProcess("dd if="+RootDevice+" of="+PartitionTableBackupFile+" bs=512 count=1", Piping=True, ShowOutput=False)
 
         else:
-            #Let's backup the GPT, but we need to ask where to back it up first.
+            #Let's backup the GPT, but we need to ask where to back it up first. *** Maybe do this in settings window? ***
             PartitionTableBackupFile = DialogTools().ShowSaveFileDlg(Title="WxFixBoot - Select Partition Table Backup Target File", Wildcard="GPT Backup File (*.gpt)|*.gpt|IMG Image file (*.img)|*.img|All Files/Devices (*)|*")
 
             #Make sure the backup file always has the correct file extension on it.
@@ -120,10 +126,10 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Backing up the Partition Table!###\n")
         logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Finished Backing up Partition Table! Exit code: "+unicode(retval))
 
-    def BackupBootSector(self): #*** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save boot sector backup file like this, move to settings window ***
+    def BackupBootSector(self): #*** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save boot sector backup file like this, move to settings window *** *** Reduce duplication ***
         """Backup the bootsector."""
         #For GPT disks, backup UEFI System Partition.
-        #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1. *** Do we need to specify the blocksize? ***
+        #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
         #We need to find RootDevice's partition scheme from the PartSchemeList here. *** When we use dictionaries we won't need to do this crap ***
         tempnum = DeviceList.index(RootDevice)
         PartScheme = PartSchemeList[tempnum]
@@ -156,7 +162,7 @@ class Main(): #*** These need refactoring and proper testing ***
                 DialogTools().ShowMsgDlg(Kind="error", Message="You have no UEFI Partition, so WxFixBoot couldn't backup your bootsector! Click okay to skip this operation.")
 
             else:
-                #We need to ask where to back it up to.
+                #We need to ask where to back it up to. *** Maybe do this in settings window? ***
                 BootSectorBackupFile = DialogTools().ShowSaveFileDlg(Title="WxFixBoot - Select Bootsector Backup Target File", Wildcard="IMG Image file (*.img)|*.img|All Files/Devices (*)|*")
 
                 #Make sure the backup file always has the correct file extension on it.
@@ -178,7 +184,7 @@ class Main(): #*** These need refactoring and proper testing ***
     def RestorePartitionTable(self):
         """Restore the partition table.""" #*** Will need lots of modication when switching to dictionaries ***
         #Use sgdisk for GPT disks, restore with sgdisk -l/--load-backup=<file> <TARGETDEVICE>
-        #Use dd for MBR disks, restore with dd if=<somefile> of=/dev/sdX bs=1 count=64 skip=446 seek=446 *** Do we need to specify the blocksize? ***
+        #Use dd for MBR disks, restore with dd if=<somefile> of=/dev/sdX bs=1 count=64 skip=446 seek=446
         logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Preparing to restore the Partition Table...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to restore the Partition Table...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
@@ -232,8 +238,7 @@ class Main(): #*** These need refactoring and proper testing ***
     def RestoreBootSector(self):
         """Restore the bootsector‎."""
         #For GPT disks, restore with dd.
-        #For MBR disks, restore with dd if=<somefile> of=/dev/sdX bs=446 count=1 *** Do we need to specify the blocksize? ***
-
+        #For MBR disks, restore with dd if=<somefile> of=/dev/sdX bs=446 count=1
         logger.info("EssentialBackendTools: Main().RestoreBootSector(): Preparing to restore the Boot Sector...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to restore the Boot Sector...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
@@ -284,7 +289,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Restoring the Boot Sector...###\n")
         logger.info("EssentialBackendTools: Main().RestoreBootSector(): Finished restoring the boot sector!")
 
-    def QuickFileSystemCheck(self): #*** This is very duplicated with BadSectorCheck, can we merge them and put a check in? *** *** Will need lots of work when we switch to dictionaries *** *** Attempts to check mounted filesystems sometimes! ***
+    def QuickFileSystemCheck(self): #*** This is very duplicated with BadSectorCheck, can we merge them and put a check in? *** *** Will need lots of work when we switch to dictionaries *** *** Attempts (but fails) to check mounted filesystems sometimes! ***
         """Quickly check all filesystems."""
         logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Starting...")
 
@@ -367,7 +372,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Quick Filesystem Check!###\n")
 
-    def BadSectorCheck(self): #*** This is very duplicated with QuickFSCheck, can we merge them and put a check in? *** *** Attempts to check mounted filesystems sometimes! ***
+    def BadSectorCheck(self): #*** This is very duplicated with QuickFSCheck, can we merge them and put a check in? *** *** Attempts (but fails) to check mounted filesystems sometimes! ***
         """Check all filesystems for bad sectors."""
         logger.debug("EssentialBackendTools: Main().BadSectorCheck(): Starting...")
 

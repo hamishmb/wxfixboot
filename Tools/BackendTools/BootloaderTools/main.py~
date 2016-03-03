@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Main Bootloader Tools in the Bootloader Tools Package in the Backend Tools package for WxFixBoot Version 1.1~pre1
+# Main Bootloader Tools in the Bootloader Tools Package in the Backend Tools package for WxFixBoot Version 2.0~pre1
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -115,7 +115,7 @@ class Main(): #*** Refactor and test all of these ***
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Done!###\n") 
 
     def ReinstallBootloader(self):
-        """Reinstall/fix the bootloader.""" #*** Add logging stuff ***
+        """Reinstall/fix the bootloader."""
         #*** Temporarily define this as global until switch to dictionaries ***
         global DisableBootloaderOperations
         DisableBootloaderOperations = False
@@ -125,6 +125,7 @@ class Main(): #*** Refactor and test all of these ***
 
         if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
             #These operations have been disabled. Notify the user and skip them.
+            logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Cancelled because bootloader operations have been disabled, or the required information wasn't found...")
             DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
@@ -148,8 +149,9 @@ class Main(): #*** Refactor and test all of these ***
         logger.info("MainBootloaderTools: Main().UpdateBootloader(): Preparing to update the bootloader...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader...###\n")
 
-        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []): #*** Log this ***
+        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
             #These operations have been disabled. Notify the user and skip them.
+            logger.info("MainBootloaderTools: Main().UpdateBootloader(): Cancelled because bootloader operations have been disabled, or the required information wasn't found...")
             DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
@@ -167,44 +169,42 @@ class Main(): #*** Refactor and test all of these ***
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
 
             #Set the bootloaders new config.
-            SetConfigBootloaderTools().SetNewBootloaderConfig()
+            BootloaderConfigSettingTools().SetNewBootloaderConfig()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Done!")
 
     def ManageBootloaders(self):
-        """Manage the installation and removal of bootloaders.""" #*** Add logging stuff ***
-        DisableBootloaderOperations = False
+        """Manage the installation and removal of bootloaders.""" #*** Check each operation worked with a return value! *** *** Add logging stuff ***
+        #First remove the old bootloader, then install the new one.
+        logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().GetOldBootloaderConfig()...")
+        MainBackendTools().GetOldBootloaderConfig()
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
 
-        #First, we need to check that these operations haven't been disabled.
-        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
-            #These operations have been disabled. Notify the user and skip them.
-            DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-            DisableBootloaderOperations = True
+        logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().RemoveOldBootloader()...")
+        MainBackendTools().RemoveOldBootloader()
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
+
+        logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().InstallNewBootloader()...")
+        BootloaderInstallSucceded = MainBackendTools().InstallNewBootloader()
+
+        if BootloaderInstallSucceded:
+            logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Installing new bootloader succeeded! Calling MainBackendTools().SetNewBootloaderConfig()...")
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
+            MainBackendTools().SetNewBootloaderConfig()
 
         else:
-            #First remove the old bootloader, then install the new one.
-            MainBackendTools().GetOldBootloaderConfig()
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
+            #Bootloader installation failed for at least one OS! *** Clarify this message with better info ***
+            logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Failed to install new bootloader in at least one OS! Asking user whether to continue with configuration or not...")
+            Result = DialogTools().ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Do you want to continue and configure the new bootloader(s), or skip the rest of the bootloader operations? You probably want to configure the bootloader anyway.", Title="WxFixBoot - Configure Bootloader(s)?")
 
-            MainBackendTools().RemoveOldBootloader()
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
-
-            BootloaderInstallSucceded = BootloaderInstallationTools().InstallNewBootloader()
-
-            if BootloaderInstallSucceded:
+            if Result:
+                #Continue and configure bootloaders. Otherwise, do nothing.
+                logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Configuring bootloaders anyway. Calling MainBackendTools().SetNewBootloaderConfig()...")
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
-                SetConfigBootloaderTools().SetNewBootloaderConfig()
+                MainBackendTools().SetNewBootloaderConfig()
 
             else:
-                #Bootloader installation failed for at least one OS! *** Clarify this message with better info ***
-                Result = DialogTools().ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Do you want to continue and configure the new bootloader(s), or skip the rest of the bootloader operations? You probably want to configure the bootloader anyway.", Title="WxFixBoot - Configure Bootloader(s)?")
+                logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Not configuring bootloaders...")
 
-                if Result:
-                    #Continue and configure bootloaders. Otherwise, do nothing.
-                    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
-                    SetConfigBootloaderTools().SetNewBootloaderConfig()
-
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)

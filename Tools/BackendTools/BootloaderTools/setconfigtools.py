@@ -22,13 +22,15 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 class Main(): #*** Refactor and test all of these ***
-    def SetGRUB2Config(self, filetoopen): #*** Add logging stuff ***
+    def SetGRUB2Config(self, filetoopen):
         """Set GRUB2 config."""
+        logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Setting GRUB2 Config in "+filetoopen+"...")
         SetTimeout = False
         SetKOpts = False
         SetDefault = False
 
         #Open the file in read mode, so we can find the new config that needs setting. Also, use a list to temporarily store the modified lines.
+        logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Attempting to modify existing lines in the config file first, without making any new ones...")
         ConfigFile = open(filetoopen, 'r')
         NewFileContents = []
 
@@ -37,6 +39,7 @@ class Main(): #*** Refactor and test all of these ***
             #Look for the timeout setting.
             if 'GRUB_TIMEOUT' in line and '=' in line:
                 #Found it! Set the value to the current value of BootloaderTimeout.
+                logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found GRUB_TIMEOUT, setting it to '"+unicode(BootloaderTimeout)+"'...")
                 SetTimeout = True
                 head, sep, Temp = line.partition('=')
                 Temp = unicode(BootloaderTimeout)
@@ -47,6 +50,7 @@ class Main(): #*** Refactor and test all of these ***
             #Look for kernel options setting.
             elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line:
                 #Found it! Set it to the options in KernelOptions, carefully making sure we aren't double-quoting it.
+                logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found GRUB_CMDLINE_LINUX_DEFAULT, setting it to '"+KernelOptions+"'...")
                 SetKOpts = True
                 head, sep, Temp = line.partition('=')
 
@@ -56,6 +60,7 @@ class Main(): #*** Refactor and test all of these ***
             #Look for the "GRUB_DEFAULT" setting.
             elif "GRUB_DEFAULT" in line and '=' in line:
                 #Found it. Set it to 'saved', so we can set the default bootloader.
+                logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found GRUB_DEFAULT, setting it to 'saved'...")
                 SetDefault = True
                 head, sep, Temp = line.partition('=')
                 Temp = "saved"
@@ -65,82 +70,91 @@ class Main(): #*** Refactor and test all of these ***
 
             #Comment out the GRUB_HIDDEN_TIMEOUT line.
             elif 'GRUB_HIDDEN_TIMEOUT' in line and 'GRUB_HIDDEN_TIMEOUT_QUIET' not in line and '=' in line and '#' not in line:
+                logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Commenting out GRUB_HIDDEN_TIMEOUT/GRUB_HIDDEN_TIMEOUT_QUIET...")
                 line = "#"+line
 
             NewFileContents.append(line)
 
         #Check that everything was set. If not, write that config now.
         if SetTimeout == False:
+            logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Didn't find GRUB_TIMEOUT in config file. Creating and setting it to '"+unicode(BootloaerTimeout)+"'...")
             NewFileContents.append("GRUB_TIMEOUT="+unicode(BootloaderTimeout)+"\n")
 
         if SetKOpts == False:
             Temp = KernelOptions.replace('\"', '').replace("\'", "").replace("\n", "")
+            logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Didn't find GRUB_CMDLINE_LINUX_DEFAULT in config file. Creating and setting it to '"+KernelOptions+"'...")
             NewFileContents.append("GRUB_CMDLINE_LINUX_DEFAULT='"+Temp+"'\n")
 
         if SetDefault == False:
+            logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Didn't find GRUB_DEFAULT in config file. Creating and setting it to 'saved'...")
             NewFileContents.append("GRUB_DEFAULT=saved")
 
         #Write the finished lines to the file.
+        logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Writing new config to file...")
         ConfigFile.close()
         ConfigFile = open(filetoopen, 'w')
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
 
+        logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Done!")
+
     def InstallGRUB2ToMBR(self, PackageManager, MountPoint): #*** Will need changing when we get rid of the Root Device concept ***
         """Install GRUB2 (BIOS version) into the MBR of the hard drive"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the MBR.
-        #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition. *** Do we always want to do that? ***
-        if MountPoint == "":
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess("grub-install --force "+RootDevice, Piping=True, ShowOutput=False)
+        #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition. *** Do we want to do that? ***
+        if PackageManager == "apt-get":
+            Cmd = "grub-install --force "+RootDevice
 
-        else:
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" grub-install --force "+RootDevice, Piping=True, ShowOutput=False)
+        if MountPoint == "":
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False)
 
         #Return the return value.
-        return retval
+        return Retval
 
     def InstallGRUBUEFIToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch): #*** Change the name to "InstallGRUB2ToEFIPartition" ***
         """Install GRUB2 (EFI/UEFI version) into the EFI/UEFI partition"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
-        if MountPoint == "":
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess("grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi", Piping=True, ShowOutput=False)
+        if PackageManager == "apt-get":
+            Cmd = "grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi"
 
-        else:
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi", Piping=True, ShowOutput=False)
+        if MountPoint == "":
+            Cmd = "chroot "+MountPoint+" "+Cmd
+ 
+        Retval = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False)
 
         #Return the return value.
-        return retval
+        return Retval
 
     def UpdateGRUB2(self, PackageManager, MountPoint):
         """Run 'update-grub' to update GRUB2's (BIOS and EFI/UEFI) configuration and bootloader menu"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
-        if MountPoint == "":
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess("update-grub", Piping=True, ShowOutput=False)
+        if PackageManager == "apt-get":
+            Cmd = "update-grub"
 
-        else:
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" update-grub", Piping=True, ShowOutput=False)
+        if MountPoint == "":
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False)
 
         #Return the return value.
-        return retval
+        return Retval
 
-    def SetGRUB2DefaultOS(self, OS, PackageManager, MountPoint): #*** Do logging stuff ***
+    def SetGRUB2DefaultOS(self, OS, PackageManager, MountPoint): #*** Make this more user-friendly ***
         """Set GRUB2's (both BIOS and EFI/UEFI) default OS to boot"""
         #I couldn't find a reliable way of doing this automatically, so give the user a choice box instead. *** Do this before release of final v2.0, probably in the 1st or 2nd rc. Maybe use disk names and save grub's name for each one ***
+        logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Setting GRUB2's Default OS...")
         global DefaultOS
 
         #Make a list of OSs grub2 found (hopefully all of them).
+        logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Finding GRUB2's menu entries...")
         GrubConfigFilePath = "/boot/grub/grub.cfg"
 
         if MountPoint != "":
             GrubConfigFilePath = MountPoint+GrubConfigFilePath
 
-        GrubMenuEntries = ""
+        GrubMenuEntries = []
 
         if PackageManager == "apt-get":
             GrubConfigFile = open("/boot/grub/grub.cfg", "r")
@@ -149,47 +163,50 @@ class Main(): #*** Refactor and test all of these ***
 
         for Line in GrubConfig.split("\n"):
             if "menuentry " in Line:
-                GrubMenuEntries += Line+"\n"
+                GrubMenuEntries.append(Line)
 
-        if GrubMenuEntries == "":
-            #Don't set the default OS.
+        if GrubMenuEntries == []:
+            #Don't set the default OS. *** There are no menu entries! Why might this happen? ***
+            logger.error("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Couldn't find any menu entries! Warning user and not setting default OS...")
             DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set the default OS. This doesn't really matter. Click okay to continue.")
+            return 1
 
-        else:
-            #Now finally make the list of grub's OS names.
-            GRUBOSNameList = []
+        #Now finally make the list of grub's OS names.
+        logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done! Getting GRUB's OS Names...")
+        GRUBOSNameList = []
 
-            #Split with each newline character found in the returned string. *** Do this earlier ***
-            GrubMenuEntriesList = GrubMenuEntries.split('\n')
+        for OSName in GrubMenuEntries:
+            #Get each OS name, removing all of the unneeeded characters. *** Can we use .split() instead? ***
+            junk,sep,info = OSName.partition("'")
+            info,sep,junk = info.partition("'")
+            GRUBOSNameList.append(info)
 
-            for OSName in GrubMenuEntriesList:
-                #Get each OS name, removing all of the unneeeded characters. *** Can we use .split() instead? ***
-                junk,sep,info = OSName.partition("'")
-                info,sep,junk = info.partition("'")
-                GRUBOSNameList.append(info)
+        #Now ask the user to select the correct one.
+        logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done! Asking user to choose a default OS...")
+        DefaultOS = DialogTools().ShowChoiceDlg(Message="Please select the OS you want to use as "+BootloaderToInstall+"'s Default OS. You are setting configuration for: "+OS, Title="WxFixBoot - Select Default OS", Choices=GRUBOSNameList)
 
-            #Now ask the user to select the correct one.
-            DefaultOS = DialogTools().ShowChoiceDlg(Message="Please select the OS you want to use as "+BootloaderToInstall+"'s Default OS. You are setting configuration for: "+OS, Title="WxFixBoot - Select Default OS", Choices=GRUBOSNameList)
+        logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): User chose "+DefaultOS+". Setting default OS...")
+        #Use the user's selection to set the default OS.
+        if PackageManager == "apt-get":
+            Cmd = "grub-set-default "+DefaultOS
 
-            #Use the user's selection to set the default OS.
-            if LiveDisk == False and MountPoint == "":
-                #If the OS is AutoRootFS, and we're not on a live disk, do it differently.
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("grub-set-default "+DefaultOS, Piping=True, ShowOutput=False)
+        if not (LiveDisk == False and MountPoint == ""):
+            Cmd = "chroot "+MountPoint+" "+Cmd
 
-            else:
-                if PackageManager == "apt-get":
-                    retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" grub-set-default "+DefaultOS, Piping=True, ShowOutput=False)
+        Retval = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False)
 
-            #Return the return value.
-            return retval
+        #Return the return value.
+        logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done!")
+        return Retval
 
-    def SetLILOConfig(self, filetoopen, PackageManager, MountPoint): #*** Add logging stuff ***
+    def SetLILOConfig(self, filetoopen, PackageManager, MountPoint):
         """Set LILO's config."""
+        logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting LILO config in "+filetoopen+"...")
         SetTimeout = False
         SetBootDevice = False
 
         #Open the file in read mode, so we can find the important bits of config to edit. Also, use a list to temporarily store the modified lines.
+        logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Attempting to modify existing lines in the config file first, without creating any new ones...")
         ConfigFile = open(filetoopen, 'r')
         NewFileContents = []
 
@@ -198,6 +215,7 @@ class Main(): #*** Refactor and test all of these ***
             #Look for the timeout setting.
             if 'timeout' in line and '=' in line and '#' not in line:
                 #Found it! Set it to our value.
+                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found timeout setting, setting it to "+unicode(BootloaderTimeout)+"...")
                 SetTimeout = True
 
                 #Save it, carefully avoiding errors.
@@ -210,6 +228,7 @@ class Main(): #*** Refactor and test all of these ***
             #Look for the 'boot' setting.
             elif 'boot' in line and '=' in line and '#' not in line and 'map' not in line: 
                 #Found it, seperate the line.
+                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found boot setting, setting it to "+RootDevice+"'s ID if possible, else just "+RootDevice+"...")
                 SetBootDevice = True
                 head, sep, Temp = line.partition('=')
 
@@ -217,11 +236,13 @@ class Main(): #*** Refactor and test all of these ***
                 ID = CoreBackendTools().GetDeviceID(Device=RootDevice)
                 if ID != "None":
                     #Good, we've got the ID.
+                    logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+ID+"...")
                     #Set it to RootDevice's ID.                    
                     Temp = "/dev/disk/by-id/"+ID
 
                 else:
                     #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
+                    logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to "+RootDevice+"! This may cause problems if the device name changes!")
                     Temp = RootDevice
 
                 #Reassemble the line.
@@ -231,34 +252,43 @@ class Main(): #*** Refactor and test all of these ***
 
         #Check that everything was set. If not, write that config now.
         if SetTimeout == False:
+            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderTimeout)+"...")
             NewFileContents.append("timeout="+unicode(BootloaderTimeout)+"\n")
 
         if SetBootDevice == False:
             #Now let's find the ID of RootDevice.
+            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+RootDevice+"'s ID if possible, else just "+RootDevice+"...")
             ID = CoreBackendTools().GetDeviceID(Device=RootDevice)
             if ID != "None":
                 #Good, we've got the ID.
+                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+ID+"...")
                 #Set it to RootDevice's ID.                    
                 Temp = "/dev/disk/by-id/"+ID
 
             else:
                 #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
+                logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to "+RootDevice+"! This may cause problems if the device name changes!")
                 Temp = RootDevice
 
             NewFileContents.append("boot="+Temp+"\n")
 
         #Write the finished lines to the file.
+        logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Writing new config to file...")
         ConfigFile.close()
         ConfigFile = open(filetoopen, 'w')
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
 
-    def SetELILOConfig(self, filetoopen, PackageManager, MountPoint): #*** Add logging stuff ***
+        logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Done!")
+
+    def SetELILOConfig(self, filetoopen, PackageManager, MountPoint):
         """Set ELILO config."""
+        logger.info("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting ELILO config in "+filetoopen+"...")
         SetTimeout = False
         SetUEFIPart = False
 
         #Open the file in read mode, so we can find the important bits of config to edit. Also, use a list to temporarily store the modified lines.
+        logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Attempting to modify existing lines in the config file first, without creating any new ones...")
         ConfigFile = open(filetoopen, 'r')
         NewFileContents = []
 
@@ -267,6 +297,7 @@ class Main(): #*** Refactor and test all of these ***
             #Look for the delay setting.
             if 'delay' in line and '=' in line and '#' not in line:
                 #Found it! Set it to our value.
+                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Found delay setting, setting it to "+unicode(BootloaderTimeout*10)+" (tenths of a second)...") 
                 SetTimeout = True
 
                 #Save it, carefully avoiding errors.
@@ -279,6 +310,7 @@ class Main(): #*** Refactor and test all of these ***
             #Look for the 'boot' setting.
             elif 'boot' in line and '=' in line and '#' not in line:
                 #Found it, seperate the line.
+                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Found boot setting, setting it to "+UEFISystemPartition+"'s ID if possible, else just "+UEFISystemPartition+"...")
                 SetUEFIPart = True
                 head, sep, Temp = line.partition('=')
 
@@ -287,11 +319,14 @@ class Main(): #*** Refactor and test all of these ***
 
                 if ID != "None":
                     #Good, we've got the ID.
+                    logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+ID+"...")
+
                     #Set it to UEFISystemPartition's ID.                    
                     Temp = "/dev/disk/by-id/"+ID
 
                 else:
                     #Not so good... We'll have to use the partition's name, which may change, especially if we're using chroot.
+                    logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to "+UEFISystemPartition+"! This may cause problems if the device name changes!")
                     Temp = UEFISystemPartition
 
                 #Reassemble the line.
@@ -300,36 +335,45 @@ class Main(): #*** Refactor and test all of these ***
             #Get rid of any boot entries.
             elif 'image=' in line or '\t' in line:
                 #Skip this line, and don't append it to the list.
+                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Found boot entry, removing it...")
                 continue
 
             NewFileContents.append(line)
 
         #Check that everything was set. If not, write that config now.
         if SetTimeout == False:
+            logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Didn't find delay in config file. Creating it and setting it to "+unicode(BootloaderTimeout*10)+" (tenths of a second)...")
             NewFileContents.append("delay="+unicode(BootloaderTimeout)+"\n")
 
         if SetUEFIPart == False:
             #Now let's find the ID of UEFISystemPartition.
+            logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+UEFISystemPartition+"'s ID if possible, else just "+UEFISystemPartition+"...")
             ID = CoreBackendTools().GetDeviceID(Device=UEFISystemPartition)
             if ID != "None":
                 #Good, we've got the ID.
+                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+ID+"...")
+
                 #Set it to UEFISystemPartition's ID.                    
                 Temp = "/dev/disk/by-id/"+ID
 
             else:
                 #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
+                logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to "+UEFISystemPartition+"! This may cause problems if the device name changes!")
                 Temp = UEFISystemPartition
 
             NewFileContents.append("boot="+Temp+"\n")
 
         #Write the finished lines to the file.
+        logger.info("BootloaderConfigSettingTools: Main().SetELILOConfig(): Writing new config to file...")
         ConfigFile.close()
         ConfigFile = open(filetoopen, 'w')
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
+        logger.info("BootloaderConfigSettingTools: Main().SetELILOConfig(): Done!")
 
-    def MakeLILOOSEntries(self, filetoopen, PackageManager, MountPoint):
-        """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS""" #*** Maybe set default OS in a seperate function? ***
+    def MakeLILOOSEntries(self, filetoopen, PackageManager, MountPoint): #*** Maybe set default OS in a seperate function? ***
+        """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS"""
+        logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make OS entries for "+BootloaderToInstall+"...")
         #Okay, we've saved the kopts, timeout, and the boot device in the list.
         #Now we'll set the OS entries, and then the default OS.
         #Open the file, and add each entry to a temporary list, which will be written to the file later.
@@ -338,7 +382,10 @@ class Main(): #*** Refactor and test all of these ***
 
         #First, make sure everything else comes first, because LILO and ELILO are picky with the placement of the image files (they must be at the end of the file).
         #We'll also make a placeholder for the default OS, so it comes before the image entries too.
+        logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Making placeholder for default OS if needed...")
+
         Temp = False
+
         for line in ConfigFile:
             if 'default' in line and '=' in line and '#' not in line:
                 #The place holder already exists. Set a variable so we don't make one.
@@ -351,6 +398,8 @@ class Main(): #*** Refactor and test all of these ***
             NewFileContents.append("default=setthis\n")
 
         #Make the OS entries.
+        logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Making OS Entries...")
+
         if BootloaderToInstall == "ELILO":
             NewFileContents.append("#################### ELILO per-image section ####################")
 
@@ -460,12 +509,16 @@ class Main(): #*** Refactor and test all of these ***
 
             #Set the root device.
             #Use UUID's here if we can.
+            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs as a UUID if possible...")
             UUID = CoreBackendTools().GetPartitionUUID(Partition)
-            if UUID == "None":
+
+            if UUID == "None": #*** Warn user? ***
+                logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+Partition+"! This might not work cos it can change!")
                 NewFileContents.append("\troot="+Partition+"\n")
 
             else:
-                #If we're using ELILO, we have to do this differently.
+                #If we're using ELILO, we have to do this differently for some weird reason.
+                logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+UUID+"...")
                 if BootloaderToInstall == "ELILO":
                     NewFileContents.append("\troot=UUID="+UUID+"\n")
 
@@ -473,25 +526,32 @@ class Main(): #*** Refactor and test all of these ***
                     NewFileContents.append("\troot=\"UUID="+UUID+"\"\n")
 
             #Set the label.
+            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS label to "+OSName+"...")
             NewFileContents.append("\tlabel="+OSName+"\n")
 
             #Set the kernel options.
+            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS Kernel Options to "+KernelOptions+"...")
             NewFileContents.append("\tappend=\""+KernelOptions+"\"\n")
 
             #Set one other necessary boot option.
+            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Adding 'read-only' to mount rootfs in ro mode on startup...")
             NewFileContents.append("\tread-only\n")
 
             #Add this OS to the Completed Entries List, because if we got this far it's done and added.
+            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): OS Entry for "+OS+" is done!")
             CompletedEntriesList.append(OSName)
 
         #Now set the default OS.
         #First, write the semi-finished lines to the file.
+        logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Writing OS Entries and config to file...")
         ConfigFile.close()
         ConfigFile = open(filetoopen, 'w')
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
+        logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Done!")
 
         #Open the file again, with the new files written.
+        logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to set default OS to boot...")
         ConfigFile = open(filetoopen, 'r')
         NewFileContents = []
 
@@ -521,7 +581,7 @@ class Main(): #*** Refactor and test all of these ***
             if len(CompletedEntriesList) <= 0:
                 #Something went wrong here! No OSs appear to have been added to the list. Warn the user. *** How about being helpful and trying to fix it right now? :D ***
                 logger.error("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): CompletedEntriesList is empty! This suggests that no OSs have been added to the list! Warn the user, and skip this part of the operation.")
-                DialogTools().ShowMsgDlg(Kind="error", Message="No Operating Systems have had entries created for them! If you canceled creating the entries, please reboot WxFixBoot and select only the option 'Update Bootloader Config'. If you didn't do that, and WxFixBoot either couldn't create them, or you see this error with no previous warnings, you may have to create your own bootloader config. Don't worry, this isn't too difficult, and you can search for tutorials for this on the internet. If WxFixBoot couldn't create your entries, or you are seeing this message with no previous warnings, please also email me directly via my Launchpad page with the contents of /tmp/wxfixboot.log and I'll try to help you.")
+                DialogTools().ShowMsgDlg(Kind="error", Message="No Operating Systems have had entries created for them! If you canceled creating the entries, please reboot WxFixBoot and select only the option 'Update Bootloader Config'. If you didn't do that, and WxFixBoot either couldn't create them, or you see this error with no previous warnings, you may have to create your own bootloader config. Don't worry, this isn't too difficult, and you can search for tutorials for this on the internet. If WxFixBoot couldn't create your entries, or you are seeing this message with no previous warnings, please email me directly via my Launchpad page (www.launchpad.net/~hamishmb) with the contents of /tmp/wxfixboot.log and I'll try to help you.")
 
             else:
                 #Ask the user for a new default OS.
@@ -529,11 +589,12 @@ class Main(): #*** Refactor and test all of these ***
                 logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): User selected new default OS: "+DefaultOSName+"...")
 
         #Make the entry for the default OS.
-        logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting default OS...")
+        logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting default OS...")
         SetDefaultOS = False
 
         for line in ConfigFile:
             if 'default' in line and '=' in line and '#' not in line:
+                logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Found default OS setting, setting it to "+DefaultOSName+"...")
                 #Get the LILO name for DefaultOS.
                 SetDefaultOS = True
 
@@ -544,35 +605,42 @@ class Main(): #*** Refactor and test all of these ***
 
         #Check that everything was set. If not, write that config now.
         if SetDefaultOS == False:
+            #*** This won't work! *** *** This needs to be before the OS entries in the file! ***
+            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Didn't find default OS setting in config file. Creating it and setting it to "+DefaultOSName+"...")
+            logger.error("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): *** This won't work! *** *** This needs to be before the OS entries in the file! ***")
             NewFileContents.append("default="+DefaultOSName+"\n")
 
         #Write the finished lines to the file.
+        logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Writing finished config to file...")
         ConfigFile.close()
         ConfigFile = open(filetoopen, 'w')
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
 
-    def InstallLILOToMBR(self, PackageManager, MountPoint): #*** Will need changing when we get rid of the Root Device concept ***
-        """Install LILO to the MBR of RootDev."""
-        if MountPoint == "":
-            retval = CoreBackendTools().StartThreadProcess("lilo", Piping=True, ShowOutput=False)
+        logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Done!")
 
-        else:
-            retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" lilo", Piping=True, ShowOutput=False)
+    def InstallLILOToMBR(self, PackageManager, MountPoint):
+        """Install LILO into the MBR."""
+        Cmd = "lilo"
+
+        if MountPoint == "":
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False)
 
         #Return the return value.
-        return retval
+        return Retval
 
     def InstallELILOToPartition(self, PackageManager, MountPoint, UEFISystemPartition):
         """Install ELILO to the EFI/UEFI Partition"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
-        if MountPoint == "":
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess("elilo -b "+UEFISystemPartition+" --efiboot", Piping=True, ShowOutput=False)
+        if PackageManager == "apt-get":
+            Cmd = "elilo -b "+UEFISystemPartition+" --efiboot"
 
-        else:
-            if PackageManager == "apt-get":
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" elilo -b "+UEFISystemPartition+" --efiboot", Piping=True, ShowOutput=False)
+        if MountPoint == "":
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False)
 
         #Return the return value.
-        return retval
+        return Retval

@@ -121,7 +121,7 @@ class Main(): #*** These need refactoring and proper testing ***
         Retval = Result[0]
 
         if Retval != 0:
-            logger.error("CoreBackendTools: Main().TearDownChroot(): Failed to run command: "+', '.join(ExecList)+"! Chroot may not be removed properly!") #*** Log Retval ***
+            logger.error("CoreBackendTools: Main().TearDownChroot(): Failed to run command: 'mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf'! Chroot may not be removed properly!") #*** Log Retval ***
 
         logger.debug("CoreBackendTools: Main().TearDownChroot(): Finished removing chroot at MountPoint: "+MountPoint+"...")
 
