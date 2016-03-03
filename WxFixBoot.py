@@ -29,19 +29,19 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Import other modules
-from distutils.version import LooseVersion
 import wx
-import sys
 import threading
-import time
+import subprocess
+import sys
+import getopt
+import logging
 import os
 import shutil
-import subprocess
-import logging
-import getopt
+import time
 import re
-from wx.animate import Animation
+from distutils.version import LooseVersion
 from wx.animate import AnimationCtrl
+from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
