@@ -289,7 +289,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Restoring the Boot Sector...###\n")
         logger.info("EssentialBackendTools: Main().RestoreBootSector(): Finished restoring the boot sector!")
 
-    def QuickFileSystemCheck(self): #*** This is very duplicated with BadSectorCheck, can we merge them and put a check in? *** *** Will need lots of work when we switch to dictionaries *** *** Attempts (but fails) to check mounted filesystems sometimes! ***
+    def QuickFileSystemCheck(self): #*** This is very duplicated with BadSectorCheck, can we merge them and put a check in? *** *** Will need lots of work when we switch to dictionaries ***
         """Quickly check all filesystems."""
         logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Starting...")
 
@@ -372,7 +372,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Quick Filesystem Check!###\n")
 
-    def BadSectorCheck(self): #*** This is very duplicated with QuickFSCheck, can we merge them and put a check in? *** *** Attempts (but fails) to check mounted filesystems sometimes! ***
+    def BadSectorCheck(self): #*** This is very duplicated with QuickFSCheck, can we merge them and put a check in? ***
         """Check all filesystems for bad sectors."""
         logger.debug("EssentialBackendTools: Main().BadSectorCheck(): Starting...")
 

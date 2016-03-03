@@ -137,8 +137,8 @@ class Main():
                         RemountPartitionAfter = False
                         continue
 
-                    #Check if the partition is mounted. #*** Test this bit ***
-                    PartitionIsMounted = CoreTools().MountPartition(Partition=Partition, MountPoint="/mnt"+Partition, OnlyCheck=True)
+                    #Check if the partition is mounted.
+                    PartitionIsMounted = CoreTools().IsMounted(Partition)
 
                     if PartitionIsMounted == False:
                         #Not mounted.
@@ -508,7 +508,7 @@ class Main():
 
         logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Done!")
 
-        #Check the return value.
+        #Check the return value. *** Not helpful to the user! ***
         if retval != 0:
             logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy the new bootloader's UEFI files to the failsafe directory! This could potentially be a serious problem! If the system doesn't start, this could be the reason why it doesn't start. Warning user and continuing...")
             DialogTools().ShowMsgDlg(Kind="error", Message="Error: WxFixBoot failed to copy the new bootloader's UEFI files to the backup directory! This could potentially be a problem. If your system doesn't start, this could be the reason why it doesn't start. Click okay to continue.")

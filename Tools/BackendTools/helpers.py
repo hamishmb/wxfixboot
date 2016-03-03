@@ -137,8 +137,8 @@ class Main():
                         RemountPartitionAfter = False
                         continue
 
-                    #Check if the partition is mounted. #*** Test this bit ***
-                    PartitionIsMounted = CoreTools().MountPartition(Partition=Partition, MountPoint="/mnt"+Partition, OnlyCheck=True)
+                    #Check if the partition is mounted.
+                    PartitionIsMounted = CoreTools().IsMounted(Partition)
 
                     if PartitionIsMounted == False:
                         #Not mounted.

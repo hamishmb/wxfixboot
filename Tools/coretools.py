@@ -72,7 +72,26 @@ class Main():
             #Return the return code, as well as the output.
             return (Retval, '\n'.join(LineList))
 
-    def MountPartition(self, Partition, MountPoint, OnlyCheck=False, Options=""): #*** Check this over: What if our partition is mounted somewhere else? *** *** Test OnlyCheck=True works reliably ***
+    def IsMounted(self, Partition): #*** Check this works ***
+        """Checks if the given partition is mounted.
+        Partition is the given partition to check.
+        Doesn't check WHERE the partition is mounted,
+        just whether it is or not.
+        Return boolean True/False.
+        """
+        logger.debug("CoreTools: Main().IsMounted(): Checking if "+Partition+" is mounted...")
+
+        MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
+
+        if Partition in MountInfo:
+            logger.debug("CoreTools: Main().IsMounted(): It is. Returning True...")
+            return True
+
+        else:
+            logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
+            return False
+
+    def MountPartition(self, Partition, MountPoint, Options=""): #*** Check this works *** #*** Check this over: What if our partition is mounted somewhere else? Make this more bullet-proof ***
         """Mounts the given partition.
         Partition is the partition to mount.
         MountPoint is where you want to mount the partition.
@@ -87,7 +106,7 @@ class Main():
 
         MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
 
-        if MountPoint in MountInfo[1]:
+        if MountPoint in MountInfo:
             #There is a partition mounted here. Check if our partition is already mounted in the right place.
             MountPointFound = None
 
@@ -97,45 +116,30 @@ class Main():
 
             if MountPointFound != MountPoint:
                 #Unmount the partition, and continue.
-                if OnlyCheck == False:
-                    logger.warning("CoreTools: Main().MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
-                    Retval = self.Unmount(MountPoint)
+                logger.warning("CoreTools: Main().MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
+                Retval = self.Unmount(MountPoint)
 
-                    if Retval != 0:
-                        logger.error("CoreTools: Main().MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
-                        return False
-
-                else:
-                    logger.debug("CoreTools: Main().MountPartition(): Would unmount filesystem in the way at this point, but OnlyCheck == True. Returning False and doing nothing...")
+                if Retval != 0:
+                    logger.error("CoreTools: Main().MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
                     return False
 
             else:
                 #The correct partition is already mounted here.
                 logger.debug("CoreTools: Main().MountPartition(): Partition: "+Partition+" was already mounted at: "+MountPoint+". Continuing...")
-
-                if OnlyCheck == False:
-                    return 0
-
-                else:
-                    return True
+                return 0
 
         #Create the dir if needed.
         if os.path.isdir(MountPoint) == False:
             os.makedirs(MountPoint)
     
         #Mount the device to the mount point.
-        if OnlyCheck == False:
-            Retval = self.StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
+        Retval = self.StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
 
-            if Retval == 0:
-                logger.debug("CoreTools: Main().MountPartition(): Successfully mounted partition!")
-
-            else:
-                logger.warning("CoreTools: Main().MountPartition(): Failed to mount partition!")
+        if Retval == 0:
+            logger.debug("CoreTools: Main().MountPartition(): Successfully mounted partition!")
 
         else:
-            logger.debug("CoreTools: Main().MountPartition(): Would attempt to mount filesystem at this point, but OnlyCheck == True. Returning False and doing nothing...")
-            return False
+            logger.warning("CoreTools: Main().MountPartition(): Failed to mount partition!")
 
         return Retval
 

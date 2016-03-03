@@ -2834,8 +2834,17 @@ class BackendThread(threading.Thread):
 
             #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.setconfigtools.RootDevice = RootDevice
-            Tools.BackendTools.BootloaderTools.setconfigtools.DefaultOS = DefaultOS
-            Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderToInstall = BootloaderToInstall
+
+            try:
+                Tools.BackendTools.BootloaderTools.setconfigtools.DefaultOS = DefaultOS
+
+            except UnboundLocalError: pass
+
+            try:
+                Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderToInstall = BootloaderToInstall
+
+            except UnboundLocalError: pass
+
             Tools.BackendTools.BootloaderTools.setconfigtools.OSList = OSList
 
             try:
