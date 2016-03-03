@@ -154,13 +154,14 @@ class Main():
             #Break out of the loop to save time.
             break
 
-            if DiskIsPartition:
-                #Reset the Disk line number to the original value so the rest of the code works properly, and return the value.
-                DiskLineNumber = OldDiskLineNumber
-                return "Host Device: "+Product
-            else:
-                #Return the value.
-                return Product
+        if DiskIsPartition:
+            #Reset the Disk line number to the original value so the rest of the code works properly, and return the value.
+            DiskLineNumber = OldDiskLineNumber
+            return "Host Device: "+Product
+
+        else:
+            #Return the value.
+            return Product
 
     def GetSize(self, Disk, DiskLineNumber=None):
         """Find size information for the given Disk."""
@@ -261,7 +262,7 @@ class Main():
                     Disk = Line.split()[2]
                     DiskLinesList.append(TempLineCount)
 
-                except IndexError as e:
+                except IndexError:
                     continue
 
                 #See if it's a Disk that's in our categories, and add it to the list if it is.
@@ -280,8 +281,8 @@ class Main():
             elif "description:" in Line:
                 self.DescriptionLinesList.append(TempLineCount)
 
-            #Deduplicate the Disk list.
-            DiskList = self.DeduplicateList(DiskList)
+        #Deduplicate the Disk list.
+        DiskList = self.DeduplicateList(DiskList)
 
         #Use a final set of lists to store the info, making it easier to input into a multi-column wx.ListCtrl as used in the new Disk information dialogs.
         VendorInfoList = []
@@ -400,9 +401,7 @@ if __name__ == "__main__":
     #Import modules.
     import subprocess
     import re
-    import platform
     import logging
-    import plistlib
     
     #Set up basic logging to stdout.
     logger = logging
