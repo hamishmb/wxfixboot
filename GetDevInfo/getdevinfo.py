@@ -284,7 +284,10 @@ class Main():
 
         logger.info("GetDevInfo: Main().GetInfo(): Getting Disk info...")
 
-        for Disk in DiskInfo:
+        Keys = DiskInfo.keys()
+        Keys.sort()
+
+        for Disk in Keys:
             #Get the Vendor, Product, Size and Description for each drive.
             #First find the line number where the Disk is. Don't log the output here, because it will waste lots of time and fill the log file with junk.
             logger.debug("GetDevInfo: Main().GetInfo(): Finding Disk line number (number of line where Disk name is)...")
@@ -298,9 +301,12 @@ class Main():
 
             if DiskIsPartition:
                 DiskInfo[Disk]["Type"] = "Partition"
+                DiskInfo[Disk]["HostDevice"] = Disk[0:8]
+                DiskInfo[Disk[0:8]]["Partitions"].append(Disk)
 
             else:
                 DiskInfo[Disk]["Type"] = "Device"
+                DiskInfo[Disk]["Partitions"] = []
 
             #Get all other information, making sure it remains stable even if we found no info at all.
             #Vendor.

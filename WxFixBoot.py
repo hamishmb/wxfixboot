@@ -45,7 +45,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "3/3/2016"
+ReleaseDate = "4/3/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -66,6 +66,7 @@ if not os.geteuid() == 0:
 #Set up according to cmdline options.
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hqvd", ("help", "quiet", "verbose", "debug"))
+
 except getopt.GetoptError as err:
     #Invalid option. Show the help message and then exit.
     #Show the error.
@@ -82,13 +83,17 @@ logger.setLevel(logging.DEBUG)
 for o, a in opts:
     if o in ("-q", "--quiet"):
         logger.setLevel(logging.WARNING)
+
     elif o in ("-v", "--verbose"):
         logger.setLevel(logging.INFO)
+
     elif o in ("-d", "--debug"):
         logger.setLevel(logging.DEBUG)
+
     elif o in ("-h", "--help"):
         usage()
         sys.exit()
+
     else:
         assert False, "unhandled option"
 
@@ -1151,7 +1156,7 @@ class DevInfoWindow(wx.Frame):
             self.ListCtrl.SetStringItem(index=Number, col=1, label=Info["Type"])
             self.ListCtrl.SetStringItem(index=Number, col=2, label=Info["Vendor"])
             self.ListCtrl.SetStringItem(index=Number, col=3, label=Info["Product"])
-            self.ListCtrl.SetStringItem(index=Number, col=4, label=Info["Size"])
+            self.ListCtrl.SetStringItem(index=Number, col=4, label=Info["Capacity"])
             self.ListCtrl.SetStringItem(index=Number, col=5, label=Info["Description"])
 
         #Auto Resize the columns.
