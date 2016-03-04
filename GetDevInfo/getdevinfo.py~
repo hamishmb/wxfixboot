@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class.
+#Begin Main Class. #*** Refactor and test again ***
 class Main():
     def FoundExactMatch(self, Item, Text, Log=True):
         """Check if an exact match of "Item" (arg) can be found in "Text" (arg), seperated by commas or spaces."""
@@ -229,6 +229,43 @@ class Main():
                 logger.warning("GetDevInfo: Main().GetDescription(): Found probable wrong description: "+' '.join(self.Output[DescriptionLineNumber].split()[1:])+". Ignoring it and returning 'Unknown'...")
                 return "Unknown"
 
+    def GetPartitionScheme(self, Disk, DiskLineNumber=None):
+        """Get the partition scheme for devices"""
+        logger.info("GetDevInfo: Main().GetPartitionScheme(): Getting partition scheme info for Disk: "+Disk+"...")
+
+        #Look for the information using the Disk's line number.
+        for Number in self.CapabilitiesLinesList:
+            #Ignore the line number if it is before the Disk name...
+            if Number < DiskLineNumber:
+                if self.CapabilitiesLinesList[-1] != Number:
+                    continue
+
+                else:
+                    #...unless it is the last line. Keep going rather than reiterating the loop.
+                    pass
+
+            else:
+                #The first time this is run, we know this line num is the right one!
+                #Now we just have to grab this line, check it is within 10 lines, and format it.
+                pass
+
+            #Return the Size info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
+            if Number - DiskLineNumber < 10:
+                PartitionScheme = self.Output[Number].split(":")[-1]
+
+                #Use different terminology where wanted.
+                if PartitionScheme == "dos":
+                    PartitionScheme = "mbr"
+
+                logger.info("GetDevInfo: Main().GetPartitionScheme(): Found Partition Scheme info: "+PartitionScheme+"...")
+                return PartitionScheme
+
+            else:
+                logger.warning("GetDevInfo: Main().GetPartitionScheme(): Found probable wrong Partition Scheme: "+self.Output[Number].split(":")[-1]+". Ignoring it and returning 'Unknown'...")
+                return "Unknown"
+
+
+
     def GetInfo(self):
         """Get Disk information."""
         logger.info("GetDevInfo: Main().GetInfo(): Preparing to get Disk info...")
@@ -251,6 +288,9 @@ class Main():
         self.ProductLinesList = []
         self.SizeLinesList = []
         self.DescriptionLinesList = []
+        self.CapabilitiesLinesList = []
+        self.ConfigurationLinesList = []
+
         TempLineCount = -1
 
         for Line in self.Output:
@@ -282,9 +322,18 @@ class Main():
             elif "description:" in Line:
                 self.DescriptionLinesList.append(TempLineCount)
 
+            elif "capabilities:" in Line:
+                self.CapabilitiesLinesList.append(TempLineCount)
+
+            elif "configuration:" in Line:
+                self.ConfigurationLinesList.append(TempLineCount)
+
         logger.info("GetDevInfo: Main().GetInfo(): Getting Disk info...")
 
-        for Disk in DiskInfo.keys().sort():
+        Keys = DiskInfo.keys()
+        Keys.sort()
+
+        for Disk in Keys:
             #Get the Vendor, Product, Size and Description for each drive.
             #First find the line number where the Disk is. Don't log the output here, because it will waste lots of time and fill the log file with junk.
             logger.debug("GetDevInfo: Main().GetInfo(): Finding Disk line number (number of line where Disk name is)...")
@@ -357,6 +406,16 @@ class Main():
 
             else:
                 DiskInfo[Disk]["Description"] = "Unknown"
+
+            #Partition Scheme.
+            if DiskInfo[Disk]["Type"] == "Device" and "/dev/sr" not in Disk:
+                if len(self.CapabilitiesLinesList) > 0:
+                    PartitionScheme = self.GetPartitionScheme(Disk, DiskLineNumber=DiskLineNumber)
+
+                else:
+                    PartitionScheme = None
+
+                DiskInfo[Disk]["Partitioning"] = PartitionScheme
 
         #Return the info.
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
