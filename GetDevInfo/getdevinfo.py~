@@ -80,74 +80,52 @@ class Main():
         logger.info("GetDevInfo: Main().DeduplicateList(): Results: "+str(ResultsList)+"...")
         return ResultsList
 
-    def GetVendor(self, Disk, DiskIsPartition, DiskLineNumber=None, VendorInfoList=None):
+    def GetVendor(self, Disk, DiskIsPartition, DiskLineNumber=None):
         """Find vendor information for the given Disk."""
         logger.info("GetDevInfo: Main().GetVendor(): Getting vendor info for Disk: "+Disk+"...")
 
         #Look for the information using the Disk's line number.
+        Vendor = "Unknown"
+
         for LineNumber in self.VendorLinesList:
             #Return the Vendor info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
             if DiskLineNumber - LineNumber < 10:
                 Vendor = ' '.join(self.Output[LineNumber].split()[1:])
                 logger.info("GetDevInfo: Main().GetVendor(): Found vendor info: "+Vendor)
-                return Vendor
+                break
 
             else:
-                logger.warning("GetDevInfo: Main().GetVendor(): Found probable wrong vendor: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it and returning 'Unknown'...")
-                return "Unknown"
+                logger.warning("GetDevInfo: Main().GetVendor(): Found probable wrong vendor: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it...")
 
-    def GetProduct(self, Disk, DiskIsPartition, DiskLineNumber=None, DiskLinesList=None, ProductInfoList=None):
+        return Vendor
+
+    def GetProduct(self, Disk, DiskInfo, DiskIsPartition, DiskLineNumber=None):
         """Find product information for the given Disk."""
         logger.info("GetDevInfo: Main().GetProduct(): Getting product info for Disk: "+Disk+"...")
 
         #Check if the Disk is actually a partition.
         if DiskIsPartition:
-            #Temporarily reset DiskLineNumber to the partition's host DiskLineNumber, so we can grab product info, and keep the old DiskLineNumber.
-            logger.debug("GetDevInfo: Main().GetProduct(): Using product info from host Disk, because this is a partition...")
-            OldDiskLineNumber = DiskLineNumber
-
-            #Find the line number that the host Disk is on.
-            for Number in DiskLinesList:
-                if self.FoundExactMatch(Disk[0:8], self.Output[Number]):
-                    DiskLineNumber = Number
-                    break
+            #Use the host device's product instead.
+            HostDevice = DiskInfo[Disk]["HostDevice"]
+            Product = DiskInfo[HostDevice]["Product"]
+            return "Host Device: "+Product
 
         #Look for the information using the Disk's line number.
-        for Number in self.ProductLinesList:
-            if Number < DiskLineNumber:
-                #Ignore the line number if it is before the Disk name...
-                if self.ProductLinesList[-1] != Number:
-                    continue
+        Product = "Unknown"
 
-                else:
-                    #...unless it is the last line.
-                    ProductLineNumber = Number
-
-            else:
-                #The first time this is run, we know the last line num was the right one!
-                #Now we just have to grab that line, and format it.
-                ProductLineNumber = self.ProductLinesList[self.ProductLinesList.index(Number)-1]
-
-            #Save the Vendor info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
+        for LineNumber in self.ProductLinesList:
+            #Save the Product info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
             if DiskLineNumber - ProductLineNumber < 10:
                 Product = ' '.join(self.Output[ProductLineNumber].split()[1:])
                 logger.info("GetDevInfo: Main().GetProduct(): Found product info: "+Product+"...")
+                break
 
             else:
                 Product = "Unknown"
-                logger.warning("GetDevInfo: Main().GetProduct(): Found probable wrong product: "+' '.join(self.Output[ProductLineNumber].split()[1:])+". Ignoring it and returning 'Unknown'...")
+                logger.warning("GetDevInfo: Main().GetProduct(): Found probable wrong product: "+' '.join(self.Output[ProductLineNumber].split()[1:])+". Ignoring it...")
 
-            #Break out of the loop to save time.
-            break
-
-        if DiskIsPartition:
-            #Reset the Disk line number to the original value so the rest of the code works properly, and return the value.
-            DiskLineNumber = OldDiskLineNumber
-            return "Host Device: "+Product
-
-        else:
-            #Return the value.
-            return Product
+        #Return the value.
+        return Product
 
     def GetSize(self, Disk, DiskLineNumber=None):
         """Find size information for the given Disk."""
@@ -185,7 +163,7 @@ class Main():
                     logger.warning("GetDevInfo: Main().GetSize(): Found probable wrong size: "+' '.join(self.Output[Number].split()[1:])+". Ignoring it and returning 'Unknown'...")
                     return "Unknown"
 
-    def GetDescription(self, Disk, DiskLineNumber=None, DiskList=None, VendorInfoList=None, ProductInfoList=None):
+    def GetDescription(self, Disk, DiskLineNumber=None, DiskList=None):
         """Find description information for the given Disk."""
         logger.info("GetDevInfo: Main().GetDescription(): Getting description info for Disk: "+Disk+"...")
 
@@ -398,7 +376,7 @@ class Main():
 
             #Product.
             if len(self.ProductLinesList) > 0:
-                Product = self.GetProduct(Disk, DiskIsPartition, DiskLineNumber, DiskLinesList)
+                Product = self.GetProduct(Disk, DiskInfo, DiskIsPartition, DiskLineNumber)
 
             else:
                 Product = "Unknown"
