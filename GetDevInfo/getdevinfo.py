@@ -136,6 +136,7 @@ class Main():
         for LineNumber in self.SizeLinesList:
             #Return the Size info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
             Result = LineNumber - DiskLineNumber
+
             if Result < 10 and Result > 0:
                 Size = ' '.join(self.Output[LineNumber].split()[1:])
                 logger.info("GetDevInfo: Main().GetSize(): Found size info: "+Size+"...")
@@ -181,6 +182,7 @@ class Main():
         for LineNumber in self.CapabilitiesLinesList:
             #Return the Size info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
             Result = LineNumber - DiskLineNumber
+
             if Result < 15 and Result > 0:
                 PartitionScheme = self.Output[LineNumber].split(":")[-1]
 
@@ -202,42 +204,31 @@ class Main():
 
     def GetFSType(self, Disk, DiskLineNumber=None): #*** Test this again ***
         """Get the filesystem type for devices"""
-        logger.info("GetDevInfo: Main().GetFSType(): Getting partition scheme info for Disk: "+Disk+"...")
+        logger.info("GetDevInfo: Main().GetFSType(): Getting filesystem type info for Disk: "+Disk+"...")
 
         #Look for the information using the Disk's line number.
-        for Number in self.ConfigurationLinesList:
-            #Ignore the line number if it is before the Disk name...
-            if Number < DiskLineNumber:
-                if self.ConfigurationLinesList[-1] != Number:
-                    continue
+        FSType = "Unknown"
 
-                else:
-                    #...unless it is the last line. Keep going rather than reiterating the loop.
-                    pass
-
-            else:
-                #The first time this is run, we know this line num is the right one!
-                #Now we just have to grab this line, check it is within 10 lines, and format it.
-                pass
-
+        for LineNumber in self.ConfigurationLinesList:
             #Return the FSType info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
-            if Number - DiskLineNumber < 10:
+            Result = LineNumber - DiskLineNumber
+
+            if Result < 10 and Result > 0:
                 try:
-                    FSType = self.Output[Number].split("filesystem=")[1].split()[0]
+                    FSType = self.Output[LineNumber].split("filesystem=")[1].split()[0]
 
                 except IndexError:
-                    logger.warning("GetDevInfo: Main().GetFSType(): Couldn't get FSTYpe! Ignoring it and returning 'Unknown'...")
-                    return "Unknown"
+                    logger.warning("GetDevInfo: Main().GetFSType(): Couldn't get FSTYpe! Ignoring it...")
+                    continue
 
                 #Use different terminology where wanted.
                 if FSType == "fat":
                     FSType = "vfat"
 
-                return FSType
-
             else:
-                logger.warning("GetDevInfo: Main().GetFSType(): Found probable wrong Partition Scheme: "+self.Output[Number].split(":")[-1]+". Ignoring it and returning 'Unknown'...")
-                return "Unknown"
+                logger.warning("GetDevInfo: Main().GetFSType(): Found probable wrong FSType: "+self.Output[LineNumber].split(":")[-1]+". Ignoring it...")
+
+        return FSType
 
     def GetInfo(self):
         """Get Disk information."""
