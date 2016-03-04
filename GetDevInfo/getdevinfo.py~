@@ -159,7 +159,7 @@ class Main():
         #Look for the information using the Disk's line number.
         Description = "Unknown"
 
-        for Number in self.DescriptionLinesList:
+        for LineNumber in self.DescriptionLinesList:
             #Return the Description info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus. 
             if DiskLineNumber - LineNumber < 10:
                 Description = ' '.join(self.Output[LineNumber].split()[1:])
@@ -167,49 +167,38 @@ class Main():
                 break
 
             else:
-                logger.warning("GetDevInfo: Main().GetDescription(): Found probable wrong description: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it and returning 'Unknown'...")
+                logger.warning("GetDevInfo: Main().GetDescription(): Found probable wrong description: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it...")
 
         return Description
 
-    def GetPartitionScheme(self, Disk, DiskLineNumber=None): #*** Maybe get rid of this and just use parted for this in StartupScripts ***
+    def GetPartitionScheme(self, Disk, DiskLineNumber=None): #*** Maybe get rid of this and just use parted for this in StartupScripts cos it can't always tell ***
         """Get the partition scheme for devices"""
         logger.info("GetDevInfo: Main().GetPartitionScheme(): Getting partition scheme info for Disk: "+Disk+"...")
 
         #Look for the information using the Disk's line number.
-        for Number in self.CapabilitiesLinesList:
-            #Ignore the line number if it is before the Disk name...
-            if Number < DiskLineNumber:
-                if self.CapabilitiesLinesList[-1] != Number:
-                    continue
+        PartitionScheme = "Unknown"
 
-                else:
-                    #...unless it is the last line. Keep going rather than reiterating the loop.
-                    pass
-
-            else:
-                #The first time this is run, we know this line num is the right one!
-                #Now we just have to grab this line, check it is within 10 lines, and format it.
-                pass
-
+        for LineNumber in self.CapabilitiesLinesList:
             #Return the Size info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
-            if Number - DiskLineNumber < 10:
-                PartitionScheme = self.Output[Number].split(":")[-1]
+            Result = LineNumber - DiskLineNumber
+            if Result < 15 and Result > 0:
+                PartitionScheme = self.Output[LineNumber].split(":")[-1]
 
-                #Use different terminology where wanted.
-                if PartitionScheme == "dos":
-                    PartitionScheme = "mbr"
+                if PartitionScheme in ("dos", "gpt"):
+                    #Use different terminology where wanted.
+                    if PartitionScheme == "dos":
+                        PartitionScheme = "mbr"
 
-                if PartitionScheme in ("mbr", "gpt"):
                     logger.info("GetDevInfo: Main().GetPartitionScheme(): Found Partition Scheme info: "+PartitionScheme+"...")
-                    return PartitionScheme
 
                 else:
-                    logger.warning("GetDevInfo: Main().GetPartitionScheme(): Found probable wrong Partition Scheme: "+self.Output[Number].split(":")[-1]+". Ignoring it and returning 'Unknown'...")
-                    return "Unknown"
+                    logger.warning("GetDevInfo: Main().GetPartitionScheme(): Found probable wrong Partition Scheme: "+self.Output[LineNumber].split(":")[-1]+". Ignoring it...")
+                    PartitionScheme = "Unknown"
 
             else:
-                logger.warning("GetDevInfo: Main().GetPartitionScheme(): Found probable wrong Partition Scheme: "+self.Output[Number].split(":")[-1]+". Ignoring it and returning 'Unknown'...")
-                return "Unknown"
+                logger.warning("GetDevInfo: Main().GetPartitionScheme(): Found probable wrong Partition Scheme: "+self.Output[LineNumber].split(":")[-1]+". Ignoring it...")
+
+        return PartitionScheme
 
     def GetFSType(self, Disk, DiskLineNumber=None): #*** Test this again ***
         """Get the filesystem type for devices"""
