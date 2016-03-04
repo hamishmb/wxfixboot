@@ -74,9 +74,8 @@ class Main():
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
         CoreTools().StartProcess("mount -avw") #*** Check it worked! ***
 
-    def DetectDevicesPartitionsAndPartSchemes(self):
-        """Detect all devices, partitions, and their partition schemes.""" #*** This will need serious work as I change the way wxfixboot handles disks with dictionaries and stuff ***
-        #*** A fair bit of this info can be gathered using DDRescue-GUI's getdevinfo package ***
+    def DetectDevicesPartitionsAndPartSchemes(self): #*** Remove soon ***
+        """Detect all devices, partitions, and their partition schemes."""
         logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): Gathering info...")
 
         #Create a list for the devices.

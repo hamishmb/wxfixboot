@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. #*** Refactor and test again ***
+#Begin Main Class. #*** Refactor and test again *** *** Must be run while filesystems are unmounted ***
 class Main():
     def FoundExactMatch(self, Item, Text, Log=True):
         """Check if an exact match of "Item" (arg) can be found in "Text" (arg), seperated by commas or spaces."""
@@ -54,7 +54,7 @@ class Main():
         logger.info("GetDevInfo: Main().IsPartition(): Result: "+str(Result)+"...")
         return Result
 
-    def GetPartitions(self, Device, DiskInfo):
+    def GetPartitions(self, Device, DiskInfo): #*** Might not need this ***
         """Find and return all partitions contained by the given device"""
         logger.debug("GetDevInfo: Main().GetPartitions(): Finding all partitions contained by "+Device+" using the given disk list...")
         PartitionsList = []
@@ -67,7 +67,7 @@ class Main():
         logger.info("GetDevInfo: Main().GetPartitions(): Results: "+str(PartitionsList)+"...")
         return PartitionsList
 
-    def DeduplicateList(self, ListToDeduplicate):
+    def DeduplicateList(self, ListToDeduplicate): #*** Might not need this ***
         """Deduplicate the given list."""
         logger.debug("GetDevInfo: Main().DeduplicateList(): Deduplicating list: "+str(ListToDeduplicate)+"...")
         ResultsList = []
@@ -80,7 +80,7 @@ class Main():
         logger.info("GetDevInfo: Main().DeduplicateList(): Results: "+str(ResultsList)+"...")
         return ResultsList
 
-    def GetVendor(self, Disk, DiskIsPartition, DiskLineNumber=None):
+    def GetVendor(self, Disk, DiskLineNumber=None):
         """Find vendor information for the given Disk."""
         logger.info("GetDevInfo: Main().GetVendor(): Getting vendor info for Disk: "+Disk+"...")
 
@@ -153,7 +153,7 @@ class Main():
 
         return Size
 
-    def GetDescription(self, Disk, DiskLineNumber=None, DiskList=None):
+    def GetDescription(self, Disk, DiskLineNumber=None):
         """Find description information for the given Disk."""
         logger.info("GetDevInfo: Main().GetDescription(): Getting description info for Disk: "+Disk+"...")
 
@@ -235,7 +235,7 @@ class Main():
         logger.info("GetDevInfo: Main().GetInfo(): Preparing to get Disk info...")
 
         #Run lshw to try and get disk information.
-        logger.debug("GetDevInfo: Main().GetInfo(): Running 'lshw -sanitize'...")
+        logger.debug("GetDevInfo: Main().GetInfo(): Running 'lshw -sanitize -class disk -class volume'...")
         runcmd = subprocess.Popen("LC_ALL=C lshw -sanitize -class disk -class volume", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
         #Get the output.
@@ -264,7 +264,6 @@ class Main():
             if "logical name:" in Line:
                 try:
                     Disk = Line.split()[2]
-                    DiskLinesList.append(TempLineCount)
 
                 except IndexError:
                     continue
@@ -273,7 +272,8 @@ class Main():
                 if '/dev/sd' in Disk or '/dev/sr' in Disk or '/dev/fd' in Disk or '/dev/hd' in Disk:
                     DiskInfo[Disk] = {}
                     DiskInfo[Disk]["Name"] = Disk
-        
+                    DiskLinesList.append(TempLineCount)
+
             elif "vendor:" in Line:
                 self.VendorLinesList.append(TempLineCount)
 
@@ -321,7 +321,7 @@ class Main():
             #Get all other information, making sure it remains stable even if we found no info at all.
             #Vendor.
             if len(self.VendorLinesList) > 0:
-                Vendor = self.GetVendor(Disk, DiskIsPartition=DiskIsPartition, DiskLineNumber=DiskLineNumber)
+                Vendor = self.GetVendor(Disk, DiskLineNumber=DiskLineNumber)
 
             else:
                 Vendor = "Unknown"
@@ -440,5 +440,9 @@ if __name__ == "__main__":
     for Disk in DiskInfo:
         DiskInfo[Disk]["PhysicalBlockSize"] = Main().GetBlockSize(Disk)
 
-    #Print the info in a readable way.
-    print(DiskInfo)
+    #Print the info in a (semi :D) readable way.
+    Keys = DiskInfo.keys()
+    Keys.sort()
+
+    for Key in Keys:
+        print("\n\n", DiskInfo[Key], "\n\n")

@@ -21,6 +21,7 @@
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
 #*** Don't use parted, all it's being used for is getting partition schemes, something lshw will do with dictionaries soon ***
 #*** Maybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
+#*** DevInfoTools().GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -366,6 +367,15 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "27")
         logger.info("InitThread(): Filesystems Checked!")
 
+        #Get device info. *** Will soon replace some of this functionality used here ***
+        global DiskInfo
+
+        logger.info("InitThread(): Getting Device Information...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Getting Device Information...")
+        DiskInfo = DevInfoTools().GetInfo()
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "32")
+        logger.info("InitThread(): Finished Getting Device Information...")
+
         #Mount all filesystems.
         logger.info("InitThread(): Mounting Core Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Mounting Core Filesystems...")
@@ -373,7 +383,7 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "36")
         logger.info("InitThread(): Done Mounting Core Filsystems!")
 
-        #Detect Devices, Partitions, and Partition Schemes
+        #*** Temporary abstraction code ***
         #Define Global Variables. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
         global PartitionListWithFSType
         global DeviceList
@@ -382,21 +392,47 @@ class InitThread(threading.Thread):
         global GPTInAutoPartSchemeList
         global MBRInAutoPartSchemeList
 
-        logger.info("InitThread(): Detecting Devices, Partitions, and PartSchemes...")
-        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Getting Device Information...")
-        PartitionListWithFSType, DeviceList, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList = MainStartupTools().DetectDevicesPartitionsAndPartSchemes()
-        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "46")
-        logger.info("InitThread(): Finished Detecting Devices, Partitions, and PartSchemes!")
+        #DeviceList.
+        DeviceList = []
+        PartitionListWithFSType = []
+        AutoPartSchemeList = []
+        GPTInAutoPartSchemeList = False
+        MBRInAutoPartSchemeList = False
+
+        Keys = DiskInfo.keys()
+        Keys.sort()
+
+        for Disk in Keys:
+            if DiskInfo[Disk]["Type"] == "Device":
+                if DiskInfo[Disk]["Name"][5:7] in ("sd", "hd"):
+                    DeviceList.append(DiskInfo[Disk]["Name"])
+
+            elif DiskInfo[Disk]["Type"] == "Partition":
+                PartitionListWithFSType.append(DiskInfo[Disk]["Name"])
+                PartitionListWithFSType.append(DiskInfo[Disk]["FileSystem"])
+
+            try:
+                AutoPartSchemeList.append(DiskInfo[Disk]["Partitioning"])
+
+            except: pass
+
+            if "gpt" in AutoPartSchemeList:
+                GPTInAutoPartSchemeList = True
+
+            if "mbr" in AutoPartSchemeList:
+                MBRInAutoPartSchemeList = False
+
+        PartSchemeList = AutoPartSchemeList[:]
 
         #Detect Linux Partitions. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
         #Define Global Variables.
         global LinuxPartList
 
-        logger.info("InitThread(): Detecting Linux Partitions...")
-        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Detecting Linux Partitions...")
+        logger.info("InitThread(): *DEPRECATED* Detecting Linux Partitions...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "*DEPRECATED* Detecting Linux Partitions...")
         LinuxPartList = MainStartupTools().DetectLinuxPartitions()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "55")
-        logger.info("InitThread(): Finished Detecting Linux Partitions!")
+        logger.info("InitThread(): *DEPRECATED* Finished Detecting Linux Partitions!")
   
         #Get the root filesystem and root device. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
         #Define Global Variables.
@@ -409,11 +445,11 @@ class InitThread(threading.Thread):
         global DefaultOS
         global OSList
 
-        logger.info("InitThread(): Determining Root Filesystem and Root Device...")
-        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining default OS...")
+        logger.info("InitThread(): *Soon to go* Determining Root Filesystem and Root Device...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "*DEPRECATED* Determining current OS...")
         AutoRootFS, RootFS, AutoRootDevice, RootDevice, LiveDisk, AutoDefaultOS, DefaultOS, OSList = MainStartupTools().GetRootFSandRootDev(LinuxPartList)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "64")
-        logger.info("InitThread(): Determined Root Filesystem as: "+RootFS+ " , Root Device is "+RootDevice)
+        logger.info("InitThread(): *Soon to go* Determined Root Filesystem as: "+RootFS+ " , Root Device is "+RootDevice)
 
         #Get a list of Linux OSs (if LiveDisk = True, this has already been run). *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
         logger.info("InitThread(): Finding Linux OSs...")
@@ -1115,7 +1151,7 @@ class DevInfoWindow(wx.Frame):
         GetDiskInformation(self)
 
     def ReceiveDiskInfo(self, Info):
-        """Get Disk data, call self.UpdateListCtrl(), and then call MainWindow().UpdateFileChoices() to refresh the file choices with the new info"""
+        """Get Disk data, call self.UpdateListCtrl()"""
         global DiskInfo
         DiskInfo = Info
 

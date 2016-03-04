@@ -152,7 +152,7 @@ class Main():
         logger.debug("CoreTools: Main().RemountPartition(): Remounting "+Partition+" as "+Mode+"...")
         Retval = self.StartProcess("mount -o remount,"+Mode+" "+Partition, ShowOutput=False)
 
-        if Retval != 0:
+        if Retval == 0:
             logger.warning("CoreTools: Main().RemountPartition(): Successfully remounted partition!")
 
         else:
