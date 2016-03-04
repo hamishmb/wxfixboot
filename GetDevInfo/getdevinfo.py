@@ -229,7 +229,7 @@ class Main():
                 logger.warning("GetDevInfo: Main().GetDescription(): Found probable wrong description: "+' '.join(self.Output[DescriptionLineNumber].split()[1:])+". Ignoring it and returning 'Unknown'...")
                 return "Unknown"
 
-    def GetPartitionScheme(self, Disk, DiskLineNumber=None):
+    def GetPartitionScheme(self, Disk, DiskLineNumber=None): #*** Maybe get rid of this and just use parted for this in StartupScripts ***
         """Get the partition scheme for devices"""
         logger.info("GetDevInfo: Main().GetPartitionScheme(): Getting partition scheme info for Disk: "+Disk+"...")
 
@@ -257,13 +257,56 @@ class Main():
                 if PartitionScheme == "dos":
                     PartitionScheme = "mbr"
 
-                logger.info("GetDevInfo: Main().GetPartitionScheme(): Found Partition Scheme info: "+PartitionScheme+"...")
-                return PartitionScheme
+                if PartitionScheme in ("mbr", "gpt"):
+                    logger.info("GetDevInfo: Main().GetPartitionScheme(): Found Partition Scheme info: "+PartitionScheme+"...")
+                    return PartitionScheme
+
+                else:
+                    logger.warning("GetDevInfo: Main().GetPartitionScheme(): Found probable wrong Partition Scheme: "+self.Output[Number].split(":")[-1]+". Ignoring it and returning 'Unknown'...")
+                    return "Unknown"
 
             else:
                 logger.warning("GetDevInfo: Main().GetPartitionScheme(): Found probable wrong Partition Scheme: "+self.Output[Number].split(":")[-1]+". Ignoring it and returning 'Unknown'...")
                 return "Unknown"
 
+    def GetFSType(self, Disk, DiskLineNumber=None): #*** Test this again ***
+        """Get the filesystem type for devices"""
+        logger.info("GetDevInfo: Main().GetFSType(): Getting partition scheme info for Disk: "+Disk+"...")
+
+        #Look for the information using the Disk's line number.
+        for Number in self.ConfigurationLinesList:
+            #Ignore the line number if it is before the Disk name...
+            if Number < DiskLineNumber:
+                if self.ConfigurationLinesList[-1] != Number:
+                    continue
+
+                else:
+                    #...unless it is the last line. Keep going rather than reiterating the loop.
+                    pass
+
+            else:
+                #The first time this is run, we know this line num is the right one!
+                #Now we just have to grab this line, check it is within 10 lines, and format it.
+                pass
+
+            #Return the FSType info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
+            if Number - DiskLineNumber < 10:
+                try:
+                    FSType = self.Output[Number].split("filesystem=")[1].split()[0]
+
+                except IndexError:
+                    logger.warning("GetDevInfo: Main().GetFSType(): Couldn't get FSTYpe! Ignoring it and returning 'Unknown'...")
+                    return "Unknown"
+
+                #Use different terminology where wanted.
+                if FSType == "fat":
+                    FSType = "vfat"
+
+                return FSType
+
+            else:
+                logger.warning("GetDevInfo: Main().GetFSType(): Found probable wrong Partition Scheme: "+self.Output[Number].split(":")[-1]+". Ignoring it and returning 'Unknown'...")
+                return "Unknown"
 
 
     def GetInfo(self):
@@ -416,6 +459,16 @@ class Main():
                     PartitionScheme = None
 
                 DiskInfo[Disk]["Partitioning"] = PartitionScheme
+
+            #FSType.
+            if DiskInfo[Disk]["Type"] == "Partition":
+                if len(self.ConfigurationLinesList) > 0:
+                    FSType = self.GetFSType(Disk, DiskLineNumber=DiskLineNumber)
+
+                else:
+                    FSType = "Unknown"
+
+                DiskInfo[Disk]["FileSystem"] = FSType
 
         #Return the info.
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
