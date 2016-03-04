@@ -157,30 +157,19 @@ class Main():
         logger.info("GetDevInfo: Main().GetDescription(): Getting description info for Disk: "+Disk+"...")
 
         #Look for the information using the Disk's line number.
+        Description = "Unknown"
+
         for Number in self.DescriptionLinesList:
-            if Number < DiskLineNumber:
-                #Ignore the line number if it is before the Disk name...
-                if self.DescriptionLinesList[-1] != Number:
-                    continue
-
-                else:
-                    #...unless it is the last line.
-                    DescriptionLineNumber = Number
-
-            else:
-                #The first time this is run, we know the last line num is the right one!
-                #Now we just have to grab this line, check it is within 10 lines, and format it.
-                DescriptionLineNumber = self.DescriptionLinesList[self.DescriptionLinesList.index(Number)-1]
-
-            #Return the Description info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
-            if DiskLineNumber - DescriptionLineNumber < 10:
-                Description = ' '.join(self.Output[DescriptionLineNumber].split()[1:])
+            #Return the Description info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus. 
+            if DiskLineNumber - LineNumber < 10:
+                Description = ' '.join(self.Output[LineNumber].split()[1:])
                 logger.info("GetDevInfo: Main().GetDescription(): Found description info: "+Description+"...")
-                return Description
+                break
 
             else:
-                logger.warning("GetDevInfo: Main().GetDescription(): Found probable wrong description: "+' '.join(self.Output[DescriptionLineNumber].split()[1:])+". Ignoring it and returning 'Unknown'...")
-                return "Unknown"
+                logger.warning("GetDevInfo: Main().GetDescription(): Found probable wrong description: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it and returning 'Unknown'...")
+
+        return Description
 
     def GetPartitionScheme(self, Disk, DiskLineNumber=None): #*** Maybe get rid of this and just use parted for this in StartupScripts ***
         """Get the partition scheme for devices"""
