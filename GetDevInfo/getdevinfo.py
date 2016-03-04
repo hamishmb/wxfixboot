@@ -31,10 +31,10 @@ class Main():
         Result = re.findall('\\'+Item+'\\b', Text)
 
         if len(Result) > 0:
-            Result =  True
+            Result = True
 
         else:
-            Result =  False
+            Result = False
 
         if Log == True:
             logger.info("GetDevInfo: Main().FoundExactMatch(): Result: "+str(Result)+"...")
@@ -46,7 +46,7 @@ class Main():
         logger.debug("GetDevInfo: Main().IsPartition(): Checking if Disk: "+Disk+" is a partition...")
 
         if Disk[0:7] not in ["/dev/sr", "/dev/fd"] and Disk[-1].isdigit() and Disk[0:8] in DiskInfo:
-            Result =  True
+            Result = True
 
         else:
             Result = False
@@ -85,30 +85,19 @@ class Main():
         logger.info("GetDevInfo: Main().GetVendor(): Getting vendor info for Disk: "+Disk+"...")
 
         #Look for the information using the Disk's line number.
-        for Number in self.VendorLinesList:
-            #Ignore the line number if it is before the Disk name...
-            if Number < DiskLineNumber:
-                if self.VendorLinesList[-1] != Number:
-                    continue
+        Vendor = "Unknown"
 
-                else:
-                    #...unless it is the last line.
-                    VendorLineNumber = Number
-
-            else:
-                #The first time this is run, we know the last line number was the right one!
-                #Now we just have to grab that line, and format it.
-                VendorLineNumber = self.VendorLinesList[self.VendorLinesList.index(Number)-1]
-
+        for LineNumber in self.VendorLinesList:
             #Return the Vendor info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
-            if DiskLineNumber - VendorLineNumber < 10:
-                Vendor = ' '.join(self.Output[VendorLineNumber].split()[1:])
+            if DiskLineNumber - LineNumber < 10:
+                Vendor = ' '.join(self.Output[LineNumber].split()[1:])
                 logger.info("GetDevInfo: Main().GetVendor(): Found vendor info: "+Vendor)
-                return Vendor
+                break
 
             else:
-                logger.warning("GetDevInfo: Main().GetVendor(): Found probable wrong vendor: "+' '.join(self.Output[VendorLineNumber].split()[1:])+". Ignoring it and returning 'Unknown'...")
-                return "Unknown"
+                logger.warning("GetDevInfo: Main().GetVendor(): Found probable wrong vendor: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it and returning 'Unknown'...")
+
+        return Vendor
 
     def GetProduct(self, Disk, DiskIsPartition, DiskLineNumber=None, DiskLinesList=None, ProductInfoList=None):
         """Find product information for the given Disk."""
@@ -307,7 +296,6 @@ class Main():
             else:
                 logger.warning("GetDevInfo: Main().GetFSType(): Found probable wrong Partition Scheme: "+self.Output[Number].split(":")[-1]+". Ignoring it and returning 'Unknown'...")
                 return "Unknown"
-
 
     def GetInfo(self):
         """Get Disk information."""
