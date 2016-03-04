@@ -121,7 +121,6 @@ class Main():
                 break
 
             else:
-                Product = "Unknown"
                 logger.warning("GetDevInfo: Main().GetProduct(): Found probable wrong product: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it...")
 
         #Return the value.
@@ -132,26 +131,15 @@ class Main():
         logger.info("GetDevInfo: Main().GetSize(): Getting size info for Disk: "+Disk+"...")
 
         #Look for the information using the Disk's line number.
-        for Number in self.SizeLinesList:
-            if Number < DiskLineNumber:
-                #Ignore the line number if it is before the Disk name...
-                if self.SizeLinesList[-1] != Number:
-                    continue
+        Size = "Unknown"
 
-                else:
-                    #...unless it is the last line. Keep going rather than reiterating the loop.
-                    pass
-
-            else:
-                #The first time this is run, we know this line num is the right one!
-                #Now we just have to grab this line, check it is within 10 lines, and format it. Keep going and don't use SizeLineNumber, becuase we don't need it.
-                pass
-
+        for LineNumber in self.SizeLinesList:
             #Return the Size info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
-            if Number - DiskLineNumber < 10:
-                Size = ' '.join(self.Output[Number].split()[1:])
+            Result = LineNumber - DiskLineNumber
+            if Result < 10 and Result > 0:
+                Size = ' '.join(self.Output[LineNumber].split()[1:])
                 logger.info("GetDevInfo: Main().GetSize(): Found size info: "+Size+"...")
-                return Size
+                break
 
             else:
                 if Disk[0:7] == "/dev/sr":
@@ -160,8 +148,9 @@ class Main():
                     return "N/A"
 
                 else:
-                    logger.warning("GetDevInfo: Main().GetSize(): Found probable wrong size: "+' '.join(self.Output[Number].split()[1:])+". Ignoring it and returning 'Unknown'...")
-                    return "Unknown"
+                    logger.warning("GetDevInfo: Main().GetSize(): Found probable wrong size: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it...")
+
+        return Size
 
     def GetDescription(self, Disk, DiskLineNumber=None, DiskList=None):
         """Find description information for the given Disk."""
