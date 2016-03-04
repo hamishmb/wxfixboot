@@ -41,11 +41,11 @@ class Main():
 
         return Result
 
-    def IsPartition(self, Disk, DiskList=None):
+    def IsPartition(self, Disk, DiskInfo=None):
         """Check if the given Disk is a partition"""
         logger.debug("GetDevInfo: Main().IsPartition(): Checking if Disk: "+Disk+" is a partition...")
 
-        if Disk[0:7] not in ["/dev/sr", "/dev/fd"] and Disk[-1].isdigit() and Disk[0:8] in DiskList:
+        if Disk[0:7] not in ["/dev/sr", "/dev/fd"] and Disk[-1].isdigit() and Disk[0:8] in DiskInfo:
             Result =  True
 
         else:
@@ -54,12 +54,12 @@ class Main():
         logger.info("GetDevInfo: Main().IsPartition(): Result: "+str(Result)+"...")
         return Result
 
-    def GetPartitions(self, Device, DiskList):
+    def GetPartitions(self, Device, DiskInfo):
         """Find and return all partitions contained by the given device"""
         logger.debug("GetDevInfo: Main().GetPartitions(): Finding all partitions contained by "+Device+" using the given disk list...")
         PartitionsList = []
 
-        for Disk in DiskList:
+        for Disk in DiskInfo:
             if Device != Disk and Device in Disk:
                 PartitionsList.append(Disk)
 
@@ -239,7 +239,7 @@ class Main():
 
         #Get the output.
         stdout, stderr = runcmd.communicate()
-        DiskList = []
+        DiskInfo = {}
         logger.debug("GetDevInfo: Main().GetInfo(): Done.")
 
         #Now we should be able to grab the names of all Disks, and detailed info on each Disk we find.
@@ -267,7 +267,8 @@ class Main():
 
                 #See if it's a Disk that's in our categories, and add it to the list if it is.
                 if '/dev/sd' in Disk or '/dev/sr' in Disk or '/dev/fd' in Disk or '/dev/hd' in Disk:
-                    DiskList.append(Disk)
+                    DiskInfo[Disk] = {}
+                    DiskInfo[Disk]["Name"] = Disk
         
             elif "vendor:" in Line:
                 self.VendorLinesList.append(TempLineCount)
@@ -281,19 +282,9 @@ class Main():
             elif "description:" in Line:
                 self.DescriptionLinesList.append(TempLineCount)
 
-        #Deduplicate the Disk list.
-        DiskList = self.DeduplicateList(DiskList)
-
-        #Use a final set of lists to store the info, making it easier to input into a multi-column wx.ListCtrl as used in the new Disk information dialogs.
-        VendorInfoList = []
-        DiskTypeInfoList = []
-        ProductInfoList = []
-        SizeInfoList = []
-        DescriptionInfoList = []
-
         logger.info("GetDevInfo: Main().GetInfo(): Getting Disk info...")
 
-        for Disk in DiskList:
+        for Disk in DiskInfo:
             #Get the Vendor, Product, Size and Description for each drive.
             #First find the line number where the Disk is. Don't log the output here, because it will waste lots of time and fill the log file with junk.
             logger.debug("GetDevInfo: Main().GetInfo(): Finding Disk line number (number of line where Disk name is)...")
@@ -303,13 +294,13 @@ class Main():
                     break
 
             #Check if the Disk is a partition.
-            DiskIsPartition = self.IsPartition(Disk, DiskList)
+            DiskIsPartition = self.IsPartition(Disk, DiskInfo)
 
             if DiskIsPartition:
-                DiskTypeInfoList.append("Partition")
+                DiskInfo[Disk]["Type"] = "Partition"
 
             else:
-                DiskTypeInfoList.append("Device")
+                DiskInfo[Disk]["Type"] = "Device"
 
             #Get all other information, making sure it remains stable even if we found no info at all.
             #Vendor.
@@ -320,10 +311,10 @@ class Main():
                 Vendor = "Unknown"
 
             if Vendor != None:
-                VendorInfoList.append(Vendor)
+                DiskInfo[Disk]["Vendor"] = Vendor
 
             else:
-                VendorInfoList.append("Unknown")
+                DiskInfo[Disk]["Vendor"] = "Unknown"
 
             #Product.
             if len(self.ProductLinesList) > 0:
@@ -333,10 +324,10 @@ class Main():
                 Product = "Unknown"
 
             if Product != None:
-                ProductInfoList.append(Product)
+                DiskInfo[Disk]["Product"] = Product
 
             else:
-                ProductInfoList.append("Unknown")
+                DiskInfo[Disk]["Product"] = "Unknown"
 
             #Size.
             if len(self.SizeLinesList) > 0:
@@ -346,10 +337,10 @@ class Main():
                 Size = "Unknown"
 
             if Size != None:
-                SizeInfoList.append(Size)
+                DiskInfo[Disk]["Capacity"] = Size
 
             else:
-                SizeInfoList.append("Unknown")
+                DiskInfo[Disk]["Capacity"] = "Unknown"
 
             #Description.
             if len(self.DescriptionLinesList) > 0:
@@ -359,14 +350,14 @@ class Main():
                 Description = "Unknown"
 
             if Description != None:
-                DescriptionInfoList.append(Description)
+                DiskInfo[Disk]["Description"] = Description
 
             else:
-                DescriptionInfoList.append("Unknown")
+                DiskInfo[Disk]["Description"] = "Unknown"
 
         #Return the info.
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
-        return [DiskList, DiskTypeInfoList, VendorInfoList, ProductInfoList, SizeInfoList, DescriptionInfoList]
+        return DiskInfo
 
     def GetBlockSize(self, Disk):
         """Find the given Disk's blocksize, and return it"""
@@ -407,18 +398,11 @@ if __name__ == "__main__":
     logger = logging
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=logging.DEBUG)
 
-    Info = Main().GetInfo()
+    DiskInfo = Main().GetInfo()
 
     #Get blocksizes.
-    BlockSizeList = []
-    for Disk in Info[0]:
-        BlockSizeList.append(Main().GetBlockSize(Disk))
+    for Disk in DiskInfo:
+        DiskInfo[Disk]["PhysicalBlockSize"] = Main().GetBlockSize(Disk)
 
     #Print the info in a readable way.
-    print("\nDisk: "+str(Info[0])+"\n")
-    print("\nBlocksize: "+str(BlockSizeList)+"\n")
-    print("\nType: "+str(Info[1])+"\n")
-    print("\nVendor: "+str(Info[2])+"\n")
-    print("\nProduct: "+str(Info[3])+"\n")
-    print("\nSize: "+str(Info[4])+"\n")
-    print("\nDescription: "+str(Info[5])+"\n")
+    print(DiskInfo)
