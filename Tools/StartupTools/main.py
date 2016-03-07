@@ -74,73 +74,6 @@ class Main():
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
         CoreTools().StartProcess("mount -avw") #*** Check it worked! ***
 
-    def DetectDevicesPartitionsAndPartSchemes(self): #*** Remove soon ***
-        """Detect all devices, partitions, and their partition schemes."""
-        logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): Gathering info...")
-
-        #Create a list for the devices.
-        DeviceList = []
-
-        #Create a list for Partition Schemes.
-        AutoPartSchemeList = []
-
-        #Create a list for the partitions.
-        PartitionListWithFSType = []
-
-        logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): Calling 'lsblk -r -o NAME,FSTYPE'...")
-        OutputList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE", ReturnOutput=True)[1].replace("NAME FSTYPE\n", "").split()
-
-        #Populate the device list, and the Partition List including FS Type.
-        logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): Populating DeviceList and PartitionListWithFSType...")
-        for Disk in OutputList:
-            #Check if the disk is a hard drive, and doesn't end with a digit (isn't a partition).
-            if Disk[0:2] in ('sd', 'hd') and Disk[-1].isdigit() == False:
-
-                #*** Test this again ***
-                if "/dev/"+Disk not in DeviceList:
-                    PartScheme = CoreStartupTools().GetDevPartScheme("/dev/"+Disk)
-                    AutoPartSchemeList.append(PartScheme)
-                    DeviceList.append("/dev/"+Disk)
-
-            #If instead the partition is a partition on a hard drive, add it to the Partition List with FSType, along with the next disk, if it is not a device or partition.
-            elif Disk[0:2] in ('sd', 'hd') and Disk[-1].isdigit() == True:
-                PartitionListWithFSType.append("/dev/"+Disk)
-                Temp = OutputList[OutputList.index(Disk)+1]
-
-                #Add the next element if it's an FSType. If it isn't, put "Unknown" in its place.
-                if Temp[0:2] not in ('sd', 'hd'):
-                    PartitionListWithFSType.append(Temp)
-
-                else:
-                    PartitionListWithFSType.append("Unknown")
-
-        #Now set PartSchemeList the same as AutoPartSchemeList.
-        PartSchemeList = AutoPartSchemeList[:]
-
-        logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): DeviceList, PartitionListWithFSType and PartSchemeList Populated okay. Contents (respectively): "+', '.join(DeviceList)+" and: "+', '.join(PartitionListWithFSType)+" and: "+', '.join(PartSchemeList))
-        #Finally, save two variables showing whether there are mbr or gpt entries on the disks. *** This will almost definitely be unneeded. Is this even helpful? ***
-        #GPT
-        try:
-            PartSchemeList.index("gpt")
-
-        except ValueError:
-            GPTInAutoPartSchemeList = False
-
-        else:
-            GPTInAutoPartSchemeList = True
-
-        #MBR(MSDOS)
-        try:
-            PartSchemeList.index("msdos")
-
-        except ValueError:
-            MBRInAutoPartSchemeList = False
-
-        else:
-            MBRInAutoPartSchemeList = True
-
-        return PartitionListWithFSType, DeviceList, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList
-
     def DetectLinuxPartitions(self):
         """Get a list of partitions of type ext (1,2,3 or 4) / btrfs / xfs / jfs / zfs / minix / reiserfs."""
         logger.debug("MainStartupTools: Main().DetectLinuxPartitions(): Finding all Linux (ext/btrfs/xfs/jfs/minix/reiserfs) partitions...")
@@ -148,7 +81,7 @@ class Main():
         LinuxPartList = []
 
         #Run the command to find them, and save the results in a list.
-        logger.debug("MainStartupTools: Main().DetectDevicesPartitionsAndPartSchemes(): Running 'lsblk -r -o NAME,FSTYPE'...")
+        logger.debug("MainStartupTools: Main().DetectLinuxPartitions(): Running 'lsblk -r -o NAME,FSTYPE'...")
         TempList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE", ReturnOutput=True)[1].split("\n")
 
         OutputList = []

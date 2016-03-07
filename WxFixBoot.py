@@ -46,7 +46,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "4/3/2016"
+ReleaseDate = "5/3/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -423,6 +423,8 @@ class InitThread(threading.Thread):
                 MBRInAutoPartSchemeList = False
 
         PartSchemeList = AutoPartSchemeList[:]
+
+        logger.debug("InitThread(): DeviceList, PartitionListWithFSType and PartSchemeList Populated okay. Contents (respectively): "+', '.join(DeviceList)+" and: "+', '.join(PartitionListWithFSType)+" and: "+', '.join(PartSchemeList))
 
         #Detect Linux Partitions. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
         #Define Global Variables.
