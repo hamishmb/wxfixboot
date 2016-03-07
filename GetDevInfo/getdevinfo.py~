@@ -202,6 +202,27 @@ class Main():
 
         return PartitionScheme
 
+    def GetFlags(self, Disk, DiskLineNumber=None): #*** Test this again ***
+        """Get the flags"""
+        logger.info("GetDevInfo: Main().GetFlags(): Getting flags for Disk: "+Disk+"...")
+
+        #Look for the information using the Disk's line number.
+        Flags = []
+
+        for LineNumber in self.CapabilitiesLinesList:
+            #Return the Flags. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
+            Result = LineNumber - DiskLineNumber
+
+            if Result < 15 and Result > 0:
+                Flags = self.Output[LineNumber].split()[1:]
+
+                logger.info("GetDevInfo: Main().GetPartitionScheme(): Found flags: "+unicode(Flags)+"...")
+
+            else:
+                logger.warning("GetDevInfo: Main().GetPartitionScheme(): Found probable wrong flags: "+unicode(self.Output[LineNumber].split()[1:])+". Ignoring them...")
+
+        return Flags
+
     def GetFSType(self, Disk, DiskLineNumber=None): #*** Test this again ***
         """Get the filesystem type for devices"""
         logger.info("GetDevInfo: Main().GetFSType(): Getting filesystem type info for Disk: "+Disk+"...")
@@ -230,7 +251,7 @@ class Main():
 
         return FSType
 
-    def GetInfo(self):
+    def GetInfo(self): #*** When attributes don't apply e.g. partitions for a partition/fstype for disk, set them to None/[] ***
         """Get Disk information."""
         logger.info("GetDevInfo: Main().GetInfo(): Preparing to get Disk info...")
 
@@ -371,15 +392,24 @@ class Main():
             else:
                 DiskInfo[Disk]["Description"] = "Unknown"
 
-            #Partition Scheme. #*** Needs testing esp. for mbr ***
-            if DiskInfo[Disk]["Type"] == "Device" and "/dev/sr" not in Disk:
-                if len(self.CapabilitiesLinesList) > 0:
+            #Partition Scheme and Flags. #*** Needs testing esp. for mbr ***
+            if len(self.CapabilitiesLinesList) > 0:
+                #Flags.
+                Flags = self.GetFlags(Disk, DiskLineNumber=DiskLineNumber)
+
+                #Partition Scheme.
+                if DiskInfo[Disk]["Type"] == "Device" and "/dev/sr" not in Disk:
                     PartitionScheme = self.GetPartitionScheme(Disk, DiskLineNumber=DiskLineNumber)
 
                 else:
                     PartitionScheme = None
 
-                DiskInfo[Disk]["Partitioning"] = PartitionScheme
+            else:
+                PartitionScheme = None
+                Flags = []
+
+            DiskInfo[Disk]["Partitioning"] = PartitionScheme
+            DiskInfo[Disk]["Flags"] = Flags
 
             #FSType.
             if DiskInfo[Disk]["Type"] == "Partition":
@@ -395,7 +425,7 @@ class Main():
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
         return DiskInfo
 
-    def GetBlockSize(self, Disk):
+    def GetBlockSize(self, Disk): #*** Is this needed in wxfixboot? ***
         """Find the given Disk's blocksize, and return it"""
         logger.debug("GetDevInfo: Main().GetBlockSize(): Finding blocksize for Disk: "+Disk+"...")
 

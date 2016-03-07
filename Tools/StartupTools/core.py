@@ -210,55 +210,32 @@ class Main():
             logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def CheckForUEFIPartition(self, LiveDisk): #*** There is a UEFI system partition flag to check for instead, which would speed this up *** *** This will need a LOT of modification when I switch to dictionaries *** *** May be largely unneeded when using getdevinfo package *** 
+    def CheckForUEFIPartition(self, LiveDisk): #*** This will need a LOT of modification when I switch to dictionaries *** *** Test again ***
         """Find the UEFI system partition and return it"""
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
+        AskForUEFIPartition = True
+
+        #Get a list of partitions of type vfat with boot flags, if any.
         FatPartitions = []
+        Keys = DiskInfo.keys()
+        Keys.sort()
 
+        for Disk in Keys:
+            if DiskInfo[Disk]["Type"] == "Partition":
+                if DiskInfo[Disk]["FileSystem"] == "vfat" and "boot" in DiskInfo[Disk]["Flags"]:
+                    FatPartitions.append(Disk)
+
+        #If this leaves just one partition, then that's out EFI partition.
+        if len(FatPartitions) == 1:
+            logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Found UEFI Partition at: "+FatPartitions[0])
+            return FatPartitions[0]
+
+        #Otherwise check if it's mounted at /boot/efi if we're not on a live disk. *** Do later ***
         if LiveDisk == False:
-            TempList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE,MOUNTPOINT,LABEL", ReturnOutput=True)[1].split("\n")
-            UEFISystemPartition = None
-
-            for Line in TempList:
-                if "/boot/efi" in Line:
-                    UEFISystemPartition = "/dev/"+Line.split()[0]
-
-            if UEFISystemPartition == None:
-                logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): Failed to find the UEFI Partition. Trying another way...")
-                #Try a second way to get the UEFI system partition.
-                for Line in TempList:
-                    if "ESP" in Line:
-                        UEFISystemPartition = "/dev/"+Line.split()[0]
-
-                if UEFISystemPartition == None:
-                    #Ask the user where it is.
-                    logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): Couldn't autodetermine UEFI Partition. Asking the user instead...")
-                    AskForUEFIPartition = True
-
-                else:
-                    logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Found UEFI Partition at: "+UEFISystemPartition)
-                    return UEFISystemPartition
-
-            else:
-                logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Found UEFI Partition at: "+UEFISystemPartition)
-                return UEFISystemPartition
+             pass
 
         if LiveDisk == True or AskForUEFIPartition == True:
             logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): Asking user where UEFI Partition is. If you're running from a live disk, ignore this warning.")
-
-            #Get a list of partitions of type vfat, if any. *** Use DiskInfo instead of lsblk ***
-            TempList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE", ReturnOutput=True)[1].split("\n")
-            OutputList = []
-
-            for Line in TempList:
-                if "vfat" in Line:
-                    OutputList.append(Line.split()[0])
-                    OutputList.append(Line.split()[1])
-
-            #Create another list of only the disks. Ignore anything else.
-            for element in OutputList:
-                if element[0:2] in ('sd', 'hd'):
-                    FatPartitions.append("/dev/"+element)
 
             if FatPartitions != []:
                 Result = DialogTools().ShowChoiceDlg(Message="Please select your UEFI partition. You can change this later in the bootloader options window if you change your mind, or if it's wrong.", Title="WxFixBoot - Select UEFI Partition", Choices=["I don't have one"]+FatPartitions)

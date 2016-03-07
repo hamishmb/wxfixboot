@@ -375,6 +375,9 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "40")
         logger.info("InitThread(): Finished Getting Device Information...")
 
+        #Make disk info available to modules *** Write a function to keep it up to ate at some point ***
+        Tools.StartupTools.core.DiskInfo = DiskInfo
+
         #Mount all filesystems.
         logger.info("InitThread(): Mounting Core Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Mounting Core Filesystems...")
@@ -422,6 +425,10 @@ class InitThread(threading.Thread):
                 MBRInAutoPartSchemeList = False
 
         PartSchemeList = AutoPartSchemeList[:]
+
+        print(DeviceList)
+        print(PartitionListWithFSType)
+        print(PartSchemeList)
 
         logger.debug("InitThread(): *** ABSTRACTION CODE *** DeviceList, PartitionListWithFSType and PartSchemeList Populated okay. Contents (respectively): "+', '.join(DeviceList)+" and: "+', '.join(PartitionListWithFSType)+" and: "+', '.join(PartSchemeList))
 
