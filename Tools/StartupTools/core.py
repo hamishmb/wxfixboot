@@ -23,10 +23,6 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** Check and test all of this and optimise/reorganise it again later ***
 class Main():
-    def GetDevPartScheme(self, Device):
-        """Get the partition type on the given Device, and return it.""" #*** Remove soon ***
-        return CoreTools().StartProcess("parted -s "+Device+" print", ReturnOutput=True)[1].split("\n")[3].split()[-1]
-
     def DetermineOSArchitecture(self, Partition, Chroot): #*** Tidy this up ***
         """Look for OS architecture on given partition, looking for 64-bit first, then 32-bit."""
         logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for OS on "+Partition+"...")

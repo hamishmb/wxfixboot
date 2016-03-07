@@ -74,41 +74,6 @@ class Main():
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
         CoreTools().StartProcess("mount -avw") #*** Check it worked! ***
 
-    def DetectLinuxPartitions(self):
-        """Get a list of partitions of type ext (1,2,3 or 4) / btrfs / xfs / jfs / zfs / minix / reiserfs."""
-        logger.debug("MainStartupTools: Main().DetectLinuxPartitions(): Finding all Linux (ext/btrfs/xfs/jfs/minix/reiserfs) partitions...")
-        #*** A fair bit of this info can be gathered using DDRescue-GUI's getdevinfo package ***
-        LinuxPartList = []
-
-        #Run the command to find them, and save the results in a list.
-        logger.debug("MainStartupTools: Main().DetectLinuxPartitions(): Running 'lsblk -r -o NAME,FSTYPE'...")
-        TempList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE", ReturnOutput=True)[1].split("\n")
-
-        OutputList = []
-
-        for Line in TempList:
-            if ("ext" or "btrfs" or "xfs" or "jfs" or "zfs" or "minix" or "reiserfs") in Line:
-                OutputList.append(Line.split()[0])
-                OutputList.append(Line.split()[1])
-
-        #Create a list of only the partitions in the list.
-        for Partition in OutputList:
-            if Partition[0:2] in ('sd', 'hd') and Partition[-1].isdigit():
-                LinuxPartList.append("/dev/"+Partition)
-
-        #Check if there are any linux partitions in the list.
-        if LinuxPartList == []:
-            #There are none, exit. *** Clarify this message ***
-            logger.critical("MainStartupTools: Main().DetectLinuxPartitions(): No Linux Partitions (on HDD) of type ext(1,2,3,4), btrfs, xfs, jfs, zfs, minix or resierfs found! Exiting...")
-            DialogTools().ShowMsgDlg(Kind="error", Message="You don't appear to have any Linux partitions on your hard disks. If you do have Linux partitions but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. WxFixBoot will now exit.")
-
-            #Exit. *** Can we do this from here? Maybe call the parent. Until I fix this the GUI will crash if this happens! ***
-            wx.Exit()
-            sys.exit("Critical Error! No supported Linux filesystems (on HDD) found. Will now exit...")
-
-        logger.debug("MainStartupTools: Main().DetectLinuxPartitions(): LinuxPartList Populated okay. Contents: "+', '.join(LinuxPartList))
-        return LinuxPartList
-
     def GetRootFSandRootDev(self, LinuxPartList):
         """Determine RootFS, and RootDevice"""
         #*** This should be done for each OS installed and stored that way, preventing unwanted config and damaged bootloaders. Major work needed here. ***
