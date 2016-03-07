@@ -44,7 +44,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "5/3/2016"
+ReleaseDate = "7/3/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -424,10 +424,6 @@ class InitThread(threading.Thread):
                 MBRInAutoPartSchemeList = False
 
         PartSchemeList = AutoPartSchemeList[:]
-
-        print(DeviceList)
-        print(PartitionListWithFSType)
-        print(PartSchemeList)
 
         logger.debug("InitThread(): *** ABSTRACTION CODE *** DeviceList, PartitionListWithFSType and PartSchemeList Populated okay. Contents (respectively): "+', '.join(DeviceList)+" and: "+', '.join(PartitionListWithFSType)+" and: "+', '.join(PartSchemeList))
 
