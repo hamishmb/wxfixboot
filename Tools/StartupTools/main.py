@@ -26,8 +26,8 @@ class Main():
     def CheckDepends(self):
         """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
         logger.info("MainStartupTools(): Main().CheckDepends(): Checking dependencies...")
-        #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies. *** Remove parted soon *** *** Maybe remove lsblk later ***
-        CmdList = ("mount", "parted", "lsb_release", "dmidecode", "lsblk", "chroot", "dd")
+        #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies. *** Maybe remove lsblk later ***
+        CmdList = ("lshw", "mount", "lsb_release", "dmidecode", "lsblk", "chroot", "dd")
 
         #Create a list to contain names of failed commands.
         FailedList = []

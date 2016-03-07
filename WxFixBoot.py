@@ -19,7 +19,6 @@
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
-#*** Don't use parted, all it's being used for is getting partition schemes, something lshw will do with dictionaries soon ***
 #*** Maybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
 #*** DevInfoTools().GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
 
@@ -139,7 +138,7 @@ Tools.dialogtools.wx = wx
 Tools.dialogtools.logger = logger
 Tools.dialogtools.time = time
 
-#StartupTools Package (Core). *** parted used here ***
+#StartupTools Package (Core).
 Tools.StartupTools.core.logger = logger
 Tools.StartupTools.core.CoreTools = CoreTools
 Tools.StartupTools.core.DialogTools = DialogTools
