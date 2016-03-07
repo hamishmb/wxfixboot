@@ -185,7 +185,7 @@ class Main():
         #Return the return value
         return Retval
 
-    def Find(self, RegExp, TopLevelDirectory): #*** Test this again ***
+    def Find(self, RegExp, TopLevelDirectory):
         """Finds the given file, somewhere in or below the given directory, and returns True or False depending on if it was found or not"""
         logger.info("CoreTools: Main().Find(): Looking in "+TopLevelDirectory+" with regular expression "+RegExp+"...")
         FilesFound = []
@@ -196,10 +196,15 @@ class Main():
 
                 except IndexError: continue
 
-            if re.match(RegExp, os.path.join(Root, File), re.M|re.I) is not None:
+            if re.match(RegExp, File, re.M|re.I) is not None:
                 FilesFound.append(os.path.join(Root, File))
 
-        logger.info("CoreTools: Main().Find(): Found files "+' '.join(FilesFound)+"...")
+        if FilesFound != []:
+            logger.info("CoreTools: Main().Find(): Found files "+' '.join(FilesFound)+"...")
+
+        else:
+            logger.info("CoreTools: Main().Find() Didn't find any files...")
+
         return FilesFound
 
 #End main Class.

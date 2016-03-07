@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. #*** Refactor and test again *** *** Find out why lshw isn't finding the ESP ***
+#Begin Main Class. #*** Refactor and test again *** *** Must be run while filesystems are unmounted ***
 class Main():
     def FoundExactMatch(self, Item, Text, Log=True):
         """Check if an exact match of "Item" (arg) can be found in "Text" (arg), seperated by commas or spaces."""
@@ -273,44 +273,6 @@ class Main():
                     DiskInfo[Disk] = {}
                     DiskInfo[Disk]["Name"] = Disk
                     DiskLinesList.append(TempLineCount)
-
-            elif "physical id:" in Line: #*** Test this again ***
-                logger.debug("GetDevInfo: Main().GetInfo(): Attempting to get device name from ID...")
-                try:
-                    ID = Line.split()[2]
-                    logger.debug("GetDevInfo: Main().GetInfo(): ID: "+ID+"...")
-
-                except IndexError:
-                    continue
-
-                #Its name should be that of the last device, plus its id.
-                try:
-                    Line = self.Output[DiskLinesList[-1]]
-                    LastDevice = Line.split()[2]
-                    logger.debug("GetDevInfo: Main().GetInfo(): Last Device's name: "+LastDevice+"...")
-                    print("Last Device: "+LastDevice)
-
-                except IndexError: continue
-
-                try:
-                    #Its name should be that of the last device, plus its id.
-                    logger.debug("GetDevInfo: Main().GetInfo(): Trying to get name...") 
-                    if self.IsPartition(LastDevice, DiskInfo) == False:
-                        Disk = DiskInfo[LastDevice]["Name"]+ID
-
-                    else:
-                        Disk = DiskInfo[LastDevice]["Name"][0:8]+ID
-
-                except IndexError: continue
-
-                logger.debug("GetDevInfo: Main().GetInfo(): Name: "+Disk)
-                print(Disk)
-
-                #See if it's a Disk that's in our categories, and add it to the list if it is.
-                if '/dev/sd' in Disk or '/dev/sr' in Disk or '/dev/fd' in Disk or '/dev/hd' in Disk:
-                    logger.debug("GetDevInfo: Main().GetInfo(): Adding it to DiskInfo...")
-                    DiskInfo[Disk] = {}
-                    DiskInfo[Disk]["Name"] = Disk
 
             elif "vendor:" in Line:
                 self.VendorLinesList.append(TempLineCount)

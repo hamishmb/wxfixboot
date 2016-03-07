@@ -131,7 +131,7 @@ class Main():
             else:
                 return self.DlgResult
 
-    def ShowThreadMultiChoiceDlg(self, msg, choices, title="WxFixBoot - Select your options"):
+    def ShowThreadMultiChoiceDlg(self, msg, choices, title="WxFixBoot - Select your options"): #*** Test this ***
         """Shows a multi-choice dialog from a thread upon instruction"""
         logger.debug("DialogTools: Main().ShowThreadMultiChoiceDlg(): Showing Thread Multi Choice Dialog...")
         dlg = wx.MultiChoiceDialog(ParentWindow.Panel, msg, title, choices, pos=wx.DefaultPosition)

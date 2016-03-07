@@ -215,20 +215,6 @@ class Main():
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
         FatPartitions = []
 
-        #Get a list of partitions of type vfat, if any. *** Tidy this up a bit maybe ***
-        TempList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE", ReturnOutput=True)[1].split("\n")
-        OutputList = []
-
-        for Line in TempList:
-            if "vfat" in Line:
-                OutputList.append(Line.split()[0])
-                OutputList.append(Line.split()[1])
-
-        #Create another list of only the disks. Ignore anything else.
-        for element in OutputList:
-            if element[0:2] in ('sd', 'hd'):
-                FatPartitions.append("/dev/"+element)
-
         if LiveDisk == False:
             TempList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE,MOUNTPOINT,LABEL", ReturnOutput=True)[1].split("\n")
             UEFISystemPartition = None
@@ -251,27 +237,41 @@ class Main():
 
                 else:
                     logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Found UEFI Partition at: "+UEFISystemPartition)
-                    return UEFISystemPartition, FatPartitions
+                    return UEFISystemPartition
 
             else:
                 logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Found UEFI Partition at: "+UEFISystemPartition)
-                return UEFISystemPartition, FatPartitions
+                return UEFISystemPartition
 
         if LiveDisk == True or AskForUEFIPartition == True:
             logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): Asking user where UEFI Partition is. If you're running from a live disk, ignore this warning.")
+
+            #Get a list of partitions of type vfat, if any. *** Use DiskInfo instead of lsblk ***
+            TempList = CoreTools().StartProcess("lsblk -r -o NAME,FSTYPE", ReturnOutput=True)[1].split("\n")
+            OutputList = []
+
+            for Line in TempList:
+                if "vfat" in Line:
+                    OutputList.append(Line.split()[0])
+                    OutputList.append(Line.split()[1])
+
+            #Create another list of only the disks. Ignore anything else.
+            for element in OutputList:
+                if element[0:2] in ('sd', 'hd'):
+                    FatPartitions.append("/dev/"+element)
 
             if FatPartitions != []:
                 Result = DialogTools().ShowChoiceDlg(Message="Please select your UEFI partition. You can change this later in the bootloader options window if you change your mind, or if it's wrong.", Title="WxFixBoot - Select UEFI Partition", Choices=["I don't have one"]+FatPartitions)
 
                 if Result == "I don't have one":
                     logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): User said no UEFI Partition exists. Continuing...")
-                    return None, FatPartitions
+                    return None
 
                 else:
                     logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): User reported UEFI partition at: "+Result+". Continuing...")
-                    return Result, FatPartitions
+                    return Result
             else:
-                return None, FatPartitions
+                return None
 
     def CheckForGRUBUEFI(self, UEFISYSPMountPoint):
         """Check for GRUB-UEFI"""

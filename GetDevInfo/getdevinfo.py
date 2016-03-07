@@ -395,7 +395,7 @@ class Main():
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
         return DiskInfo
 
-    def GetBlockSize(self, Disk):
+    def GetBlockSize(self, Disk): #*** Is this needed in wxfixboot? ***
         """Find the given Disk's blocksize, and return it"""
         logger.debug("GetDevInfo: Main().GetBlockSize(): Finding blocksize for Disk: "+Disk+"...")
 

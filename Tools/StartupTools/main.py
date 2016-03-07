@@ -269,7 +269,7 @@ class Main():
             #Check for a UEFI partition.
             #Check for a UEFI system partition.
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking For a UEFI partition...")
-            AutoUEFISystemPartition, FatPartitions = CoreStartupTools().CheckForUEFIPartition(LiveDisk)
+            AutoUEFISystemPartition = CoreStartupTools().CheckForUEFIPartition(LiveDisk)
             UEFISystemPartition = AutoUEFISystemPartition
 
             #If there is no UEFI partition, ask the user.
@@ -336,7 +336,7 @@ class Main():
         #Set the default bootloader value.
         Bootloader = AutoBootloader
 
-        return Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition, FatPartitions
+        return Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition
 
     def SetDefaults(self):
         """Set Default for some variables"""

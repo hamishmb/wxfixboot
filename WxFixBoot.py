@@ -19,7 +19,7 @@
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
-#*** Maybe remove dependency on lsblk after switch to new device detection system, as that can also get fstypes ***
+#*** Maybe remove dependency on lsblk soon ***
 #*** DevInfoTools().GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
@@ -138,7 +138,7 @@ Tools.dialogtools.wx = wx
 Tools.dialogtools.logger = logger
 Tools.dialogtools.time = time
 
-#StartupTools Package (Core).
+#StartupTools Package (Core). *** lsblk used here ***
 Tools.StartupTools.core.logger = logger
 Tools.StartupTools.core.CoreTools = CoreTools
 Tools.StartupTools.core.DialogTools = DialogTools
@@ -494,18 +494,16 @@ class InitThread(threading.Thread):
         global AutoUEFISystemPartition
         global UEFISystemPartition
         global EmptyEFIPartition #*** Is this var actually helpful? ***
-        global FatPartitions
 
         #Initialise them.
         EmptyEFIPartition = False
         PrevBootloaderSetting = "None"
         UEFISystemPartition = "None"
         AutoUEFISystemPartition = "None"
-        FatPartitions=['None']
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition, FatPartitions = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "90")
         logger.info("InitThread(): Bootloader is: "+Bootloader)
 
@@ -1012,9 +1010,10 @@ class MainWindow(wx.Frame):
         #    Operations.append(BackendThread(self).GenerateSystemReport)
         #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
 
-        #Check if we need to prepare to install a new bootloader, and do so first if needed. *** Log this ***
+        #Check if we need to prepare to install a new bootloader, and do so first if needed.
         for element in (MainBootloaderTools().ManageBootloaders, MainBootloaderTools().ReinstallBootloader, MainBootloaderTools().UpdateBootloader):
             if element in Operations:
+                logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding MainBootloaderTools().PrepareForBootloaderInstallation()...")
                 Operations.insert(0, MainBootloaderTools().PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations ***
 
         NumberOfOperations = len(Operations)
@@ -1728,7 +1727,7 @@ class SettingsWindow(wx.Frame):
         self.Destroy()
 
 #End Settings Window
-#Begin Bootloader Options Window *** Fix some bugs and use get/set selection instead of get/set string selection where possible, maybe write checkbox/radiobutton code from scratch *** *** The partitioning stuff can be changed and made better when we switch to dictionaries ***
+#Begin Bootloader Options Window *** Fix some bugs and use get/set selection instead of get/set string selection where possible, maybe write checkbox/radiobutton code from scratch ***
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self,ParentWindow):
         """Initialise Bootloader options window"""
@@ -2077,17 +2076,15 @@ class BootloaderOptionsWindow(wx.Frame):
         global AutoUEFISystemPartition
         global UEFISystemPartition
         global EmptyEFIPartition
-        global FatPartitions
 
         #Initialise them.
         EmptyEFIPartition = False
         PrevBootloaderSetting = "None"
         UEFISystemPartition = "None"
         AutoUEFISystemPartition = "None"
-        FatPartitions=['None']
 
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition, FatPartitions = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+Bootloader)
 
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
