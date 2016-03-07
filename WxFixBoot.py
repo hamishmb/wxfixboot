@@ -19,7 +19,6 @@
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
 #*** Instead of wx.Exit(), make an emergency exit function that will handle log files and such ***
-#*** Maybe remove dependency on lsblk soon ***
 #*** DevInfoTools().GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
@@ -138,7 +137,7 @@ Tools.dialogtools.wx = wx
 Tools.dialogtools.logger = logger
 Tools.dialogtools.time = time
 
-#StartupTools Package (Core). *** lsblk used here ***
+#StartupTools Package (Core).
 Tools.StartupTools.core.logger = logger
 Tools.StartupTools.core.CoreTools = CoreTools
 Tools.StartupTools.core.DialogTools = DialogTools
