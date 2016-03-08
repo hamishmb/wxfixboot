@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def CheckDepends(self):
+    def CheckDepends(self): #*** Add blockdev if needed? ***
         """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
         logger.info("MainStartupTools(): Main().CheckDepends(): Checking dependencies...")
         #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies.
@@ -45,10 +45,7 @@ class Main():
         if FailedList != []:
             #Missing dependencies!
             logger.critical("MainStartupTools: Main().CheckDepends(): Dependencies missing! WxFixBoot will exit. The missing dependencies are: "+', '.join(FailedList)+". Exiting.")
-            DialogTools().ShowMsgDlg(Kind="error", Message="The following dependencies could not be found on your system: "+', '.join(FailedList)+".\n\nPlease install the missing dependencies. WxFixBoot will now exit.")
-
-            wx.Exit()
-            sys.exit("Missing dependencies: "+', '.join(FailedList)+" Exiting...")
+            CoreTools().EmergencyExit("The following dependencies could not be found on your system: "+', '.join(FailedList)+".\n\nPlease install the missing dependencies.")
 
     def UnmountAllFS(self):
         """Unmount any unnecessary filesystems, to prevent data corruption."""
@@ -115,9 +112,7 @@ class Main():
 
             except IndexError:
                 logger.critical("MainStartupTools: Main().GetRootFSandRootDev(): Couldn't determine the root device! This program cannot safely continue. WxFixBoot will now exit, and warn the user...")
-                DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot couldn't determine your root device (the device the current OS is running on)! The most likely reason for this is that you're running from a live disk and misreported it, so try restarting WxFixBoot and making the other choice. WxFixBoot will now exit.")
-                wx.Exit() #*** Can we do this from here? Maybe call the parent. Until I fix this the GUI will crash if this happens! ***
-                sys.exit("CRITICAL ERROR! Couldn't determine the root device! This program cannot safely continue. Exiting...")
+                CoreTools().EmergencyExit("WxFixBoot couldn't determine your root device (the device the current OS is running on)! The most likely reason for this is that you're running from a live disk and misreported it, so try restarting WxFixBoot and making the other choice.")
 
         return AutoRootFS, RootFS, AutoRootDevice, RootDevice, LiveDisk, AutoDefaultOS, DefaultOS, OSList
 
@@ -197,9 +192,7 @@ class Main():
 
         else:
             logger.critical("MainStartupTools: Main().GetLinuxOSs(): Couldn't find any linux operating systems! Linux partitions were detected, but don't appear to contain any OSs! WxFixBoot will now exit, and warn the user...")
-            DialogTools().ShowMsgDlg(Kind="error", Message="Linux partitions were found on your computer, but no Linux operating systems were found! Perhaps you need to recover data from your hard drive, or restore an image first? If you're using Parted Magic, you'll have access to tools that can do that for you now. Otherwise, you may need to install them. WxFixBoot will now exit.")
-            wx.Exit() #*** Can we do this from here? Maybe call the parent. Until I fix this the GUI will crash if this happens! ***
-            sys.exit("CRITICAL ERROR! Couldn't find any linux operating systems! Linux partitions were detected, but don't appear to contain any OSs! Exiting...")
+            CoreTools().EmergencyExit("Linux partitions were found on your computer, but no Linux operating systems were found! Perhaps you need to recover data from your hard drive, or restore an image first? If you're using Parted Magic, you'll have access to tools that can do that for you now. Otherwise, you may need to install them.")
 
     def GetFirmwareType(self):
         """Get the firmware type"""
@@ -398,10 +391,7 @@ class Main():
         if FailedList != []:
             #Missing dependencies!
             logger.critical("MainStartupTools: Main().FinalCheck(): Required Settings: "+', '.join(FailedList)+" have not been Determined! This is probably a bug in the program! Exiting...")
-            DialogTools().ShowMsgDlg(Kind="error", Message="The required variables: "+', '.join(FailedList)+", have not been set! WxFixBoot will now shut down to prevent damage to your system. This is probably a bug in the program. Check the log file at /tmp/wxfixboot.log")
-
-            wx.Exit() #*** Can we do this from here? Maybe call the parent. Until I fix this the GUI will crash if this happens! ***
-            sys.exit("WxFixBoot: Critial Error: Incorrectly set settings:"+', '.join(FailedList)+" Exiting...")
+            CoreTools.EmergencyExit("The required variables: "+', '.join(FailedList)+", have not been set! WxFixBoot will now shut down to prevent damage to your system. This is probably a bug in the program.")
 
         #Check and warn about conflicting settings. *** These aren't helpful to people who are new and just want to fix it quick. Maybe try to clarify them/automatically deal with this stuff? Perhaps avoid some of these situations completely by improving startup code *** *** Check we're doing the right things here ***
         #Firmware type warnings.

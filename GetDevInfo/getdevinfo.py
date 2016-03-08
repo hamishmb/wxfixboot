@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. #*** Refactor and test again *** *** Must be run while filesystems are unmounted ***
+#Begin Main Class. #*** Refactor and test again *** *** Must be run while filesystems are unmounted (wxfixboot) ***
 class Main():
     def FoundExactMatch(self, Item, Text, Log=True):
         """Check if an exact match of "Item" (arg) can be found in "Text" (arg), seperated by commas or spaces."""
@@ -337,6 +337,7 @@ class Main():
 
             else:
                 DiskInfo[Disk]["Type"] = "Device"
+                DiskInfo[Disk]["HostDevice"] = "N/A"
                 DiskInfo[Disk]["Partitions"] = []
 
             #Get all other information, making sure it remains stable even if we found no info at all.
@@ -392,7 +393,7 @@ class Main():
             else:
                 DiskInfo[Disk]["Description"] = "Unknown"
 
-            #Partition Scheme and Flags. #*** Needs testing esp. for mbr ***
+            #Partition Scheme and Flags. #*** Needs testing ***
             if len(self.CapabilitiesLinesList) > 0:
                 #Flags.
                 Flags = self.GetFlags(Disk, DiskLineNumber=DiskLineNumber)

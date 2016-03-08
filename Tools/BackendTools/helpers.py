@@ -499,13 +499,6 @@ class Main():
             #We need to copy grub*.efi to UEFIBootDir.
             retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/grub*.efi "+UEFIBootDir+"/bootx64.efi", Piping=True, ShowOutput=False)
 
-        else:
-            #Something has gone badly wrong here! The variable showing the UEFI bootloader now installed has been reset. Warning the user and exiting! *** This is REALLY unhelpful to the user! ***
-            logger.critical("HelperBackendTools: Main().CopyUEFIFiles(): WxFixBoot's variable that contains the name of the (hopefully) now installed UEFI bootloader has been reset! It isn't safe to continue! Warning user and exiting...")
-            DialogTools().ShowMsgDlg(Kind="error", Message="Error! WxFixBoot's variable that contains the name of the now installed UEFI bootloader has been reset! This is probably a bug. It isn't safe to continue! Your system may be left in an unbootable state. WxFixBoot will now exit to prevent further damage to your computer.")
-            wx.Exit() #*** Can we do this from here? ***
-            sys.exit("CRITICAL ERROR: WxFixBoot's variable that contains the name of the (hopefully) now installed UEFI bootloader has been reset! It isn't safe to continue! Exiting...")
-
         logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Done!")
 
         #Check the return value. *** Not helpful to the user! ***
