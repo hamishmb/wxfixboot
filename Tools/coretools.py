@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def StartProcess(self, ExecCmds, ShowOutput=True, ReturnOutput=False, MBR=False): #*** Pull in new code from DDRescue-GUI v1.5 *** *** Will also eventually replace MainBackendTools: Main().StartThreadProcess() ***
+    def StartProcess(self, ExecCmds, ShowOutput=True, ReturnOutput=False): #*** Will also eventually replace MainBackendTools: Main().StartThreadProcess() ***
         """Start a process given a string of commands to execute.
         ShowOutput is boolean and specifies whether to show output in the outputbox (if exists) or not.
         ReturnOutput is boolean and specifies whether to return the output back to the caller or not.
@@ -46,16 +46,12 @@ class Main():
                 Counter += 1
 
             Char = cmd.stdout.read(1)
+            Line += Char
 
-            try:
-                Line += unicode(Char)
-
-            except UnicodeDecodeError:
-                pass
-
-            if Char == str("\n"):
-                #if unicode(type(Line)) != "<type 'unicode'>":
-                #    Line = unicode(Line, errors="ignore").replace("^@", "")
+            if Char == "\n": #*** Silence UnicodeWarning ***
+                #Convert to unicode if needed and remove "NULL" characters.
+                if unicode(type(Line)) != "<type 'unicode'>":
+                    Line = unicode(Line, errors="ignore").replace("\x00", "")
 
                 wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
                 LineList.append(Line.replace("\n", "").replace("\r", ""))
@@ -66,12 +62,8 @@ class Main():
         #Save runcmd.returncode, as it tends to reset fairly quickly.
         Retval = int(cmd.returncode)
 
-        #Log this info in a debug message. #*** No UnicodeDecodeErrors, but gedit can't detect file encoding due to mbr!? ***
-        if MBR == False:
-            logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+'\n'.join(LineList)+"\"\n")
-
-        else:
-            logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\nNot logging as the MBR is binary data.\"\n")
+        #Log this info in a debug message.
+        logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+'\n'.join(LineList)+"\"\n")
 
         if ReturnOutput == False:
             #Return the return code back to whichever function ran this process, so it can handle any errors.
