@@ -17,7 +17,7 @@
 #*** Re-evaluate dependencies at packaging time ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
-#*** Also use wx.MultiChoiceDialogs or equivalant where wanted ***
+#*** Test DialogTools().ShowMultiChoiceDlg() ***
 #*** DevInfoTools().GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
 #*** Shut the logger down when exiting ***
 
@@ -261,6 +261,7 @@ class InitialWindow(wx.Frame):
         wx.Frame.__init__(self, parent=None, title="WxFixBoot", size=(600,420), style=wx.SIMPLE_BORDER)
         self.Panel = InitialPanel(self)
         self.SetClientSize(wx.Size(600,420))
+        Tools.coretools.ParentWindow = self
 
         print("WxFixBoot Version "+Version+" Starting...")
         logger.info("WxFixBoot Version "+Version+" Starting...")
@@ -314,6 +315,10 @@ class InitialWindow(wx.Frame):
         """Update the progress text with the given string"""
         self.ProgressText.SetLabel(Message)
         self.Panel.Layout()
+
+    def UpdateOutputBox(self, Message):
+        """Dummy function, accepts a message argument but ignores it."""
+        pass
 
     def FinishedInit(self, Event=None):
         """Starts MainWindow, called when StartupScripts are finished"""
@@ -1035,39 +1040,53 @@ class MainWindow(wx.Frame):
             self.ApplyOperationsButton.SetLabel("Apply All Operations")
             self.ApplyOperationsButton.Enable()
 
-    def OnExit(self, Event=None): #*** Pull new code in from DDRescue-GUI v1.5 ***
+    def OnExit(self, Event=None):
         """Shut down."""
-        Dlg = wx.MessageDialog(self.Panel, 'Are you sure you want to exit?', 'WxFixBoot - Question!', wx.YES_NO | wx.ICON_QUESTION)
+        logger.info("MainWindow().OnExit(): Double-checking the exit attempt with the user...")
+        dlg = wx.MessageDialog(self.Panel, 'Are you sure you want to exit?', 'WxFixBoot - Question!', wx.YES_NO | wx.ICON_QUESTION)
+        Answer = dlg.ShowModal()
+        dlg.Destroy()
 
-        if Dlg.ShowModal() == wx.ID_YES:
-            logger.debug("MainWindow().OnExit(): Exiting...")
+        if Answer == wx.ID_YES:
+            #Run the exit sequence
+            logger.info("MainWindow().OnExit(): Exiting...")
 
-            #Run the exit sequence *** Check if filesystems are unmounted here first! ***
+            #Shutdown the logger.
+            logging.shutdown()
 
             #Prompt user to save the log file.
             dlg = wx.MessageDialog(self.Panel, "Do you want to keep WxFixBoot's log file? For privacy reasons, WxFixBoot will delete its log file when closing. If you want to save it, which is helpful for debugging if something went wrong, click yes, and otherwise click no.", "WxFixBoot - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
+            Answer = dlg.ShowModal()
+            dlg.Destroy()
 
-            if dlg.ShowModal() == wx.ID_YES:
+            if Answer == wx.ID_YES:
                 #Ask the user where to save it.
-                Dlg = wx.FileDialog(self.Panel, "Save log file to...", defaultDir="/home", wildcard="Log Files (*.log)|*.log" , style=wx.SAVE)
+                dlg = wx.FileDialog(self.Panel, "Save log file to...", defaultDir="/home", wildcard="Log Files (*.log)|*.log" , style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                Answer = dlg.ShowModal()
+                File = dlg.GetPath()
+                dlg.Destroy()
 
-                if Dlg.ShowModal() == wx.ID_OK:
-                    #Get the path.
-                    File = Dlg.GetPath()
-
+                if Answer == wx.ID_OK:
                     #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
-                    CoreTools().StartProcess("cp /tmp/wxfixboot.log "+File, ReturnOutput=False)
+                    CoreTools().StartProcess("cp /tmp/wxfixboot.log "+File)
 
-                    wx.MessageDialog(self.Panel, 'Done! WxFixBoot will now exit.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION).ShowModal()
+                    dlg = wx.MessageDialog(self.Panel, 'Done! WxFixBoot will now exit.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                    dlg.ShowModal()
+                    dlg.Destroy()
 
                 else:
-                    wx.MessageDialog(self.Panel, 'Okay, WxFixBoot will now exit without saving the log file.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION).ShowModal()
+                    dlg = wx.MessageDialog(self.Panel, 'Okay, WxFixBoot will now exit without saving the log file.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                    dlg.ShowModal()
+                    dlg.Destroy()
 
             else:
-                wx.MessageDialog(self.Panel, 'Okay, WxFixBoot will now exit without saving the log file.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION).ShowModal()
+                dlg = wx.MessageDialog(self.Panel, 'Okay, WxFixBoot will now exit without saving the log file.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()
 
             #Delete the log file, and don't bother handling any errors, because this is run as root.
             os.remove('/tmp/wxfixboot.log')
+
             self.Destroy()
 
 #End Main window
@@ -2755,18 +2774,53 @@ class ProgressWindow(wx.Frame):
         logger.debug("ProgressWindow().RestartWxFixBoot(): WxFixBoot has been reset and restarted, returning to MainWindow()")
         self.Destroy()
 
-    def OnExit(self, Event=None): #*** Add logfile moving stuff here ***
+    def OnExit(self, Event=None):
         """Exits the programs, and sorts out log file saving/deleting stuff"""
+        dlg = wx.MessageDialog(self.Panel, 'Are you sure you want to exit?', 'WxFixBoot - Question!', wx.YES_NO | wx.ICON_QUESTION)
+        Answer = dlg.ShowModal()
+        dlg.Destroy()
 
-        dlg = wx.MessageDialog(self.Panel, 'Are you sure you want to exit?', 'WxFixBoot -- Question!', wx.YES_NO | wx.ICON_QUESTION)
-        if dlg.ShowModal() == wx.ID_YES:
-            dlg.Destroy()
+        if Answer == wx.ID_YES:
             #Run the exit sequence
-            logger.debug("ProgressWindow().OnExit(): User triggered exit sequence. Exiting...")
+            logger.info("MainWindow().OnExit(): Exiting...")
+
+            #Shutdown the logger.
+            logging.shutdown()
+
+            #Prompt user to save the log file.
+            dlg = wx.MessageDialog(self.Panel, "Do you want to keep WxFixBoot's log file? For privacy reasons, WxFixBoot will delete its log file when closing. If you want to save it, which is helpful for debugging if something went wrong, click yes, and otherwise click no.", "WxFixBoot - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
+            Answer = dlg.ShowModal()
+            dlg.Destroy()
+
+            if Answer == wx.ID_YES:
+                #Ask the user where to save it.
+                dlg = wx.FileDialog(self.Panel, "Save log file to...", defaultDir="/home", wildcard="Log Files (*.log)|*.log" , style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                Answer = dlg.ShowModal()
+                File = dlg.GetPath()
+                dlg.Destroy()
+
+                if Answer == wx.ID_OK:
+                    #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
+                    CoreTools().StartProcess("cp /tmp/wxfixboot.log "+File)
+
+                    dlg = wx.MessageDialog(self.Panel, 'Done! WxFixBoot will now exit.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                    dlg.ShowModal()
+                    dlg.Destroy()
+
+                else:
+                    dlg = wx.MessageDialog(self.Panel, 'Okay, WxFixBoot will now exit without saving the log file.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                    dlg.ShowModal()
+                    dlg.Destroy()
+
+            else:
+                dlg = wx.MessageDialog(self.Panel, 'Okay, WxFixBoot will now exit without saving the log file.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()
+
+            #Delete the log file, and don't bother handling any errors, because this is run as root.
+            os.remove('/tmp/wxfixboot.log')
 
             self.Destroy()
-
-        dlg.Destroy()
 
 #End Progress Window
 #Begin Backend Thread

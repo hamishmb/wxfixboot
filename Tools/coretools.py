@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def StartProcess(self, ExecCmds, ShowOutput=True, ReturnOutput=False): #*** Pull in new code from DDRescue-GUI v1.5 *** *** Will also eventually replace MainBackendTools: Main().StartThreadProcess() ***
+    def StartProcess(self, ExecCmds, ShowOutput=True, ReturnOutput=False, MBR=False): #*** Pull in new code from DDRescue-GUI v1.5 *** *** Will also eventually replace MainBackendTools: Main().StartThreadProcess() ***
         """Start a process given a string of commands to execute.
         ShowOutput is boolean and specifies whether to show output in the outputbox (if exists) or not.
         ReturnOutput is boolean and specifies whether to return the output back to the caller or not.
@@ -46,23 +46,32 @@ class Main():
                 Counter += 1
 
             Char = cmd.stdout.read(1)
-            Line += str(Char)
 
-            if Char in (str("\n"), str("\r")):
-                LineList.append(Line.replace(str("\n"), str("")).replace(str("\r"), str("")))
+            try:
+                Line += unicode(Char)
+
+            except UnicodeDecodeError:
+                pass
+
+            if Char == str("\n"):
+                #if unicode(type(Line)) != "<type 'unicode'>":
+                #    Line = unicode(Line, errors="ignore").replace("^@", "")
+
+                wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
+                LineList.append(Line.replace("\n", "").replace("\r", ""))
+
                 #Reset Line.
-                Line = str("")
+                Line = ""
 
         #Save runcmd.returncode, as it tends to reset fairly quickly.
         Retval = int(cmd.returncode)
 
-        #Log this info in a debug message. #*** Fix this error *** *** Make note of this: when 'cp' errors, the quotes it uses cause this error "UnicodeDecodeError" (use unicode(thing, , errors='ignore')) ***
-        try:
+        #Log this info in a debug message. #*** No UnicodeDecodeErrors, but gedit can't detect file encoding due to mbr!? ***
+        if MBR == False:
             logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+'\n'.join(LineList)+"\"\n")
 
-        except UnicodeDecodeError:
-	        #Skip logging the output, but do note we couldn't log the output.
-            logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\n*** WxFixBoot: Error: Couldn't log output due to unicode decode error ***\"\n")
+        else:
+            logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\nNot logging as the MBR is binary data.\"\n")
 
         if ReturnOutput == False:
             #Return the return code back to whichever function ran this process, so it can handle any errors.
@@ -214,6 +223,9 @@ class Main():
 
         #Warn the user.
         DialogTools().ShowMsgDlg(Message="Emergency exit triggered.\n\n"+Message+"\n\nYou'll now be asked for a location to save the log file.\nIf you email me at hamishmb@live.co.uk with the contents of that file I'll be willing to help you fix this problem.", Kind="error")
+
+        #Shut down the logger.
+        logging.shutdown()
 
         #Save the log file.
         LogFile = DialogTools().ShowSaveFileDlg(Wildcard="Log Files|*.log")
