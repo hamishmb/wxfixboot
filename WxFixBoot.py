@@ -19,7 +19,6 @@
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Test DialogTools().ShowMultiChoiceDlg() ***
 #*** DevInfoTools().GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
-#*** Shut the logger down when exiting ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -44,7 +43,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "8/3/2016"
+ReleaseDate = "9/3/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -131,6 +130,7 @@ Tools.coretools.wx = wx
 Tools.coretools.subprocess = subprocess
 Tools.coretools.sys = sys
 Tools.coretools.logger = logger
+Tools.coretools.logging = logging
 Tools.coretools.os = os
 Tools.coretools.re = re
 Tools.coretools.DialogTools = DialogTools
@@ -2588,6 +2588,7 @@ class ProgressWindow(wx.Frame):
         self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(500,300))
         wx.Frame.SetIcon(self, AppIcon)
+        Tools.coretools.ParentWindow = self
 
         #Save the frame's width and height, making it easier to centre text.
         self.width, self.height = self.GetSizeTuple()
@@ -2711,9 +2712,68 @@ class ProgressWindow(wx.Frame):
         self.Panel.Layout()
         self.MainSizer.SetSizeHints(self)
 
-    def UpdateOutputBox(self,msg):
-        """Adds a line of text to the output box""" #*** Add output box stuff from ddrescue-gui v1.5 ***
-        self.OutputBox.AppendText(msg)
+    def CarriageReturn(self):
+        """Handles carriage returns in output"""
+        #Go back until the last newline character, and overwrite anything in the way on the next write.
+        #Get the current insertion point.
+        CurrentInsertionPoint = self.OutputBox.GetInsertionPoint()
+
+        #Get the text up to the current insertion point.
+        Text = self.OutputBox.GetRange(0, CurrentInsertionPoint)
+
+        #Find the last newline char in the text.
+        NewlineNos = []
+        Counter = 0
+        for Char in Text:
+            if Char == "\n":
+                NewlineNos.append(Counter)
+
+            Counter += 1
+
+        if NewlineNos != []:
+            LastNewline = NewlineNos[-1]
+
+        else:
+            #Hacky bit to make the new insertion point 0 :)
+            LastNewline = -1
+
+        #Set the insertion point to just after that newline, unless we're already there, and in that case set the insertion point just after the previous newline.
+        NewInsertionPoint = LastNewline + 1
+
+        self.OutputBox.SetInsertionPoint(NewInsertionPoint)
+
+    def UpdateOutputBox(self, Line):
+        """Update the output box"""
+        CRs = []
+        CharNo = 0
+
+        for Char in Line:
+            CharNo += 1
+
+            if Char == "\r":
+                CRs.append(CharNo)
+
+        CharNo = 0
+        TempLine = ""
+        for Char in Line:
+            CharNo += 1
+
+            if CharNo not in CRs:
+                TempLine += Char
+                if Char == "\n":
+                    self.AddLineToOutputBox(TempLine, CRs, CharNo)
+                    TempLine = ""
+
+            else:
+                self.AddLineToOutputBox(TempLine, CRs, CharNo)
+                TempLine = ""
+
+    def AddLineToOutputBox(self, Line, CRs, CharNo):
+        InsertionPoint = self.OutputBox.GetInsertionPoint()
+        self.OutputBox.Replace(InsertionPoint, InsertionPoint+len(Line), Line)
+
+        if CharNo in CRs:
+            self.CarriageReturn()
 
     def UpdateCurrentProgress(self,msg):
         """Update the progress of the current progress progress bar"""

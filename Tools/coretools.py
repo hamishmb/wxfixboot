@@ -48,10 +48,10 @@ class Main():
             Char = cmd.stdout.read(1)
             Line += Char
 
-            if Char == "\n": #*** Silence UnicodeWarning ***
+            if Char == "\n": #*** Silence UnicodeWarning when failing to convert Char to unicode ***
                 #Convert to unicode if needed and remove "NULL" characters.
                 if unicode(type(Line)) != "<type 'unicode'>":
-                    Line = unicode(Line, errors="ignore").replace("\x00", "")
+                    Line = unicode(Line, errors="replace").replace("\x00", "")
 
                 wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
                 LineList.append(Line.replace("\n", "").replace("\r", ""))

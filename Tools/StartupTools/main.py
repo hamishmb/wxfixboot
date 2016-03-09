@@ -100,21 +100,19 @@ class Main():
             DialogTools().ShowMsgDlg(Kind="info", Message="Your current OS will be taken as the default OS. You can reset this later if you wish.") #*** Why not offer now? ***
 
             #By the way the default OS in this case is set later, when OS detection takes place. *** Maybe get rid of this try statement when I change/remove this *** *** Badly written, what if we get a UUID? Use the heirachy when I switch ***
-            #try:
-            Output = CoreTools().StartProcess("mount", ReturnOutput=True)[1]
-            print(Output)
-            RootFS = CoreTools().StartProcess("mount", ReturnOutput=True)[1].split()[0] #*** Change this later *** *** Don't call mount directly ***
-            AutoRootFS = RootFS
-            RootDevice = RootFS[0:8]
-            AutoRootDevice = RootDevice
-            LiveDisk = False
-            DefaultOS = ""
-            AutoDefaultOS = DefaultOS
-            OSList = []
+            try:
+                RootFS = CoreTools().StartProcess("mount", ReturnOutput=True)[1].split()[0] #*** Change this later *** *** Don't call mount directly ***
+                AutoRootFS = RootFS
+                RootDevice = RootFS[0:8]
+                AutoRootDevice = RootDevice
+                LiveDisk = False
+                DefaultOS = ""
+                AutoDefaultOS = DefaultOS
+                OSList = []
 
-            #except IndexError: 
-            #    logger.critical("MainStartupTools: Main().GetRootFSandRootDev(): Couldn't determine the root device! This program cannot safely continue. WxFixBoot will now exit, and warn the user...")
-            #    CoreTools().EmergencyExit("WxFixBoot couldn't determine your root device (the device the current OS is running on)! The most likely reason for this is that you're running from a live disk and misreported it, so try restarting WxFixBoot and making the other choice.")
+            except IndexError: 
+                logger.critical("MainStartupTools: Main().GetRootFSandRootDev(): Couldn't determine the root device! This program cannot safely continue. WxFixBoot will now exit, and warn the user...")
+                CoreTools().EmergencyExit("WxFixBoot couldn't determine your root device (the device the current OS is running on)! The most likely reason for this is that you're running from a live disk and misreported it, so try restarting WxFixBoot and making the other choice.")
 
         return AutoRootFS, RootFS, AutoRootDevice, RootDevice, LiveDisk, AutoDefaultOS, DefaultOS, OSList
 
