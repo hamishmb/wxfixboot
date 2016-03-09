@@ -153,8 +153,6 @@ Tools.StartupTools.main.CoreStartupTools = CoreStartupTools
 Tools.StartupTools.main.DialogTools = DialogTools
 
 #BackendTools Package (Core).
-Tools.BackendTools.core.wx = wx #*** Keep until switch to using CoreTools().StartProcess() in all BackendThread functions ***
-Tools.BackendTools.core.subprocess = subprocess #*** Keep until switch to using CoreTools().StartProcess() in all BackendThread functions ***
 Tools.BackendTools.core.logger = logger
 Tools.BackendTools.core.CoreTools = CoreTools
 
@@ -196,12 +194,10 @@ Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
 Tools.BackendTools.BootloaderTools.getconfigtools.logger = logger
 
 #BootloaderTools Package (RemovalTools)
-Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools #*** Keep cos of switch to CoreTools().StartProcess() ***
-Tools.BackendTools.BootloaderTools.removaltools.CoreBackendTools = CoreBackendTools #*** Keep until switch to CoreTools().StartProcess() ***
+Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools
 
 #BootloaderTools Package (InstallationTools)
-Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools #*** Keep cos of switch to CoreTools().StartProcess() ***
-Tools.BackendTools.BootloaderTools.installationtools.CoreBackendTools = CoreBackendTools #*** Keep until switch to CoreTools().StartProcess() ***
+Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools
 
 #BootloaderTools Package (SetConfigTools)
 Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger

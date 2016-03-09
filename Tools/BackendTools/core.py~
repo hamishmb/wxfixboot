@@ -94,7 +94,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
         ExecList = ("mv -vf "+MountPoint+"/etc/resolv.conf "+MountPoint+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+MountPoint+"/etc/resolv.conf")
         for ExecCmd in ExecList:
-            Result = self.StartThreadProcess(ExecCmd, Piping=True, ShowOutput=False, ReturnOutput=True)
+            Result = CoreTools().StartProcess(ExecCmd, ShowOutput=False, ReturnOutput=True)
             output = Result[1]
             retval = Result[0]
 

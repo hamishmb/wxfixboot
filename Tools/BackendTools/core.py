@@ -23,52 +23,6 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main(): #*** These need refactoring and proper testing ***
-    def StartThreadProcess(self, ExecCmds, Piping=False, ShowOutput=True, ReturnOutput=False): #*** Get rid of this in favour of CoreTools().StartProcess() ***
-        """Start a process given a list with commands to execute, specifically for this thread, as it also sends the output to ParentWindow.UpdateOutputBox()."""
-        #This now uses a set of default values, to keep it simple. It can be called with self.StartThreadProcess(ExecCmds=[], ShowOutput=True) etc. Only ExecCmds is compulsory.
-        #Reset templog
-        templog = []
-
-        #Run the cmd.
-        if Piping == False:
-            #*** Temporary abstraction in preparation to switch to CoreTools().StartProcess() ***
-            ExecCmds = ' '.join(ExecCmds)
-
-        logger.debug("CoreBackendTools: Main().StartThreadProcess(): Starting process: "+ExecCmds)
-        runcmd = subprocess.Popen(ExecCmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-
-        while runcmd.poll() == None:
-            #Send given line to the outputbox and Log it too, if ShowOutput == True or if FullVerbose == True 
-            line = runcmd.stdout.readline()
-            templog.append(line)
-            wx.CallAfter(ParentWindow.UpdateOutputBox, line)
-
-        #Save runcmd.stdout.readlines, and runcmd.returncode, as they tend to reset fairly quickly.
-        output = runcmd.stdout.readlines()
-        retval = int(runcmd.returncode)
-
-        #Add any missing output (this is what templog is helpful for: it'll contain only output from this command).
-        for line in output:
-            if line not in templog:
-                templog.append(line)
-                wx.CallAfter(ParentWindow.UpdateOutputBox, line)
-
-        #Log this info in a debug message.
-        try:
-            logger.debug("CoreBackendTools: Main().StartThreadProcess(): Process: "+ExecCmds+": Return Value: "+unicode(retval)+", Output: \"\n\n"+''.join(templog)+"\"\n")
-
-        except UnicodeDecodeError:
-	        #Skip logging the output, but do note we couldn't log the output.
-            logger.debug("CoreBackendTools: Main().StartThreadProcess(): Process: "+ExecCmds+": Return Value: "+unicode(retval)+", Output: \"\n\nCouldn't write data due to unicode decode error\"\n")
-
-        if ReturnOutput == False:
-            #Return the return code back to whichever function ran this process, so it can handle any errors.
-            return retval
-
-        else:
-            #Return the return code, as well as the output.
-            return (retval, ''.join(templog))
-
     def UpdateChrootMtab(self, MountPoint):
         """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right.""" #*** Don't copy to /etc/mtab, as this may screw up mounting in target os later. Copy to MountPoint/proc/self/mounts. Actually, /proc is bound to /MountPoint/proc. What's not working with this command?! ***
         logger.debug("CoreBackendTools: Main().UpdateChrootMtab: Updating /etc/mtab for chroot at: "+MountPoint+"...")
