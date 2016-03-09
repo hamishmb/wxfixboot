@@ -32,7 +32,7 @@ class Main():
             #Check if we're looking at a FSType, not a device, and that we've not marked it "Unknown". Otherwise ignore it. *** Some checks can be removed once switched to dictionaries ***
             if FSType[0] != "/" and FSType != "Unknown":
                 #Check if this module is present.
-                Retval = CoreBackendTools().StartThreadProcess("which fsck."+FSType, Piping=True, ShowOutput=False)
+                Retval = CoreTools().StartProcess("which fsck."+FSType, ShowOutput=False)
 
                 if Retval != 0:
                     #OS probably couldn't find it, add it to the failed list.
@@ -50,7 +50,7 @@ class Main():
         """Look for apt using the command lists given (they include the partition, by the way)."""
         logger.debug("HelperBackendTools: Main().LookForAPTOnPartition(): Running "+APTExecCmds+"...")
 
-        Retval = CoreBackendTools().StartThreadProcess(APTExecCmds, Piping=True, ShowOutput=False)
+        Retval = CoreTools().StartProcess(APTExecCmds, ShowOutput=False)
 
         if Retval != 0:
             #Couldn't find apt!
@@ -67,14 +67,13 @@ class Main():
         logger.debug("HelperBackendTools: Main().LookForBootloaderOnPartition(): Looking for "+Bootloader+" in "+MountPoint+"...")
 
         #Okay, let's run a command in the chroot that was set up in self.FindBootloaderRemovalOSs(), depending on which package manager this OS uses, and which bootloader is currently installed.
-        #To do this, we need to tell CoreBackendTools().StartThreadProcess() that we're going to be using pipes on the commandline, so we can use shell=True.
         if PackageManager == "apt-get":
             Cmd = "dpkg --get-selections"
 
         if UsingChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        Output = CoreBackendTools().StartThreadProcess(Cmd, Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
+        Output = CoreTools().StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
         Packages = []
 
         if Bootloader == "GRUB-LEGACY":
@@ -449,7 +448,7 @@ class Main():
         #First do /EFI/boot/bootx64.efi. Fortunately, the UEFI partition is always a fat32/fat16 filesystem, so case doesn't matter.
         logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Backing up "+MountPoint+"/boot/efi/boot/boot*.efi...")
         if os.path.isfile(MountPoint+"/boot/efi/EFI/boot/boot*.efi"):
-            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/boot/boot*.efi "+MountPoint+"/boot/efi/EFI/boot/bkpbootx64.efi", Piping=True, ShowOutput=False)
+            retval = CoreTools().StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/boot/boot*.efi "+MountPoint+"/boot/efi/EFI/boot/bkpbootx64.efi", ShowOutput=False)
 
         else:
             #This doesn't exist. This doesn't matter then, so set retval to 0.
@@ -463,7 +462,7 @@ class Main():
         #Now do Windows's files, if they exist.
         logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Backing up Windows's boot files if they exist...")
         if os.path.isfile(MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi"):
-            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", Piping=True, ShowOutput=False)
+            retval = CoreTools().StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", ShowOutput=False)
 
         else:
             #They don't exist. This doesn't matter then, so set retval to 0.
@@ -492,12 +491,12 @@ class Main():
         #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
         if BootloaderToInstall == "ELILO":
             #We need to copy both elilo.efi, and elilo.conf to UEFIBootDir.
-            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.efi "+UEFIBootDir+"/bootx64.efi", Piping=True, ShowOutput=False)
-            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.conf "+UEFIBootDir+"/", Piping=True, ShowOutput=False) #*** We're ignoring the last return value here! ***
+            retval = CoreTools().StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False)
+            retval = CoreTools().StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.conf "+UEFIBootDir+"/", ShowOutput=False) #*** We're ignoring the last return value here! ***
 
         elif BootloaderToInstall == "GRUB-UEFI":
             #We need to copy grub*.efi to UEFIBootDir.
-            retval = CoreBackendTools().StartThreadProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/grub*.efi "+UEFIBootDir+"/bootx64.efi", Piping=True, ShowOutput=False)
+            retval = CoreTools().StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/grub*.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False)
 
         logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Done!")
 

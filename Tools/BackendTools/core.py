@@ -73,7 +73,7 @@ class Main(): #*** These need refactoring and proper testing ***
         """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right.""" #*** Don't copy to /etc/mtab, as this may screw up mounting in target os later. Copy to MountPoint/proc/self/mounts. Actually, /proc is bound to /MountPoint/proc. What's not working with this command?! ***
         logger.debug("CoreBackendTools: Main().UpdateChrootMtab: Updating /etc/mtab for chroot at: "+MountPoint+"...")
 
-        retval = self.StartThreadProcess("cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab", Piping=True, ShowOutput=False)
+        retval = CoreTools().StartProcess("cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab", ShowOutput=False)
 
         if retval != 0:
             logger.error("CoreBackendTools: Main().UpdateChrootMtab(): Failed to run command: cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab! Chroot may not set up properly! This *probably* doesn't matter, but in rare situations it could cause problems.")
@@ -94,7 +94,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
         ExecList = ("mv -vf "+MountPoint+"/etc/resolv.conf "+MountPoint+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+MountPoint+"/etc/resolv.conf")
         for ExecCmd in ExecList:
-            Result = self.StartThreadProcess(ExecCmd, Piping=True, ShowOutput=False, ReturnOutput=True)
+            Result = CoreTools().StartProcess(ExecCmd, ShowOutput=False, ReturnOutput=True)
             output = Result[1]
             retval = Result[0]
 
@@ -109,14 +109,14 @@ class Main(): #*** These need refactoring and proper testing ***
         """Remove a chroot at the given mountpoint."""
         logger.debug("CoreBackendTools: Main().TearDownChroot(): Removing chroot at MountPoint: "+MountPoint+"...")
 
-        #Unmount /dev/pts, /dev, /proc and /sys in the chroot. Return values and terminal output will be logged by CoreBackendTools().StartThreadProcess().
+        #Unmount /dev/pts, /dev, /proc and /sys in the chroot.
         UnmountList = (MountPoint+"/dev/pts", MountPoint+"/dev", MountPoint+"/proc", MountPoint+"/sys")
 
         for FileSystem in UnmountList:
             CoreTools().Unmount(FileSystem) #*** Check it worked ***
 
         #We'll also need to replace the MountPoint/etc/resolv.conf with the backup file, MountPoint/etc/resolv.conf.bak.
-        Result = self.StartThreadProcess("mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf", Piping=True, ShowOutput=False, ReturnOutput=True)
+        Result = CoreTools().StartProcess("mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf", ShowOutput=False, ReturnOutput=True)
         output = Result[1]
         Retval = Result[0]
 
@@ -129,7 +129,7 @@ class Main(): #*** These need refactoring and proper testing ***
         """Retrive the given partition's UUID""" #*** Will be removed/moved to startuptools soon after switching to dictionaries *** *** Give full path? ***
         logger.info("CoreBackendTools: Main().GetPartitionUUID(): Getting UUID for partition: "+Partition+"...")
 
-        Temp = self.StartThreadProcess("blkid -o list", Piping=True, ShowOutput=False, ReturnOutput=True)
+        Temp = CoreTools().StartProcess("blkid -o list", ShowOutput=False, ReturnOutput=True)
         retval = Temp[0]
         output = Temp[1].split('\n')
 
@@ -158,7 +158,7 @@ class Main(): #*** These need refactoring and proper testing ***
         """Retrive the given partition's/device's ID.""" #*** Will be removed/moved to startuptools soon after switching to dictionaries *** *** Give full path? ***
         logger.info("CoreBackendTools: Main().GetDeviceID(): Getting ID for partition/device: "+Device+"...")
 
-        Temp = CoreBackendTools().StartThreadProcess("ls -l /dev/disk/by-id/", Piping=True, ShowOutput=False, ReturnOutput=True)
+        Temp = CoreTools().StartProcess("ls -l /dev/disk/by-id/", ShowOutput=False, ReturnOutput=True)
         retval = Temp[0]
         output = Temp[1].split('\n')
 

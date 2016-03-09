@@ -42,7 +42,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
             try:
                 logger.debug("EssentialBackendTools: Main().CheckInternetConnection(): Running 'ping -c 5 -i 0.5 208.67.222.222'...")
-                Output = CoreBackendTools().StartThreadProcess("ping -c 5 -i 0.5 208.67.222.222", Piping=True, ShowOutput=False, ReturnOutput=True)[1].split("\n")
+                Output = CoreTools().StartProcess("ping -c 5 -i 0.5 208.67.222.222", ShowOutput=False, ReturnOutput=True)[1].split("\n")
                 #Get the % packet loss.
                 for Line in Output:
                     if 'packet loss' in Line:
@@ -103,7 +103,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
             #Backup the MBR of RootDevice.
             logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Backing up MBR partition table to file: "+PartitionTableBackupFile+", from device: "+RootDevice+"...")
-            retval = CoreBackendTools().StartThreadProcess("dd if="+RootDevice+" of="+PartitionTableBackupFile+" bs=512 count=1", Piping=True, ShowOutput=False)
+            retval = CoreTools().StartProcess("dd if="+RootDevice+" of="+PartitionTableBackupFile+" bs=512 count=1", ShowOutput=False)
 
         else:
             #Let's backup the GPT, but we need to ask where to back it up first. *** Maybe do this in settings window? ***
@@ -119,7 +119,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
             #Backup the GPT.
             logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Backing up GPT partition table to file: "+PartitionTableBackupFile+", from device: "+RootDevice+"...")
-            retval = CoreBackendTools().StartThreadProcess("sgdisk --backup="+PartitionTableBackupFile+" "+RootDevice, Piping=True, ShowOutput=False)
+            retval = CoreTools().StartProcess("sgdisk --backup="+PartitionTableBackupFile+" "+RootDevice, ShowOutput=False)
 
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Backing up Partition Table!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
@@ -153,7 +153,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
             #Backup the MBR of RootDevice.
             logger.info("EssentialBackendTools: Main().BackupBootSector(): Backing up MBR bootsector to file: "+BootSectorBackupFile+", from device: "+RootDevice+"...")
-            retval = CoreBackendTools().StartThreadProcess("dd if="+RootDevice+" of="+BootSectorBackupFile+" bs=512 count=1", Piping=True, ShowOutput=False)
+            retval = CoreTools().StartProcess("dd if="+RootDevice+" of="+BootSectorBackupFile+" bs=512 count=1", ShowOutput=False)
 
         else:
             #Let's backup the UEFISystemPartition, but check there is one first.
@@ -174,7 +174,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
                 #Backup the UEFISystemPartition.
                 logger.info("EssentialBackendTools: Main().BackupBootSector(): Backing up UEFI System Partition ("+UEFISystemPartition+") to file: "+BootSectorBackupFile+"...")
-                retval = CoreBackendTools().StartThreadProcess("dd if="+UEFISystemPartition+" of="+BootSectorBackupFile, Piping=True, ShowOutput=False)
+                retval = CoreBackendTools().StartProcess("dd if="+UEFISystemPartition+" of="+BootSectorBackupFile, Piping=True, ShowOutput=False)
 
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Backing up the Boot Sector!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
@@ -216,11 +216,11 @@ class Main(): #*** These need refactoring and proper testing ***
             #Let's restore the MBR Partition Table.
             logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Restoring MBR partition table from file: "+PartitionTableFile+" to device: "+PartitionTableTargetDevice+"...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
-            retval = CoreBackendTools().StartThreadProcess("dd if="+PartitionTableFile+" of="+PartitionTableTargetDevice+" bs=1 count=64 skip=446 seek=446", Piping=True, ShowOutput=False)
+            retval = CoreTools().StartProcess("dd if="+PartitionTableFile+" of="+PartitionTableTargetDevice+" bs=1 count=64 skip=446 seek=446", ShowOutput=False)
 
         else:
             #Let's restore the GPT.
-            retval = CoreBackendTools().StartThreadProcess("sgdisk --load-backup="+PartitionTableFile+" "+PartitionTableTargetDevice, Piping=True, ShowOutput=False)
+            retval = CoreTools().StartProcess("sgdisk --load-backup="+PartitionTableFile+" "+PartitionTableTargetDevice, ShowOutput=False)
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
             logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Restoring GPT partition table from file: "+PartitionTableFile+" to device: "+PartitionTableTargetDevice+"...")
 
@@ -270,13 +270,13 @@ class Main(): #*** These need refactoring and proper testing ***
             #Let's restore the MBR bootsector.
             logger.info("EssentialBackendTools: Main().RestoreBootSector(): Restoring MBR boot sector from file: "+BootSectorFile+" to device: "+BootSectorTargetDevice+"...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
-            CoreBackendTools().StartThreadProcess("dd if="+BootSectorFile+" of="+BootSectorTargetDevice+" bs=446 count=1", Piping=True, ShowOutput=False)
+            CoreTools().StartProcess("dd if="+BootSectorFile+" of="+BootSectorTargetDevice+" bs=446 count=1", ShowOutput=False)
 
         else:
             #Restore the UEFISystemPartition.
             logger.info("EssentialBackendTools: Main().RestoreBootSector(): Restoring UEFI Partition ("+UEFISystemPartition+") from file: "+BootSectorFile+"...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
-            CoreBackendTools().StartThreadProcess("dd if="+BootSectorFile+" of="+UEFISystemPartition, Piping=True, ShowOutput=False)
+            CoreTools().StartProcess("dd if="+BootSectorFile+" of="+UEFISystemPartition, ShowOutput=False)
 
         #Unmount the partition containing the file, if there is one. *** Is this necessary? ***
         if MountedFS != "None":
@@ -289,7 +289,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Restoring the Boot Sector...###\n")
         logger.info("EssentialBackendTools: Main().RestoreBootSector(): Finished restoring the boot sector!")
 
-    def QuickFileSystemCheck(self): #*** This is very duplicated with BadSectorCheck, can we merge them and put a check in? *** *** Will need lots of work when we switch to dictionaries *** *** Attempts (but fails) to check mounted filesystems sometimes! *** Fix CoreTools.MountPartition()! ***
+    def QuickFileSystemCheck(self): #*** This is very duplicated with BadSectorCheck, can we merge them and put a check in? *** *** Will need lots of work when we switch to dictionaries ***
         """Quickly check all filesystems."""
         logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Starting...")
 
@@ -346,7 +346,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
             #Run the command with Piping = False, if ExecList != ['None'], otherwise do nothing, but do remount the partition if needed.
             if ExecCmds != "":
-                retval = CoreBackendTools().StartThreadProcess(ExecCmds, Piping=True)
+                retval = CoreTools().StartProcess(ExecCmds)
 
                 #Check the return values, and run the handler if needed.
                 if retval == 0:
@@ -372,7 +372,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Quick Filesystem Check!###\n")
 
-    def BadSectorCheck(self): #*** This is very duplicated with QuickFSCheck, can we merge them and put a check in? *** *** Attempts (but fails) to check mounted filesystems sometimes! *** Fix CoreTools.MountPartition()! ***
+    def BadSectorCheck(self): #*** This is very duplicated with QuickFSCheck, can we merge them and put a check in? ***
         """Check all filesystems for bad sectors."""
         logger.debug("EssentialBackendTools: Main().BadSectorCheck(): Starting...")
 
@@ -433,7 +433,7 @@ class Main(): #*** These need refactoring and proper testing ***
 
             #Run the command with Piping = False, if ExecList != ['None'], otherwise do nothing, but do remount the partition if needed.
             if ExecCmds != "":
-                retval = CoreBackendTools().StartThreadProcess(ExecCmds, Piping=True)
+                retval = CoreTools().StartProcess(ExecCmds)
 
                 #Check the return values, and run the handler if needed.
                 if retval == 0:

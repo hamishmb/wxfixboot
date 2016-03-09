@@ -26,10 +26,10 @@ class Main(): #*** Refactor and test all of these ***
         """Update the package lists so the required packages can always be found."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get update", Piping=True)
+                retval = CoreTools().StartProcess("DEBIAN_FRONTEND=noninteractive apt-get update")
 
             else:
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'", Piping=True)
+                retval = CoreTools().StartProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'")
         
         #Return the return value.
         return retval
@@ -38,10 +38,10 @@ class Main(): #*** Refactor and test all of these ***
         """Install GRUB2."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober", Piping=True)
+                retval = CoreTools().StartProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober")
 
             else:
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'", Piping=True)
+                retval = CoreTools().StartProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'")
         
         #Return the return value.
         return retval
@@ -50,10 +50,10 @@ class Main(): #*** Refactor and test all of these ***
         """Install LILO."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y lilo", Piping=True)
+                retval = CoreTools().StartProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y lilo")
 
             else:
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y lilo'", Piping=True)
+                retval = CoreTools().StartProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y lilo'")
         
         #Return the return value.
         return retval
@@ -62,10 +62,10 @@ class Main(): #*** Refactor and test all of these ***
         """Install GRUB-UEFI."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober", Piping=True)
+                retval = CoreTools().StartProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober")
 
             else:
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'", Piping=True)
+                retval = CoreTools().StartProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'")
         
         #Return the return value.
         return retval
@@ -74,10 +74,10 @@ class Main(): #*** Refactor and test all of these ***
         """Install ELILO."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreBackendTools().StartThreadProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y elilo", Piping=True)
+                retval = CoreTools().StartProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y elilo")
 
             else:
-                retval = CoreBackendTools().StartThreadProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'", Piping=True)
+                retval = CoreTools().StartProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'")
         
         #Return the return value.
         return retval
