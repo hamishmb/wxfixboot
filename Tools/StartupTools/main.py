@@ -47,11 +47,11 @@ class Main():
             logger.critical("MainStartupTools: Main().CheckDepends(): Dependencies missing! WxFixBoot will exit. The missing dependencies are: "+', '.join(FailedList)+". Exiting.")
             CoreTools().EmergencyExit("The following dependencies could not be found on your system: "+', '.join(FailedList)+".\n\nPlease install the missing dependencies.")
 
-    def UnmountAllFS(self):
+    def UnmountAllFS(self): #*** Try to use the global functions in coretools ***
         """Unmount any unnecessary filesystems, to prevent data corruption."""
-        #Warn about removing devices. *** Remove this message soon ***
+        #Warn about removing devices. *** Fix this if possible ***
         logger.info("MainStartupTools: Main().UnmountAllFS(): Unmounting all Filesystems...")
-        DialogTools().ShowMsgDlg(Kind="info", Message="Unnecessary filesystems will now be unmounted. Please remove all unneeded devices connected to your computer and close any other running programs, then click okay. *** This won't apply anymore when changing device info gatherer *** If you're doing a disk check, please plug in any devices you wish to check. However, if you are doing other operations, please do them seperately.")
+        DialogTools().ShowMsgDlg(Kind="info", Message="WxFixBoot is about to gather device information. After this point, you must not remove any devices from your computer, so do that now if you wish to.")
 
         #Attempt unmount of all filesystems.
         logger.debug("MainStartupTools: Main().UnmountAllFS(): Running 'unmount -ad'...")
@@ -66,7 +66,7 @@ class Main():
         logger.info("MainStartupTools: Main().CheckFS(): Checking filesystems if possible. Running 'fsck -ARMp'...")
         CoreTools().StartProcess("fsck -ARMp") #*** Check it worked! ***
 
-    def MountCoreFS(self):
+    def MountCoreFS(self): #*** Try to use the global functions in coretools ***
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
         CoreTools().StartProcess("mount -avw") #*** Check it worked! ***
@@ -101,7 +101,7 @@ class Main():
 
             #By the way the default OS in this case is set later, when OS detection takes place. *** Maybe get rid of this try statement when I change/remove this *** *** Badly written, what if we get a UUID? Use the heirachy when I switch ***
             try:
-                RootFS = CoreTools().StartProcess("mount", ReturnOutput=True)[1].split()[0] #*** Change this later *** *** Don't call mount directly ***
+                RootFS = CoreTools().StartProcess("mount", ReturnOutput=True)[1].split()[0] #*** Change this later *** *** Don't call mount directly *** *** Write a function to get the device mounted at <mountpoint>? ***
                 AutoRootFS = RootFS
                 RootDevice = RootFS[0:8]
                 AutoRootDevice = RootDevice

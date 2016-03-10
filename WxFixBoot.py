@@ -43,7 +43,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "9/3/2016"
+ReleaseDate = "10/3/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -378,7 +378,7 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "40")
         logger.info("InitThread(): Finished Getting Device Information...")
 
-        #Make disk info available to modules *** Write a function to keep it up to ate at some point ***
+        #Make disk info available to modules *** Write a function to keep it up to date at some point ***
         Tools.StartupTools.core.DiskInfo = DiskInfo
 
         #Mount all filesystems.
@@ -1260,7 +1260,7 @@ class SettingsWindow(wx.Frame):
     def CreateButtons(self):
         """Create Some buttons."""
         self.ExitButton = wx.Button(self.Panel, -1, "Apply these Settings and Close")
-        self.BootloaderOptionsButton = wx.Button(self.Panel, -1, "View Bootloader Options")
+        self.BootloaderOptionsButton = wx.Button(self.Panel, -1, "Bootloader Options")
         self.RestoreBootsectorButton = wx.Button(self.Panel, -1, "Restore Boot Sector")
         self.RestorePartitionTableButton = wx.Button(self.Panel, -1, "Restore Partition Table")
 
@@ -1477,10 +1477,10 @@ class SettingsWindow(wx.Frame):
         AllSettingsSizer.Add(wx.StaticLine(self.Panel), 0, wx.EXPAND)
         AllSettingsSizer.Add(AdvancedSettingsSizer, 3, wx.LEFT|wx.EXPAND, 5)
 
-        #Add items to the bootloader options sizer. #*** Sort out alignment ***
-        BootloaderOptionsSizer.Add(self.BootloaderToInstallText, 1, wx.RIGHT|wx.EXPAND, 5)
+        #Add items to the bootloader options sizer.
+        BootloaderOptionsSizer.Add(self.BootloaderToInstallText, 1, wx.RIGHT|wx.EXPAND|wx.ALIGN_CENTER, 5)
         BootloaderOptionsSizer.Add(self.BootloaderOptionsButton, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        BootloaderOptionsSizer.Add(self.FirmwareTypeText, 1, wx.LEFT|wx.EXPAND, 5)
+        BootloaderOptionsSizer.Add(self.FirmwareTypeText, 1, wx.LEFT|wx.EXPAND|wx.ALIGN_CENTER, 5)
 
         #Add items to the bottom button sizer.
         BottomButtonSizer.Add(self.RestoreBootsectorButton, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
@@ -2081,7 +2081,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.DoNotChangeBootloaderCheckBox.Disable()
 
     def RescanForBootloaders(self, Event=None):
-        """Handle selection of new UEFI system partition. It's pretty self-explanatory.""" #*** Do we need to reset stuff/go back to mainwindow here? ***
+        """Handle selection of new UEFI system partition. It's pretty self-explanatory."""
         logger.debug("BootloaderOptionsWindow().RescanForBootloaders(): Preparing to rescan for bootloaders...")
         dlg = wx.MessageDialog(self.Panel, "WxFixBoot will now rescan for bootloaders, please wait a few seconds.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
         dlg.ShowModal()

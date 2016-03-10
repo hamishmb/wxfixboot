@@ -47,12 +47,12 @@ class Main():
             Char = cmd.stdout.read(1)
             Line += Char
 
-            if Char == "\n": #*** Silence UnicodeWarning when failing to convert Char to unicode ***
+            if Char == "\n": #*** Silence UnicodeWarning when failing to convert Char to unicode *** *** Not really a problem cos if char can't be converted it isn't = to \n anyway, but annoying ***
                 #Convert to unicode if needed and remove "NULL" characters.
                 if unicode(type(Line)) != "<type 'unicode'>":
                     Line = unicode(Line, errors="replace").replace("\x00", "")
 
-                wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
+                #wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
                 LineList.append(Line.replace("\n", "").replace("\r", ""))
 
                 #Reset Line.
@@ -72,30 +72,54 @@ class Main():
             #Return the return code, as well as the output.
             return (Retval, '\n'.join(LineList))
 
-    def IsMounted(self, Partition): #*** Check this works ***
+    def IsMounted(self, Partition, MountPoint=None): #*** Check this works *** *** Reduce duplication maybe ***
         """Checks if the given partition is mounted.
         Partition is the given partition to check.
-        Doesn't check WHERE the partition is mounted,
-        just whether it is or not.
+        If MountPoint is specified, check if the partition is mounted there, rather than just if it's mounted.
         Return boolean True/False.
         """
-        logger.debug("CoreTools: Main().IsMounted(): Checking if "+Partition+" is mounted...")
-
         MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
 
-        if Partition in MountInfo:
-            logger.debug("CoreTools: Main().IsMounted(): It is. Returning True...")
-            return True
+        if MountPoint == None:
+            logger.debug("CoreTools: Main().IsMounted(): Checking if "+Partition+" is mounted...")
+
+            Mounted = False
+
+            for Line in MountInfo.split("\n"):
+                if Line.split()[0] == Partition:
+                    Mounted = True
+
+            if Mounted:
+                logger.debug("CoreTools: Main().IsMounted(): It is. Returning True...")
+                return True
+
+            else:
+                logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
+                return False
 
         else:
-            logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
-            return False
+            #Check where it's mounted too.
+            logger.debug("CoreTools: Main().IsMounted(): Checking if "+Partition+" is mounted at "+MountPoint+"...")
 
-    def MountPartition(self, Partition, MountPoint, Options=""): #*** Check this works *** #*** Check this over: What if our partition is mounted somewhere else? Make this more bullet-proof ***
+            Mounted = False
+
+            for Line in MountInfo.split("\n"):
+                if Line.split()[0] == Partition and Line.split()[2] == MountPoint:
+                    Mounted = True
+
+            if Mounted:
+                logger.debug("CoreTools: Main().IsMounted(): It is. Returning True...")
+                return True
+
+            else:
+                logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
+                return False
+
+    def MountPartition(self, Partition, MountPoint, Options=""): #*** Check this works *** #*** Check this over: What if our partition is mounted somewhere else? Does that matter? Make this more bullet-proof ***
         """Mounts the given partition.
         Partition is the partition to mount.
         MountPoint is where you want to mount the partition.
-        Options is non-mandatory and contains whatever option you want to pass to the mount command.
+        Options is non-mandatory and contains whatever options you want to pass to the mount command.
         The default value for Options is an empty string.
         """
         if Options != "":
