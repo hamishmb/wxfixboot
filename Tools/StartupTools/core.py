@@ -86,7 +86,7 @@ class Main():
 
             return Result
 
-    def MountUEFIPartition(self, UEFISystemPartition):
+    def MountUEFIPartition(self, UEFISystemPartition): #*** Do we need this function? ***
         """Mount the UEFI partition if needed"""
         #Get the UEFI partition's current mountpoint, if it is mounted.
         logger.debug("CoreStartupTools: Main().MountUEFIPartition(): Preparing to mount UEFI system Partition if needed...")

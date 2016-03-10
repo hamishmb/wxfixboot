@@ -191,20 +191,28 @@ class Main():
             if LiveDisk == False and Partition == AutoRootFS:
                 logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Modifying current OS so not using chroot...")
                 UseChroot = False
+                UnmountAfter = False
                 MountPoint = None
 
             else:
                 logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Using chroot to modify another OS...")
                 UseChroot = True
-
-                #Mount the partition using the global mount function. *** Note: Do we need to unmount it afterwards? Maybe check if it's mounted first, and do if needed *** 
                 MountPoint = "/mnt"+Partition
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
 
-                if Retval != 0:
-                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remount "+Partition+"! Warn the user and skip this OS.")
-                    DialogTools().ShowMsgDlg(Kind="error", Message="WxixBoot failed to mount the partition containing: "+OS+"! This OS will now be skipped.")
-                    continue
+                #Check if the partition is mounted. *** Check this works ***
+                if CoreTools().IsMounted(Partition, MountPoint):
+                    UnmountAfter = False
+
+                else:
+                    UnmountAfter = True
+
+                    #Mount the partition using the global mount function.
+                    Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
+
+                    if Retval != 0:
+                        logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+Partition+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
+                        DialogTools().ShowMsgDlg(Kind="error", Message="WxixBoot failed to mount the partition containing: "+OS+"! This OS will now be skipped.")
+                        continue
 
                 #Set up chroot.
                 CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
@@ -236,6 +244,10 @@ class Main():
             #Tear down chroot if needed.
             if UseChroot:
                 CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
+
+            #Unmount partition if needed.
+            if UnmountAfter:
+                CoreTools().Unmount(MountPoint) #*** Check it worked ***
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished removing the old bootloader from OS: "+OS+"...###\n")
 
@@ -271,19 +283,28 @@ class Main():
             if LiveDisk == False and Partition == AutoRootFS:
                 logger.debug("MainBackendTools: Main().InstallNewBootloader(): Modifying current OS so not using chroot...")
                 UseChroot = False
-                MountPoint = ""
+                UnmountAfter = False
+                MountPoint = None
 
             #Otherwise, setup the chroot and everything else first, and tell them we are using chroot, and pass the mountpoint to them.
             else:
                 logger.debug("MainBackendTools: Main().InstallNewBootloader(): Using chroot to modify another OS...")
                 UseChroot = True
                 MountPoint = "/mnt"+Partition
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
 
-                if Retval != 0:
-                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+Partition+"! Warn the user and skip this OS.")
-                    DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing: "+OS+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. It is recommended to do a Bad Sector check, and then try again.") #*** Is this good advice? Try to determine the cause of the problem ***
-                    continue
+                #Check if the partition is mounted. *** Check this works ***
+                if CoreTools().IsMounted(Partition, MountPoint):
+                    UnmountAfter = False
+
+                else:
+                    UnmountAfter = True
+
+                    Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
+
+                    if Retval != 0:
+                        logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+Partition+"! Warn the user and skip this OS.")
+                        DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing: "+OS+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. It is recommended to do a Bad Sector check, and then try again.") #*** Is this good advice? Try to determine the cause of the problem ***
+                        continue
 
                 #Set up chroot.
                 CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
@@ -333,6 +354,9 @@ class Main():
                 #Tear down chroot.
                 CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
 
+            if UnmountAfter:
+                CoreTools().Unmount(MountPoint) #*** Check it worked ***
+
             if retval != 0:
                 #Something went wrong! Log it and notify the user.
                 BootloaderInstallSucceded = False
@@ -347,7 +371,7 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
         return BootloaderInstallSucceded #*** Keep the results for each OS here, and note which one(s) failed! ***
 
-    def SetNewBootloaderConfig(self): #*** Check this works ***
+    def SetNewBootloaderConfig(self): #*** Check this works *** *** Use UseChroot here for readability? ***
         """Manage setting new bootloader config."""
         logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): Preparing to set bootloader config in OS(s): "+', '.join(OSsForBootloaderInstallation)+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to set the new bootloaders' config...")
@@ -376,19 +400,27 @@ class Main():
                 logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're modifying the current OS...")
                 #If so, make sure this will work for this OS too, and avoid setting mountpoint, so the config instructions below look in the right place for the config files.
                 MountPoint = ""
+                UnmountAfter = False
 
             else:
-                logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're Modifying another OS...")
+                logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're modifying another OS...")
                 #If not, set mountpoint to the actual mountpoint.
                 MountPoint = "/mnt"+Partition
 
-                #Mount the partition.
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
+                #Check if the partition is mounted.
+                if CoreTools().IsMounted(Partition, MountPoint):
+                    UnmountAfter = False
 
-                if Retval != 0:
-                    #Ignore this partition.
-                    logger.warning("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount "+Partition+"! Ignoring this partition...")
-                    continue
+                else:
+                    UnmountAfter = True
+
+                    #Mount the partition.
+                    Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
+
+                    if Retval != 0:
+                        #Ignore this partition.
+                        logger.warning("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount "+Partition+"! Ignoring this partition...")
+                        continue
 
                 #Set up chroot.
                 CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
@@ -501,10 +533,12 @@ class Main():
                 HelperBackendTools().BackupUEFIFiles(MountPoint=MountPoint)
                 HelperBackendTools().CopyUEFIFiles(MountPoint=MountPoint)
 
-            #Unmount the partition, if needed.
+            #Tear down chroot if needed.
             if MountPoint != "":
-                #Tear down chroot.
                 CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
+
+            #Unmount the partition if needed.
+            if UnmountPartitionAfter:
                 CoreTools().Unmount(MountPoint) #*** Check it worked! ***
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished setting the new bootloader's config for OS: "+OS+"...###\n")
