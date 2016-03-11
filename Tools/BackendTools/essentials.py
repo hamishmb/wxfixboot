@@ -196,8 +196,10 @@ class Main(): #*** These need refactoring and proper testing ***
             Temp = PartitionTableFile.split('/')
             PartitionToMount = "/"+'/'.join(Temp[2:4])
 
-            #Mount it, and set a variable so we can unmount it afterwards. *** Check it worked! ***
-            CoreTools().MountPartition(Partition=PartitionToMount, MountPoint="/mnt"+PartitionToMount)
+            #Mount it, and set a variable so we can unmount it afterwards. *** With that variable, check if it was mounted before, and if so leave it alone! ***
+            if CoreTools().MountPartition(Partition=PartitionToMount, MountPoint="/mnt"+PartitionToMount) != 0:
+                logger.error("EssentialBackendTools: Main().RestorePartitionTable(): Failed to mount "+PartitionToMount+" at /mnt"+PartitionToMount+"! Continuing anyway...")
+
             MountedFS = PartitionToMount
             logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Okay. Mounted the partition: "+MountedFS+" that houses the file. Now let's restore the Partition Table...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 35)
@@ -228,7 +230,8 @@ class Main(): #*** These need refactoring and proper testing ***
         if MountedFS != "None":
             logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Unmounting partition: "+MountedFS+"...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 85)
-            CoreTools().Unmount(MountedFS) #*** Check it worked! ***
+            if CoreTools().Unmount(MountedFS) != 0: 
+                logger.error("EssentialBackendTools: Main().RestorePartitionTable(): Failed to unmount "+MountedFS+"! Continuing anyway...")
 
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Restoring the Partition Table!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
@@ -250,8 +253,10 @@ class Main(): #*** These need refactoring and proper testing ***
             Temp = BootSectorFile.split('/')
             PartitionToMount = "/"+'/'.join(Temp[2:4])
 
-            #Mount it, and set a variable so we can unmount it afterwards. *** Check it worked! *** *** With that variable, check if it was mounted before, and if so leave it alone! ***
-            CoreTools().MountPartition(Partition=PartitionToMount, MountPoint="/mnt"+PartitionToMount)
+            #Mount it, and set a variable so we can unmount it afterwards. *** With that variable, check if it was mounted before, and if so leave it alone! ***
+            if CoreTools().MountPartition(Partition=PartitionToMount, MountPoint="/mnt"+PartitionToMount) != 0:
+                logger.error("EssentialBackendTools: Main().RestoreBootSector(): Failed to mount "+PartitionToMount+" to /mnt"+PartitionToMount+"! Continuing anyway...")
+
             MountedFS = PartitionToMount
             logger.info("EssentialBackendTools: Main().RestoreBootSector(): Okay. Mounted the partition: "+MountedFS+" that houses the file. Now let's restore the Boot Sector...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 35)
@@ -282,7 +287,8 @@ class Main(): #*** These need refactoring and proper testing ***
         if MountedFS != "None":
             logger.info("EssentialBackendTools: Main().RestoreBootSector(): Unmounting partition: "+MountedFS+"...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 85)
-            CoreTools().Unmount(MountedFS) #*** Check it worked! ***
+            if CoreTools().Unmount(MountedFS) != 0:
+                logger.error("EssentialBackendTools: Main().RestoreBootSector(): Failed to unmount "+MountedFS+"! Continuing anyway...")
 
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Restoring the Boot Sector!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
