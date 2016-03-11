@@ -79,7 +79,11 @@ class Main():
     def MountCoreFS(self):
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
-        CoreTools().StartProcess("mount -avw") #*** Check it worked! ***
+        Retval = CoreTools().StartProcess("mount -avw")
+
+        if Retval != 0:
+            logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
+            CoreTools().EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
     def GetRootFSandRootDev(self, LinuxPartList):
         """Determine RootFS, and RootDevice"""
