@@ -194,7 +194,11 @@ class Main():
                         OSList.append(OSName+' '+OSArch+' on partition '+Partition)
 
                 #Unmount the filesystem.
-                Retval = CoreTools().Unmount("/mnt"+Partition) #*** Check the return value so we can take action if this doesn't work! Otherwise we may delete data from a drive! Mind, it looks like os.rmdir won't let you fortunately. ***
+                Retval = CoreTools().Unmount("/mnt"+Partition) #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
+
+                if Retval != 0:
+                    logger.error("MainStartupTools: Main().GetLinuxOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
+                    CoreTools().EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
                 #Remove the temporary mountpoint
                 os.rmdir("/mnt"+Partition)

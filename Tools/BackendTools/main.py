@@ -85,7 +85,7 @@ class Main():
 
             #Unmount the partition, if needed.
             if MountPoint != "":
-                CoreTools().Unmount(MountPoint) #*** Check it worked! ***
+                Retval = CoreTools().Unmount(MountPoint) #*** Check it worked! ***
 
             #Now we have the config, let's add it to the list, if it's unique. This will also catch the NameError exception created if the bootloader's config file wasn't found. 
             #First do timeout.
