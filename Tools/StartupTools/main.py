@@ -70,9 +70,13 @@ class Main():
     def CheckFS(self):
         """Check all unmounted filesystems."""
         logger.info("MainStartupTools: Main().CheckFS(): Checking filesystems if possible. Running 'fsck -ARMp'...")
-        CoreTools().StartProcess("fsck -ARMp") #*** Check it worked! ***
+        Retval = CoreTools().StartProcess("fsck -ARMp")
 
-    def MountCoreFS(self): #*** Try to use the global functions in coretools ***
+        if Retval != 0:
+            logger.critical("MainStartupTools: Main().CheckFS(): Failed to check filesystems! Doing emergency exit...")
+            CoreTools().EmergencyExit("Failed to check filesystems! Please fix your filesystems and then run WxFixBoot again.")
+
+    def MountCoreFS(self):
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
         CoreTools().StartProcess("mount -avw") #*** Check it worked! ***
