@@ -47,7 +47,7 @@ class Main():
             logger.critical("MainStartupTools: Main().CheckDepends(): Dependencies missing! WxFixBoot will exit. The missing dependencies are: "+', '.join(FailedList)+". Exiting.")
             CoreTools().EmergencyExit("The following dependencies could not be found on your system: "+', '.join(FailedList)+".\n\nPlease install the missing dependencies.")
 
-    def UnmountAllFS(self): #*** Try to use the global functions in coretools ***
+    def UnmountAllFS(self):
         """Unmount any unnecessary filesystems, to prevent data corruption."""
         #Warn about removing devices. *** Fix this if possible ***
         logger.info("MainStartupTools: Main().UnmountAllFS(): Unmounting all Filesystems...")
