@@ -20,6 +20,8 @@
 #*** Test DialogTools().ShowMultiChoiceDlg() ***
 #*** DevInfoTools().GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
 #*** Write a function to return the device mounted at a given mount point. ***
+#*** Figure out what to do in each instance where something might fail ***
+#*** Return return values in chroot functions (CoreBackendTools) ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import

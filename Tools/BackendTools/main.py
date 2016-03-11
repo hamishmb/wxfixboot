@@ -85,7 +85,10 @@ class Main():
 
             #Unmount the partition, if needed.
             if MountPoint != "":
-                Retval = CoreTools().Unmount(MountPoint) #*** Check it worked! ***
+                Retval = CoreTools().Unmount(MountPoint)
+
+                if Retval != 0:
+                    logger.error("MainBackendTools: Main().GetOldBootloaderConfig(): Couldn't unmount "+MountPoint+"! Continuing anyway...")
 
             #Now we have the config, let's add it to the list, if it's unique. This will also catch the NameError exception created if the bootloader's config file wasn't found. 
             #First do timeout.
@@ -247,7 +250,10 @@ class Main():
 
             #Unmount partition if needed.
             if UnmountAfter:
-                CoreTools().Unmount(MountPoint) #*** Check it worked ***
+                UnmountRetval = CoreTools().Unmount(MountPoint)
+
+                if UnmountRetval != 0:
+                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Couldn't unmount "+MountPoint+"! Continuing anyway...")
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished removing the old bootloader from OS: "+OS+"...###\n")
 
@@ -313,8 +319,9 @@ class Main():
                 CoreTools().StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False) #*** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this ***
 
             #Update the package lists.
-            retval = BootloaderInstallationTools().UpdatePackageLists(PackageManager=PackageManager, UseChroot=UseChroot) #*** This ignores this return value! ***
-
+            if BootloaderInstallationTools().UpdatePackageLists(PackageManager=PackageManager, UseChroot=UseChroot) != 0:
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to Update the Package Information! Continuing anyway...")
+    
             wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Installing the new bootloader(s)...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)       
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Installing the new bootloader in OS: "+OS+"...###\n")
@@ -332,14 +339,20 @@ class Main():
                 logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing GRUB-UEFI...")
                 #Mount the UEFI partition at MountPoint/boot/efi.
                 #Unmount it first though, in case it's already mounted. *** Alternately check where it's mounted and leave it if it's okay ***
-                CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
-                CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") #*** Check it worked! ***
+
+                if CoreTools().Unmount(UEFISystemPartition) != 0:
+                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+UEFISystemPartition+"! This probably doesn't matter...")
+
+                if CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
+                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+UEFISystemPartition+"! to "+MountPoint+"/boot/efi! *** TODO: Abort bootloader installation. *** For now, continue anyway...")
+
                 retval = BootloaderInstallationTools().InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
             elif BootloaderToInstall == "ELILO":
                 logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing ELILO...")
-                #Unmount the UEFI Partition now, and update the mtab inside chroot.
-                CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
+                #Unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
+                if CoreTools().Unmount(UEFISystemPartition) != 0:
+                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount the EFI partition! Continuing anyway...") #*** Installation won't work if unmounting failed! ***
 
                 if UseChroot:
                     CoreBackendTools().UpdateChrootMtab(MountPoint=MountPoint)
@@ -347,15 +360,17 @@ class Main():
                 retval = BootloaderInstallationTools().InstallELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
             #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot.
-            CoreTools().Unmount(MountPoint+"/boot") #*** Check it worked *** *** Test that this works *** *** Why not check if there is one first? ***
+            if CoreTools().Unmount(MountPoint+"/boot") != 0:
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot! *** TODO: Check if there is a /boot partition first ***. This probably doesn't matter..." #*** Test that this works *** *** Why not check if there is one first? ***
 
             if UseChroot:
                 logger.debug("MainBackendTools: Main().InstallNewBootloader(): Removing chroot...")
-                #Tear down chroot.
+                #Tear down chroot. #*** Check it worked ***
                 CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
 
             if UnmountAfter:
-                CoreTools().Unmount(MountPoint) #*** Check it worked ***
+                if CoreTools().Unmount(MountPoint) != 0:
+                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"! Continuing anyway...")
 
             if retval != 0:
                 #Something went wrong! Log it and notify the user.
@@ -455,7 +470,8 @@ class Main():
                     BootloaderConfigSettingTools().SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
 
                 #Mount the UEFI partition at MountPoint/boot/efi.
-                CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") #*** Check it worked! ***
+                if CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't mount EFI partition "+UEFISystemPartition+" to install bootloader! *** TODO: Cancel bootloader operations *** Continuing for now...")
 
                 #Now Install GRUB-UEFI to the UEFI Partition.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to UEFISystemPartition...")
@@ -501,11 +517,14 @@ class Main():
 
             elif BootloaderToInstall == "ELILO":
                 #Unmount the UEFI Partition now, and update mtab in the chroot.
-                CoreTools().Unmount(UEFISystemPartition) #*** Check it worked! ***
+                if CoreTools().Unmount(UEFISystemPartition) != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+UEFISystemPartition+"! Cotinuing anyway...") #*** Installation will fail if this happens! ***
+
                 CoreBackendTools().UpdateChrootMtab(MountPoint=MountPoint)
 
                 #Make ELILO's config file.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making ELILO's configuration file...")
+
                 if MountPoint == "":
                     CoreTools().StartProcess("elilo -b "+UEFISystemPartition+" --autoconf", ShowOutput=False)
 
@@ -527,7 +546,8 @@ class Main():
                 BootloaderConfigSettingTools().InstallELILOToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartition=UEFISystemPartition)
 
                 #Mount the UEFI partition at MountPoint/boot/efi.
-                CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") #*** Check it worked! ***
+                if CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount EFI partition "+UEFISystemPartition+"! Continuing anyway...")
 
                 #Copy and backup UEFI files where needed.
                 HelperBackendTools().BackupUEFIFiles(MountPoint=MountPoint)
@@ -539,7 +559,8 @@ class Main():
 
             #Unmount the partition if needed.
             if UnmountPartitionAfter:
-                CoreTools().Unmount(MountPoint) #*** Check it worked! ***
+                if CoreTools().Unmount(MountPoint) != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount "+MountPoint+"! Continuing anyway...")
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished setting the new bootloader's config for OS: "+OS+"...###\n")
 
