@@ -55,33 +55,29 @@ class Main():
 
         #Attempt unmount of all filesystems. *** Check which filesystems can be unmounted first, and use the global mount function ***
         logger.debug("MainStartupTools: Main().UnmountAllFS(): Running 'unmount -ad'...")
-        Retval = CoreTools().StartProcess("umount -ad")
 
-        if Retval != 0:
+        if CoreTools().StartProcess("umount -ad") != 0:
             logger.error("MainStartupTools: Main().UnmountAllFS(): Failed to unmount all filesystems! For the time being, this is normal cos we try to unmount all filesystems...")
 
         #Make sure that we still have rw access on live disks. *** Check if we're on a live disk beforehand ***
         logger.info("MainStartupTools: Main().UnmountAllFS(): Attempting to remount '/' to make sure it's still rw on a live disk.")
-        Retval = CoreTools().RemountPartition("/")
 
-        if Retval != 0:
+        if CoreTools().RemountPartition("/") != 0:
             logger.error("MainStartupTools: Main().UnmountAllFS(): Failed to remount / as rw! This probably doesn't matter if on a live disk *** TODO: check if on live disk before doing this ***...")
 
     def CheckFS(self):
         """Check all unmounted filesystems."""
         logger.info("MainStartupTools: Main().CheckFS(): Checking filesystems if possible. Running 'fsck -ARMp'...")
-        Retval = CoreTools().StartProcess("fsck -ARMp")
 
-        if Retval != 0:
+        if CoreTools().StartProcess("fsck -ARMp") != 0:
             logger.critical("MainStartupTools: Main().CheckFS(): Failed to check filesystems! Doing emergency exit...")
             CoreTools().EmergencyExit("Failed to check filesystems! Please fix your filesystems and then run WxFixBoot again.")
 
     def MountCoreFS(self):
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
-        Retval = CoreTools().StartProcess("mount -avw")
 
-        if Retval != 0:
+        if CoreTools().StartProcess("mount -avw") != 0:
             logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
             CoreTools().EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
@@ -168,11 +164,8 @@ class Main():
 
             elif Partition[0:7] in ('/dev/sd', '/dev/hd'):
                 #We're interested in this partition, because it's an HDD or usb disk partition.
-                #Mount the partition.
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint="/mnt"+Partition)
-
-                #Check if anything went wrong.
-                if Retval != 0:
+                #Mount the partition and check if anything went wrong.
+                if CoreTools().MountPartition(Partition=Partition, MountPoint="/mnt"+Partition) != 0:
                     #Ignore the partition.
                     logger.warning("MainStartupTools: Main().GetLinuxOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
 
@@ -194,9 +187,7 @@ class Main():
                         OSList.append(OSName+' '+OSArch+' on partition '+Partition)
 
                 #Unmount the filesystem.
-                Retval = CoreTools().Unmount("/mnt"+Partition) #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
-
-                if Retval != 0:
+                if CoreTools().Unmount("/mnt"+Partition) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
                     logger.error("MainStartupTools: Main().GetLinuxOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
                     CoreTools().EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
@@ -250,9 +241,7 @@ class Main():
                 if not os.path.isdir("/sys/firmware/efi/vars"):
                     os.mkdir("/sys/firmware/efi/vars")
 
-                Retval = CoreTools().MountPartition(Partition="efivars", MountPoint="/sys/firmware/efi/vars", Options="-t efivarfs") #*** Check this works ***
-
-                if Retval != 0:
+                if CoreTools().MountPartition(Partition="efivars", MountPoint="/sys/firmware/efi/vars", Options="-t efivarfs") != 0: #*** Check this works ***
                     logger.warning("MainStartupTools: Main().GetFirmwareType(): Failed to mount UEFI vars! Warning user. Ignoring and continuing.")
 
                     #UEFI vars not available or couldn't be mounted.

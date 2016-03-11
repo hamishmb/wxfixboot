@@ -361,7 +361,7 @@ class Main():
 
             #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot.
             if CoreTools().Unmount(MountPoint+"/boot") != 0:
-                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot! *** TODO: Check if there is a /boot partition first ***. This probably doesn't matter..." #*** Test that this works *** *** Why not check if there is one first? ***
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot! *** TODO: Check if there is a /boot partition first ***. This probably doesn't matter...") #*** Test that this works *** *** Why not check if there is one first? ***
 
             if UseChroot:
                 logger.debug("MainBackendTools: Main().InstallNewBootloader(): Removing chroot...")
