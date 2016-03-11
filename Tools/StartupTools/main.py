@@ -53,13 +53,19 @@ class Main():
         logger.info("MainStartupTools: Main().UnmountAllFS(): Unmounting all Filesystems...")
         DialogTools().ShowMsgDlg(Kind="info", Message="WxFixBoot is about to gather device information. After this point, you must not remove any devices from your computer, so do that now if you wish to.")
 
-        #Attempt unmount of all filesystems.
+        #Attempt unmount of all filesystems. *** Check which filesystems can be unmounted first, and use the global mount function ***
         logger.debug("MainStartupTools: Main().UnmountAllFS(): Running 'unmount -ad'...")
-        CoreTools().StartProcess("umount -ad") #*** Check it worked! ***
+        Retval = CoreTools().StartProcess("umount -ad")
 
-        #Make sure that we still have rw access on live disks. *** Check if we're on a live disk beforehand maybe? ***
+        if Retval != 0:
+            logger.error("MainStartupTools: Main().UnmountAllFS(): Failed to unmount all filesystems! For the time being, this is normal cos we try to unmount all filesystems...")
+
+        #Make sure that we still have rw access on live disks. *** Check if we're on a live disk beforehand ***
         logger.info("MainStartupTools: Main().UnmountAllFS(): Attempting to remount '/' to make sure it's still rw on a live disk.")
-        CoreTools().RemountPartition("/") #*** Check it worked! ***
+        Retval = CoreTools().RemountPartition("/")
+
+        if Retval != 0:
+            logger.error("MainStartupTools: Main().UnmountAllFS(): Failed to remount / as rw! This probably doesn't matter if on a live disk *** TODO: check if on live disk before doing this ***...")
 
     def CheckFS(self):
         """Check all unmounted filesystems."""
