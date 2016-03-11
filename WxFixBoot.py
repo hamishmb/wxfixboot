@@ -22,6 +22,7 @@
 #*** Write a function to return the device mounted at a given mount point. ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** Return return values in chroot functions (CoreBackendTools) ***
+#*** On wx 3, use custom buttons for dialogs ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -337,7 +338,7 @@ class InitialWindow(wx.Frame):
 #Begin Initaization Thread.
 class InitThread(threading.Thread):
     def __init__(self, ParentWindow):
-        """Make a temporary directory for mountpoints used by this program *** TODO ***. If it already exists, delete it and recreate it, unless this isn't first run."""
+        """Make a temporary directory for mountpoints used by this program *** TODO ***. If it already exists, delete it and recreate it."""
 
         #Set up dialog tools.
         Tools.dialogtools.ParentWindow = ParentWindow
@@ -355,21 +356,21 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Checking For Dependencies...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking For Dependencies...")
         MainStartupTools().CheckDepends()
-        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "10")
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "2")
         logger.info("InitThread(): Done Checking For Dependencies!")
 
         #Unmount all filesystems, to avoid any data corruption.
         logger.info("InitThread(): Unmounting Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Unmounting Filesystems...")
         MainStartupTools().UnmountAllFS()
-        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "20")
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "5")
         logger.info("InitThread(): Done Unmounting Filsystems!")
 
         #Check filesystems.
         logger.info("InitThread(): Checking Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Filesystems...")
         MainStartupTools().CheckFS()
-        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "30")
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "15")
         logger.info("InitThread(): Filesystems Checked!")
 
         #Get device info. *** Will soon replace some of this functionality used here ***
@@ -378,7 +379,7 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Getting Device Information...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Getting Device Information...")
         DiskInfo = DevInfoTools().GetInfo()
-        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "40")
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "60")
         logger.info("InitThread(): Finished Getting Device Information...")
 
         #Make disk info available to modules *** Write a function to keep it up to date at some point ***
@@ -388,7 +389,7 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Mounting Core Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Mounting Core Filesystems...")
         MainStartupTools().MountCoreFS()
-        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "50")
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "63")
         logger.info("InitThread(): Done Mounting Core Filsystems!")
 
         #*** Temporary abstraction code ***
@@ -479,7 +480,7 @@ class InitThread(threading.Thread):
         if LiveDisk == False:
             OSList, DefaultOS, AutoDefaultOS = MainStartupTools().GetLinuxOSs(LinuxPartList, LiveDisk, AutoRootFS)
 
-        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "70")
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
         logger.info("InitThread(): Found all Linux OSs. Default: "+DefaultOS)
 
         #Get the firmware type. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
@@ -489,9 +490,9 @@ class InitThread(threading.Thread):
         global UEFIVariables
 
         logger.info("InitThread(): Determining Firmware Type...")
-        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining Filesystem Type...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining Firmware Type...")
         FirmwareType, AutoFirmwareType, UEFIVariables = MainStartupTools().GetFirmwareType()
-        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "70")
         logger.info("InitThread(): Determined Firmware Type as: "+FirmwareType)
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
@@ -512,7 +513,7 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
         Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
-        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "90")
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): Bootloader is: "+Bootloader)
 
         #Perform final check.
