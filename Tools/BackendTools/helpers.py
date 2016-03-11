@@ -286,11 +286,12 @@ class Main():
             Found = self.LookForBootloaderOnPartition(Bootloader=Bootloader, PackageManager=PackageManager, MountPoint=MountPoint, UsingChroot=UsingChroot)
 
             if UsingChroot:
-                #Tear down the chroot.
+                #Tear down the chroot. #*** Check it worked! ***
                 CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
 
                 #Unmount the partition.
-                CoreTools().Unmount(Partition) #*** Check it worked! ***
+                if CoreTools().Unmount(Partition) != 0:
+                    logger.error("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Failed to unmount "+Partition+"! Continuing anyway...")
 
             #Check if the bootloader was found on that partition. If it wasn't, don't do anything.
             if Found:
