@@ -82,94 +82,64 @@ class Main():
             logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
             CoreTools().EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
-    def GetRootFSandRootDev(self, LiveDisk):
-        """Determine RootFS, and RootDevice"""
-        #*** This should be done for each OS installed and stored that way, preventing unwanted config and damaged bootloaders. Major work needed here. ***
-        if LiveDisk:
-            #Save the info.
-            DefaultOS = ""
-            AutoDefaultOS = DefaultOS
-            RootFS = Result.split()[-1]
-            AutoRootFS = RootFS
-            RootDevice = RootFS[0:8]
-            AutoRootDevice = RootDevice
-
-        else:
-            #By the way the default OS in this case is set later, when OS detection takes place. *** Maybe get rid of this try statement when I change/remove this ***
-            try:
-                RootFS = CoreTools().GetPartitionMountedAt("/")
-                AutoRootFS = RootFS
-                RootDevice = RootFS[0:8]
-                AutoRootDevice = RootDevice
-                DefaultOS = ""
-                AutoDefaultOS = DefaultOS
-                OSList = []
-
-            except IndexError: 
-                logger.critical("MainStartupTools: Main().GetRootFSandRootDev(): Couldn't determine the root device! This program cannot safely continue. WxFixBoot will now exit, and warn the user...")
-                CoreTools().EmergencyExit("WxFixBoot couldn't determine your root device (the device the current OS is running on)! The most likely reason for this is that you're running from a live disk and misreported it, so try restarting WxFixBoot and making the other choice.")
-
-        return AutoRootFS, RootFS, AutoRootDevice, RootDevice, AutoDefaultOS, DefaultOS, OSList
-
-    def GetLinuxOSs(self, LinuxPartList, LiveDisk, AutoRootFS):
+    def GetLinuxOSs(self, LinuxPartList, LiveDisk): #*** Refactor ***
         """Get the names of all Linux OSs on the HDDs."""
         #*** This will need changing, but will not need too much work to adapt it to using dictionaries ***
         #*** Crashes at log line in InitThread().run() if we couldn't detect the current OS ***
-        logger.debug("MainStartupTools: Main().GetLinuxOSs(): Finding Linux operating systems...")
+        logger.info("MainStartupTools: Main().GetLinuxOSs(): Finding Linux operating systems...")
+        RootFS = ""
         OSList = []
-        DefaultOS = ""
-        AutoDefaultOS = DefaultOS
+
+        if LiveDisk == False:
+            logger.info("MainStartupTools: Main().GetLinuxOSs(): Getting name and arch of current OS...")
+
+            #Get the partition it's on.
+            RootFS = CoreTools().GetPartitionMountedAt("/")
+
+            Retval, Temp = CoreTools().StartProcess("lsb_release -sd", ReturnOutput=True)
+            OSName = Temp.replace('\n', '')
+
+            #Run the function to get the architechure, letting the function know that it shouldn't use chroot.
+            OSArch = CoreStartupTools().DetermineOSArchitecture(Partition=RootFS, Chroot=False)
+
+            #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name.
+            if Retval != 0 and OSArch != None:
+                #As this is the current OS, force the user to name it, or be stuck permanently in a loop.
+                OSName = None
+                while OSName == None:
+                    OSName = CoreStartupTools().AskForOSName(Partition=RootFS, OSArch=OSArch, AutoRootFS=AutoRootFS)
+
+            #If we found all of the information, add the OS to the list.
+            if OSName != "" and OSArch != None:
+                #Add this information to the OSList, and set it as the default OS
+                OSList.append(OSName+' (Current OS) '+OSArch+' on partition '+RootFS)
 
         #Get Linux OSs.
         for Partition in LinuxPartList:
-            logger.debug("MainStartupTools: Main().GetLinuxOSs(): Looking on "+Partition+"...")
-
-            #Skip some stuff if we're not on a live disk and Partition == AutoRootFS.
-            if LiveDisk == False and Partition == AutoRootFS:
-                #Look for an OS on this partition.
-                Retval, Temp = CoreTools().StartProcess("lsb_release -sd", ReturnOutput=True)
-                OSName = Temp.replace('\n', '')
-
-                #Run the function to get the architechure, letting the function know that it shouldn't use chroot.
-                OSArch = CoreStartupTools().DetermineOSArchitecture(Partition=Partition, Chroot=False)
-
-                #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name.
-                if Retval != 0 and OSArch != None:
-                    #As this is the current OS, force the user to name it, or be stuck permanently in a loop.
-                    OSName = None
-                    while OSName == None:
-                        OSName = CoreStartupTools().AskForOSName(Partition=Partition, OSArch=OSArch, AutoRootFS=AutoRootFS)
-
-                #If we found all of the information, add the OS to the list.
-                if OSName != "" and OSArch != None:
-                    #Add this information to the OSList, and set it as the default OS
-                    DefaultOS = OSName+' (Current OS) '+OSArch+' on partition '+Partition
-                    AutoDefaultOS = DefaultOS
-                    OSList.append(OSName+' (Current OS) '+OSArch+' on partition '+Partition)
-
-            elif Partition[0:7] in ('/dev/sd', '/dev/hd'):
-                #We're interested in this partition, because it's an HDD or usb disk partition.
+            if Partition != RootFS:
                 #Mount the partition and check if anything went wrong.
+                logger.debug("MainStartupTools: Main().GetLinuxOSs(): Looking on "+Partition+"...")
+
                 if CoreTools().MountPartition(Partition=Partition, MountPoint="/mnt"+Partition) != 0:
                     #Ignore the partition.
                     logger.warning("MainStartupTools: Main().GetLinuxOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
+                    continue
 
-                else:
-                    #Look for an OS on this partition.
-                    Retval, Temp = CoreTools().StartProcess("chroot /mnt"+Partition+" lsb_release -sd", ReturnOutput=True)
-                    OSName = Temp.replace('\n', '')
+                #Look for an OS on this partition.
+                Retval, Temp = CoreTools().StartProcess("chroot /mnt"+Partition+" lsb_release -sd", ReturnOutput=True)
+                OSName = Temp.replace('\n', '')
 
-                    #Run the function to get the architechure, letting the function know that it shouldn't use chroot.
-                    OSArch = CoreStartupTools().DetermineOSArchitecture(Partition=Partition, Chroot=True)
+                #Run the function to get the architechure, letting the function know that it shouldn't use chroot.
+                OSArch = CoreStartupTools().DetermineOSArchitecture(Partition=Partition, Chroot=True)
 
-                    #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name.
-                    if Retval != 0 and OSArch != None:
-                        OSName = CoreStartupTools().AskForOSName(Partition=Partition, OSArch=OSArch, AutoRootFS=AutoRootFS)
+                #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name.
+                if Retval != 0 and OSArch != None:
+                    OSName = CoreStartupTools().AskForOSName(Partition=Partition, OSArch=OSArch, AutoRootFS=AutoRootFS)
 
-                    #Don't use elif here, so we'll also save it if CoreStartupTools().AskForOSName was used to determine the name. If it is still None, the user skipped naming it. Ignore it instead and skip the rest of the loop. *** I don't understand this, so check back later ***
-                    if OSName != None and OSArch != None:
-                        #Add this information to the OSList.
-                        OSList.append(OSName+' '+OSArch+' on partition '+Partition)
+                #Don't use elif here, so we'll also save it if CoreStartupTools().AskForOSName was used to determine the name. If it is still None, the user skipped naming it. Ignore it instead and skip the rest of the loop. *** I don't understand this, so check back later ***
+                if OSName != None and OSArch != None:
+                    #Add this information to the OSList.
+                    OSList.append(OSName+' '+OSArch+' on partition '+Partition)
 
                 #Unmount the filesystem.
                 if CoreTools().Unmount("/mnt"+Partition) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
@@ -182,7 +152,7 @@ class Main():
         #Check that at least one Linux OS was detected.
         if len(OSList) >= 1:
             logger.debug("MainStartupTools: Main().GetLinuxOSs(): Done, OSList Populated okay. Contents: "+', '.join(OSList))
-            return OSList, DefaultOS, AutoDefaultOS
+            return OSList, RootFS
 
         else:
             logger.critical("MainStartupTools: Main().GetLinuxOSs(): Couldn't find any linux operating systems! Linux partitions were detected, but don't appear to contain any OSs! WxFixBoot will now exit, and warn the user...")
@@ -239,6 +209,30 @@ class Main():
                     logger.info("MainStartupTools: Main().GetFirmwareType(): Mounted UEFI Variables at: /sys/firmware/efi/vars. Continuing...")
 
         return FirmwareType, AutoFirmwareType, UEFIVariables
+
+    def GetRootFSandRootDev(self, LiveDisk):
+        """Determine RootFS, and RootDevice"""
+        #*** This should be done for each OS installed and stored that way, preventing unwanted config and damaged bootloaders. Major work needed here. ***
+        if LiveDisk:
+            #Save the info.
+            RootFS = Result.split()[-1]
+            AutoRootFS = RootFS
+            RootDevice = RootFS[0:8]
+            AutoRootDevice = RootDevice
+
+        else:
+            #By the way the default OS in this case is set later, when OS detection takes place. *** Maybe get rid of this try statement when I change/remove this ***
+            try:
+                RootFS = CoreTools().GetPartitionMountedAt("/")
+                AutoRootFS = RootFS
+                RootDevice = RootFS[0:8]
+                AutoRootDevice = RootDevice
+
+            except IndexError: 
+                logger.critical("MainStartupTools: Main().GetRootFSandRootDev(): Couldn't determine the root device! This program cannot safely continue. WxFixBoot will now exit, and warn the user...")
+                CoreTools().EmergencyExit("WxFixBoot couldn't determine your root device (the device the current OS is running on)! The most likely reason for this is that you're running from a live disk and misreported it, so try restarting WxFixBoot and making the other choice.")
+
+        return AutoRootFS, RootFS, AutoRootDevice, RootDevice
 
     def GetBootloader(self, RootDevice, LiveDisk, FirmwareType):
         """Determine the current bootloader."""
