@@ -210,30 +210,6 @@ class Main():
 
         return FirmwareType, AutoFirmwareType, UEFIVariables
 
-    def GetRootFSandRootDev(self, LiveDisk):
-        """Determine RootFS, and RootDevice"""
-        #*** This should be done for each OS installed and stored that way, preventing unwanted config and damaged bootloaders. Major work needed here. ***
-        if LiveDisk:
-            #Save the info.
-            RootFS = Result.split()[-1]
-            AutoRootFS = RootFS
-            RootDevice = RootFS[0:8]
-            AutoRootDevice = RootDevice
-
-        else:
-            #By the way the default OS in this case is set later, when OS detection takes place. *** Maybe get rid of this try statement when I change/remove this ***
-            try:
-                RootFS = CoreTools().GetPartitionMountedAt("/")
-                AutoRootFS = RootFS
-                RootDevice = RootFS[0:8]
-                AutoRootDevice = RootDevice
-
-            except IndexError: 
-                logger.critical("MainStartupTools: Main().GetRootFSandRootDev(): Couldn't determine the root device! This program cannot safely continue. WxFixBoot will now exit, and warn the user...")
-                CoreTools().EmergencyExit("WxFixBoot couldn't determine your root device (the device the current OS is running on)! The most likely reason for this is that you're running from a live disk and misreported it, so try restarting WxFixBoot and making the other choice.")
-
-        return AutoRootFS, RootFS, AutoRootDevice, RootDevice
-
     def GetBootloader(self, RootDevice, LiveDisk, FirmwareType):
         """Determine the current bootloader."""
         #*** Do some of this for each OS *** *** Will need a LOT of modification when I switch to dictionaries ***
