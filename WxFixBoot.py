@@ -19,7 +19,6 @@
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Test DialogTools().ShowMultiChoiceDlg() ***
 #*** DevInfoTools().GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
-#*** Write a function to return the device mounted at a given mount point. ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** Return return values in chroot functions (CoreBackendTools) ***
 #*** On wx 3, use custom buttons for dialogs ***
@@ -47,7 +46,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "11/3/2016"
+ReleaseDate = "14/3/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")

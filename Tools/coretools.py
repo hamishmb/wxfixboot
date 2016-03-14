@@ -115,6 +115,26 @@ class Main():
                 logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
                 return False
 
+    def GetPartitionMountedAt(self, MountPoint): #*** Check this works ***
+        """Returns the partition mounted at the given mountpoint, if any.
+        Otherwise, return None"""
+        logger.info("CoreTools: Main().GetPartitionMountedAt(): Trying to get partition mounted at "+MountPoint+"...")
+
+        MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
+        Partition = None
+
+        for Line in MountInfo.split("\n"):
+            if MountPoint in Line:
+                Partition = Line.split()[0]
+
+        if Partition != None:
+            logger.info("CoreTools: Main().GetPartitionMountedAt(): Found it! Partition is "+Partition+"...")
+
+        else:
+            logger.info("CoreTools: Main().GetPartitionMountedAt(): Didn't find it...")
+
+        return Partition
+
     def MountPartition(self, Partition, MountPoint, Options=""): #*** Check this works *** #*** Check this over: What if our partition is mounted somewhere else? Does that matter? Make this more bullet-proof ***
         """Mounts the given partition.
         Partition is the partition to mount.
