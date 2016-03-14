@@ -23,14 +23,19 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** These need testing and refactoring ***
 class Main():
-    def FindMissingFSCKModules(self, PartitionListWithFSType):
-        """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc), based on the FS types in PartitionListWithFSType.""" #*** Test this again *** *** Will need modification after switching to dictionaries ***
+    def FindMissingFSCKModules(self):
+        """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc).""" #*** Test this again ***
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Looking for missing FSCK modules to ignore...")
         FailedList = []
 
-        for FSType in PartitionListWithFSType:
-            #Check if we're looking at a FSType, not a device, and that we've not marked it "Unknown". Otherwise ignore it. *** Some checks can be removed once switched to dictionaries ***
-            if FSType[0] != "/" and FSType != "Unknown":
+        Keys = DiskInfo.keys()
+        Keys.sort()
+
+        for Disk in Keys:
+            FSType = DiskInfo[Disk]["FileSystem"]
+
+            #Check the FSType is known.
+            if FSType not in ("Unknown", "N/A"):
                 #Check if this module is present.
                 Retval = CoreTools().StartProcess("which fsck."+FSType, ShowOutput=False)
 
@@ -110,7 +115,7 @@ class Main():
             logger.info("HelperBackendTools: Main().LookForBootloaderOnPartition(): Didn't find "+Bootloader+" in "+MountPoint+"...")
             return False
 
-    def FindCheckableFileSystems(self, PartitionListWithFSType, LiveDisk, AutoRootFS): #*** Tidy this up later ***
+    def FindCheckableFileSystems(self, LiveDisk, AutoRootFS): #*** Tidy this up later ***
         """Find all checkable filesystems, and then return them to MainBackendTools().BadSectorCheck()/MainBackendTools().QuickFSCheck()"""
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Finding and returning all filesystems/partitions that can be checked...")
 
@@ -119,25 +124,28 @@ class Main():
         CheckList = []
 
         #Get a list of missing fsck modules (if any) based on the existing filesystems.
-        MissingFSCKModules = self.FindMissingFSCKModules(PartitionListWithFSType)
+        MissingFSCKModules = self.FindMissingFSCKModules()
+
+        Keys = DiskInfo.keys()
+        Keys.sort()
 
         #Determine checkable partitions.
-        for Partition in PartitionListWithFSType:
+        for Disk in Keys:
             #Make sure we're looking at a partition, if not, ignore it.
-            if Partition[0] == "/":
-                #Find the FSType (the next element)
-                FSType = PartitionListWithFSType[PartitionListWithFSType.index(Partition)+1]
+            if DiskInfo[Disk]["Type"] == "Partition":
+                #Get the FSType.
+                FSType = DiskInfo[Disk]["FileSystem"]
 
                 #Check if the required fsck module is present, and that the partition isn't RootFS
-                if "fsck."+FSType not in MissingFSCKModules and FSType != "Unknown":
+                if "fsck."+FSType not in MissingFSCKModules and FSType not in ("Unknown", "N/A"):
                     #If we're not running on a live disk, skip the filesystem if it's the same as RootFS (in which case checking it may corrupt data)
-                    if LiveDisk == False and Partition == AutoRootFS:
+                    if LiveDisk == False and Disk == AutoRootFS:
                         CheckTheFS = False
                         RemountPartitionAfter = False
                         continue
 
                     #Check if the partition is mounted.
-                    PartitionIsMounted = CoreTools().IsMounted(Partition)
+                    PartitionIsMounted = CoreTools().IsMounted(Disk)
 
                     if PartitionIsMounted == False:
                         #Not mounted.
@@ -146,10 +154,10 @@ class Main():
 
                     else:
                         #Unmount the FS temporarily, to avoid data corruption.
-                        Retval = CoreTools().Unmount(Partition)
+                        Retval = CoreTools().Unmount(Disk)
 
                         if Retval != 0:
-                            logger.warning("HelperBackendTools: Main().FindCheckableFileSystems(): Failed to unmount "+Partition+", which is necessary for safe disk checking! Ignoring it, becuase it's probably a home directory (if running an OS on the HDD, and not a live disk) or an essential system dir...")
+                            logger.warning("HelperBackendTools: Main().FindCheckableFileSystems(): Failed to unmount "+Disk+", which is necessary for safe disk checking! Ignoring it, becuase it's probably a home directory (if running an OS on the HDD, and not a live disk) or an essential system dir...")
                             CheckTheFS = False
                             RemountPartitionAfter = False
 
@@ -162,11 +170,11 @@ class Main():
 
                 if CheckTheFS == False:
                     #Add it to the non-checkable list
-                    DoNotCheckList.append(Partition+" with Filesystem: "+FSType)
+                    DoNotCheckList.append(Disk+" with Filesystem: "+FSType)
 
                 else:
                     #Add it to the list for checking.
-                    CheckList.append(Partition+" "+FSType+" "+unicode(RemountPartitionAfter))
+                    CheckList.append(Disk+" "+FSType+" "+unicode(RemountPartitionAfter))
 
         #Report uncheckable partitions.
         if DoNotCheckList != []:

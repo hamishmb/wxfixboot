@@ -422,6 +422,9 @@ class Main():
 
                 DiskInfo[Disk]["FileSystem"] = FSType
 
+            else:
+                DiskInfo[Disk]["FileSystem"] = "N/A"
+
         #Return the info.
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
         return DiskInfo

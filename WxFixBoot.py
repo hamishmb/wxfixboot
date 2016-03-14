@@ -406,7 +406,6 @@ class InitThread(threading.Thread):
 
         #*** Temporary abstraction code ***
         #Define Global Variables. *** Switch to using dictionary soon ***
-        global PartitionListWithFSType
         global DeviceList
         global PartSchemeList
         global AutoPartSchemeList
@@ -415,7 +414,6 @@ class InitThread(threading.Thread):
 
         #DeviceList.
         DeviceList = []
-        PartitionListWithFSType = []
         AutoPartSchemeList = []
         GPTInAutoPartSchemeList = False
         MBRInAutoPartSchemeList = False
@@ -427,10 +425,6 @@ class InitThread(threading.Thread):
             if DiskInfo[Disk]["Type"] == "Device":
                 if DiskInfo[Disk]["Name"][5:7] in ("sd", "hd"):
                     DeviceList.append(DiskInfo[Disk]["Name"])
-
-            elif DiskInfo[Disk]["Type"] == "Partition":
-                PartitionListWithFSType.append(DiskInfo[Disk]["Name"])
-                PartitionListWithFSType.append(DiskInfo[Disk]["FileSystem"])
 
             try:
                 AutoPartSchemeList.append(DiskInfo[Disk]["Partitioning"])
@@ -445,7 +439,7 @@ class InitThread(threading.Thread):
 
         PartSchemeList = AutoPartSchemeList[:]
 
-        logger.debug("InitThread(): *** ABSTRACTION CODE *** DeviceList, PartitionListWithFSType and PartSchemeList Populated okay. Contents (respectively): "+', '.join(DeviceList)+" and: "+', '.join(PartitionListWithFSType)+" and: "+', '.join(PartSchemeList))
+        logger.debug("InitThread(): *** ABSTRACTION CODE *** DeviceList and PartSchemeList Populated okay. Contents (respectively): "+', '.join(DeviceList)+" and: "+', '.join(PartSchemeList))
 
         #*** Temporary abstraction code ***
         #Detect Linux Partitions. *** Switch to using dictionary soon ***
@@ -476,7 +470,7 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Finding Linux OSs...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Linux Operating Systems...")
-        OSList, RootFS = MainStartupTools().GetLinuxOSs(LinuxPartList, LiveDisk)
+        OSInfo, RootFS = MainStartupTools().GetLinuxOSs(LinuxPartList, LiveDisk)
 
         AutoRootFS = RootFS
 
@@ -484,6 +478,26 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Done...")
 
         #*** ABSTRACTION CODE ***
+        #Create OSList.
+        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting OSList...")
+
+        Keys = OSInfo.keys()
+        Keys.sort()
+
+        OSList = []
+
+        for OS in Keys:
+            OSArch = OSInfo[OS]["Arch"]
+            OSPartition = OSInfo[OS]["Partition"]
+
+            if OSInfo[OS]["IsCurrentOS"]:        
+                OSList.append(OS+" (Current OS) "+OSArch+" on partition "+OSPartition)
+
+            else:
+                OSList.append(OS+" "+OSArch+" on partition "+OSPartition)
+
+        logger.info("InitThread(): *** ABSTRACTION CODE *** Done. Contents: "+' '.join(OSList))
+
         #Set default OS.
         logger.info("InitThread(): *** ABSTRACTION CODE *** Setting default OS...")
 
@@ -551,7 +565,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LiveDisk, PartitionListWithFSType, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LiveDisk, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -2956,6 +2970,10 @@ class BackendThread(threading.Thread):
 
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
         for function in Operations:
+            #Make dictionaries accessible. *** Add as needed *** *** Does this need to go in here? ***
+            Tools.BackendTools.essentials.DiskInfo = DiskInfo
+            Tools.BackendTools.helpers.DiskInfo = DiskInfo
+
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
             #*** We temporarily need global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
             #*** Might need to add logging stuff here temporarily for when it fails for debugging purposes ***
@@ -2971,7 +2989,6 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.essentials.BootSectorBackupType = BootSectorBackupType
             Tools.BackendTools.essentials.BootSectorTargetDevice = BootSectorTargetDevice
             Tools.BackendTools.essentials.UEFISystemPartition = UEFISystemPartition
-            Tools.BackendTools.essentials.PartitionListWithFSType = PartitionListWithFSType
             Tools.BackendTools.essentials.LiveDisk = LiveDisk
             Tools.BackendTools.essentials.AutoRootFS = AutoRootFS
 
@@ -3098,7 +3115,7 @@ class BackendThread(threading.Thread):
 
         wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
-    def GenerateSystemReport(self): #*** Leave this here until switch to dictionaries cos otherwise this'll be a mighty pain in the backside! :) ***
+    def GenerateSystemReport(self): #*** Leave this here until switch to dictionaries cos otherwise this'll be a mighty pain in the backside! :) *** *** Do dictionaries here ***
         """Create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary."""
         DialogTools().ShowMsgDlg(Kind="info", Message="WxFixBoot will now create your system report. Click okay to continue.")
 
@@ -3169,7 +3186,6 @@ class BackendThread(threading.Thread):
         ReportList.write("Detected Root Device (MBR Bootloader Target): "+AutoRootDevice+"\n")
         ReportList.write("Selected Root Device (MBR Bootloader Target): "+RootDevice+"\n")
         ReportList.write("Partition Scheme List (In the same order as Detected Linux Partitions): "+', '.join(PartSchemeList)+"\n")
-        ReportList.write("List of partitions with their filesystem types following: "+', '.join(PartitionListWithFSType)+"\n")
 
         #Do Boot Sector Information.
         ReportList.write("\n##########Boot Sector Information##########\n")

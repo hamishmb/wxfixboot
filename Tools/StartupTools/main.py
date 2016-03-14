@@ -88,7 +88,7 @@ class Main():
         #*** Crashes at log line in InitThread().run() if we couldn't detect the current OS ***
         logger.info("MainStartupTools: Main().GetLinuxOSs(): Finding Linux operating systems...")
         RootFS = ""
-        OSList = []
+        OSInfo = {}
 
         if LiveDisk == False:
             logger.info("MainStartupTools: Main().GetLinuxOSs(): Getting name and arch of current OS...")
@@ -109,10 +109,14 @@ class Main():
                 while OSName == None:
                     OSName = CoreStartupTools().AskForOSName(Partition=RootFS, OSArch=OSArch, AutoRootFS=AutoRootFS)
 
-            #If we found all of the information, add the OS to the list.
+            #If we found all of the information!
             if OSName != "" and OSArch != None:
-                #Add this information to the OSList, and set it as the default OS
-                OSList.append(OSName+' (Current OS) '+OSArch+' on partition '+RootFS)
+                #Add this information to OSInfo.
+                OSInfo[OSName] = {}
+                OSInfo[OSName]["Name"] = OSName
+                OSInfo[OSName]["IsCurrentOS"] = True
+                OSInfo[OSName]["Arch"] = OSArch
+                OSInfo[OSName]["Partition"] = RootFS
 
         #Get Linux OSs.
         for Partition in LinuxPartList:
@@ -138,8 +142,12 @@ class Main():
 
                 #Don't use elif here, so we'll also save it if CoreStartupTools().AskForOSName was used to determine the name. If it is still None, the user skipped naming it. Ignore it instead and skip the rest of the loop. *** I don't understand this, so check back later ***
                 if OSName != None and OSArch != None:
-                    #Add this information to the OSList.
-                    OSList.append(OSName+' '+OSArch+' on partition '+Partition)
+                    #Add this information to OSInfo.
+                    OSInfo[OSName] = {}
+                    OSInfo[OSName]["Name"] = OSName
+                    OSInfo[OSName]["IsCurrentOS"] = False
+                    OSInfo[OSName]["Arch"] = OSArch
+                    OSInfo[OSName]["Partition"] = Partition
 
                 #Unmount the filesystem.
                 if CoreTools().Unmount("/mnt"+Partition) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
@@ -150,9 +158,9 @@ class Main():
                 os.rmdir("/mnt"+Partition)
 
         #Check that at least one Linux OS was detected.
-        if len(OSList) >= 1:
-            logger.debug("MainStartupTools: Main().GetLinuxOSs(): Done, OSList Populated okay. Contents: "+', '.join(OSList))
-            return OSList, RootFS
+        if len(OSInfo) >= 1:
+            logger.debug("MainStartupTools: Main().GetLinuxOSs(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
+            return OSInfo, RootFS
 
         else:
             logger.critical("MainStartupTools: Main().GetLinuxOSs(): Couldn't find any linux operating systems! Linux partitions were detected, but don't appear to contain any OSs! WxFixBoot will now exit, and warn the user...")
@@ -330,10 +338,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, LiveDisk, PartitionListWithFSType, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition): #*** This is where I am in optimising these functions, and I will do this later *** *** This is a real mess! ***
+    def FinalCheck(self, LiveDisk, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition): #*** This is where I am in optimising these functions, and I will do this later *** *** This is a real mess! ***
         """Check for any conflicting options, and that each variable is set."""
         #Create a temporary list containing all variables to be checked, and a list to contain failed variables.
-        VarList = ('LiveDisk', 'PartitionListWithFSType', 'LinuxPartList', 'DeviceList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'DefaultOS', 'AutoDefaultOS', 'OSList', 'FirmwareType', 'AutoFirmwareType', 'UEFIVariables', 'PartSchemeList', 'AutoPartSchemeList', 'GPTInAutoPartSchemeList', 'MBRInAutoPartSchemeList', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
+        VarList = ('LiveDisk', 'LinuxPartList', 'DeviceList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'DefaultOS', 'AutoDefaultOS', 'OSList', 'FirmwareType', 'AutoFirmwareType', 'UEFIVariables', 'PartSchemeList', 'AutoPartSchemeList', 'GPTInAutoPartSchemeList', 'MBRInAutoPartSchemeList', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.
