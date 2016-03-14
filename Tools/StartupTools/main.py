@@ -47,11 +47,11 @@ class Main():
             logger.critical("MainStartupTools: Main().CheckDepends(): Dependencies missing! WxFixBoot will exit. The missing dependencies are: "+', '.join(FailedList)+". Exiting.")
             CoreTools().EmergencyExit("The following dependencies could not be found on your system: "+', '.join(FailedList)+".\n\nPlease install the missing dependencies.")
 
-    def UnmountAllFS(self):
+    def UnmountAllFS(self, LiveDisk):
         """Unmount any unnecessary filesystems, to prevent data corruption."""
         #Warn about removing devices. *** Fix this if possible ***
         logger.info("MainStartupTools: Main().UnmountAllFS(): Unmounting all Filesystems...")
-        DialogTools().ShowMsgDlg(Kind="info", Message="WxFixBoot is about to gather device information. After this point, you must not remove any devices from your computer, so do that now if you wish to.")
+        DialogTools().ShowMsgDlg(Kind="info", Message="WxFixBoot is about to gather device information. After this point, you must not remove/add any devices from/to your computer, so do that now if you wish to.")
 
         #Attempt unmount of all filesystems. *** Check which filesystems can be unmounted first, and use the global mount function ***
         logger.debug("MainStartupTools: Main().UnmountAllFS(): Running 'unmount -ad'...")
@@ -59,11 +59,12 @@ class Main():
         if CoreTools().StartProcess("umount -ad") != 0:
             logger.error("MainStartupTools: Main().UnmountAllFS(): Failed to unmount all filesystems! For the time being, this is normal cos we try to unmount all filesystems...")
 
-        #Make sure that we still have rw access on live disks. *** Check if we're on a live disk beforehand ***
-        logger.info("MainStartupTools: Main().UnmountAllFS(): Attempting to remount '/' to make sure it's still rw on a live disk.")
+        #Make sure that we still have rw access on live disks.
+        if LiveDisk:
+            logger.info("MainStartupTools: Main().UnmountAllFS(): Attempting to remount '/' to make sure it's still rw...")
 
-        if CoreTools().RemountPartition("/") != 0:
-            logger.error("MainStartupTools: Main().UnmountAllFS(): Failed to remount / as rw! This probably doesn't matter if on a live disk *** TODO: check if on live disk before doing this ***...")
+            if CoreTools().RemountPartition("/") != 0:
+                logger.error("MainStartupTools: Main().UnmountAllFS(): Failed to remount / as rw! This probably doesn't matter...")
 
     def CheckFS(self):
         """Check all unmounted filesystems."""
@@ -81,23 +82,12 @@ class Main():
             logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
             CoreTools().EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
-    def GetRootFSandRootDev(self, LinuxPartList):
+    def GetRootFSandRootDev(self, LiveDisk):
         """Determine RootFS, and RootDevice"""
         #*** This should be done for each OS installed and stored that way, preventing unwanted config and damaged bootloaders. Major work needed here. ***
-        Result = DialogTools().ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk, or Parted Magic?", Title="WxFixBoot - Live Disk?")
-        
-        if Result:
-            logger.warning("MainStartupTools: Main().GetRootFSandRootDev(): User reported WxFixBoot is on a live disk...")
-
-            #Make an early call to GetLinuxOSs()
-            LiveDisk = True
-            OSList, DefaultOS, AutoDefaultOS = self.GetLinuxOSs(LinuxPartList, LiveDisk, "")
-
-            Result = DialogTools().ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=OSList) #*** This can be removed when I change/remove this function ***
-
+        if LiveDisk:
             #Save the info.
-            logger.info("MainStartupTools: Main().GetRootFSandRootDev(): User selected default Linux OS of: "+Result+". Continuing...")
-            DefaultOS = Result
+            DefaultOS = ""
             AutoDefaultOS = DefaultOS
             RootFS = Result.split()[-1]
             AutoRootFS = RootFS
@@ -105,17 +95,12 @@ class Main():
             AutoRootDevice = RootDevice
 
         else:
-            logger.warning("MainStartupTools: Main().GetRootFSandRootDev(): User reported WxFixBoot isn't on a live disk. Using current OS as default OS...")
-
-            DialogTools().ShowMsgDlg(Kind="info", Message="Your current OS will be taken as the default OS. You can reset this later if you wish.") #*** Why not offer now? ***
-
-            #By the way the default OS in this case is set later, when OS detection takes place. *** Maybe get rid of this try statement when I change/remove this *** *** Badly written, what if we get a UUID? Use the heirachy when I switch ***
+            #By the way the default OS in this case is set later, when OS detection takes place. *** Maybe get rid of this try statement when I change/remove this ***
             try:
                 RootFS = CoreTools().GetPartitionMountedAt("/")
                 AutoRootFS = RootFS
                 RootDevice = RootFS[0:8]
                 AutoRootDevice = RootDevice
-                LiveDisk = False
                 DefaultOS = ""
                 AutoDefaultOS = DefaultOS
                 OSList = []
@@ -124,7 +109,7 @@ class Main():
                 logger.critical("MainStartupTools: Main().GetRootFSandRootDev(): Couldn't determine the root device! This program cannot safely continue. WxFixBoot will now exit, and warn the user...")
                 CoreTools().EmergencyExit("WxFixBoot couldn't determine your root device (the device the current OS is running on)! The most likely reason for this is that you're running from a live disk and misreported it, so try restarting WxFixBoot and making the other choice.")
 
-        return AutoRootFS, RootFS, AutoRootDevice, RootDevice, LiveDisk, AutoDefaultOS, DefaultOS, OSList
+        return AutoRootFS, RootFS, AutoRootDevice, RootDevice, AutoDefaultOS, DefaultOS, OSList
 
     def GetLinuxOSs(self, LinuxPartList, LiveDisk, AutoRootFS):
         """Get the names of all Linux OSs on the HDDs."""

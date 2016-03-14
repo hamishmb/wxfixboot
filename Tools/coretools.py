@@ -137,7 +137,7 @@ class Main():
 
         return Partition
 
-    def MountPartition(self, Partition, MountPoint, Options=""): #*** Check this works *** #*** Check this over: What if our partition is mounted somewhere else? Does that matter? Make this more bullet-proof ***
+    def MountPartition(self, Partition, MountPoint, Options=""): #*** Check this works *** *** Check this over: What if our partition is mounted somewhere else? Does that matter? Make this more bullet-proof ***
         """Mounts the given partition.
         Partition is the partition to mount.
         MountPoint is where you want to mount the partition.

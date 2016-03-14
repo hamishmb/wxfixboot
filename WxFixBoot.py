@@ -16,7 +16,7 @@
 
 #*** Re-evaluate dependencies at packaging time ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
-#*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
+#*** 2Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Test DialogTools().ShowMultiChoiceDlg() ***
 #*** DevInfoTools().GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
 #*** Figure out what to do in each instance where something might fail ***
@@ -358,10 +358,20 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "2")
         logger.info("InitThread(): Done Checking For Dependencies!")
 
+        #Check if we're on a Live Disk. *** Put in dictionary soon *** *** Ask in a seperate function? *** *** See if we can determine this automatically ***
+        global LiveDisk
+        LiveDisk = DialogTools().ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk, or Parted Magic?", Title="WxFixBoot - Live Disk?")
+
+        if LiveDisk:
+            logger.info("InitThread(): We're on a live disk...")
+
+        else:
+            logger.info("InitThread(): We're not on a live disk...")
+
         #Unmount all filesystems, to avoid any data corruption.
         logger.info("InitThread(): Unmounting Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Unmounting Filesystems...")
-        MainStartupTools().UnmountAllFS()
+        MainStartupTools().UnmountAllFS(LiveDisk)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "5")
         logger.info("InitThread(): Done Unmounting Filsystems!")
 
@@ -462,22 +472,22 @@ class InitThread(threading.Thread):
         global RootFS
         global AutoRootDevice
         global RootDevice
-        global LiveDisk
         global AutoDefaultOS
         global DefaultOS
         global OSList
 
         logger.info("InitThread(): *Soon to go* Determining Root Filesystem and Root Device...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "*DEPRECATED* Determining current OS...")
-        AutoRootFS, RootFS, AutoRootDevice, RootDevice, LiveDisk, AutoDefaultOS, DefaultOS, OSList = MainStartupTools().GetRootFSandRootDev(LinuxPartList)
+        AutoRootFS, RootFS, AutoRootDevice, RootDevice, AutoDefaultOS, DefaultOS, OSList = MainStartupTools().GetRootFSandRootDev(LiveDisk)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "60")
-        logger.info("InitThread(): *Soon to go* Determined Root Filesystem as: "+RootFS+ " , Root Device is "+RootDevice)
+        logger.info("InitThread(): *Soon to go* Determined Root Filesystem as: "+RootFS+" , Root Device is "+RootDevice)
 
         #Get a list of Linux OSs (if LiveDisk = True, this has already been run). *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
         logger.info("InitThread(): Finding Linux OSs...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Linux Operating Systems...")
-        if LiveDisk == False:
-            OSList, DefaultOS, AutoDefaultOS = MainStartupTools().GetLinuxOSs(LinuxPartList, LiveDisk, AutoRootFS)
+        OSList, DefaultOS, AutoDefaultOS = MainStartupTools().GetLinuxOSs(LinuxPartList, LiveDisk, AutoRootFS)
+
+        Result = DialogTools().ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=OSList) #*** Get rid of this; selected on a per-bootloader basis ***
 
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
         logger.info("InitThread(): Found all Linux OSs. Default: "+DefaultOS)
