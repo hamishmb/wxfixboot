@@ -115,7 +115,7 @@ class Main():
                 logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
                 return False
 
-    def GetPartitionMountedAt(self, MountPoint): #*** Check this works ***
+    def GetPartitionMountedAt(self, MountPoint): #*** Check this works *** *** What if we get a UUID? ***
         """Returns the partition mounted at the given mountpoint, if any.
         Otherwise, return None"""
         logger.info("CoreTools: Main().GetPartitionMountedAt(): Trying to get partition mounted at "+MountPoint+"...")
@@ -124,8 +124,10 @@ class Main():
         Partition = None
 
         for Line in MountInfo.split("\n"):
-            if MountPoint in Line:
-                Partition = Line.split()[0]
+            SplitLine = Line.split()
+
+            if MountPoint == SplitLine[2]:
+                Partition = SplitLine[0]
 
         if Partition != None:
             logger.info("CoreTools: Main().GetPartitionMountedAt(): Found it! Partition is "+Partition+"...")
