@@ -80,9 +80,8 @@ class Main(): #*** These need refactoring and proper testing ***
         """Backup the partition table."""
         #For GPT disks, backup with sgdisk -b/--backup=<file> <SOURCEDIRVE>.
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
-        #We need to find RootDevice's partition scheme from the PartSchemeList here. *** When we use dictionaries we won't need to do this crap ***
-        tempnum = DeviceList.index(RootDevice)
-        PartScheme = PartSchemeList[tempnum]
+        #We need to find RootDevice's partition scheme.
+        PartScheme = DiskInfo[RootDevice]["Partitioning"]
 
         logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Preparing to backup the partition table...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to backup the Partition Table...")
@@ -130,9 +129,8 @@ class Main(): #*** These need refactoring and proper testing ***
         """Backup the bootsector."""
         #For GPT disks, backup UEFI System Partition.
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
-        #We need to find RootDevice's partition scheme from the PartSchemeList here. *** When we use dictionaries we won't need to do this crap ***
-        tempnum = DeviceList.index(RootDevice)
-        PartScheme = PartSchemeList[tempnum]
+        #We need to find RootDevice's partition scheme.
+        PartScheme = DiskInfo[RootDevice]["Partitioning"]
 
         logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Preparing to backup the boot sector...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to backup the Boot Sector...")

@@ -399,8 +399,9 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "60")
         logger.info("InitThread(): Finished Getting Device Information...")
 
-        #Make disk info available to modules *** Write a function to keep it up to date at some point ***
+        #Make disk info available to modules.
         Tools.StartupTools.core.DiskInfo = DiskInfo
+        Tools.StartupTools.main.SystemInfo = SystemInfo
 
         #Mount all filesystems.
         logger.info("InitThread(): Mounting Core Filesystems...")
@@ -412,29 +413,32 @@ class InitThread(threading.Thread):
         #*** Temporary abstraction code ***
         #Define Global Variables. *** Switch to using dictionary soon ***
         global DeviceList
-        global PartSchemeList
-        global AutoPartSchemeList
+        SystemInfo["GPTDisks"] = []
+        SystemInfo["MBRDisks"] = []
 
         #DeviceList.
         DeviceList = []
-        AutoPartSchemeList = []
 
         Keys = DiskInfo.keys()
         Keys.sort()
 
         for Disk in Keys:
             if DiskInfo[Disk]["Type"] == "Device":
-                if DiskInfo[Disk]["Name"][5:7] in ("sd", "hd"):
-                    DeviceList.append(DiskInfo[Disk]["Name"])
+                if Disk[5:7] in ("sd", "hd"):
+                    DeviceList.append(Disk)
 
             try:
-                AutoPartSchemeList.append(DiskInfo[Disk]["Partitioning"])
+                Temp = DiskInfo[Disk]["Partitioning"]
+
+                if Temp == "gpt":
+                    SystemInfo["GPTDisks"].append(Temp)
+
+                else:
+                    SystemInfo["MBRDisks"].append(Temp)
 
             except: pass
 
-        PartSchemeList = AutoPartSchemeList[:]
-
-        logger.debug("InitThread(): *** ABSTRACTION CODE *** DeviceList and PartSchemeList Populated okay. Contents (respectively): "+', '.join(DeviceList)+" and: "+', '.join(PartSchemeList))
+        logger.debug("InitThread(): *** ABSTRACTION CODE *** DeviceList Populated okay. Contents: "+', '.join(DeviceList)+"...")
 
         #*** Temporary abstraction code ***
         #Detect Linux Partitions. *** Switch to using dictionary soon ***
@@ -560,7 +564,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -2171,7 +2175,6 @@ class BootloaderOptionsWindow(wx.Frame):
         """Save all selected Operations"""
         global BootloaderToInstall
         global PrevBootloaderSetting
-        global PartSchemeList
         global Bootloader
         global FirmwareType
         global AutoFirmwareType
@@ -2282,7 +2285,7 @@ class BootloaderOptionsWindow(wx.Frame):
         if BootloaderToInstall in ('LILO', 'ELILO'):  
             wx.MessageDialog(self.Panel, "Either, you've selected or WxFixBoot has autodetermined to use LILO or ELILO as the bootloader to install! Both ELILO and LILO can be a complete pain to set up and maintain. Please do not use either unless you know how to set up and maintain them, and you're sure you want them. If WxFixBoot recommended either of them to you, it's a good idea to select the equivalent GRUB version manually instead: GRUB-UEFI for ELILO, GRUB2 for LILO.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
 
-            if "gpt" in AutoPartSchemeList and BootloaderToInstall == "LILO":
+            if SystemInfo["GPTDisks"] != [] and BootloaderToInstall == "LILO":
                 wx.MessageDialog(self.Panel, "LILO is going to be installed, but at least one device connected to this computer uses an incompatble partition system! LILO will not boot from that device, so this may be a bad idea, in case you boot from it. Please consider installing GRUB2 instead as it will boot from that device.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
 
         self.BootloaderToInstallChoice.SetStringSelection(BootloaderToInstall)
@@ -2860,7 +2863,6 @@ class ProgressWindow(wx.Frame):
         RootFS = AutoRootFS
         RootDevice = AutoRootDevice
         DefaultOS = AutoDefaultOS
-        PartSchemeList = AutoPartSchemeList
         UEFISystemPartition = AutoUEFISystemPartition
 
         #Show MainWindow
@@ -2982,7 +2984,6 @@ class BackendThread(threading.Thread):
             #*** Essential backend tools ***
             Tools.BackendTools.essentials.RootDevice = RootDevice
             Tools.BackendTools.essentials.DeviceList = DeviceList
-            Tools.BackendTools.essentials.PartSchemeList = PartSchemeList
             Tools.BackendTools.essentials.PartitionTableFile = PartitionTableFile
             Tools.BackendTools.essentials.PartitionTableBackupType = PartitionTableBackupType
             Tools.BackendTools.essentials.PartitionTableTargetDevice = PartitionTableTargetDevice
@@ -3183,7 +3184,6 @@ class BackendThread(threading.Thread):
         ReportList.write("Selected Root Filesystem (MBR bootloader target): "+RootFS+"\n")
         ReportList.write("Detected Root Device (MBR Bootloader Target): "+AutoRootDevice+"\n")
         ReportList.write("Selected Root Device (MBR Bootloader Target): "+RootDevice+"\n")
-        ReportList.write("Partition Scheme List (In the same order as Detected Linux Partitions): "+', '.join(PartSchemeList)+"\n")
 
         #Do Boot Sector Information.
         ReportList.write("\n##########Boot Sector Information##########\n")
