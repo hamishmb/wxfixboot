@@ -46,7 +46,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "14/3/2016"
+ReleaseDate = "16/3/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -352,9 +352,15 @@ class InitThread(threading.Thread):
         logger.debug("InitThread(): Starting...")
 
         #Define dictionaries.
+        global SystemInfo
         global DiskInfo
         global OSInfo
         global BootloaderInfo
+
+        SystemInfo = {}
+        DiskInfo = {}
+        OSInfo = {}
+        BootloaderInfo = {}
 
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
@@ -363,11 +369,10 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "2")
         logger.info("InitThread(): Done Checking For Dependencies!")
 
-        #Check if we're on a Live Disk. *** Put in dictionary soon *** *** Ask in a separate function? *** *** See if we can determine this automatically ***
-        global LiveDisk
-        LiveDisk = DialogTools().ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk, or Parted Magic?", Title="WxFixBoot - Live Disk?")
+        #Check if we're on a Live Disk. *** Ask in a separate function? *** *** See if we can determine this automatically ***
+        SystemInfo["IsLiveDisk"] = DialogTools().ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk, or Parted Magic?", Title="WxFixBoot - Live Disk?")
 
-        if LiveDisk:
+        if SystemInfo["IsLiveDisk"]:
             logger.info("InitThread(): We're on a live disk...")
 
         else:
@@ -376,7 +381,7 @@ class InitThread(threading.Thread):
         #Unmount all filesystems, to avoid any data corruption.
         logger.info("InitThread(): Unmounting Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Unmounting Filesystems...")
-        MainStartupTools().UnmountAllFS(LiveDisk)
+        MainStartupTools().UnmountAllFS(SystemInfo)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "5")
         logger.info("InitThread(): Done Unmounting Filsystems!")
 
@@ -462,7 +467,7 @@ class InitThread(threading.Thread):
 
         logger.debug("InitThread(): *** ABSTRACTION CODE *** LinuxPartList Populated okay. Contents: "+', '.join(LinuxPartList))
 
-        #Get a list of Linux OSs (if LiveDisk = True, this has already been run). *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
+        #Get a list of Linux OSs. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
         #Define global variables.
         global OSList
         global RootFS
@@ -470,7 +475,7 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Finding Linux OSs...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Linux Operating Systems...")
-        OSInfo, RootFS = MainStartupTools().GetLinuxOSs(LinuxPartList, LiveDisk)
+        OSInfo, RootFS = MainStartupTools().GetLinuxOSs(LinuxPartList, SystemInfo)
 
         AutoRootFS = RootFS
 
@@ -513,7 +518,7 @@ class InitThread(threading.Thread):
         #Set rootfs if needed, and set root device.
         logger.info("InitThread(): *** ABSTRACTION CODE *** Setting RootFS and RootDev...")
 
-        if LiveDisk == False:
+        if SystemInfo["IsLiveDisk"] == False:
             RootFS = DefaultOS.split()[-1]
             AutoRootFS = RootFS
 
@@ -558,14 +563,14 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools().GetBootloader(RootDevice, SystemInfo, FirmwareType)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): Bootloader is: "+Bootloader)
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LiveDisk, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -2153,7 +2158,7 @@ class BootloaderOptionsWindow(wx.Frame):
         AutoUEFISystemPartition = "None"
 
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools().GetBootloader(RootDevice, LiveDisk, FirmwareType)
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools().GetBootloader(RootDevice, SystemInfo, FirmwareType)
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+Bootloader)
 
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
@@ -2970,9 +2975,18 @@ class BackendThread(threading.Thread):
 
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
         for function in Operations:
-            #Make dictionaries accessible. *** Add as needed *** *** Does this need to go in here? ***
+            #Make dictionaries accessible. *** Add as needed *** *** Does all of this need to go in here? *** *** Minimise these later if possible ***
             Tools.BackendTools.essentials.DiskInfo = DiskInfo
+            Tools.BackendTools.essentials.SystemInfo = SystemInfo
+
             Tools.BackendTools.helpers.DiskInfo = DiskInfo
+            Tools.BackendTools.helpers.SystemInfo = SystemInfo
+
+            Tools.BackendTools.main.SystemInfo = SystemInfo
+
+            Tools.BackendTools.BootloaderTools.main.SystemInfo = SystemInfo
+
+            Tools.BackendTools.BootloaderTools.setconfigtools.SystemInfo = SystemInfo
 
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
             #*** We temporarily need global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
@@ -2989,7 +3003,6 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.essentials.BootSectorBackupType = BootSectorBackupType
             Tools.BackendTools.essentials.BootSectorTargetDevice = BootSectorTargetDevice
             Tools.BackendTools.essentials.UEFISystemPartition = UEFISystemPartition
-            Tools.BackendTools.essentials.LiveDisk = LiveDisk
             Tools.BackendTools.essentials.AutoRootFS = AutoRootFS
 
             try:
@@ -3005,7 +3018,6 @@ class BackendThread(threading.Thread):
 
             except UnboundLocalError: pass
 
-            Tools.BackendTools.BootloaderTools.main.LiveDisk = LiveDisk
             Tools.BackendTools.BootloaderTools.main.AutoRootFS = AutoRootFS
             Tools.BackendTools.BootloaderTools.main.Bootloader = Bootloader
             Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
@@ -3039,7 +3051,6 @@ class BackendThread(threading.Thread):
 
             except UnboundLocalError: pass
 
-            Tools.BackendTools.main.LiveDisk = LiveDisk
             Tools.BackendTools.main.AutoRootFS = AutoRootFS
             Tools.BackendTools.main.Bootloader = Bootloader
             Tools.BackendTools.main.UEFISystemPartition = UEFISystemPartition
@@ -3129,7 +3140,7 @@ class BackendThread(threading.Thread):
         #Do OS Information.
         ReportList.write("\n##########OS Information##########\n")
         ReportList.write("Detected Operating Systems: "+', '.join(OSList)+"\n")
-        ReportList.write("Currently running OS is on Live Disk: "+unicode(LiveDisk)+"\n")
+        ReportList.write("Currently running OS is on Live Disk: "+unicode(SystemInfo["IsLiveDisk"])+"\n")
 
         #Do Firmware Information.
         ReportList.write("\n##########Firmware Information##########\n")

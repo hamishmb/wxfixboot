@@ -115,7 +115,7 @@ class Main():
             logger.info("HelperBackendTools: Main().LookForBootloaderOnPartition(): Didn't find "+Bootloader+" in "+MountPoint+"...")
             return False
 
-    def FindCheckableFileSystems(self, LiveDisk, AutoRootFS): #*** Tidy this up later ***
+    def FindCheckableFileSystems(self, AutoRootFS): #*** Tidy this up later ***
         """Find all checkable filesystems, and then return them to MainBackendTools().BadSectorCheck()/MainBackendTools().QuickFSCheck()"""
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Finding and returning all filesystems/partitions that can be checked...")
 
@@ -139,7 +139,7 @@ class Main():
                 #Check if the required fsck module is present, and that the partition isn't RootFS
                 if "fsck."+FSType not in MissingFSCKModules and FSType not in ("Unknown", "N/A"):
                     #If we're not running on a live disk, skip the filesystem if it's the same as RootFS (in which case checking it may corrupt data)
-                    if LiveDisk == False and Disk == AutoRootFS:
+                    if SystemInfo["IsLiveDisk"] == False and Disk == AutoRootFS:
                         CheckTheFS = False
                         RemountPartitionAfter = False
                         continue
@@ -257,7 +257,7 @@ class Main():
         logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Finished selecting OSs! Modifying or Installing the new bootloader in: "+', '.join(OSsForBootloaderInstallation))
         return OSsForBootloaderInstallation
 
-    def FindBootloaderRemovalOSs(self, OSListWithPackageManagers, LiveDisk, AutoRootFS, Bootloader): #*** Check this works ***
+    def FindBootloaderRemovalOSs(self, OSListWithPackageManagers, AutoRootFS, Bootloader): #*** Check this works ***
         """Find the OS(es) that currently have the bootloader installed, so we know where to remove it from."""
         logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Looking for Operating Systems that currently have the bootloader installed, to add to the removal list...")
         #*** Temporarily define this as global until switch to dictionaries ***
@@ -272,7 +272,7 @@ class Main():
             MountPoint = "/mnt"+Partition
 
             #Run some different instructions depending on whether the partition = AutoRootFS or not. *** Use a dictionary key to say which OS is the current one instead of doing this ***
-            if LiveDisk == False and Partition == AutoRootFS:
+            if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:
                 UsingChroot = False
 
             else:

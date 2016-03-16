@@ -126,12 +126,12 @@ class Main():
         else:
             return False
 
-    def DetermineGRUBBIOSVersion(self, LiveDisk):
+    def DetermineGRUBBIOSVersion(self, SystemInfo):
         """Try to determine which version of GRUB BIOS is installed""" #*** See if we can find a better way of doing this *** *** This needs testing in a VM at some point ***
         logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Determining GRUB version...")
         #*** This is a mess ***
         #Check if the system is using grub-legacy or grub2. *** There are better ways of doing this, like using a variable or dictionary instead of having to find the current os's name over and over ***
-        if LiveDisk == False:
+        if SystemInfo["IsLiveDisk"] == False:
             #Find the name of the current OS.
             for OS in OSList:
                 if OS.split()[-5] == "OS)":
@@ -210,7 +210,7 @@ class Main():
             logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def CheckForUEFIPartition(self, LiveDisk): #*** This will need a LOT of modification when I switch to dictionaries *** *** Test again ***
+    def CheckForUEFIPartition(self, SystemInfo): #*** This will need a LOT of modification when I switch to dictionaries *** *** Test again ***
         """Find the UEFI system partition and return it"""
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
         AskForUEFIPartition = True
@@ -231,10 +231,10 @@ class Main():
             return FatPartitions[0]
 
         #Otherwise check if it's mounted at /boot/efi if we're not on a live disk. *** Do later ***
-        if LiveDisk == False:
+        if SystemInfo["IsLiveDisk"] == False:
              pass
 
-        if LiveDisk == True or AskForUEFIPartition == True:
+        if SystemInfo["IsLiveDisk"] or AskForUEFIPartition:
             logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): Asking user where UEFI Partition is. If you're running from a live disk, ignore this warning.")
 
             if FatPartitions != []:

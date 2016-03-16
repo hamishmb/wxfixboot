@@ -53,7 +53,7 @@ class Main(): #*** Refactor and test all of these ***
                 Partition = OS.split()[-1]
 
                 #If not on a live disk, and this OS is the one running, skip some stuff.
-                if LiveDisk == False and Partition == AutoRootFS:
+                if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:
                     #Find the package manager on this partition, if one exists.
                     #This is the RootFS, so don't use chroot in the given command lists.
                     APT = HelperBackendTools().LookForAPTOnPartition(APTExecCmds="which apt-get")
@@ -104,7 +104,7 @@ class Main(): #*** Refactor and test all of these ***
                 logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found at least one candidate for installing and removing bootloaders! Continuing...")
 
                 #Also, we need to find which OS(es) installed the bootloader (or have it installed currently), and ask the user which OS to install the bootloader with.
-                OSsForBootloaderRemoval = HelperBackendTools().FindBootloaderRemovalOSs(OSListWithPackageManagers, LiveDisk, AutoRootFS, Bootloader)
+                OSsForBootloaderRemoval = HelperBackendTools().FindBootloaderRemovalOSs(OSListWithPackageManagers, AutoRootFS, Bootloader)
                 logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): List of OSs to have the bootloader removed: "+', '.join(OSsForBootloaderRemoval)+"...")
 
                 #Update Current Operation Text.

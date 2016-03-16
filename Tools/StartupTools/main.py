@@ -47,7 +47,7 @@ class Main():
             logger.critical("MainStartupTools: Main().CheckDepends(): Dependencies missing! WxFixBoot will exit. The missing dependencies are: "+', '.join(FailedList)+". Exiting.")
             CoreTools().EmergencyExit("The following dependencies could not be found on your system: "+', '.join(FailedList)+".\n\nPlease install the missing dependencies.")
 
-    def UnmountAllFS(self, LiveDisk):
+    def UnmountAllFS(self, SystemInfo):
         """Unmount any unnecessary filesystems, to prevent data corruption."""
         #Warn about removing devices. *** Fix this if possible ***
         logger.info("MainStartupTools: Main().UnmountAllFS(): Unmounting all Filesystems...")
@@ -60,7 +60,7 @@ class Main():
             logger.error("MainStartupTools: Main().UnmountAllFS(): Failed to unmount all filesystems! For the time being, this is normal cos we try to unmount all filesystems...")
 
         #Make sure that we still have rw access on live disks.
-        if LiveDisk:
+        if SystemInfo["IsLiveDisk"]:
             logger.info("MainStartupTools: Main().UnmountAllFS(): Attempting to remount '/' to make sure it's still rw...")
 
             if CoreTools().RemountPartition("/") != 0:
@@ -82,7 +82,7 @@ class Main():
             logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
             CoreTools().EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
-    def GetLinuxOSs(self, LinuxPartList, LiveDisk): #*** Refactor ***
+    def GetLinuxOSs(self, LinuxPartList, SystemInfo): #*** Refactor ***
         """Get the names of all Linux OSs on the HDDs."""
         #*** This will need changing, but will not need too much work to adapt it to using dictionaries ***
         #*** Crashes at log line in InitThread().run() if we couldn't detect the current OS ***
@@ -90,7 +90,7 @@ class Main():
         RootFS = ""
         OSInfo = {}
 
-        if LiveDisk == False:
+        if SystemInfo["IsLiveDisk"] == False:
             logger.info("MainStartupTools: Main().GetLinuxOSs(): Getting name and arch of current OS...")
 
             #Get the partition it's on.
@@ -218,7 +218,7 @@ class Main():
 
         return FirmwareType, AutoFirmwareType, UEFIVariables
 
-    def GetBootloader(self, RootDevice, LiveDisk, FirmwareType):
+    def GetBootloader(self, RootDevice, SystemInfo, FirmwareType):
         """Determine the current bootloader."""
         #*** Do some of this for each OS *** *** Will need a LOT of modification when I switch to dictionaries ***
         logger.debug("MainStartupTools: Main().GetBootloader(): Trying to determine bootloader...")
@@ -232,7 +232,7 @@ class Main():
             #Check for a UEFI partition.
             #Check for a UEFI system partition.
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking For a UEFI partition...")
-            AutoUEFISystemPartition = CoreStartupTools().CheckForUEFIPartition(LiveDisk)
+            AutoUEFISystemPartition = CoreStartupTools().CheckForUEFIPartition(SystemInfo)
             UEFISystemPartition = AutoUEFISystemPartition
 
             #If there is no UEFI partition, ask the user.
@@ -245,7 +245,7 @@ class Main():
                 logger.debug("MainStartupTools: Main().GetBootloader(): Checking for GRUB in bootsector...")
                 if CoreStartupTools().CheckForGRUBBIOS(MBR):
                     #We have GRUB BIOS, now figure out which version we have!
-                    AutoBootloader = CoreStartupTools().DetermineGRUBBIOSVersion(LiveDisk=LiveDisk)
+                    AutoBootloader = CoreStartupTools().DetermineGRUBBIOSVersion(SystemInfo)
                     break
 
                 #Check for LILO in MBR
@@ -338,10 +338,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, LiveDisk, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition): #*** This is where I am in optimising these functions, and I will do this later *** *** This is a real mess! ***
+    def FinalCheck(self, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition): #*** This is where I am in optimising these functions, and I will do this later *** *** This is a real mess! ***
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables.
-        VarList = ('LiveDisk', 'LinuxPartList', 'DeviceList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'DefaultOS', 'AutoDefaultOS', 'OSList', 'FirmwareType', 'AutoFirmwareType', 'UEFIVariables', 'PartSchemeList', 'AutoPartSchemeList', 'GPTInAutoPartSchemeList', 'MBRInAutoPartSchemeList', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"]
+        VarList = ('LinuxPartList', 'DeviceList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'DefaultOS', 'AutoDefaultOS', 'OSList', 'FirmwareType', 'AutoFirmwareType', 'UEFIVariables', 'PartSchemeList', 'AutoPartSchemeList', 'GPTInAutoPartSchemeList', 'MBRInAutoPartSchemeList', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.

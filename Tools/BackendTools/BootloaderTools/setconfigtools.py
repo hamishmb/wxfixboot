@@ -190,7 +190,7 @@ class Main(): #*** Refactor and test all of these ***
         if PackageManager == "apt-get":
             Cmd = "grub-set-default "+DefaultOS
 
-        if not (LiveDisk == False and MountPoint == ""):
+        if not (SystemInfo["IsLiveDisk"] == False and MountPoint == ""):
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         Retval = CoreTools().StartProcess(Cmd, ShowOutput=False)
