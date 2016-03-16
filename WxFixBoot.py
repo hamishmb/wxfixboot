@@ -392,7 +392,7 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "15")
         logger.info("InitThread(): Filesystems Checked!")
 
-        #Get device info. *** Will soon replace some of this functionality used here ***
+        #Get device info. *** Replaces some of the functionality used here ***
         logger.info("InitThread(): Getting Device Information...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Getting Device Information...")
         DiskInfo = DevInfoTools().GetInfo()
@@ -414,14 +414,10 @@ class InitThread(threading.Thread):
         global DeviceList
         global PartSchemeList
         global AutoPartSchemeList
-        global GPTInAutoPartSchemeList
-        global MBRInAutoPartSchemeList
 
         #DeviceList.
         DeviceList = []
         AutoPartSchemeList = []
-        GPTInAutoPartSchemeList = False
-        MBRInAutoPartSchemeList = False
 
         Keys = DiskInfo.keys()
         Keys.sort()
@@ -435,12 +431,6 @@ class InitThread(threading.Thread):
                 AutoPartSchemeList.append(DiskInfo[Disk]["Partitioning"])
 
             except: pass
-
-            if "gpt" in AutoPartSchemeList:
-                GPTInAutoPartSchemeList = True
-
-            if "mbr" in AutoPartSchemeList:
-                MBRInAutoPartSchemeList = False
 
         PartSchemeList = AutoPartSchemeList[:]
 
@@ -570,7 +560,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -1618,10 +1608,7 @@ class SettingsWindow(wx.Frame):
 
         logger.debug("SettingsWindow().LaunchBootSectWindow(): Starting Restore Bootsector Window...")
         #Show helpful info if the root device uses gpt.
-        Tempnum = DeviceList.index(RootDevice)
-        Temp = PartSchemeList[Tempnum]
-
-        if Temp == "gpt": #*** This is silly ***
+        if DiskInfo[RootDevice]["Partitioning"] == "gpt": #*** This is silly ***
             dlg = wx.MessageDialog(self.Panel, "Because the selected root device uses gpt, the Target Device selection in the following dialog will be ignored, though you must still set it, and the backup will always be restored to the UEFI Partition. Please keep this in mind and be sure that the UEFI Partition chosen is correct. You can check and change this in the Bootloader Options.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
@@ -2295,7 +2282,7 @@ class BootloaderOptionsWindow(wx.Frame):
         if BootloaderToInstall in ('LILO', 'ELILO'):  
             wx.MessageDialog(self.Panel, "Either, you've selected or WxFixBoot has autodetermined to use LILO or ELILO as the bootloader to install! Both ELILO and LILO can be a complete pain to set up and maintain. Please do not use either unless you know how to set up and maintain them, and you're sure you want them. If WxFixBoot recommended either of them to you, it's a good idea to select the equivalent GRUB version manually instead: GRUB-UEFI for ELILO, GRUB2 for LILO.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
 
-            if GPTInAutoPartSchemeList and BootloaderToInstall == "LILO":
+            if "gpt" in AutoPartSchemeList and BootloaderToInstall == "LILO":
                 wx.MessageDialog(self.Panel, "LILO is going to be installed, but at least one device connected to this computer uses an incompatble partition system! LILO will not boot from that device, so this may be a bad idea, in case you boot from it. Please consider installing GRUB2 instead as it will boot from that device.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
 
         self.BootloaderToInstallChoice.SetStringSelection(BootloaderToInstall)
@@ -3189,7 +3176,7 @@ class BackendThread(threading.Thread):
                     ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
                     ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
-        #Do Disk Information
+        #Do Disk Information *** Use dictionary ***
         ReportList.write("\n##########Disk Information##########\n")
         ReportList.write("Detected Linux Partitions: "+', '.join(LinuxPartList)+"\n")
         ReportList.write("Detected Root Filesystem (MBR bootloader target): "+AutoRootFS+"\n")

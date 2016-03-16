@@ -338,10 +338,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, GPTInAutoPartSchemeList, MBRInAutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition): #*** This is where I am in optimising these functions, and I will do this later *** *** This is a real mess! ***
+    def FinalCheck(self, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, PartSchemeList, AutoPartSchemeList, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition): #*** This is where I am in optimising these functions, and I will do this later *** *** This is a real mess! ***
         """Check for any conflicting options, and that each variable is set."""
         #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"]
-        VarList = ('LinuxPartList', 'DeviceList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'DefaultOS', 'AutoDefaultOS', 'OSList', 'FirmwareType', 'AutoFirmwareType', 'UEFIVariables', 'PartSchemeList', 'AutoPartSchemeList', 'GPTInAutoPartSchemeList', 'MBRInAutoPartSchemeList', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
+        VarList = ('LinuxPartList', 'DeviceList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'DefaultOS', 'AutoDefaultOS', 'OSList', 'FirmwareType', 'AutoFirmwareType', 'UEFIVariables', 'PartSchemeList', 'AutoPartSchemeList', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.
@@ -371,12 +371,12 @@ class Main():
             AutoFirmwareType = "UEFI"
             FirmwareType = "UEFI"
 
-        if FirmwareType == "BIOS" and GPTInAutoPartSchemeList == True:
+        if FirmwareType == "BIOS" and "gpt" in AutoPartSchemeList:
             logger.warning("MainStartupTools: Main().FinalCheck(): Firmware is BIOS, but at least one device on the system is using a gpt partition table! This device probably won't be bootable. WxFixBoot suggests repartitioning, if you intend to boot from that device.")
             DialogTools().ShowMsgDlg(Kind="warning", Message="Your computer uses BIOS firmware, but you're using an incompatable partition system on at least one device! BIOS firmware will probably fail to boot your operating system, if it resides on that device, so a repartition may be necessary for that device. You can safely ignore this message if your firmware type has been misdetected, or if you aren't booting from that device.")
 
         #Partition scheme warnings. *** Be more intelligent with these warnings ***
-        if GPTInAutoPartSchemeList == True and Bootloader in ('GRUB2', 'LILO', 'GRUB-LEGACY'):
+        if "gpt" in AutoPartSchemeList and Bootloader in ('GRUB2', 'LILO', 'GRUB-LEGACY'):
             logger.warning("MainStartupTools: Main().FinalCheck(): GPT Partition table on at least one device with msdos bootloader! Most BIOS firmware cannot read GPT disks. WxFixBoot suggests repartitioning.")
             DialogTools().ShowMsgDlg(Kind="warning", Message="You're using a BIOS-enabled bootloader, but you're using an incompatable partition system on at least one device! Most firmware will not support this setup. Ignore this message if you do not boot from this device.")
 
