@@ -56,7 +56,7 @@ class Main():
                 LineList.append(Line.replace("\n", "").replace("\r", ""))
 
                 #Reset Line.
-                Line = ""
+                Line = str("")
 
         #Save runcmd.returncode, as it tends to reset fairly quickly.
         Retval = int(cmd.returncode)

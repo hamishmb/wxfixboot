@@ -22,6 +22,8 @@
 #*** Figure out what to do in each instance where something might fail ***
 #*** Return return values in chroot functions (CoreBackendTools) ***
 #*** On wx 3, use custom buttons for dialogs ***
+#*** Add recovery options for LILO/ELILO ***
+#*** Check if LILO installs on GPT disks (GRUB does) ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -46,7 +48,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "16/3/2016"
+ReleaseDate = "7/4/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
