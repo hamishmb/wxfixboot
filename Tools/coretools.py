@@ -47,7 +47,7 @@ class Main():
             Char = cmd.stdout.read(1)
             Line += Char
 
-            if Char == "\n": #*** Silence UnicodeWarning when failing to convert Char to unicode *** *** Not really a problem cos if char can't be converted it isn't = to \n anyway, but annoying ***
+            if Char in ("\n", "\r"): #*** Silence UnicodeWarning when failing to convert Char to unicode *** *** Not really a problem cos if char can't be converted it isn't = to \n anyway, but annoying ***
                 #Convert to unicode if needed and remove "NULL" characters.
                 if unicode(type(Line)) != "<type 'unicode'>":
                     Line = unicode(Line, errors="replace").replace("\x00", "")
