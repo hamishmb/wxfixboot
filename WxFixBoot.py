@@ -1060,17 +1060,18 @@ class MainWindow(wx.Frame):
         if UpdateBootloader:
             Operations.append(MainBootloaderTools().UpdateBootloader)
             logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().UpdateBootloader to Operations...")
+            print(MainBootloaderTools().UpdateBootloader in Operations)
 
         #*** Disabled temporarily ***
         #if MakeSystemSummary:
         #    Operations.append(BackendThread(self).GenerateSystemReport)
         #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
 
-        #Check if we need to prepare to install a new bootloader, and do so first if needed.
+        #Check if we need to prepare to install a new bootloader, and do so first if needed. *** Is using a for loop a good idea in case it gets duplicated? ***
         for element in (MainBootloaderTools().ManageBootloaders, MainBootloaderTools().ReinstallBootloader, MainBootloaderTools().UpdateBootloader):
             if element in Operations:
                 logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding MainBootloaderTools().PrepareForBootloaderInstallation()...")
-                Operations.insert(0, MainBootloaderTools().PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations ***
+                Operations.insert(0, MainBootloaderTools().PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations *** *** Must be before these three ***
 
         NumberOfOperations = len(Operations)
 
