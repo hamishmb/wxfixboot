@@ -110,7 +110,7 @@ class Main():
     def CheckForGRUBBIOS(self, MBR):
         """Check for the GRUB (v2 and legacy) BIOS bootloader"""
         #*** Try to find a way of distinguishing between them here, rather than later *** *** Test again ***
-        if str("GRUB") in str(MBR): #*** Avoid UnicodeDecodeError ***
+        if str("GRUB") in MBR: #*** Avoid UnicodeDecodeError ***
             #Bootloader is GRUB MBR
             return True
 
@@ -119,7 +119,7 @@ class Main():
 
     def CheckForLILO(self, MBR):
         """Check for LILO in MBR""" #*** Test again ***
-        if str("LILO") in str(MBR): #*** Avoid UnicodeDecodeError ***
+        if str("LILO") in MBR: #*** Avoid UnicodeDecodeError ***
             #Bootloader is LILO in MBR
             return True
 
