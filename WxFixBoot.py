@@ -1058,9 +1058,10 @@ class MainWindow(wx.Frame):
             logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().ReinstallBootloader to Operations...")
 
         if UpdateBootloader:
-            Operations.append(MainBootloaderTools().UpdateBootloader)
+            BLT = MainBootloaderTools()
+            Operations.append(BLT.UpdateBootloader)
             logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().UpdateBootloader to Operations...")
-            print(MainBootloaderTools().UpdateBootloader in Operations)
+            print(BLT.UpdateBootloader in Operations)
 
         #*** Disabled temporarily ***
         #if MakeSystemSummary:
