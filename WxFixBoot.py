@@ -554,8 +554,8 @@ class InitThread(threading.Thread):
         #Initialise them.
         EmptyEFIPartition = False
         PrevBootloaderSetting = "None"
-        UEFISystemPartition = "None"
-        AutoUEFISystemPartition = "None"
+        UEFISystemPartition = None
+        AutoUEFISystemPartition = None
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")

@@ -109,8 +109,8 @@ class Main():
 
     def CheckForGRUBBIOS(self, MBR):
         """Check for the GRUB (v2 and legacy) BIOS bootloader"""
-        #*** Try to find a way of distinguishing between them here, rather than later *** *** Test again ***
-        if str("GRUB") in MBR: #*** Avoid UnicodeDecodeError ***
+        #*** Try to find a way of distinguishing between them here, rather than later ***
+        if str("GRUB") in MBR: #Avoid UnicodeDecodeError by doing this.
             #Bootloader is GRUB MBR
             return True
 
@@ -118,8 +118,8 @@ class Main():
             return False
 
     def CheckForLILO(self, MBR):
-        """Check for LILO in MBR""" #*** Test again ***
-        if str("LILO") in MBR: #*** Avoid UnicodeDecodeError ***
+        """Check for LILO in MBR"""
+        if str("LILO") in MBR: #Avoid UnicodeDecodeError by doing this.
             #Bootloader is LILO in MBR
             return True
 
@@ -127,7 +127,7 @@ class Main():
             return False
 
     def DetermineGRUBBIOSVersion(self, SystemInfo):
-        """Try to determine which version of GRUB BIOS is installed""" #*** See if we can find a better way of doing this *** *** This needs testing in a VM at some point ***
+        """Try to determine which version of GRUB BIOS is installed""" #*** See if we can find a better way of doing this ***
         logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Determining GRUB version...")
         #*** This is a mess ***
         #Check if the system is using grub-legacy or grub2. *** There are better ways of doing this, like using a variable or dictionary instead of having to find the current os's name over and over ***
@@ -202,7 +202,7 @@ class Main():
             logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def CheckForUEFIPartition(self, SystemInfo): #*** This will need a LOT of modification when I switch to dictionaries *** *** Test again ***
+    def CheckForUEFIPartition(self, SystemInfo): #*** Test again ***
         """Find the UEFI system partition and return it"""
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
         AskForUEFIPartition = True
@@ -227,9 +227,8 @@ class Main():
              pass
 
         if SystemInfo["IsLiveDisk"] or AskForUEFIPartition:
-            logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): Asking user where UEFI Partition is. If you're running from a live disk, ignore this warning.")
-
             if FatPartitions != []:
+                logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): Asking user where UEFI Partition is. If you're running from a live disk, ignore this warning.")
                 Result = DialogTools().ShowChoiceDlg(Message="Please select your UEFI partition. You can change this later in the bootloader options window if you change your mind, or if it's wrong.", Title="WxFixBoot - Select UEFI Partition", Choices=["I don't have one"]+FatPartitions)
 
                 if Result == "I don't have one":
@@ -239,7 +238,9 @@ class Main():
                 else:
                     logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): User reported UEFI partition at: "+Result+". Continuing...")
                     return Result
+
             else:
+                logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): No vfat partitions found. No UEFI partition exists. Continuing...")
                 return None
 
     def CheckForGRUBUEFI(self, UEFISYSPMountPoint):

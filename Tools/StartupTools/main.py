@@ -236,7 +236,7 @@ class Main():
             AutoUEFISystemPartition = CoreStartupTools().CheckForUEFIPartition(SystemInfo)
             UEFISystemPartition = AutoUEFISystemPartition
 
-            #If there is no UEFI partition, ask the user.
+            #If there is no UEFI partition, only look for BIOS bootloaders.
             if UEFISystemPartition == None:
                 #There is no UEFI partition.
                 HelpfulUEFIPartition = False
