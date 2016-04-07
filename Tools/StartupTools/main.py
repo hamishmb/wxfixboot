@@ -225,7 +225,7 @@ class Main():
 
         #Run some inital scripts
         logger.debug("MainStartupTools: Main().GetBootloader(): Copying MBR bootsector to RAM...")
-        MBR = CoreTools().StartProcess("dd if="+RootDevice+" bs=512 count=1") #*** We probably need to do this for each and every (MBR) device with a partition containing an OS, as the rootdevice principle falls apart here ***
+        MBR = CoreTools().StartProcess("dd if="+RootDevice+" bs=512 count=1", ReturnOutput=True)[1] #*** We probably need to do this for each and every (MBR) device with a partition containing an OS, as the rootdevice principle falls apart here *** *** Check it worked? ***
 
         #Wrap this in a loop, so once a Bootloader is found, searching can stop.
         while True:
