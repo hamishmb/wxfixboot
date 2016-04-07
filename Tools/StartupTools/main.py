@@ -235,7 +235,6 @@ class Main():
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking For a UEFI partition...")
             AutoUEFISystemPartition = CoreStartupTools().CheckForUEFIPartition(SystemInfo)
             UEFISystemPartition = AutoUEFISystemPartition
-            print(unicode(UEFISystemPartition))
 
             #If there is no UEFI partition, only look for BIOS bootloaders.
             if UEFISystemPartition == None:
@@ -383,7 +382,7 @@ class Main():
             DialogTools().ShowMsgDlg(Kind="warning", Message="You're using a BIOS-enabled bootloader, but you're using an incompatable partition system on at least one device! Most firmware will not support this setup. Ignore this message if you do not boot from this device.")
 
         #Bootloader warnings.
-        if HelpfulUEFIPartition == False and UEFISystemPartition != "None":
+        if HelpfulUEFIPartition == False and UEFISystemPartition != None:
             logger.warning("MainStartupTools: Main().FinalCheck(): Empty UEFI partition!")
             DialogTools().ShowMsgDlg(Kind="warning", Message="Your UEFI system partition is empty or doesn't contain any detected bootloaders. If you just created your UEFI system partition, please ensure it's formatted as fat32 or fat16 (Known as vfat in Linux), and then you may continue to install a UEFI bootloader on it. If WxFixBoot didn't detect your UEFI-enabled bootloader, it's still safe to perform operations on the bootloader.")
 
