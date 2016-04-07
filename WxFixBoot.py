@@ -2996,15 +2996,15 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.essentials.AutoRootFS = AutoRootFS
 
             try:
-                Tools.BackendTools.essentials.OSsForBootloaderRemoval = OSsForBootloaderRemoval
                 Tools.BackendTools.essentials.OSsForBootloaderInstallation = OSsForBootloaderInstallation
+                Tools.BackendTools.essentials.OSsForBootloaderRemoval = OSsForBootloaderRemoval
 
             except UnboundLocalError: pass
 
             #*** Main Bootloader Tools (in Backend Tools package) ***
             try:
-                Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
                 Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
+                Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
 
             except UnboundLocalError: pass
 
@@ -3031,8 +3031,8 @@ class BackendThread(threading.Thread):
             except UnboundLocalError: pass
 
             try:
-                Tools.BackendTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
                 Tools.BackendTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
+                Tools.BackendTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
 
             except UnboundLocalError: pass
 
@@ -3079,15 +3079,15 @@ class BackendThread(threading.Thread):
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set the vars global to this file) ***
             #*** Essential backend tools ***
             try:
-                OSsForBootloaderRemoval = Tools.BackendTools.essentials.OSsForBootloaderRemoval
                 OSsForBootloaderInstallation = Tools.BackendTools.essentials.OSsForBootloaderInstallation
+                OSsForBootloaderRemoval = Tools.BackendTools.essentials.OSsForBootloaderRemoval
 
             except AttributeError: pass
   
             #*** Main Bootloader Tools (in Backend Tools package) ***
             try:
-                OSsForBootloaderRemoval = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval
                 OSsForBootloaderInstallation = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation
+                OSsForBootloaderRemoval = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval
 
             except AttributeError: pass
 
