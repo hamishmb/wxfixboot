@@ -117,7 +117,7 @@ class Main():
         else:
             return False
 
-    def CheckForLILO(self):
+    def CheckForLILO(self, MBR):
         """Check for LILO in MBR""" #*** Test again ***
         if str("LILO") in str(MBR): #*** Avoid UnicodeDecodeError ***
             #Bootloader is LILO in MBR
