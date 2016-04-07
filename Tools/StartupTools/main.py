@@ -235,6 +235,7 @@ class Main():
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking For a UEFI partition...")
             AutoUEFISystemPartition = CoreStartupTools().CheckForUEFIPartition(SystemInfo)
             UEFISystemPartition = AutoUEFISystemPartition
+            print(unicode(UEFISystemPartition))
 
             #If there is no UEFI partition, only look for BIOS bootloaders.
             if UEFISystemPartition == None:
