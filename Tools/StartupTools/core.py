@@ -110,6 +110,7 @@ class Main():
     def CheckForGRUBBIOS(self, MBR):
         """Check for the GRUB (v2 and legacy) BIOS bootloader"""
         #*** Try to find a way of distinguishing between them here, rather than later *** *** Test again ***
+        print(str(MBR))
         if str("GRUB") in str(MBR): #*** Avoid UnicodeDecodeError ***
             #Bootloader is GRUB MBR
             return True
