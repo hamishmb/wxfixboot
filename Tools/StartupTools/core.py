@@ -132,16 +132,8 @@ class Main():
         #*** This is a mess ***
         #Check if the system is using grub-legacy or grub2. *** There are better ways of doing this, like using a variable or dictionary instead of having to find the current os's name over and over ***
         if SystemInfo["IsLiveDisk"] == False:
-            #Find the name of the current OS.
-            for OS in OSList:
-                if OS.split()[-5] == "OS)":
-                    currentos = ' '.join(OS.split()[0:-6])
-
-                else:
-                    currentos = "Unknown"
-
             #Ask the user if this OS installed the bootloader.
-            Result = DialogTools().ShowYesNoDlg(Message="Was the bootloader installed by the current OS ("+currentos+")? If this OS is the most recently installed one, it probably installed the bootloader. If you're not sure, click No.")
+            Result = DialogTools().ShowYesNoDlg(Message="Was the bootloader installed by the current OS ("+SystemInfo["CurrentOS"]["Name"]+")? If this OS is the most recently installed one, it probably installed the bootloader. If you're not sure, click No.")
         
             if Result:
                 #Run a command to print grub's version. *** There has got to be a better way of processing this ***

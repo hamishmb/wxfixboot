@@ -471,7 +471,7 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Finding Linux OSs...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Linux Operating Systems...")
-        OSInfo, RootFS = MainStartupTools().GetLinuxOSs(LinuxPartList, SystemInfo)
+        OSInfo, SystemInfo, RootFS = MainStartupTools().GetLinuxOSs(LinuxPartList, SystemInfo)
 
         AutoRootFS = RootFS
 

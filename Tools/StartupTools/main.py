@@ -111,12 +111,13 @@ class Main():
 
             #If we found all of the information!
             if OSName != "" and OSArch != None:
-                #Add this information to OSInfo.
+                #Add this information to OSInfo and SystemInfo.
                 OSInfo[OSName] = {}
                 OSInfo[OSName]["Name"] = OSName
                 OSInfo[OSName]["IsCurrentOS"] = True
                 OSInfo[OSName]["Arch"] = OSArch
                 OSInfo[OSName]["Partition"] = RootFS
+                SystemInfo["CurrentOS"] = OSInfo[OSName].copy()
 
         #Get Linux OSs.
         for Partition in LinuxPartList:
@@ -160,7 +161,7 @@ class Main():
         #Check that at least one Linux OS was detected.
         if len(OSInfo) >= 1:
             logger.debug("MainStartupTools: Main().GetLinuxOSs(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
-            return OSInfo, RootFS
+            return OSInfo, SystemInfo, RootFS
 
         else:
             logger.critical("MainStartupTools: Main().GetLinuxOSs(): Couldn't find any linux operating systems! Linux partitions were detected, but don't appear to contain any OSs! WxFixBoot will now exit, and warn the user...")
