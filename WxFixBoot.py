@@ -181,11 +181,11 @@ Tools.StartupTools.main.DialogTools = DialogTools
 
 #BackendTools Package (Core).
 Tools.BackendTools.core.logger = logger
-Tools.BackendTools.core.CoreTools = CoreTools#
+Tools.BackendTools.core.CoreTools = CoreTools
 
 #BackendTools Package (Helpers)
 Tools.BackendTools.helpers.logger = logger
-Tools.BackendTools.helpers.CoreTools = CoreTools
+Tools.BackendTools.helpers.CoreTools = CoreTools#
 Tools.BackendTools.helpers.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.helpers.DialogTools = DialogTools
 Tools.BackendTools.helpers.LooseVersion = LooseVersion
