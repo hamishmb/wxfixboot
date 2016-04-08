@@ -213,6 +213,7 @@ Tools.BackendTools.BootloaderTools.main.CoreTools = CoreTools
 Tools.BackendTools.BootloaderTools.main.CoreBackendTools = CoreBackendTools #*** Is this needed? ***
 Tools.BackendTools.BootloaderTools.main.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.main.EssentialBackendTools = EssentialBackendTools
+Tools.BackendTools.BootloaderTools.main.MainBackendTools = MainBackendTools
 Tools.BackendTools.BootloaderTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools #*** Is this needed? ***
 Tools.BackendTools.BootloaderTools.main.BootloaderRemovalTools = BootloaderRemovalTools #*** Is this needed? ***
 Tools.BackendTools.BootloaderTools.main.BootloaderInstallationTools = BootloaderInstallationTools #*** Is this needed? ***
