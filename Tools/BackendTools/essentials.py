@@ -88,7 +88,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to Backup the Partition Table...###\n")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
 
-        if PartScheme == "msdos":
+        if PartScheme == "mbr":
             #Let's backup the MBR, but we need to ask where to back it up first. *** Maybe do this in settings window? ***
             PartitionTableBackupFile = DialogTools.ShowSaveFileDlg(Title="WxFixBoot - Select Partition Table Backup Target File", Wildcard="MBR Backup File (*.mbr)|*.mbr|IMG Image file (*.img)|*.img|All Files/Devices (*)|*")
 
@@ -131,14 +131,13 @@ class Main(): #*** These need refactoring and proper testing ***
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
         #We need to find RootDevice's partition scheme.
         PartScheme = DiskInfo[RootDevice]["Partitioning"]
-        print(DiskInfo[RootDevice])
 
         logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Preparing to backup the boot sector...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to backup the Boot Sector...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to Backup the Boot Sector...###\n")
 
-        if PartScheme == "msdos":
+        if PartScheme == "mbr":
             #Let's backup the MBR, but we need to ask where to back it up first. *** Maybe do this in settings window? ***
             BootSectorBackupFile = DialogTools.ShowSaveFileDlg(Title="WxFixBoot - Select Bootsector Backup Target File", Wildcard="IMG Image file (*.img)|*.img|All Files/Devices (*)|*")
 
@@ -214,7 +213,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Restoring the Partition Table...###\n")
 
-        if PartitionTableBackupType == "msdos":
+        if PartitionTableBackupType == "mbr":
             #Let's restore the MBR Partition Table.
             logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Restoring MBR partition table from file: "+PartitionTableFile+" to device: "+PartitionTableTargetDevice+"...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
@@ -271,7 +270,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Restoring the Boot Sector...###\n")
 
-        if BootSectorBackupType == "msdos":
+        if BootSectorBackupType == "mbr":
             #Let's restore the MBR bootsector.
             logger.info("EssentialBackendTools: Main().RestoreBootSector(): Restoring MBR boot sector from file: "+BootSectorFile+" to device: "+BootSectorTargetDevice+"...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)

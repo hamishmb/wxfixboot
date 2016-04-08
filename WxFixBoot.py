@@ -2528,7 +2528,7 @@ class RestoreWindow(wx.Frame):
 
             elif Temp == 512:
                 #Backup is MBR(msdos)
-                BackupType = "msdos"
+                BackupType = "mbr"
                 self.MBRBackupTypeRadio.SetValue(True)
 
             elif Temp > 512 and Temp < 20000:
