@@ -130,6 +130,7 @@ class Main(): #*** These need refactoring and proper testing ***
         #For GPT disks, backup UEFI System Partition.
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
         #We need to find RootDevice's partition scheme.
+        print(DiskInfo[RootDevice])
         PartScheme = DiskInfo[RootDevice]["Partitioning"]
 
         logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Preparing to backup the boot sector...")
@@ -158,6 +159,7 @@ class Main(): #*** These need refactoring and proper testing ***
             if UEFISystemPartition == None:
                 logger.error("EssentialBackendTools: Main().BackupBootSector(): Failed to backup UEFI Partition, because there isn't one!") #*** What if we're booting GRUB on gpt? ***
                 DialogTools.ShowMsgDlg(Kind="error", Message="You have no UEFI Partition, so WxFixBoot couldn't backup your bootsector! Click okay to skip this operation.")
+                retval = 1
 
             else:
                 #We need to ask where to back it up to. *** Maybe do this in settings window? ***
