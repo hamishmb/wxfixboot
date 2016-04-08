@@ -18,8 +18,8 @@
 #*** Re-evaluate dependencies at packaging time ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
-#*** Test DialogTools().ShowMultiChoiceDlg() ***
-#*** DevInfoTools().GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
+#*** Test DialogTools.ShowMultiChoiceDlg() ***
+#*** DevInfoTools.GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** Return return values in chroot functions (CoreBackendTools) ***
 #*** On wx 3, use custom buttons for dialogs ***
@@ -126,7 +126,7 @@ from Tools.BackendTools.BootloaderTools.installationtools import Main as Bootloa
 from Tools.BackendTools.BootloaderTools.setconfigtools import Main as BootloaderConfigSettingToolsCallable
 
 #Access these modules without the "()" so conditional tests can work.
-DevInfoTools = DevInfoToolsCallable() #
+DevInfoTools = DevInfoToolsCallable()
 
 CoreTools = CoreToolsCallable()
 
@@ -160,7 +160,7 @@ Tools.coretools.logger = logger
 Tools.coretools.logging = logging
 Tools.coretools.os = os
 Tools.coretools.re = re
-Tools.coretools.DialogTools = DialogTools
+Tools.coretools.DialogTools = DialogTools#
 
 #DialogTools Module.
 Tools.dialogtools.wx = wx
@@ -243,7 +243,7 @@ class GetDiskInformation(threading.Thread):
     def run(self):
         """Get Disk Information and return it as a list with embedded lists"""
         #Use a module I've written to collect data about connected Disks, and return it.
-        wx.CallAfter(self.ParentWindow.ReceiveDiskInfo, DevInfoTools().GetInfo())
+        wx.CallAfter(self.ParentWindow.ReceiveDiskInfo, DevInfoTools.GetInfo())
 
 #End Disk Information Handler thread.
 #Begin Starter Class
@@ -389,12 +389,12 @@ class InitThread(threading.Thread):
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking For Dependencies...")
-        MainStartupTools().CheckDepends()
+        MainStartupTools.CheckDepends()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "2")
         logger.info("InitThread(): Done Checking For Dependencies!")
 
         #Check if we're on a Live Disk. *** Ask in a separate function? *** *** See if we can determine this automatically ***
-        SystemInfo["IsLiveDisk"] = DialogTools().ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk, or Parted Magic?", Title="WxFixBoot - Live Disk?")
+        SystemInfo["IsLiveDisk"] = DialogTools.ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk, or Parted Magic?", Title="WxFixBoot - Live Disk?")
 
         if SystemInfo["IsLiveDisk"]:
             logger.info("InitThread(): We're on a live disk...")
@@ -405,21 +405,21 @@ class InitThread(threading.Thread):
         #Unmount all filesystems, to avoid any data corruption.
         logger.info("InitThread(): Unmounting Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Unmounting Filesystems...")
-        MainStartupTools().UnmountAllFS(SystemInfo)
+        MainStartupTools.UnmountAllFS(SystemInfo)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "5")
         logger.info("InitThread(): Done Unmounting Filsystems!")
 
         #Check filesystems.
         logger.info("InitThread(): Checking Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Filesystems...")
-        MainStartupTools().CheckFS()
+        MainStartupTools.CheckFS()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "15")
         logger.info("InitThread(): Filesystems Checked!")
 
         #Get device info. *** Replaces some of the functionality used here ***
         logger.info("InitThread(): Getting Device Information...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Getting Device Information...")
-        DiskInfo = DevInfoTools().GetInfo()
+        DiskInfo = DevInfoTools.GetInfo()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "60")
         logger.info("InitThread(): Finished Getting Device Information...")
 
@@ -430,7 +430,7 @@ class InitThread(threading.Thread):
         #Mount all filesystems.
         logger.info("InitThread(): Mounting Core Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Mounting Core Filesystems...")
-        MainStartupTools().MountCoreFS()
+        MainStartupTools.MountCoreFS()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "63")
         logger.info("InitThread(): Done Mounting Core Filsystems!")
 
@@ -481,7 +481,7 @@ class InitThread(threading.Thread):
             logger.critical("InitThread(): No Linux Partitions (on HDD) of type ext(1,2,3,4), btrfs, xfs, jfs, zfs, minix or resierfs found! Exiting...")
 
             #Exit.
-            CoreTools().EmergencyExit("You don't appear to have any Linux partitions on your hard disks. If you do have Linux partitions but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
+            CoreTools.EmergencyExit("You don't appear to have any Linux partitions on your hard disks. If you do have Linux partitions but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
 
         logger.debug("InitThread(): *** ABSTRACTION CODE *** LinuxPartList Populated okay. Contents: "+', '.join(LinuxPartList))
 
@@ -493,7 +493,7 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Finding Linux OSs...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Linux Operating Systems...")
-        OSInfo, SystemInfo, RootFS = MainStartupTools().GetLinuxOSs(LinuxPartList, SystemInfo)
+        OSInfo, SystemInfo, RootFS = MainStartupTools.GetLinuxOSs(LinuxPartList, SystemInfo)
 
         AutoRootFS = RootFS
 
@@ -528,7 +528,7 @@ class InitThread(threading.Thread):
         global DefaultOS
         global AutoDefaultOS
 
-        DefaultOS = DialogTools().ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=OSList) #*** Get rid of this; selected on a per-bootloader basis in Bootloader Options Window ***
+        DefaultOS = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=OSList) #*** Get rid of this; selected on a per-bootloader basis in Bootloader Options Window ***
         AutoDefaultOS = DefaultOS
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
@@ -550,7 +550,7 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Determining Firmware Type...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining Firmware Type...")
-        FirmwareType, AutoFirmwareType, UEFIVariables = MainStartupTools().GetFirmwareType()
+        FirmwareType, AutoFirmwareType, UEFIVariables = MainStartupTools.GetFirmwareType()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "70")
         logger.info("InitThread(): Determined Firmware Type as: "+FirmwareType)
 
@@ -581,14 +581,14 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools().GetBootloader(RootDevice, SystemInfo, FirmwareType)
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(RootDevice, SystemInfo, FirmwareType)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): Bootloader is: "+Bootloader)
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        AutoFirmwareType, FirmwareType = MainStartupTools().FinalCheck(LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        AutoFirmwareType, FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -642,7 +642,7 @@ class InitThread(threading.Thread):
         OptionsDlg1Run = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run = MainStartupTools().SetDefaults()
+        ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -1047,41 +1047,41 @@ class MainWindow(wx.Frame):
         #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
         #Do essential processes first.
         if BackupPartitionTable:
-            Operations.append(EssentialBackendTools().BackupPartitionTable)            
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().BackupPartitionTable to Operations...")
+            Operations.append(EssentialBackendTools.BackupPartitionTable)            
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BackupPartitionTable to Operations...")
 
         if BackupBootSector:
-            Operations.append(EssentialBackendTools().BackupBootSector)
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().BackupBootSector to Operations...")
+            Operations.append(EssentialBackendTools.BackupBootSector)
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BackupBootSector to Operations...")
 
         if RestorePartitionTable:
-            Operations.append(EssentialBackendTools().RestorePartitionTable)
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().RestorePartitionTable to Operations...")
+            Operations.append(EssentialBackendTools.RestorePartitionTable)
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.RestorePartitionTable to Operations...")
 
         if RestoreBootSector:
-            Operations.append(EssentialBackendTools().RestoreBootSector)
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().RestoreBootSector to Operations...")
+            Operations.append(EssentialBackendTools.RestoreBootSector)
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.RestoreBootSector to Operations...")
 
         if QuickFSCheck:
-            Operations.append(EssentialBackendTools().QuickFileSystemCheck)
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().QuickFileSystemCheck to Operations...")
+            Operations.append(EssentialBackendTools.QuickFileSystemCheck)
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.QuickFileSystemCheck to Operations...")
 
         if BadSectCheck:
-            Operations.append(EssentialBackendTools().BadSectorCheck)
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools().BadSectorCheck to Operations...")
+            Operations.append(EssentialBackendTools.BadSectorCheck)
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BadSectorCheck to Operations...")
 
         #Now do other processes
         if BootloaderToInstall != "None":
-            Operations.append(MainBootloaderTools().ManageBootloaders)
-            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().ManageBootloaders to Operations...")
+            Operations.append(MainBootloaderTools.ManageBootloaders)
+            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools.ManageBootloaders to Operations...")
 
         if ReinstallBootloader:
-            Operations.append(MainBootloaderTools().ReinstallBootloader)
-            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().ReinstallBootloader to Operations...")
+            Operations.append(MainBootloaderTools.ReinstallBootloader)
+            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools.ReinstallBootloader to Operations...")
 
         if UpdateBootloader:
-            Operations.append(MainBootloaderTools().UpdateBootloader)
-            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().UpdateBootloader to Operations...")
+            Operations.append(MainBootloaderTools.UpdateBootloader)
+            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools.UpdateBootloader to Operations...")
 
         #*** Disabled temporarily ***
         #if MakeSystemSummary:
@@ -1089,10 +1089,10 @@ class MainWindow(wx.Frame):
         #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
 
         #Check if we need to prepare to install a new bootloader, and do so first if needed. *** Is using a for loop a good idea in case it gets duplicated? ***
-        for element in (MainBootloaderTools().ManageBootloaders, MainBootloaderTools().ReinstallBootloader, MainBootloaderTools().UpdateBootloader):
+        for element in (MainBootloaderTools.ManageBootloaders, MainBootloaderTools.ReinstallBootloader, MainBootloaderTools.UpdateBootloader):
             if element in Operations:
-                logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding MainBootloaderTools().PrepareForBootloaderInstallation()...")
-                Operations.insert(0, MainBootloaderTools().PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations *** *** Must be before these three ***
+                logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding MainBootloaderTools.PrepareForBootloaderInstallation()...")
+                Operations.insert(0, MainBootloaderTools.PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations *** *** Must be before these three ***
 
         NumberOfOperations = len(Operations)
 
@@ -1137,7 +1137,7 @@ class MainWindow(wx.Frame):
 
                 if Answer == wx.ID_OK:
                     #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
-                    CoreTools().StartProcess("cp /tmp/wxfixboot.log "+File)
+                    CoreTools.StartProcess("cp /tmp/wxfixboot.log "+File)
 
                     dlg = wx.MessageDialog(self.Panel, 'Done! WxFixBoot will now exit.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
                     dlg.ShowModal()
@@ -2173,7 +2173,7 @@ class BootloaderOptionsWindow(wx.Frame):
         AutoUEFISystemPartition = "None"
 
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools().GetBootloader(RootDevice, SystemInfo, FirmwareType)
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(RootDevice, SystemInfo, FirmwareType)
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+Bootloader)
 
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
@@ -2872,7 +2872,7 @@ class ProgressWindow(wx.Frame):
         self.Hide()
 
         #Reset all settings to defaults, except ones like LiveDisk, which won't ever need to change.
-        MainStartupTools().SetDefaults()
+        MainStartupTools.SetDefaults()
 
         global Bootloader
         global FirmwareType
@@ -2925,7 +2925,7 @@ class ProgressWindow(wx.Frame):
 
                 if Answer == wx.ID_OK:
                     #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
-                    CoreTools().StartProcess("cp /tmp/wxfixboot.log "+File)
+                    CoreTools.StartProcess("cp /tmp/wxfixboot.log "+File)
 
                     dlg = wx.MessageDialog(self.Panel, 'Done! WxFixBoot will now exit.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
                     dlg.ShowModal()
@@ -2984,7 +2984,7 @@ class BackendThread(threading.Thread):
         """Start doing operations."""
         logger.debug("BackendThread().StartOperations(): Running operations...")
 
-        DialogTools().ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
+        DialogTools.ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
 
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
         for function in Operations:
@@ -3134,16 +3134,16 @@ class BackendThread(threading.Thread):
 
         wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished!")
 
-        DialogTools().ShowMsgDlg(Kind="info", Message="Your operations are all done! Thank you for using WxFixBoot. If you performed any bootloader operations, please now reboot your system.") #*** Check this and customise message if needed ***
+        DialogTools.ShowMsgDlg(Kind="info", Message="Your operations are all done! Thank you for using WxFixBoot. If you performed any bootloader operations, please now reboot your system.") #*** Check this and customise message if needed ***
 
         wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
     def GenerateSystemReport(self): #*** Leave this here until switch to dictionaries cos otherwise this'll be a mighty pain in the backside! :) *** *** Do dictionaries here ***
         """Create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary."""
-        DialogTools().ShowMsgDlg(Kind="info", Message="WxFixBoot will now create your system report. Click okay to continue.")
+        DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot will now create your system report. Click okay to continue.")
 
         #Ask the user where to save the file.
-        ReportFile = DialogTools().ShowSaveFileDlg(Title="WxFixBoot - Select System Report File", Wildcard="Text Files|*.txt|Log Files|*.log|All Files/Devices (*)|*")
+        ReportFile = DialogTools.ShowSaveFileDlg(Title="WxFixBoot - Select System Report File", Wildcard="Text Files|*.txt|Log Files|*.log|All Files/Devices (*)|*")
 
         #Write everything directly to the file.
         ReportList = open(ReportFile, 'w')
