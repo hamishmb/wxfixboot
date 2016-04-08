@@ -140,7 +140,7 @@ HelperBackendTools = HelperBackendToolsCallable()
 EssentialBackendTools = EssentialBackendToolsCallable()
 MainBackendTools = MainBackendToolsCallable()
 
-MainBootloaderTools = MainBootloaderToolCallable()
+MainBootloaderTools = MainBootloaderToolsCallable()
 BootloaderConfigObtainingTools = BootloaderConfigObtainingToolsCallable()
 BootloaderRemovalTools = BootloaderRemovalToolsCallable()
 BootloaderInstallationTools = BootloaderInstallationToolsCallable()
