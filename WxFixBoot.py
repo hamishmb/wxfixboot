@@ -3073,10 +3073,7 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.main.OSList = OSList
 
             #*** Bootloader Config getting tools (in Backend Tools package) ***
-            try:
-                Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout = BootloaderTimeout
-
-            except UnboundLocalError: pass
+            Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout = BootloaderTimeout
 
             #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.setconfigtools.RootDevice = RootDevice

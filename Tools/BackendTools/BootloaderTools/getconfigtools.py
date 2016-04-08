@@ -34,7 +34,7 @@ class Main(): #*** Refactor and test all of these ***
         #Look for the timeout setting.
         for line in infile:
             if 'timeout' in line and 'sec' not in line:
-                #Found it! Save it to BootloaderTimeout, but only if BootloaderTimeout = -1 (we aren't changing the timeout). #*** Otherwise, don't bother looking for it and speed this up! ***
+                #Found it! Save it, but only if BootloaderTimeout = -1 (we aren't changing the timeout). #*** Otherwise, don't bother looking for it and speed this up! ***
                 if BootloaderTimeout == -1:
                     Temp = line.split()[1].replace('\n', '')
                     if Temp.isdigit():
@@ -62,7 +62,7 @@ class Main(): #*** Refactor and test all of these ***
         for line in infile:
             #Look for the timeout setting.
             if 'GRUB_TIMEOUT' in line and '=' in line:
-                #Found it! Save it to BootloaderTimeout, but only if BootloaderTimeout = -1 (we aren't changing the timeout).
+                #Found it! Save it, but only if BootloaderTimeout = -1 (we aren't changing the timeout).
                 if BootloaderTimeout == -1: #*** If we check this earlier it'll save CPU time ***
                     #Save it, carefully avoiding errors.
                     junk, sep, Temp = line.partition('=')
