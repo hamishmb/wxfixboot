@@ -224,11 +224,11 @@ Tools.BackendTools.BootloaderTools.getconfigtools.logger = logger
 Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools
 
 #BootloaderTools Package (InstallationTools)
-Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools#
+Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools
 
 #BootloaderTools Package (SetConfigTools)
 Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
-Tools.BackendTools.BootloaderTools.setconfigtools.CoreBackendTools = CoreBackendTools
+Tools.BackendTools.BootloaderTools.setconfigtools.CoreBackendTools = CoreBackendTools#
 Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
 
