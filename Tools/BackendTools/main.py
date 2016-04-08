@@ -424,10 +424,10 @@ class Main():
 
                 #Check if the partition is mounted.
                 if CoreTools.IsMounted(Partition, MountPoint):
-                    UnmountAfter = False
+                    UnmountPartitionAfter = False
 
                 else:
-                    UnmountAfter = True
+                    UnmountPartitionAfter = True
 
                     #Mount the partition.
                     Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
