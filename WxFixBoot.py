@@ -209,12 +209,12 @@ Tools.BackendTools.main.DialogTools = DialogTools
 #BootloaderTools Package (Main)
 Tools.BackendTools.BootloaderTools.main.wx = wx
 Tools.BackendTools.BootloaderTools.main.logger = logger
-Tools.BackendTools.BootloaderTools.main.CoreTools = CoreTools#
-Tools.BackendTools.BootloaderTools.main.CoreBackendTools = CoreBackendTools
+Tools.BackendTools.BootloaderTools.main.CoreTools = CoreTools
+Tools.BackendTools.BootloaderTools.main.CoreBackendTools = CoreBackendTools #*** Is this needed? ***
 Tools.BackendTools.BootloaderTools.main.HelperBackendTools = HelperBackendTools
-Tools.BackendTools.BootloaderTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
-Tools.BackendTools.BootloaderTools.main.BootloaderRemovalTools = BootloaderRemovalTools
-Tools.BackendTools.BootloaderTools.main.BootloaderInstallationTools = BootloaderInstallationTools
+Tools.BackendTools.BootloaderTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools #*** Is this needed? ***
+Tools.BackendTools.BootloaderTools.main.BootloaderRemovalTools = BootloaderRemovalTools #*** Is this needed? ***
+Tools.BackendTools.BootloaderTools.main.BootloaderInstallationTools = BootloaderInstallationTools #*** Is this needed? ***
 Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
 
 #BootloaderTools Package (GetConfigTools)

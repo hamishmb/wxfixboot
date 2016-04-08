@@ -56,7 +56,7 @@ class Main(): #*** Refactor and test all of these ***
                 if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:
                     #Find the package manager on this partition, if one exists.
                     #This is the RootFS, so don't use chroot in the given command lists.
-                    APT = HelperBackendTools().LookForAPTOnPartition(APTExecCmds="which apt-get")
+                    APT = HelperBackendTools.LookForAPTOnPartition(APTExecCmds="which apt-get")
 
                     #Add the OS and its package manager to the list, if there is one.
                     if APT:
@@ -67,7 +67,7 @@ class Main(): #*** Refactor and test all of these ***
                     continue
 
                 #Mount the partition.
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint="/mnt"+Partition)
+                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint="/mnt"+Partition)
 
                 #Check if anything went wrong.
                 if Retval != 0:
@@ -77,7 +77,7 @@ class Main(): #*** Refactor and test all of these ***
                 else:
                     #Find the package manager on this partition, if one exists.
                     #This isn't the RootFS, so use chroot in the given command lists.
-                    APT = HelperBackendTools().LookForAPTOnPartition(APTExecCmds="chroot /mnt"+Partition+" which apt-get")
+                    APT = HelperBackendTools.LookForAPTOnPartition(APTExecCmds="chroot /mnt"+Partition+" which apt-get")
 
                     #Add the OS and its package manager to the list, if there is one.
                     if APT:
@@ -90,7 +90,7 @@ class Main(): #*** Refactor and test all of these ***
             if OSListWithPackageManagers == []:
                 #Oh dear... There aren't.
                 logger.error("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Couldn't find an OS with APT! Will have to disable some operations!")
-                DialogTools().ShowMsgDlg(Kind="error", Message="No supported package managers could be found on any of your operating systems! At the moment, APT is supported, which covers most Linux Operating Systems. WxFixBoot will have to skip all operations that require a package manager, such as installing, removing and reinstalling the bootloader. In a later release WxFixBoot will likely support another package manager, such as Slackware's system. If you think you do have an OS with a supported package manager, please report a bug or email me directly via my Launchpad page, so I can try to help. In the meantime, you can probably follow some online instructions for your operating system.")
+                DialogTools.ShowMsgDlg(Kind="error", Message="No supported package managers could be found on any of your operating systems! At the moment, APT is supported, which covers most Linux Operating Systems. WxFixBoot will have to skip all operations that require a package manager, such as installing, removing and reinstalling the bootloader. In a later release WxFixBoot will likely support another package manager, such as Slackware's system. If you think you do have an OS with a supported package manager, please report a bug or email me directly via my Launchpad page, so I can try to help. In the meantime, you can probably follow some online instructions for your operating system.")
 
                 #Set these to "None", so the packagemanager-dependant code can skip itself.
                 OSsForBootloaderRemoval = []
@@ -104,12 +104,12 @@ class Main(): #*** Refactor and test all of these ***
                 logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found at least one candidate for installing and removing bootloaders! Continuing...")
 
                 #Also, we need to find which OS(es) installed the bootloader (or have it installed currently), and ask the user which OS to install the bootloader with.
-                OSsForBootloaderRemoval = HelperBackendTools().FindBootloaderRemovalOSs(OSListWithPackageManagers, AutoRootFS, Bootloader)
+                OSsForBootloaderRemoval = HelperBackendTools.FindBootloaderRemovalOSs(OSListWithPackageManagers, AutoRootFS, Bootloader)
                 logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): List of OSs to have the bootloader removed: "+', '.join(OSsForBootloaderRemoval)+"...")
 
                 #Update Current Operation Text.
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 85)
-                OSsForBootloaderInstallation = HelperBackendTools().AskUserForBootloaderInstallationOSs(OSListWithPackageManagers, UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval)
+                OSsForBootloaderInstallation = HelperBackendTools.AskUserForBootloaderInstallationOSs(OSListWithPackageManagers, UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval)
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Done!###\n") 
@@ -126,7 +126,7 @@ class Main(): #*** Refactor and test all of these ***
         if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
             #These operations have been disabled. Notify the user and skip them.
             logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Cancelled because bootloader operations have been disabled, or the required information wasn't found...")
-            DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
+            DialogTools.ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
             DisableBootloaderOperations = True
@@ -152,7 +152,7 @@ class Main(): #*** Refactor and test all of these ***
         if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
             #These operations have been disabled. Notify the user and skip them.
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Cancelled because bootloader operations have been disabled, or the required information wasn't found...")
-            DialogTools().ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
+            DialogTools.ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
             DisableBootloaderOperations = True
@@ -196,7 +196,7 @@ class Main(): #*** Refactor and test all of these ***
         else:
             #Bootloader installation failed for at least one OS! *** Clarify this message with better info ***
             logger.error("MainBootloaderTools(): Main().ManageBootloaders(): Failed to install new bootloader in at least one OS! Asking user whether to continue with configuration or not...")
-            Result = DialogTools().ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Do you want to continue and configure the new bootloader(s), or skip the rest of the bootloader operations? You probably want to configure the bootloader anyway.", Title="WxFixBoot - Configure Bootloader(s)?")
+            Result = DialogTools.ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Do you want to continue and configure the new bootloader(s), or skip the rest of the bootloader operations? You probably want to configure the bootloader anyway.", Title="WxFixBoot - Configure Bootloader(s)?")
 
             if Result:
                 #Continue and configure bootloaders. Otherwise, do nothing.
