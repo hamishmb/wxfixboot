@@ -26,10 +26,10 @@ class Main(): #*** Refactor and test all of these ***
         """Remove GRUB-LEGACY."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreTools().StartProcess("apt-get remove -y grub grub-legacy-doc grub-common", ShowOutput=False)
+                retval = CoreTools.StartProcess("apt-get remove -y grub grub-legacy-doc grub-common", ShowOutput=False)
 
             else:
-                retval = CoreTools().StartProcess("chroot "+MountPoint+" apt-get remove -y grub grub-legacy-doc grub-common", ShowOutput=False)
+                retval = CoreTools.StartProcess("chroot "+MountPoint+" apt-get remove -y grub grub-legacy-doc grub-common", ShowOutput=False)
         
         #Return the return value.
         return retval
@@ -38,10 +38,10 @@ class Main(): #*** Refactor and test all of these ***
         """Remove GRUB2."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreTools().StartProcess("apt-get remove -y grub-pc grub-pc-bin grub-common", ShowOutput=False)
+                retval = CoreTools.StartProcess("apt-get remove -y grub-pc grub-pc-bin grub-common", ShowOutput=False)
 
             else:
-                retval = CoreTools().StartProcess("chroot "+MountPoint+" apt-get remove -y grub-pc grub-pc-bin grub-common", ShowOutput=False)
+                retval = CoreTools.StartProcess("chroot "+MountPoint+" apt-get remove -y grub-pc grub-pc-bin grub-common", ShowOutput=False)
         
         #Return the return value.
         return retval
@@ -50,10 +50,10 @@ class Main(): #*** Refactor and test all of these ***
         """Remove lilo."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreTools().StartProcess("apt-get remove -y lilo", ShowOutput=False)
+                retval = CoreTools.StartProcess("apt-get remove -y lilo", ShowOutput=False)
 
             else:
-                retval = CoreTools().StartProcess("chroot "+MountPoint+" apt-get remove -y lilo", ShowOutput=False)
+                retval = CoreTools.StartProcess("chroot "+MountPoint+" apt-get remove -y lilo", ShowOutput=False)
         
         #Return the return value.
         return retval
@@ -62,10 +62,10 @@ class Main(): #*** Refactor and test all of these ***
         """Remove GRUB-UEFI."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreTools().StartProcess("apt-get remove -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common", ShowOutput=False)
+                retval = CoreTools.StartProcess("apt-get remove -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common", ShowOutput=False)
 
             else:
-                retval = CoreTools().StartProcess("chroot "+MountPoint+" apt-get remove -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common", ShowOutput=False)
+                retval = CoreTools.StartProcess("chroot "+MountPoint+" apt-get remove -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common", ShowOutput=False)
         
         #Return the return value.
         return retval
@@ -74,10 +74,10 @@ class Main(): #*** Refactor and test all of these ***
         """Remove ELILO."""
         if PackageManager == "apt-get":
             if UseChroot == False:
-                retval = CoreTools().StartProcess("apt-get remove -y elilo", ShowOutput=False)
+                retval = CoreTools.StartProcess("apt-get remove -y elilo", ShowOutput=False)
 
             else:
-                retval = CoreTools().StartProcess("chroot "+MountPoint+" apt-get remove -y elilo", ShowOutput=False)
+                retval = CoreTools.StartProcess("chroot "+MountPoint+" apt-get remove -y elilo", ShowOutput=False)
         
         #Return the return value.
         return retval
