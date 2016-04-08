@@ -442,6 +442,8 @@ class Main():
 
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
 
+            print(BootloaderToInstall)
+
             #Look for the configuration file, based on which SetConfig() function we're about to run.
             if BootloaderToInstall == "GRUB2":
                 #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***

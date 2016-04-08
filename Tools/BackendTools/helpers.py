@@ -269,14 +269,15 @@ class Main():
             #Grab the Package Manager and the partition the OS resides on. *** Keep this in the dictionary instead of having to do this kind of crap ***
             PackageManager = OS.split()[-1]
             Partition = OS.split()[-5]
-            MountPoint = "/mnt"+Partition
 
             #Run some different instructions depending on whether the partition = AutoRootFS or not. *** Use a dictionary key to say which OS is the current one instead of doing this ***
             if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:
                 UsingChroot = False
+                MountPoint = "/"
 
             else:
                 #Do some additional steps if we're using a live disk.
+                MountPoint = "/mnt"+Partition
                 UsingChroot = True
 
                 #Mount the partition.
