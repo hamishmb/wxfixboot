@@ -2990,7 +2990,7 @@ class BackendThread(threading.Thread):
 
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
         for function in Operations:
-            #Make dictionaries accessible. *** Add as needed *** *** Does all of this need to go in here? *** *** Minimise these later if possible ***
+            #Make dictionaries accessible. *** Do we need to do this each time? *** *** Add as needed *** *** Does all of this need to go in here? *** *** Minimise these later if possible ***
             Tools.BackendTools.essentials.DiskInfo = DiskInfo
             Tools.BackendTools.essentials.SystemInfo = SystemInfo
 
@@ -2999,6 +2999,7 @@ class BackendThread(threading.Thread):
 
             Tools.BackendTools.main.SystemInfo = SystemInfo
 
+            Tools.BackendTools.BootloaderTools.main.OSInfo = OSInfo
             Tools.BackendTools.BootloaderTools.main.SystemInfo = SystemInfo
 
             Tools.BackendTools.BootloaderTools.setconfigtools.SystemInfo = SystemInfo
