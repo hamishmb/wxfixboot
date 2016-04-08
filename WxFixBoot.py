@@ -160,7 +160,7 @@ Tools.coretools.logger = logger
 Tools.coretools.logging = logging
 Tools.coretools.os = os
 Tools.coretools.re = re
-Tools.coretools.DialogTools = DialogTools#
+Tools.coretools.DialogTools = DialogTools
 
 #DialogTools Module.
 Tools.dialogtools.wx = wx
@@ -170,7 +170,7 @@ Tools.dialogtools.time = time
 #StartupTools Package (Core).
 Tools.StartupTools.core.logger = logger
 Tools.StartupTools.core.CoreTools = CoreTools
-Tools.StartupTools.core.DialogTools = DialogTools
+Tools.StartupTools.core.DialogTools = DialogTools#
 
 #StartupTools Package (Main).
 Tools.StartupTools.main.logger = logger

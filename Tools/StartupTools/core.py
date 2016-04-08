@@ -38,7 +38,7 @@ class Main():
                 cmd = "chroot /mnt"+Partition+" "+cmd
 
             #Now let's check if the OS uses this architecture.
-            if WantedArch in CoreTools().StartProcess(cmd, ReturnOutput=True)[1]:
+            if WantedArch in CoreTools.StartProcess(cmd, ReturnOutput=True)[1]:
                 if WantedArch == "64-bit":
                     logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): OS on "+Partition+" is 64-bit...")
                     OSArch = "x86_64"
@@ -68,11 +68,11 @@ class Main():
         logger.info("CoreStartupTools: Main().AskForOSName(): Asking the user for the name of the OS in "+Partition+"...")
 
         if Partition == AutoRootFS:
-            DialogTools().ShowMsgDlg(Kind="warning", Message="WxFixBoot couldn't find the name of the current OS. Please name it so that WxFixBoot can function correctly.")
+            DialogTools.ShowMsgDlg(Kind="warning", Message="WxFixBoot couldn't find the name of the current OS. Please name it so that WxFixBoot can function correctly.")
             Result = True
 
         else:
-            Result = DialogTools().ShowYesNoDlg(Message="There is a Linux operating system on partition: "+Partition+" but WxFixBoot couldn't find its name. It isn't the currently running OS. Do you want to name it and include it in the list?. Only click yes if you believe it is a recent OS.")
+            Result = DialogTools.ShowYesNoDlg(Message="There is a Linux operating system on partition: "+Partition+" but WxFixBoot couldn't find its name. It isn't the currently running OS. Do you want to name it and include it in the list?. Only click yes if you believe it is a recent OS.")
 
         if Result == False:
             logger.info("CoreStartupTools: Main().AskForOSName(): User didn't want to name the OS in "+Partition+"! Ignoring it...")
@@ -82,7 +82,7 @@ class Main():
         else:
             logger.debug("CoreStartupTools: Main().AskForOSName(): User reported recent Linux OS in "+Partition+". Asking name of OS...")
             #User reported that an OS is here.
-            Result = DialogTools().ShowTextEntryDlg(Message="Please enter the name of the operating system that is on "+Partition+".\nThe name you specify will be used later in the program", Title="WxFixBoot - Enter OS Name")
+            Result = DialogTools.ShowTextEntryDlg(Message="Please enter the name of the operating system that is on "+Partition+".\nThe name you specify will be used later in the program", Title="WxFixBoot - Enter OS Name")
 
             return Result
 
@@ -96,7 +96,7 @@ class Main():
         UEFISYSPMountPoint = "/boot/efi"
 
         #Mount it using the global mount function.
-        Retval = CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=UEFISYSPMountPoint)
+        Retval = CoreTools.MountPartition(Partition=UEFISystemPartition, MountPoint=UEFISYSPMountPoint)
 
         if Retval == 0:
             logger.info("CoreStartupTools: Main().MountUEFIPartition(): Successfully Mounted UEFI Partition...")
@@ -133,11 +133,11 @@ class Main():
         #Check if the system is using grub-legacy or grub2. *** There are better ways of doing this, like using a variable or dictionary instead of having to find the current os's name over and over ***
         if SystemInfo["IsLiveDisk"] == False:
             #Ask the user if this OS installed the bootloader.
-            Result = DialogTools().ShowYesNoDlg(Message="Was the bootloader installed by the current OS ("+SystemInfo["CurrentOS"]["Name"]+")? If this OS is the most recently installed one, it probably installed the bootloader. If you're not sure, click No.")
+            Result = DialogTools.ShowYesNoDlg(Message="Was the bootloader installed by the current OS ("+SystemInfo["CurrentOS"]["Name"]+")? If this OS is the most recently installed one, it probably installed the bootloader. If you're not sure, click No.")
         
             if Result:
                 #Run a command to print grub's version. *** There has got to be a better way of processing this ***
-                Stdout = CoreTools().StartProcess("grub-install --version", ReturnOutput=True)[1].replace("(", "").replace(")", "")
+                Stdout = CoreTools.StartProcess("grub-install --version", ReturnOutput=True)[1].replace("(", "").replace(")", "")
 
                 #Try to grab the first number in the list. If it fails, we've almost certainly got GRUB2.
                 Temp = "empty"
@@ -168,7 +168,7 @@ class Main():
         
         #Ask the user (this'll be run if user said no to YesNo dlg above too -- this isn't in an else staement).
         logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Only listing GRUB2 and GRUB-LEGACY, as WxFixBoot couldn't tell if bootloader was grub2 or legacy.")
-        Result = DialogTools().ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine if your bootloader was GRUB-LEGACY or GRUB2, so please specify which one it is here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY or I don't know", "GRUB2"])
+        Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine if your bootloader was GRUB-LEGACY or GRUB2, so please specify which one it is here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY or I don't know", "GRUB2"])
 
         if Result != "GRUB-LEGACY or I don't know":
             logger.debug("CoreStartupTools: Main().DetermineGRUBVersion(): User reported bootloader is: "+Result+". Continuing...")
@@ -185,14 +185,14 @@ class Main():
         #Offer different selection based on the current state of the system.
         if UEFISystemPartition == "None" and FirmwareType == "UEFI":
             logger.warning("CoreStartupTools: Main().ManualBootloaderSelect(): Only listing BIOS bootloaders, as there is no UEFI partition.")
-            Result = DialogTools().ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "LILO"])
+            Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "LILO"])
 
         elif UEFISystemPartition != "None" and FirmwareType == "UEFI":
-            Result = DialogTools().ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "GRUB-UEFI", "LILO", "ELILO"])
+            Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "GRUB-UEFI", "LILO", "ELILO"])
 
         else:
             logger.info("CoreStartupTools: Main().ManualBootloaderSelect(): Only listing BIOS bootloaders, as this is a BIOS system.")
-            Result = DialogTools().ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "LILO"])
+            Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "LILO"])
 
         if Result != "GRUB-LEGACY/I don't know":
             logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): User reported bootloader is: "+Result+". Continuing...")
@@ -229,7 +229,7 @@ class Main():
         if SystemInfo["IsLiveDisk"] or AskForUEFIPartition:
             if FatPartitions != []:
                 logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): Asking user where UEFI Partition is. If you're running from a live disk, ignore this warning.")
-                Result = DialogTools().ShowChoiceDlg(Message="Please select your UEFI partition. You can change this later in the bootloader options window if you change your mind, or if it's wrong.", Title="WxFixBoot - Select UEFI Partition", Choices=["I don't have one"]+FatPartitions)
+                Result = DialogTools.ShowChoiceDlg(Message="Please select your UEFI partition. You can change this later in the bootloader options window if you change your mind, or if it's wrong.", Title="WxFixBoot - Select UEFI Partition", Choices=["I don't have one"]+FatPartitions)
 
                 if Result == "I don't have one":
                     logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): User said no UEFI Partition exists. Continuing...")
@@ -246,7 +246,7 @@ class Main():
     def CheckForGRUBUEFI(self, UEFISYSPMountPoint):
         """Check for GRUB-UEFI"""
         #Look for GRUB's UEFI file.
-        Temp = CoreTools().Find(r"(.*)grub(.*).efi", UEFISYSPMountPoint)
+        Temp = CoreTools.Find(r"(.*)grub(.*).efi", UEFISYSPMountPoint)
 
         if Temp != []:
             #Bootloader is GRUB-UEFI.
@@ -262,7 +262,7 @@ class Main():
     def CheckForELILO(self, UEFISYSPMountPoint):
         """Check for ELILO"""
         #Look for LILO's UEFI file.
-        Temp = CoreTools().Find(r"(.*)elilo(.*).efi", UEFISYSPMountPoint)
+        Temp = CoreTools.Find(r"(.*)elilo(.*).efi", UEFISYSPMountPoint)
 
         if Temp != []:
             #Bootloader is ELILO.
