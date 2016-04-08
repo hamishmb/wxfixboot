@@ -60,8 +60,8 @@ class Main(): #*** Refactor and test all of these ***
 
                     #Add the OS and its package manager to the list, if there is one.
                     if APT:
-                       logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager "+Result)
-                       OSListWithPackageManagers.append(OS+" with Package Manager "+Result)
+                       logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager apt-get")
+                       OSListWithPackageManagers.append(OS+" with Package Manager apt-get")
                             
                     #Skip the rest of the for loop.
                     continue
@@ -81,8 +81,8 @@ class Main(): #*** Refactor and test all of these ***
 
                     #Add the OS and its package manager to the list, if there is one.
                     if APT:
-                        logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager "+Result)
-                        OSListWithPackageManagers.append(OS+" with Package Manager "+Result)
+                        logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager apt-get")
+                        OSListWithPackageManagers.append(OS+" with Package Manager apt-get")
 
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 70)
 
