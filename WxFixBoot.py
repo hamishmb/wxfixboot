@@ -194,7 +194,7 @@ Tools.BackendTools.helpers.LooseVersion = LooseVersion
 Tools.BackendTools.essentials.wx = wx
 Tools.BackendTools.essentials.logger = logger
 Tools.BackendTools.essentials.CoreTools = CoreTools
-Tools.BackendTools.essentials.CoreBackendTools = CoreBackendTools
+Tools.BackendTools.essentials.CoreBackendTools = CoreBackendTools #*** Is this needed? ***
 Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.essentials.DialogTools = DialogTools
 
@@ -202,7 +202,7 @@ Tools.BackendTools.essentials.DialogTools = DialogTools
 Tools.BackendTools.main.wx = wx
 Tools.BackendTools.main.logger = logger
 Tools.BackendTools.main.os = os
-Tools.BackendTools.main.CoreTools = CoreTools
+Tools.BackendTools.main.CoreTools = CoreTools#
 Tools.BackendTools.main.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.main.DialogTools = DialogTools
 
