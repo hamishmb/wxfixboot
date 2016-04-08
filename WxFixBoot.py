@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#****** URGENT: Switch from calling modules' functions from e.g. "MainBackendTools().GetBootloader()" to "MainBackendTools.GetBootloader()" so conditional tests work in CountOperations ******
+#*** Add gdisk to dependencies list ***
 #*** Re-evaluate dependencies at packaging time ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***

@@ -158,7 +158,7 @@ class Main(): #*** Refactor and test all of these ***
             DisableBootloaderOperations = True
 
         else:
-            #Set BootloaderToInstall as the current bootloader to allow this to work properly.
+            #Set BootloaderToInstall as the current bootloader to allow this to work properly. *** Doesn't work because it needs to be set to tools.BackendTools.main.BootloaderToInstall ***
             global BootloaderToInstall
             BootloaderToInstall = Bootloader
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Updating the bootloader's config...")

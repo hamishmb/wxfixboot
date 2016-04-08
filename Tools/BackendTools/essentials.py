@@ -155,8 +155,8 @@ class Main(): #*** These need refactoring and proper testing ***
 
         else:
             #Let's backup the UEFISystemPartition, but check there is one first.
-            if UEFISystemPartition == "None":
-                logger.error("EssentialBackendTools: Main().BackupBootSector(): Failed to backup UEFI Partition, because there isn't one!")
+            if UEFISystemPartition == None:
+                logger.error("EssentialBackendTools: Main().BackupBootSector(): Failed to backup UEFI Partition, because there isn't one!") #*** What if we're booting GRUB on gpt? ***
                 DialogTools.ShowMsgDlg(Kind="error", Message="You have no UEFI Partition, so WxFixBoot couldn't backup your bootsector! Click okay to skip this operation.")
 
             else:
