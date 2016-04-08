@@ -37,7 +37,7 @@ class Main():
             #Check the FSType is known.
             if FSType not in ("Unknown", "N/A"):
                 #Check if this module is present.
-                Retval = CoreTools().StartProcess("which fsck."+FSType, ShowOutput=False)
+                Retval = CoreTools.StartProcess("which fsck."+FSType, ShowOutput=False)
 
                 if Retval != 0:
                     #OS probably couldn't find it, add it to the failed list.
@@ -55,7 +55,7 @@ class Main():
         """Look for apt using the command lists given (they include the partition, by the way)."""
         logger.debug("HelperBackendTools: Main().LookForAPTOnPartition(): Running "+APTExecCmds+"...")
 
-        Retval = CoreTools().StartProcess(APTExecCmds, ShowOutput=False)
+        Retval = CoreTools.StartProcess(APTExecCmds, ShowOutput=False)
 
         if Retval != 0:
             #Couldn't find apt!
@@ -78,7 +78,7 @@ class Main():
         if UsingChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        Output = CoreTools().StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
+        Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
         Packages = []
 
         if Bootloader == "GRUB-LEGACY":
@@ -145,7 +145,7 @@ class Main():
                         continue
 
                     #Check if the partition is mounted.
-                    PartitionIsMounted = CoreTools().IsMounted(Disk)
+                    PartitionIsMounted = CoreTools.IsMounted(Disk)
 
                     if PartitionIsMounted == False:
                         #Not mounted.
@@ -154,7 +154,7 @@ class Main():
 
                     else:
                         #Unmount the FS temporarily, to avoid data corruption.
-                        Retval = CoreTools().Unmount(Disk)
+                        Retval = CoreTools.Unmount(Disk)
 
                         if Retval != 0:
                             logger.warning("HelperBackendTools: Main().FindCheckableFileSystems(): Failed to unmount "+Disk+", which is necessary for safe disk checking! Ignoring it, becuase it's probably a home directory (if running an OS on the HDD, and not a live disk) or an essential system dir...")
@@ -179,7 +179,7 @@ class Main():
         #Report uncheckable partitions.
         if DoNotCheckList != []:
             #Some filesystems will not be checked. Tell the user.
-            DialogTools().ShowMsgDlg(Kind="info", Message="The following filesystems will not be checked:\n\n"+'\n'.join(DoNotCheckList)+".\n\nThe most likely reason for this is that some of the filesystems are in use, or that the required filesystem checkers weren't found. WxFixBoot will now continue to check the remaining filesystems.")
+            DialogTools.ShowMsgDlg(Kind="info", Message="The following filesystems will not be checked:\n\n"+'\n'.join(DoNotCheckList)+".\n\nThe most likely reason for this is that some of the filesystems are in use, or that the required filesystem checkers weren't found. WxFixBoot will now continue to check the remaining filesystems.")
 
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Done! Filesystems that won't be checked: "+'\n'.join(DoNotCheckList)+"...")
         return CheckList
@@ -191,18 +191,18 @@ class Main():
             if ExecList[0] == "xfs_repair":
                 #Fs Corruption Detected.
                 logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): xfs_repair detected filesystem corruption on FileSystem: "+Partition+". It's probably (and hopefully) been fixed, but we're logging this anyway.")
-                DialogTools().ShowMsgDlg(Kind="warning", Message="Corruption was found on the filesystem: "+Partition+"! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
+                DialogTools.ShowMsgDlg(Kind="warning", Message="Corruption was found on the filesystem: "+Partition+"! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
 
             elif ExecList[0] in ('fsck.jfs', 'fsck.minix', 'fsck.reiserfs', 'fsck.vfat', 'fsck.ext2', 'fsck.ex3', 'fsck.ext4', 'fsck.ext4dev'):
                 #Fixed Errors.
                 logger.info("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): "+ExecList[0]+" successfully fixed errors on the partition: "+Partition+". Continuing...")
-                DialogTools().ShowMsgDlg(Kind="warning", Message="The filesystem checker found and successfully fixed errors on partition: "+Partition+". Click okay to continue.")
+                DialogTools.ShowMsgDlg(Kind="warning", Message="The filesystem checker found and successfully fixed errors on partition: "+Partition+". Click okay to continue.")
 
         else:
             #Something bad happened! *** Check if we're actually doing bootloader operations first! ***
             logger.error("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): "+ExecList[0]+" Errored with exit value "+unicode(retval)+"! This could indicate filesystem corruption or bad sectors! Asking the user whether to skip any bootloader operations...")
 
-            Result = DialogTools().ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, WxFixBoot could become unstable, and your system could become unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?")
+            Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, WxFixBoot could become unstable, and your system could become unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?")
 
             if Result:
                 #A good choice. WxFixBoot will now disable any bootloader operations.
@@ -226,22 +226,22 @@ class Main():
 
         if len(OSListWithPackageManagers) == 1:
             if UpdateBootloader:
-                DialogTools().ShowMsgDlg(Kind="info", Message="Your bootloader will be updated.")
+                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be updated.")
 
             else:
-                DialogTools().ShowMsgDlg(Kind="info", Message="Your bootloader will be removed from the following Operating Systems ("+', '.join(OSsForBootloaderRemoval)+").")
+                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be removed from the following Operating Systems ("+', '.join(OSsForBootloaderRemoval)+").")
 
             OSsForBootloaderInstallation = OSListWithPackageManagers[:]
             logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Installing the new bootloader in OS(s): "+', '.join(OSsForBootloaderInstallation))
 
         else:
             if UpdateBootloader or ReinstallBootloader:
-                DialogTools().ShowMsgDlg(Kind="info", Message="Your bootloader will be updated or reinstalled in all Operating Systems it is installed in ("+', '.join(OSsForBootloaderRemoval)+"). Click okay to continue.")
+                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be updated or reinstalled in all Operating Systems it is installed in ("+', '.join(OSsForBootloaderRemoval)+"). Click okay to continue.")
                 OSsForBootloaderInstallation = OSsForBootloaderRemoval[:]
 
             else: #*** Check all this works ***
                 logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): There is more than one Operating System with a supported package manager. Asking the user which ones to install the new bootloader in...")
-                DialogTools().ShowMsgDlg(Kind="info", Message="Your bootloader will be removed in all Operating Systems it is installed in ("+', '.join(OSsForBootloaderRemoval)+"). You will now be asked which Operating Systems you want your new bootloader to be installed in.")
+                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be removed in all Operating Systems it is installed in ("+', '.join(OSsForBootloaderRemoval)+"). You will now be asked which Operating Systems you want your new bootloader to be installed in.")
 
                 #Make a list of candidates to install the bootloader in (only including OSes that will have their bootloaders removed).
                 BootloaderCandidatesList = OSListWithPackageManagers[:]
@@ -250,7 +250,7 @@ class Main():
                 logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Asking the user which new OS to install the bootloader to...")
 
                 #Ask the user which candidate(s) to use for bootloader installation. *** Is this bad advice? ***
-                OSsForBootloaderInstallation = DialogTools().ShowMultiChoiceDlg(Message="Please select each OS you'd like to modify or install the bootloader to.\nIdeally, select the ones that you use most frequently.", Title="WxFixBoot - Select Operating Systems For Bootloader Installation", Choices=BootloaderCandidatesList)
+                OSsForBootloaderInstallation = DialogTools.ShowMultiChoiceDlg(Message="Please select each OS you'd like to modify or install the bootloader to.\nIdeally, select the ones that you use most frequently.", Title="WxFixBoot - Select Operating Systems For Bootloader Installation", Choices=BootloaderCandidatesList)
 
                 logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): User selected: "+Result+"...")
 
@@ -280,7 +280,7 @@ class Main():
                 UsingChroot = True
 
                 #Mount the partition.
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
+                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
 
                 #Check if anything went wrong.
                 if Retval != 0:
@@ -289,16 +289,16 @@ class Main():
                     continue
 
                 #Set up a chroot.
-                CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
+                CoreBackendTools.SetUpChroot(MountPoint=MountPoint)
                 
             Found = self.LookForBootloaderOnPartition(Bootloader=Bootloader, PackageManager=PackageManager, MountPoint=MountPoint, UsingChroot=UsingChroot)
 
             if UsingChroot:
                 #Tear down the chroot. #*** Check it worked! ***
-                CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
+                CoreBackendTools.TearDownChroot(MountPoint=MountPoint)
 
                 #Unmount the partition.
-                if CoreTools().Unmount(Partition) != 0:
+                if CoreTools.Unmount(Partition) != 0:
                     logger.error("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Failed to unmount "+Partition+"! Continuing anyway...")
 
             #Check if the bootloader was found on that partition. If it wasn't, don't do anything.
@@ -322,7 +322,7 @@ class Main():
             os.makedirs(MountPoint+"/boot/efi")
 
         #Get the UEFI System Partition's UUID. *** Will be in dictionary soon ***
-        UUID = CoreBackendTools().GetPartitionUUID(UEFISystemPartition)
+        UUID = CoreBackendTools.GetPartitionUUID(UEFISystemPartition)
 
         #Open the MountPoint/etc/fstab file for reading. If we aren't using chroot, this'll just be /etc/fstab, otherwise, /mnt/dev/sdxy/etc/fstab. Also, save its contents in a variable.
         fstab = open(MountPoint+"/etc/fstab", "r")
@@ -362,7 +362,7 @@ class Main():
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Done!")
 
     def FindLatestVersion(self, Directory, Type):
-        """Try the find the latest kernel/initrd in the given directory.""" #*** Refactor this and use some kind of looping to make it shorter *** *** Would it be easier to use CoreTools().Find() and get rid of most of this? ***
+        """Try the find the latest kernel/initrd in the given directory.""" #*** Refactor this and use some kind of looping to make it shorter *** *** Would it be easier to use CoreTools.Find() and get rid of most of this? ***
         FileList = os.listdir(Directory)
 
         if Type == "Kernel":
@@ -457,7 +457,7 @@ class Main():
         #First do /EFI/boot/bootx64.efi. Fortunately, the UEFI partition is always a fat32/fat16 filesystem, so case doesn't matter.
         logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Backing up "+MountPoint+"/boot/efi/boot/boot*.efi...")
         if os.path.isfile(MountPoint+"/boot/efi/EFI/boot/boot*.efi"):
-            retval = CoreTools().StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/boot/boot*.efi "+MountPoint+"/boot/efi/EFI/boot/bkpbootx64.efi", ShowOutput=False)
+            retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/boot/boot*.efi "+MountPoint+"/boot/efi/EFI/boot/bkpbootx64.efi", ShowOutput=False)
 
         else:
             #This doesn't exist. This doesn't matter then, so set retval to 0.
@@ -466,12 +466,12 @@ class Main():
         #Check the return value.
         if retval != 0:
             logger.error("HelperBackendTools: Main().BackupUEFIFiles(): Failed to backup failsafe UEFI boot file! Warning user and continuing...")
-            DialogTools().ShowMsgDlg(Kind="error", Message="Error! WxFixBoot failed to save your UEFI boot files to the backup directory! This probably isn't very important. Click okay to continue.")
+            DialogTools.ShowMsgDlg(Kind="error", Message="Error! WxFixBoot failed to save your UEFI boot files to the backup directory! This probably isn't very important. Click okay to continue.")
 
         #Now do Windows's files, if they exist.
         logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Backing up Windows's boot files if they exist...")
         if os.path.isfile(MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi"):
-            retval = CoreTools().StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", ShowOutput=False)
+            retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", ShowOutput=False)
 
         else:
             #They don't exist. This doesn't matter then, so set retval to 0.
@@ -482,7 +482,7 @@ class Main():
         #Check the return value.
         if retval != 0:
             logger.error("HelperBackendTools: Main().BackupUEFIFiles(): Failed to backup Windows's UEFI boot files! Warning user and continuing...")
-            DialogTools().ShowMsgDlg(Kind="error", Message="Warning: WxFixBoot failed to backup Windows's UEFI boot files! This probably isn't very important. Click okay to continue.")
+            DialogTools.ShowMsgDlg(Kind="error", Message="Warning: WxFixBoot failed to backup Windows's UEFI boot files! This probably isn't very important. Click okay to continue.")
 
     def CopyUEFIFiles(self, MountPoint):
         """Copy the new UEFI bootloader's files to default places in case of buggy firmware.""" #*** Lots of work needed here! Add more logging messages and error protection ***
@@ -500,17 +500,17 @@ class Main():
         #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
         if BootloaderToInstall == "ELILO":
             #We need to copy both elilo.efi, and elilo.conf to UEFIBootDir.
-            retval = CoreTools().StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False)
-            retval = CoreTools().StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.conf "+UEFIBootDir+"/", ShowOutput=False) #*** We're ignoring the last return value here! ***
+            retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False)
+            retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.conf "+UEFIBootDir+"/", ShowOutput=False) #*** We're ignoring the last return value here! ***
 
         elif BootloaderToInstall == "GRUB-UEFI":
             #We need to copy grub*.efi to UEFIBootDir.
-            retval = CoreTools().StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/grub*.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False)
+            retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/grub*.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False)
 
         logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Done!")
 
         #Check the return value. *** Not helpful to the user! ***
         if retval != 0:
             logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy the new bootloader's UEFI files to the failsafe directory! This could potentially be a serious problem! If the system doesn't start, this could be the reason why it doesn't start. Warning user and continuing...")
-            DialogTools().ShowMsgDlg(Kind="error", Message="Error: WxFixBoot failed to copy the new bootloader's UEFI files to the backup directory! This could potentially be a problem. If your system doesn't start, this could be the reason why it doesn't start. Click okay to continue.")
+            DialogTools.ShowMsgDlg(Kind="error", Message="Error: WxFixBoot failed to copy the new bootloader's UEFI files to the backup directory! This could potentially be a problem. If your system doesn't start, this could be the reason why it doesn't start. Click okay to continue.")
 
