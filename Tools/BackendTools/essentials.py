@@ -125,13 +125,13 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Backing up the Partition Table!###\n")
         logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Finished Backing up Partition Table! Exit code: "+unicode(retval))
 
-    def BackupBootSector(self): #*** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save boot sector backup file like this, move to settings window *** *** Reduce duplication ***
+    def BackupBootSector(self): #*** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save boot sector backup file variable like this, move to settings window *** *** Reduce duplication ***
         """Backup the bootsector."""
         #For GPT disks, backup UEFI System Partition.
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
         #We need to find RootDevice's partition scheme.
-        print(DiskInfo[RootDevice])
         PartScheme = DiskInfo[RootDevice]["Partitioning"]
+        print(PartSheme)
 
         logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Preparing to backup the boot sector...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to backup the Boot Sector...")
