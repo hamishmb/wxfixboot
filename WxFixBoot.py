@@ -3031,14 +3031,14 @@ class BackendThread(threading.Thread):
                 Tools.BackendTools.essentials.OSsForBootloaderInstallation = OSsForBootloaderInstallation
                 Tools.BackendTools.essentials.OSsForBootloaderRemoval = OSsForBootloaderRemoval
 
-            except UnboundLocalError: pass
+            except NameError: pass
 
             #*** Main Bootloader Tools (in Backend Tools package) ***
             try:
                 Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
                 Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
 
-            except UnboundLocalError: pass
+            except NameError: pass
 
             Tools.BackendTools.BootloaderTools.main.AutoRootFS = AutoRootFS
             Tools.BackendTools.BootloaderTools.main.Bootloader = Bootloader
@@ -3059,13 +3059,13 @@ class BackendThread(threading.Thread):
             try:
                 Tools.BackendTools.main.KernelOptions = KernelOptions
 
-            except UnboundLocalError: pass
+            except NameError: pass
 
             try:
                 Tools.BackendTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
                 Tools.BackendTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
 
-            except UnboundLocalError: pass
+            except NameError: pass
 
             Tools.BackendTools.main.AutoRootFS = AutoRootFS
             Tools.BackendTools.main.Bootloader = Bootloader
@@ -3085,7 +3085,7 @@ class BackendThread(threading.Thread):
             try:
                 Tools.BackendTools.BootloaderTools.setconfigtools.KernelOptions = KernelOptions
 
-            except UnboundLocalError: pass
+            except NameError: pass
 
             #Run the function.
             function()
