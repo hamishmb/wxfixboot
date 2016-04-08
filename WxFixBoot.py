@@ -170,7 +170,7 @@ Tools.dialogtools.time = time
 #StartupTools Package (Core).
 Tools.StartupTools.core.logger = logger
 Tools.StartupTools.core.CoreTools = CoreTools
-Tools.StartupTools.core.DialogTools = DialogTools#
+Tools.StartupTools.core.DialogTools = DialogTools
 
 #StartupTools Package (Main).
 Tools.StartupTools.main.logger = logger
@@ -181,7 +181,7 @@ Tools.StartupTools.main.DialogTools = DialogTools
 
 #BackendTools Package (Core).
 Tools.BackendTools.core.logger = logger
-Tools.BackendTools.core.CoreTools = CoreTools
+Tools.BackendTools.core.CoreTools = CoreTools#
 
 #BackendTools Package (Helpers)
 Tools.BackendTools.helpers.logger = logger
