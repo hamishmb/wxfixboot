@@ -168,7 +168,7 @@ class Main(): #*** Refactor and test all of these ***
         if GrubMenuEntries == []:
             #Don't set the default OS. *** There are no menu entries! Why might this happen? ***
             logger.error("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Couldn't find any menu entries! Warning user and not setting default OS...")
-            DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set the default OS. This doesn't really matter. Click okay to continue.")
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set the default OS. This doesn't really matter. Click okay to continue.")
             return 1
 
         #Now finally make the list of grub's OS names.
@@ -183,7 +183,7 @@ class Main(): #*** Refactor and test all of these ***
 
         #Now ask the user to select the correct one.
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done! Asking user to choose a default OS...")
-        DefaultOS = DialogTools().ShowChoiceDlg(Message="Please select the OS you want to use as "+BootloaderToInstall+"'s Default OS. You are setting configuration for: "+OS, Title="WxFixBoot - Select Default OS", Choices=GRUBOSNameList)
+        DefaultOS = DialogTools.ShowChoiceDlg(Message="Please select the OS you want to use as "+BootloaderToInstall+"'s Default OS. You are setting configuration for: "+OS, Title="WxFixBoot - Select Default OS", Choices=GRUBOSNameList)
 
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): User chose "+DefaultOS+". Setting default OS...")
         #Use the user's selection to set the default OS.
@@ -233,7 +233,7 @@ class Main(): #*** Refactor and test all of these ***
                 head, sep, Temp = line.partition('=')
 
                 #Now let's find the ID of RootDevice.
-                ID = CoreBackendTools().GetDeviceID(Device=RootDevice)
+                ID = CoreBackendTools.GetDeviceID(Device=RootDevice)
                 if ID != "None":
                     #Good, we've got the ID.
                     logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+ID+"...")
@@ -258,7 +258,7 @@ class Main(): #*** Refactor and test all of these ***
         if SetBootDevice == False:
             #Now let's find the ID of RootDevice.
             logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+RootDevice+"'s ID if possible, else just "+RootDevice+"...")
-            ID = CoreBackendTools().GetDeviceID(Device=RootDevice)
+            ID = CoreBackendTools.GetDeviceID(Device=RootDevice)
             if ID != "None":
                 #Good, we've got the ID.
                 logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+ID+"...")
@@ -315,7 +315,7 @@ class Main(): #*** Refactor and test all of these ***
                 head, sep, Temp = line.partition('=')
 
                 #Now let's find the ID of UEFISystemPartition.
-                ID = CoreBackendTools().GetDeviceID(Device=UEFISystemPartition)
+                ID = CoreBackendTools.GetDeviceID(Device=UEFISystemPartition)
 
                 if ID != "None":
                     #Good, we've got the ID.
@@ -348,7 +348,7 @@ class Main(): #*** Refactor and test all of these ***
         if SetUEFIPart == False:
             #Now let's find the ID of UEFISystemPartition.
             logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+UEFISystemPartition+"'s ID if possible, else just "+UEFISystemPartition+"...")
-            ID = CoreBackendTools().GetDeviceID(Device=UEFISystemPartition)
+            ID = CoreBackendTools.GetDeviceID(Device=UEFISystemPartition)
             if ID != "None":
                 #Good, we've got the ID.
                 logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+ID+"...")
@@ -448,7 +448,7 @@ class Main(): #*** Refactor and test all of these ***
                 #Not so good... This probably means changing LILO's config each time we do a kernel update... Let's ask the user if we should still add it.
                 logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Couldn't find /vmlinuz for: "+OS+"! Asking the user if we should search for vmlinuz and make an entry anyway...")
 
-                Result = DialogTools().ShowYesNoDlg(Message="Warning: /vmlinuz (shortcut to the latest kernel) wasn't found for: "+OS+"! Your new bootloader will still work, but this might mean you'll have to manaully change its config file each time you update your kernel on this OS. You can do this with WxFixBoot, but that won't stop it from being annoying and introducing security risks if you forget. However, this OS will be unbootable if you don't add it to the boot menu. Do you want to add it to the boot menu anyway?", Title="WxFixBoot - Add OS to boot menu?")
+                Result = DialogTools.ShowYesNoDlg(Message="Warning: /vmlinuz (shortcut to the latest kernel) wasn't found for: "+OS+"! Your new bootloader will still work, but this might mean you'll have to manaully change its config file each time you update your kernel on this OS. You can do this with WxFixBoot, but that won't stop it from being annoying and introducing security risks if you forget. However, this OS will be unbootable if you don't add it to the boot menu. Do you want to add it to the boot menu anyway?", Title="WxFixBoot - Add OS to boot menu?")
 
                 if Result == False:
                     #Okay, go back to the start of the loop.
@@ -458,13 +458,13 @@ class Main(): #*** Refactor and test all of these ***
                 else:
                     #Right, we'll have to hunt out the Kernel.
                     logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Okay, we'll make an entry for "+OS+" anyway. Now let's try and find the latest Kernel...")
-                    Kernel = HelperBackendTools().FindLatestVersion(Directory=MountPoint+"/boot", Type="Kernel")
+                    Kernel = HelperBackendTools.FindLatestVersion(Directory=MountPoint+"/boot", Type="Kernel")
 
                     #Check if we found it.
                     if Kernel == "None":
                         #We didn't! Tell the user, and skip this OS.
                         logger.error("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Couldn't find the latest kernel for "+OS+"! This OS will now be skipped!") 
-                        DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot couldn't find the latest kernel for this OS. This OS will now be skipped.")
+                        DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot couldn't find the latest kernel for this OS. This OS will now be skipped.")
                         continue
 
                     else:
@@ -481,7 +481,7 @@ class Main(): #*** Refactor and test all of these ***
                 #Not so good... This probably means changing LILO's config each time we do a kernel update... Let's ask the user if we should still add it.
                 logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Couldn't find /initrd.img for "+OS+"! Asking the user if we should search for initrd.img and make an entry anyway...")
 
-                Result = DialogTools().ShowYesNoDlg(Message="Warning: /initrd.img (shortcut to the latest Initial Filesystem) wasn't found for: "+OS+"! Your new bootloader will still work, but this might mean you'll have to manaully change its config file each time you update your kernel on this OS. You can do this with WxFixBoot, but that won't stop it from being annoying and introducing security risks if you forget. Do you want to add it to the boot menu anyway?", Title="WxFixBoot - Add OS to boot menu?")
+                Result = DialogTools.ShowYesNoDlg(Message="Warning: /initrd.img (shortcut to the latest Initial Filesystem) wasn't found for: "+OS+"! Your new bootloader will still work, but this might mean you'll have to manaully change its config file each time you update your kernel on this OS. You can do this with WxFixBoot, but that won't stop it from being annoying and introducing security risks if you forget. Do you want to add it to the boot menu anyway?", Title="WxFixBoot - Add OS to boot menu?")
 
                 if Result == False:
                     #Okay, delete the last entry, so we don't have an unconfigured image, and then go back to the start of the loop.
@@ -492,13 +492,13 @@ class Main(): #*** Refactor and test all of these ***
                 else:
                     #Right, we'll have to hunt out the Initrd/Initramfs.
                     logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Okay, we'll make an entry for "+OS+" anyway. Now let's try and find the latest Initrd...")
-                    Initrd = HelperBackendTools().FindLatestVersion(Directory=MountPoint+"/boot", Type="Initrd")
+                    Initrd = HelperBackendTools.FindLatestVersion(Directory=MountPoint+"/boot", Type="Initrd")
 
                     #Check if we found it.
                     if Initrd == "None":
                         #We didn't! Tell the user, delete the unconfigured image entry (logically there must be one), and skip this OS.
                         logger.error("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Couldn't find the latest Initrd for "+OS+"! This OS will now be skipped, and the unconfigured image deleted!") 
-                        DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot couldn't find the latest initrd.img for this OS. This OS will now be skipped.")
+                        DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot couldn't find the latest initrd.img for this OS. This OS will now be skipped.")
                         Temp = NewFileContents.pop()
                         continue
 
@@ -510,7 +510,7 @@ class Main(): #*** Refactor and test all of these ***
             #Set the root device.
             #Use UUID's here if we can.
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs as a UUID if possible...")
-            UUID = CoreBackendTools().GetPartitionUUID(Partition)
+            UUID = CoreBackendTools.GetPartitionUUID(Partition)
 
             if UUID == "None": #*** Warn user? ***
                 logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+Partition+"! This might not work cos it can change!")
@@ -581,11 +581,11 @@ class Main(): #*** Refactor and test all of these ***
             if len(CompletedEntriesList) <= 0:
                 #Something went wrong here! No OSs appear to have been added to the list. Warn the user. *** How about being helpful and trying to fix it right now? :D ***
                 logger.error("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): CompletedEntriesList is empty! This suggests that no OSs have been added to the list! Warn the user, and skip this part of the operation.")
-                DialogTools().ShowMsgDlg(Kind="error", Message="No Operating Systems have had entries created for them! If you canceled creating the entries, please reboot WxFixBoot and select only the option 'Update Bootloader Config'. If you didn't do that, and WxFixBoot either couldn't create them, or you see this error with no previous warnings, you may have to create your own bootloader config. Don't worry, this isn't too difficult, and you can search for tutorials for this on the internet. If WxFixBoot couldn't create your entries, or you are seeing this message with no previous warnings, please email me directly via my Launchpad page (www.launchpad.net/~hamishmb) with the contents of /tmp/wxfixboot.log and I'll try to help you.")
+                DialogTools.ShowMsgDlg(Kind="error", Message="No Operating Systems have had entries created for them! If you canceled creating the entries, please reboot WxFixBoot and select only the option 'Update Bootloader Config'. If you didn't do that, and WxFixBoot either couldn't create them, or you see this error with no previous warnings, you may have to create your own bootloader config. Don't worry, this isn't too difficult, and you can search for tutorials for this on the internet. If WxFixBoot couldn't create your entries, or you are seeing this message with no previous warnings, please email me directly via my Launchpad page (www.launchpad.net/~hamishmb) with the contents of /tmp/wxfixboot.log and I'll try to help you.")
 
             else:
                 #Ask the user for a new default OS.
-                DefaultOSName = DialogTools().ShowChoiceDlg(Message="The OS you previously selected as the default wasn't added to the boot menu. Please an new OS you want to use as "+Bootloader+"'s Default OS. You are setting configuration for: "+OS, Title="WxFixBoot - Select Default OS", Choices=CompletedEntriesList)
+                DefaultOSName = DialogTools.ShowChoiceDlg(Message="The OS you previously selected as the default wasn't added to the boot menu. Please an new OS you want to use as "+Bootloader+"'s Default OS. You are setting configuration for: "+OS, Title="WxFixBoot - Select Default OS", Choices=CompletedEntriesList)
                 logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): User selected new default OS: "+DefaultOSName+"...")
 
         #Make the entry for the default OS.

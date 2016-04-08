@@ -228,9 +228,9 @@ Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools
 
 #BootloaderTools Package (SetConfigTools)
 Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
-Tools.BackendTools.BootloaderTools.setconfigtools.CoreBackendTools = CoreBackendTools#
+Tools.BackendTools.BootloaderTools.setconfigtools.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
-Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
+Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools#
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
