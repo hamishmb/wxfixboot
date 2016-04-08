@@ -415,7 +415,7 @@ class Main():
                 logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're modifying the current OS...")
                 #If so, make sure this will work for this OS too, and avoid setting mountpoint, so the config instructions below look in the right place for the config files.
                 MountPoint = ""
-                UnmountAfter = False
+                UnmountPartitionAfter = False
 
             else:
                 logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're modifying another OS...")
