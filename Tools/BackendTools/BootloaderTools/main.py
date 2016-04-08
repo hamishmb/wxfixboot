@@ -25,7 +25,7 @@ class Main(): #*** Refactor and test all of these ***
     def PrepareForBootloaderInstallation(self):
         """Run checks, gather information, and prepare for bootloader operations.""" #*** Make this more customisable *** 
         #First, check the Internet connection.
-        DisableBootloaderOperations = EssentialBackendTools().CheckInternetConnection()
+        DisableBootloaderOperations = EssentialBackendTools.CheckInternetConnection()
 
         #*** Temporarily define these as global until switch to dictionaries ***
         global OSsForBootloaderRemoval
@@ -165,11 +165,11 @@ class Main(): #*** Refactor and test all of these ***
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader's configuration...###\n")
 
             #Get the bootloader's config.
-            MainBackendTools().GetOldBootloaderConfig()
+            MainBackendTools.GetOldBootloaderConfig()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
 
             #Set the bootloaders new config.
-            BootloaderConfigSettingTools().SetNewBootloaderConfig()
+            BootloaderConfigSettingTools.SetNewBootloaderConfig()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Done!")
@@ -178,11 +178,11 @@ class Main(): #*** Refactor and test all of these ***
         """Manage the installation and removal of bootloaders.""" #*** Check each operation worked with a return value! ***
         #First remove the old bootloader, then install the new one.
         logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().GetOldBootloaderConfig()...")
-        MainBackendTools().GetOldBootloaderConfig()
+        MainBackendTools.GetOldBootloaderConfig()
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
 
         logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().RemoveOldBootloader()...")
-        MainBackendTools().RemoveOldBootloader()
+        MainBackendTools.RemoveOldBootloader()
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
 
         logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().InstallNewBootloader()...")
@@ -191,7 +191,7 @@ class Main(): #*** Refactor and test all of these ***
         if BootloaderInstallSucceded:
             logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Installing new bootloader succeeded! Calling MainBackendTools().SetNewBootloaderConfig()...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
-            MainBackendTools().SetNewBootloaderConfig()
+            MainBackendTools.SetNewBootloaderConfig()
 
         else:
             #Bootloader installation failed for at least one OS! *** Clarify this message with better info ***
@@ -202,7 +202,7 @@ class Main(): #*** Refactor and test all of these ***
                 #Continue and configure bootloaders. Otherwise, do nothing.
                 logger.warning("MainBootloaderTools(): Main().ManageBootloaders(): Configuring bootloaders anyway. Calling MainBackendTools().SetNewBootloaderConfig()...")
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
-                MainBackendTools().SetNewBootloaderConfig()
+                MainBackendTools.SetNewBootloaderConfig()
 
             else:
                 logger.warning("MainBootloaderTools(): Main().ManageBootloaders(): Not configuring bootloaders...")

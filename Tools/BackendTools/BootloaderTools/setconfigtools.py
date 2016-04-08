@@ -108,7 +108,7 @@ class Main(): #*** Refactor and test all of these ***
         if MountPoint == "":
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        Retval = CoreTools().StartProcess(Cmd, ShowOutput=False)
+        Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
 
         #Return the return value.
         return Retval
@@ -122,7 +122,7 @@ class Main(): #*** Refactor and test all of these ***
         if MountPoint == "":
             Cmd = "chroot "+MountPoint+" "+Cmd
  
-        Retval = CoreTools().StartProcess(Cmd, ShowOutput=False)
+        Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
 
         #Return the return value.
         return Retval
@@ -136,7 +136,7 @@ class Main(): #*** Refactor and test all of these ***
         if MountPoint == "":
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        Retval = CoreTools().StartProcess(Cmd, ShowOutput=False)
+        Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
 
         #Return the return value.
         return Retval
@@ -193,7 +193,7 @@ class Main(): #*** Refactor and test all of these ***
         if not (SystemInfo["IsLiveDisk"] == False and MountPoint == ""):
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        Retval = CoreTools().StartProcess(Cmd, ShowOutput=False)
+        Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
 
         #Return the return value.
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done!")
@@ -626,7 +626,7 @@ class Main(): #*** Refactor and test all of these ***
         if MountPoint == "":
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        Retval = CoreTools().StartProcess(Cmd, ShowOutput=False)
+        Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
 
         #Return the return value.
         return Retval
@@ -640,7 +640,7 @@ class Main(): #*** Refactor and test all of these ***
         if MountPoint == "":
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        Retval = CoreTools().StartProcess(Cmd, ShowOutput=False)
+        Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
 
         #Return the return value.
         return Retval
