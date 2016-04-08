@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+#****** URGENT: Switch from calling modules' functions from e.g. "MainBackendTools().GetBootloader()" to "MainBackendTools.GetBootloader()" so conditional tests work in CountOperations ******
 #*** Re-evaluate dependencies at packaging time ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
@@ -48,7 +49,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "7/4/2016"
+ReleaseDate = "8/4/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -104,25 +105,46 @@ for o, a in opts:
 import GetDevInfo
 import Tools
 
-from GetDevInfo.getdevinfo import Main as DevInfoTools
+from GetDevInfo.getdevinfo import Main as DevInfoToolsCallable
 
-from Tools.coretools import Main as CoreTools
+from Tools.coretools import Main as CoreToolsCallable
 
-from Tools.dialogtools import Main as DialogTools
+from Tools.dialogtools import Main as DialogToolsCallable
 
-from Tools.StartupTools.core import Main as CoreStartupTools
-from Tools.StartupTools.main import Main as MainStartupTools
+from Tools.StartupTools.core import Main as CoreStartupToolsCallable
+from Tools.StartupTools.main import Main as MainStartupToolsCallable
 
-from Tools.BackendTools.core import Main as CoreBackendTools
-from Tools.BackendTools.helpers import Main as HelperBackendTools
-from Tools.BackendTools.essentials import Main as EssentialBackendTools
-from Tools.BackendTools.main import Main as MainBackendTools
+from Tools.BackendTools.core import Main as CoreBackendToolsCallable
+from Tools.BackendTools.helpers import Main as HelperBackendToolsCallable
+from Tools.BackendTools.essentials import Main as EssentialBackendToolsCallable
+from Tools.BackendTools.main import Main as MainBackendToolsCallable
 
-from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderTools
-from Tools.BackendTools.BootloaderTools.getconfigtools import Main as BootloaderConfigObtainingTools
-from Tools.BackendTools.BootloaderTools.removaltools import Main as BootloaderRemovalTools
-from Tools.BackendTools.BootloaderTools.installationtools import Main as BootloaderInstallationTools
-from Tools.BackendTools.BootloaderTools.setconfigtools import Main as BootloaderConfigSettingTools
+from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderToolsCallable
+from Tools.BackendTools.BootloaderTools.getconfigtools import Main as BootloaderConfigObtainingToolsCallable
+from Tools.BackendTools.BootloaderTools.removaltools import Main as BootloaderRemovalToolsCallable
+from Tools.BackendTools.BootloaderTools.installationtools import Main as BootloaderInstallationToolsCallable
+from Tools.BackendTools.BootloaderTools.setconfigtools import Main as BootloaderConfigSettingToolsCallable
+
+#Access these modules without the "()" so conditional tests can work.
+DevInfoTools = DevInfoToolsCallable() #
+
+CoreTools = CoreToolsCallable()
+
+DialogTools = DialogToolsCallable()
+
+CoreStartupTools = CoreStartupToolsCallable()
+MainStartupTools = MainStartupToolsCallable()
+
+CoreBackendTools = CoreBackendToolsCallable()
+HelperBackendTools = HelperBackendToolsCallable()
+EssentialBackendTools = EssentialBackendToolsCallable()
+MainBackendTools = MainBackendToolsCallable()
+
+MainBootloaderTools = MainBootloaderToolCallable()
+BootloaderConfigObtainingTools = BootloaderConfigObtainingToolsCallable()
+BootloaderRemovalTools = BootloaderRemovalToolsCallable()
+BootloaderInstallationTools = BootloaderInstallationToolsCallable()
+BootloaderConfigSettingTools = BootloaderConfigSettingToolsCallable()
 
 #Setup custom-made modules (make global variables accessible inside the packages). *** Continue to change stuff as needed ***
 #GetDevInfo Package.
@@ -1058,10 +1080,8 @@ class MainWindow(wx.Frame):
             logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().ReinstallBootloader to Operations...")
 
         if UpdateBootloader:
-            BLT = MainBootloaderTools()
-            Operations.append(BLT.UpdateBootloader)
+            Operations.append(MainBootloaderTools().UpdateBootloader)
             logger.info("MainWindow().CountOperations(): Added MainBootloaderTools().UpdateBootloader to Operations...")
-            print(BLT.UpdateBootloader in Operations)
 
         #*** Disabled temporarily ***
         #if MakeSystemSummary:
