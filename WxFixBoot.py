@@ -2972,7 +2972,7 @@ class BackendThread(threading.Thread):
         time.sleep(1) #*** Why sleep here? ***
 
         #*** Temporarily do this until I switch to dictionaries ***
-        #Define global vars
+        #Define global var
         global KernelOptions
 
         #Set to default values
@@ -3007,6 +3007,13 @@ class BackendThread(threading.Thread):
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
             #*** We temporarily need global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
             #*** Might need to add logging stuff here temporarily for when it fails for debugging purposes ***
+            #*** Define globals so if they're assigned to here, python won't think they're local. ***
+            global BootloaderTimeout
+            global KernelOptions
+            global OSsForBootloaderInstallation
+            global OSsForBootloaderRemoval
+            global BootloaderToInstall
+            global DefaultOS
 
             #*** Essential backend tools ***
             Tools.BackendTools.essentials.RootDevice = RootDevice
@@ -3038,20 +3045,18 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
             Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
             Tools.BackendTools.BootloaderTools.main.OSList = OSList
+            Tools.BackendTools.BootloaderTools.main.BootloaderToInstall = BootloaderToInstall
 
             try:
                 Tools.BackendTools.BootloaderTools.main.DisableBootloaderOperations = DisableBootloaderOperations
 
             except NameError: pass
 
-            try:
-                Tools.BackendTools.BootloaderTools.main.BootloaderToInstall = BootloaderToInstall
-
-            except UnboundLocalError: pass
-
             #*** Main Backend Tools ***
+            Tools.BackendTools.main.BootloaderTimeout = BootloaderTimeout
+            Tools.BackendTools.main.BootloaderToInstall = BootloaderToInstall
+
             try:
-                Tools.BackendTools.main.BootloaderTimeout = BootloaderTimeout
                 Tools.BackendTools.main.KernelOptions = KernelOptions
 
             except UnboundLocalError: pass
@@ -3059,11 +3064,6 @@ class BackendThread(threading.Thread):
             try:
                 Tools.BackendTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
                 Tools.BackendTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
-
-            except UnboundLocalError: pass
-
-            try:
-                Tools.BackendTools.main.BootloaderToInstall = BootloaderToInstall
 
             except UnboundLocalError: pass
 
@@ -3077,21 +3077,12 @@ class BackendThread(threading.Thread):
 
             #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.setconfigtools.RootDevice = RootDevice
-
-            try:
-                Tools.BackendTools.BootloaderTools.setconfigtools.DefaultOS = DefaultOS
-
-            except UnboundLocalError: pass
-
-            try:
-                Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderToInstall = BootloaderToInstall
-
-            except UnboundLocalError: pass
-
+            Tools.BackendTools.BootloaderTools.setconfigtools.DefaultOS = DefaultOS
+            Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderToInstall = BootloaderToInstall
             Tools.BackendTools.BootloaderTools.setconfigtools.OSList = OSList
+            Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderTimeout = BootloaderTimeout
 
             try:
-                Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderTimeout = BootloaderTimeout
                 Tools.BackendTools.BootloaderTools.setconfigtools.KernelOptions = KernelOptions
 
             except UnboundLocalError: pass
@@ -3120,8 +3111,9 @@ class BackendThread(threading.Thread):
             except AttributeError: pass
 
             #*** Main Backend Tools ***
+            BootloaderTimeout = Tools.BackendTools.main.BootloaderTimeout
+
             try:
-                BootloaderTimeout = Tools.BackendTools.main.BootloaderTimeout
                 KernelOptions = Tools.BackendTools.main.KernelOptions
 
             except AttributeError: pass
