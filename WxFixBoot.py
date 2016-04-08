@@ -202,14 +202,14 @@ Tools.BackendTools.essentials.DialogTools = DialogTools
 Tools.BackendTools.main.wx = wx
 Tools.BackendTools.main.logger = logger
 Tools.BackendTools.main.os = os
-Tools.BackendTools.main.CoreTools = CoreTools#
+Tools.BackendTools.main.CoreTools = CoreTools
 Tools.BackendTools.main.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.main.DialogTools = DialogTools
 
 #BootloaderTools Package (Main)
 Tools.BackendTools.BootloaderTools.main.wx = wx
 Tools.BackendTools.BootloaderTools.main.logger = logger
-Tools.BackendTools.BootloaderTools.main.CoreTools = CoreTools
+Tools.BackendTools.BootloaderTools.main.CoreTools = CoreTools#
 Tools.BackendTools.BootloaderTools.main.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.BootloaderTools.main.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools

@@ -58,7 +58,7 @@ class Main():
                 MountPoint = "/mnt"+Partition
 
                 #Mount the partition.
-                Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
+                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
 
                 #Check if anything went wrong.
                 if Retval != 0:
@@ -85,7 +85,7 @@ class Main():
 
             #Unmount the partition, if needed.
             if MountPoint != "":
-                Retval = CoreTools().Unmount(MountPoint)
+                Retval = CoreTools.Unmount(MountPoint)
 
                 if Retval != 0:
                     logger.error("MainBackendTools: Main().GetOldBootloaderConfig(): Couldn't unmount "+MountPoint+"! Continuing anyway...")
@@ -111,7 +111,7 @@ class Main():
         if BootloaderTimeout == -1:
             if len(TimeoutsList) == 0:
                 #No timeout was found!
-                Temp = DialogTools().ShowTextEntryDlg(Message="WxFixBoot couldn't find the currently installed bootloader's timeout value. Please enter a value, or use WxFixBoot's default (10).", Title="WxFixBoot - Enter timeout value")
+                Temp = DialogTools.ShowTextEntryDlg(Message="WxFixBoot couldn't find the currently installed bootloader's timeout value. Please enter a value, or use WxFixBoot's default (10).", Title="WxFixBoot - Enter timeout value")
                 BootloaderTimeout = int(Temp)
                 logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Using user's bootloader timeout value: "+unicode(BootloaderTimeout))
 
@@ -123,7 +123,7 @@ class Main():
             else:
                 #Ask the user which timeout to use, as there are more than one.
                 TimeoutsList.append("WxFixBoot's Default (10)")
-                Result = DialogTools().ShowChoiceDlg(Message="WxFixBoot found multiple timeout settings. Please select the one you want.", Title="WxFixBoot -- Select Timeout Setting", Choices=TimeoutsList)
+                Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot found multiple timeout settings. Please select the one you want.", Title="WxFixBoot -- Select Timeout Setting", Choices=TimeoutsList)
 
                 #Save it.
                 if Result == "WxFixBoot's Default (10)":
@@ -140,7 +140,7 @@ class Main():
         if len(KernelOptsList) == 0:
             #No kernel options were found!
             #Ask the user to use WxFixBoot's default, or do manual config.
-            Result = DialogTools().ShowYesNoDlg(Message="WxFixBoot couldn't find the current bootloader's default kernel options. Do you want to use WxFixBoot's default options? You should click yes and use the defaults, which are almost always fine. However, if you know exactly what you're doing, you can click no, and modify them yourself.", Title="WxFixBoot - Use Default Kernel Options?")
+            Result = DialogTools.ShowYesNoDlg(Message="WxFixBoot couldn't find the current bootloader's default kernel options. Do you want to use WxFixBoot's default options? You should click yes and use the defaults, which are almost always fine. However, if you know exactly what you're doing, you can click no, and modify them yourself.", Title="WxFixBoot - Use Default Kernel Options?")
 
             if Result:
                 KernelOptions = "quiet splash nomodeset"
@@ -148,7 +148,7 @@ class Main():
 
             else:
                 #Ask the user for the kernel options to use.
-                Result = DialogTools().ShowTextEntryDlg(Message="Please enter the kernel options you want to use. WxFixBoot's default kernel options are: 'quiet splash nomodeset'. If you've changed your mind, type these instead.", Title="WxFixBoot - Enter Kernel Options")
+                Result = DialogTools.ShowTextEntryDlg(Message="Please enter the kernel options you want to use. WxFixBoot's default kernel options are: 'quiet splash nomodeset'. If you've changed your mind, type these instead.", Title="WxFixBoot - Enter Kernel Options")
 
                 KernelOptions = Result
                 logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Using user defined kernel options: '"+KernelOptions+"'")
@@ -161,7 +161,7 @@ class Main():
         else:
             #Ask the user which timeout to use, as there are more than one.
             KernelOptsList.append("WxFixBoot's Default ('quiet splash nomodeset')")
-            Result = DialogTools().ShowChoiceDlg(Message="WxFixBoot found multiple kernel options. Please select the one you want.", Title="WxFixBoot -- Select Kernel Options", Choices=KernelOptsList)
+            Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot found multiple kernel options. Please select the one you want.", Title="WxFixBoot -- Select Kernel Options", Choices=KernelOptsList)
 
             #Save it.
             if Result == "WxFixBoot's Default ('quiet splash nomodeset')":
@@ -203,25 +203,25 @@ class Main():
                 MountPoint = "/mnt"+Partition
 
                 #Check if the partition is mounted. *** Check this works ***
-                if CoreTools().IsMounted(Partition, MountPoint):
+                if CoreTools.IsMounted(Partition, MountPoint):
                     UnmountAfter = False
 
                 else:
                     UnmountAfter = True
 
                     #Mount the partition using the global mount function.
-                    Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
+                    Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
 
                     if Retval != 0:
                         logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+Partition+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
-                        DialogTools().ShowMsgDlg(Kind="error", Message="WxixBoot failed to mount the partition containing: "+OS+"! This OS will now be skipped.")
+                        DialogTools.ShowMsgDlg(Kind="error", Message="WxixBoot failed to mount the partition containing: "+OS+"! This OS will now be skipped.")
                         continue
 
                 #Set up chroot.
-                CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
+                CoreBackendTools.SetUpChroot(MountPoint=MountPoint)
 
                 #If there's a seperate /boot partition for this OS, make sure it's mounted. *** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this *** *** this might mount other stuff and interfere too ***
-                CoreTools().StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False)
+                CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False)
 
             #Remove the bootloader.
             if Bootloader == "GRUB-LEGACY":
@@ -246,11 +246,11 @@ class Main():
 
             #Tear down chroot if needed.
             if UseChroot:
-                CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
+                CoreBackendTools.TearDownChroot(MountPoint=MountPoint)
 
             #Unmount partition if needed.
             if UnmountAfter:
-                UnmountRetval = CoreTools().Unmount(MountPoint)
+                UnmountRetval = CoreTools.Unmount(MountPoint)
 
                 if UnmountRetval != 0:
                     logger.error("MainBackendTools: Main().RemoveOldBootloader(): Couldn't unmount "+MountPoint+"! Continuing anyway...")
@@ -260,7 +260,7 @@ class Main():
             if retval != 0:
                 #Something went wrong! Log it and notify the user.
                 logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+Bootloader+" from OS: "+OS+"! We'll continue anyway. Warn the user.")
-                DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+Bootloader+" from: "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that OS after WxFixBoot finishes its operations.")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+Bootloader+" from: "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that OS after WxFixBoot finishes its operations.")
 
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27+(22//len(OSsForBootloaderRemoval)))
 
@@ -268,7 +268,7 @@ class Main():
         logger.info("MainBackendTools: Main().RemoveOldBootloader(): Finished removing bootloaders...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished removing old bootloaders...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
-        DialogTools().ShowMsgDlg(Kind="info", Message="Finished removing old bootloaders! WxFixBoot will now install your new bootloader to: "+', '.join(OSsForBootloaderInstallation)+".")
+        DialogTools.ShowMsgDlg(Kind="info", Message="Finished removing old bootloaders! WxFixBoot will now install your new bootloader to: "+', '.join(OSsForBootloaderInstallation)+".")
 
     def InstallNewBootloader(self): #*** Check this works ***
         """Install a new bootloader."""
@@ -299,24 +299,24 @@ class Main():
                 MountPoint = "/mnt"+Partition
 
                 #Check if the partition is mounted. *** Check this works ***
-                if CoreTools().IsMounted(Partition, MountPoint):
+                if CoreTools.IsMounted(Partition, MountPoint):
                     UnmountAfter = False
 
                 else:
                     UnmountAfter = True
 
-                    Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
+                    Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
 
                     if Retval != 0:
                         logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+Partition+"! Warn the user and skip this OS.")
-                        DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing: "+OS+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. It is recommended to do a Bad Sector check, and then try again.") #*** Is this good advice? Try to determine the cause of the problem ***
+                        DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing: "+OS+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. It is recommended to do a Bad Sector check, and then try again.") #*** Is this good advice? Try to determine the cause of the problem ***
                         continue
 
                 #Set up chroot.
-                CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
+                CoreBackendTools.SetUpChroot(MountPoint=MountPoint)
 
                 #If there's a seperate /boot partition for this OS, make sure it's mounted.
-                CoreTools().StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False) #*** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this ***
+                CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False) #*** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this ***
 
             #Update the package lists.
             if BootloaderInstallationTools().UpdatePackageLists(PackageManager=PackageManager, UseChroot=UseChroot) != 0:
@@ -340,10 +340,10 @@ class Main():
                 #Mount the UEFI partition at MountPoint/boot/efi.
                 #Unmount it first though, in case it's already mounted. *** Alternately check where it's mounted and leave it if it's okay ***
 
-                if CoreTools().Unmount(UEFISystemPartition) != 0:
+                if CoreTools.Unmount(UEFISystemPartition) != 0:
                     logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+UEFISystemPartition+"! This probably doesn't matter...")
 
-                if CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
+                if CoreTools.MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
                     logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+UEFISystemPartition+"! to "+MountPoint+"/boot/efi! *** TODO: Abort bootloader installation. *** For now, continue anyway...")
 
                 retval = BootloaderInstallationTools().InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
@@ -351,32 +351,32 @@ class Main():
             elif BootloaderToInstall == "ELILO":
                 logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing ELILO...")
                 #Unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
-                if CoreTools().Unmount(UEFISystemPartition) != 0:
+                if CoreTools.Unmount(UEFISystemPartition) != 0:
                     logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount the EFI partition! Continuing anyway...") #*** Installation won't work if unmounting failed! ***
 
                 if UseChroot:
-                    CoreBackendTools().UpdateChrootMtab(MountPoint=MountPoint)
+                    CoreBackendTools.UpdateChrootMtab(MountPoint=MountPoint)
 
                 retval = BootloaderInstallationTools().InstallELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
             #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot.
-            if CoreTools().Unmount(MountPoint+"/boot") != 0:
+            if CoreTools.Unmount(MountPoint+"/boot") != 0:
                 logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot! *** TODO: Check if there is a /boot partition first ***. This probably doesn't matter...") #*** Test that this works *** *** Why not check if there is one first? ***
 
             if UseChroot:
                 logger.debug("MainBackendTools: Main().InstallNewBootloader(): Removing chroot...")
                 #Tear down chroot. #*** Check it worked ***
-                CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
+                CoreBackendTools.TearDownChroot(MountPoint=MountPoint)
 
             if UnmountAfter:
-                if CoreTools().Unmount(MountPoint) != 0:
+                if CoreTools.Unmount(MountPoint) != 0:
                     logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"! Continuing anyway...")
 
             if retval != 0:
                 #Something went wrong! Log it and notify the user.
                 BootloaderInstallSucceded = False
                 logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to install "+BootloaderToInstall+" in OS: "+OS+"! This may mean the system (or this OS) is now unbootable! We'll continue anyway. Warn the user.")
-                DialogTools().ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+BootloaderToInstall+" in: "+OS+"! This may leave this OS, or your system, in an unbootable state. It is recommended to do a Bad Sector check, unplug any non-essential devices, and then try again.") #*** Maybe ask to try again right now ***
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+BootloaderToInstall+" in: "+OS+"! This may leave this OS, or your system, in an unbootable state. It is recommended to do a Bad Sector check, unplug any non-essential devices, and then try again.") #*** Maybe ask to try again right now ***
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished installing "+BootloaderToInstall+" in OS: "+OS+"...###\n")
 
@@ -423,14 +423,14 @@ class Main():
                 MountPoint = "/mnt"+Partition
 
                 #Check if the partition is mounted.
-                if CoreTools().IsMounted(Partition, MountPoint):
+                if CoreTools.IsMounted(Partition, MountPoint):
                     UnmountAfter = False
 
                 else:
                     UnmountAfter = True
 
                     #Mount the partition.
-                    Retval = CoreTools().MountPartition(Partition=Partition, MountPoint=MountPoint)
+                    Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
 
                     if Retval != 0:
                         #Ignore this partition.
@@ -438,7 +438,7 @@ class Main():
                         continue
 
                 #Set up chroot.
-                CoreBackendTools().SetUpChroot(MountPoint=MountPoint)
+                CoreBackendTools.SetUpChroot(MountPoint=MountPoint)
 
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
 
@@ -470,7 +470,7 @@ class Main():
                     BootloaderConfigSettingTools().SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
 
                 #Mount the UEFI partition at MountPoint/boot/efi.
-                if CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
+                if CoreTools.MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
                     logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't mount EFI partition "+UEFISystemPartition+" to install bootloader! *** TODO: Cancel bootloader operations *** Continuing for now...")
 
                 #Now Install GRUB-UEFI to the UEFI Partition.
@@ -496,10 +496,10 @@ class Main():
                 #Make LILO's config file.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making LILO's configuration file...")
                 if MountPoint == "":
-                    CoreTools().StartProcess("liloconfig -f", ShowOutput=False)
+                    CoreTools.StartProcess("liloconfig -f", ShowOutput=False)
 
                 else:
-                    CoreTools().StartProcess("chroot "+MountPoint+" liloconfig -f", ShowOutput=False)
+                    CoreTools.StartProcess("chroot "+MountPoint+" liloconfig -f", ShowOutput=False)
 
                 #Check the config file exists for lilo. *** What do we do if it doesn't? Check the last command ran successfully ***
                 if os.path.isfile(MountPoint+"/etc/lilo.conf"):
@@ -517,19 +517,19 @@ class Main():
 
             elif BootloaderToInstall == "ELILO":
                 #Unmount the UEFI Partition now, and update mtab in the chroot.
-                if CoreTools().Unmount(UEFISystemPartition) != 0:
+                if CoreTools.Unmount(UEFISystemPartition) != 0:
                     logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+UEFISystemPartition+"! Cotinuing anyway...") #*** Installation will fail if this happens! ***
 
-                CoreBackendTools().UpdateChrootMtab(MountPoint=MountPoint)
+                CoreBackendTools.UpdateChrootMtab(MountPoint=MountPoint)
 
                 #Make ELILO's config file.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making ELILO's configuration file...")
 
                 if MountPoint == "":
-                    CoreTools().StartProcess("elilo -b "+UEFISystemPartition+" --autoconf", ShowOutput=False)
+                    CoreTools.StartProcess("elilo -b "+UEFISystemPartition+" --autoconf", ShowOutput=False)
 
                 else:
-                    CoreTools().StartProcess("chroot "+MountPoint+" elilo -b "+UEFISystemPartition+" --autoconf", ShowOutput=False)
+                    CoreTools.StartProcess("chroot "+MountPoint+" elilo -b "+UEFISystemPartition+" --autoconf", ShowOutput=False)
 
                 #Check elilo's config file exists. *** What do we do if it doesn't? Check the last command ran successfully ***
                 if os.path.isfile(MountPoint+"/etc/elilo.conf"):
@@ -546,7 +546,7 @@ class Main():
                 BootloaderConfigSettingTools().InstallELILOToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartition=UEFISystemPartition)
 
                 #Mount the UEFI partition at MountPoint/boot/efi.
-                if CoreTools().MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
+                if CoreTools.MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
                     logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount EFI partition "+UEFISystemPartition+"! Continuing anyway...")
 
                 #Copy and backup UEFI files where needed.
@@ -555,11 +555,11 @@ class Main():
 
             #Tear down chroot if needed.
             if MountPoint != "":
-                CoreBackendTools().TearDownChroot(MountPoint=MountPoint)
+                CoreBackendTools.TearDownChroot(MountPoint=MountPoint)
 
             #Unmount the partition if needed.
             if UnmountPartitionAfter:
-                if CoreTools().Unmount(MountPoint) != 0:
+                if CoreTools.Unmount(MountPoint) != 0:
                     logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount "+MountPoint+"! Continuing anyway...")
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished setting the new bootloader's config for OS: "+OS+"...###\n")
