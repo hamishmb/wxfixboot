@@ -3035,6 +3035,7 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.BootloaderTools.main.Bootloader = Bootloader
             Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
             Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
+            Tools.BackendTools.BootloaderTools.main.OSList = OSList
 
             try:
                 Tools.BackendTools.BootloaderTools.main.DisableBootloaderOperations = DisableBootloaderOperations
