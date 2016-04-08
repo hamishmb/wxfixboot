@@ -204,6 +204,7 @@ Tools.BackendTools.main.logger = logger
 Tools.BackendTools.main.os = os
 Tools.BackendTools.main.CoreTools = CoreTools
 Tools.BackendTools.main.CoreBackendTools = CoreBackendTools
+Tools.BackendTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
 Tools.BackendTools.main.DialogTools = DialogTools
 
 #BootloaderTools Package (Main)
