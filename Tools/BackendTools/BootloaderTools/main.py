@@ -169,7 +169,7 @@ class Main(): #*** Refactor and test all of these ***
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
 
             #Set the bootloaders new config.
-            BootloaderConfigSettingTools.SetNewBootloaderConfig()
+            MainBackendTools.SetNewBootloaderConfig()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Done!")
