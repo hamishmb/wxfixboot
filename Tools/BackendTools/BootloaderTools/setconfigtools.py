@@ -406,22 +406,17 @@ class Main(): #*** Refactor and test all of these ***
         #As we make these entries, we'll record which ones were actually made, as the user can cancel them if it looks like it won't work.
         CompletedEntriesList = []
 
-        for OS in OSList:
+        Keys = OSInfo.keys()
+        Keys.sort()
+
+        for OS in Keys:
             logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make an entry for: "+OS)
 
-            #Names in LILO are not allowed to have spaces, so let's grab the names and remove the spaces from them.
-            #If this OS is the currently running one, we'll need to access a different part of the element.
-            if OS.split()[-5] == "OS)":
-                OSName = ''.join(OS.split()[0:-6])
-
-            else:
-                OSName = ''.join(OS.split()[0:-4])
-
-            #Remove all the spaces from the OS's name.
-            OSName = OSName.replace(' ','')
+            #Names in LILO are not allowed to have spaces, so let's remove the spaces from them.
+            OSName = OS.replace(' ','')
 
             #Grab the OS's partition.
-            Partition = OS.split()[-1]
+            Partition = OSInfo[OS]["Partition"]
 
             #Check that the name is no longer than 15 characters.
             if len(OSName) > 15:
@@ -432,11 +427,7 @@ class Main(): #*** Refactor and test all of these ***
             #Now let's make the entries.
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Checking for /vmlinuz and /initrd.img...")
 
-            if OS[-5] == "OS)": #*** When we use dictionaries we won't need to do this ***
-                CurrentOS = True
-
-            else:
-                CurrentOS = False
+            CurrentOS = OSInfo[OS]["IsCurrentOS"]
 
             #Check that MountPoint/vmlinuz and MountPoint/initrd.img exist. (If this is the current OS, MountPoint = "", and so doesn't get in the way).
             if os.path.isfile(MountPoint+"/vmlinuz"):

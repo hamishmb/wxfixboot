@@ -49,7 +49,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "8/4/2016"
+ReleaseDate = "11/4/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -233,7 +233,7 @@ Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools
 Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
 Tools.BackendTools.BootloaderTools.setconfigtools.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
-Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools#
+Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
@@ -490,7 +490,6 @@ class InitThread(threading.Thread):
 
         #Get a list of Linux OSs. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
         #Define global variables.
-        global OSList
         global RootFS
         global AutoRootFS
 
@@ -503,26 +502,14 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
         logger.info("InitThread(): Done...")
 
-        #*** ABSTRACTION CODE ***
-        #Create OSList.
-        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting OSList...")
+        #Save user friendly OS names. *** Do this in GetLinuxOSs ***
+        SystemInfo["UserFriendlyOSNames"] = []
 
         Keys = OSInfo.keys()
         Keys.sort()
 
-        OSList = []
-
         for OS in Keys:
-            OSArch = OSInfo[OS]["Arch"]
-            OSPartition = OSInfo[OS]["Partition"]
-
-            if OSInfo[OS]["IsCurrentOS"]:        
-                OSList.append(OS+" (Current OS) "+OSArch+" on partition "+OSPartition)
-
-            else:
-                OSList.append(OS+" "+OSArch+" on partition "+OSPartition)
-
-        logger.info("InitThread(): *** ABSTRACTION CODE *** Done. Contents: "+' '.join(OSList))
+            SystemInfo["UserFriendlyOSNames"].append(OS)
 
         #Set default OS.
         logger.info("InitThread(): *** ABSTRACTION CODE *** Setting default OS...")
@@ -531,7 +518,17 @@ class InitThread(threading.Thread):
         global DefaultOS
         global AutoDefaultOS
 
-        DefaultOS = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=OSList) #*** Get rid of this; selected on a per-bootloader basis in Bootloader Options Window ***
+        Keys = OSInfo.keys()
+        Keys.sort()
+
+        OS = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=Keys) #*** Get rid of this; selected on a per-bootloader basis in Bootloader Options Window ***
+
+        if OSInfo[OS]["IsCurrentOS"]:
+            DefaultOS = OS+" (Current OS) "+OSInfo[OS]["Arch"]+" on partition "+OSInfo[OS]["Partition"]
+
+        else:
+            DefaultOS = OS+" "+OSInfo[OS]["Arch"]+" on partition "+OSInfo[OS]["Partition"]
+
         AutoDefaultOS = DefaultOS
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
@@ -591,7 +588,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        AutoFirmwareType, FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        AutoFirmwareType, FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -1367,7 +1364,7 @@ class SettingsWindow(wx.Frame):
     def CreateChoiceBs(self):
         """Create the choice boxes"""
         #Basic settings
-        self.DefaultOSChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=OSList)
+        self.DefaultOSChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=SystemInfo["UserFriendlyOSNames"])
 
         #Advanced settings
         self.RootDeviceChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=["Auto: "+AutoRootDevice]+DeviceList)
@@ -1782,12 +1779,18 @@ class SettingsWindow(wx.Frame):
 
         logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+Bootloader)
 
-        #Default OS choicebox
-        DefaultOS = self.DefaultOSChoice.GetStringSelection()
+        #Default OS choicebox.
+        OS = self.DefaultOSChoice.GetStringSelection()
+        if OSInfo[OS]["IsCurrentOS"]:
+            DefaultOS = OS+" (Current OS) "+OSInfo[OS]["Arch"]+" on partition "+OSInfo[OS]["Partition"]
+
+        else:
+            DefaultOS = OS+" "+OSInfo[OS]["Arch"]+" on partition "+OSInfo[OS]["Partition"]
+
         logger.debug("SettingsWindow().SaveOptions(): Value of DefaultOS is: "+DefaultOS)
 
         #Root Filesystem.
-        RootFS = self.DefaultOSChoice.GetStringSelection().split()[-1]
+        RootFS = OSInfo[OS]["Partition"]
         logger.debug("SettingsWindow().SaveOptions(): Value of RootFS is: "+RootFS)
 
         #Root device ChoiceBox
@@ -2340,7 +2343,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.Destroy()
 
 #End Bootloader Options Window
-#Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later ***
+#Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later ***
 class RestoreWindow(wx.Frame):
     def __init__(self, ParentWindow, Type):
         """Initialise RetsoreWindow"""
@@ -2469,7 +2472,7 @@ class RestoreWindow(wx.Frame):
         else:
             self.TargetDeviceChoice.SetSelection(0)
 
-    def SelectFile(self, Event=None):
+    def SelectFile(self, Event=None): #*** Start in /home here ***
         """Grab Image path"""
         logger.debug("RestoreWindow().SelectFile(): File selection choice box changed...")
 
@@ -2531,7 +2534,7 @@ class RestoreWindow(wx.Frame):
                 BackupType = "mbr"
                 self.MBRBackupTypeRadio.SetValue(True)
 
-            elif Temp > 512 and Temp < 20000:
+            elif Temp > 512 and Temp < 20000: #*** GPT must have an exact size too! Be safer and make sure it's exactly right! ***
                 #Backup is GPT  
                 BackupType = "gpt"
                 self.GPTBackupTypeRadio.SetValue(True)
@@ -3001,8 +3004,10 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.main.SystemInfo = SystemInfo
 
             Tools.BackendTools.BootloaderTools.main.SystemInfo = SystemInfo
+            Tools.BackendTools.BootloaderTools.main.OSInfo = OSInfo
 
             Tools.BackendTools.BootloaderTools.setconfigtools.SystemInfo = SystemInfo
+            Tools.BackendTools.BootloaderTools.setconfigtools.OSInfo = OSInfo
 
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
             #*** We temporarily need global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
@@ -3044,7 +3049,6 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.BootloaderTools.main.Bootloader = Bootloader
             Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
             Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
-            Tools.BackendTools.BootloaderTools.main.OSList = OSList
             Tools.BackendTools.BootloaderTools.main.BootloaderToInstall = BootloaderToInstall
 
             try:
@@ -3070,7 +3074,6 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.main.AutoRootFS = AutoRootFS
             Tools.BackendTools.main.Bootloader = Bootloader
             Tools.BackendTools.main.UEFISystemPartition = UEFISystemPartition
-            Tools.BackendTools.main.OSList = OSList
 
             #*** Bootloader Config getting tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout = BootloaderTimeout
@@ -3079,7 +3082,6 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.BootloaderTools.setconfigtools.RootDevice = RootDevice
             Tools.BackendTools.BootloaderTools.setconfigtools.DefaultOS = DefaultOS
             Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderToInstall = BootloaderToInstall
-            Tools.BackendTools.BootloaderTools.setconfigtools.OSList = OSList
             Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderTimeout = BootloaderTimeout
 
             try:
@@ -3131,7 +3133,7 @@ class BackendThread(threading.Thread):
 
         wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
-    def GenerateSystemReport(self): #*** Leave this here until switch to dictionaries cos otherwise this'll be a mighty pain in the backside! :) *** *** Do dictionaries here ***
+    def GenerateSystemReport(self): #*** Leave this here until switch to dictionaries cos otherwise this'll be a mighty pain in the backside! :) *** *** Use dictionaries here ***
         """Create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary."""
         DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot will now create your system report. Click okay to continue.")
 

@@ -84,7 +84,6 @@ class Main():
 
     def GetLinuxOSs(self, LinuxPartList, SystemInfo): #*** Refactor ***
         """Get the names of all Linux OSs on the HDDs."""
-        #*** This will need changing, but will not need too much work to adapt it to using dictionaries ***
         #*** Crashes at log line in InitThread().run() if we couldn't detect the current OS ***
         logger.info("MainStartupTools: Main().GetLinuxOSs(): Finding Linux operating systems...")
         RootFS = ""
@@ -339,10 +338,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, OSList, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition): #*** This is where I am in optimising these functions, and I will do this later *** *** This is a real mess! ***
+    def FinalCheck(self, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition): #*** This is where I am in optimising these functions, and I will do this later *** *** This is a real mess! ***
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"]
-        VarList = ('LinuxPartList', 'DeviceList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'DefaultOS', 'AutoDefaultOS', 'OSList', 'FirmwareType', 'AutoFirmwareType', 'UEFIVariables', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], OSInfo.
+        VarList = ('LinuxPartList', 'DeviceList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'DefaultOS', 'AutoDefaultOS', 'FirmwareType', 'AutoFirmwareType', 'UEFIVariables', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.

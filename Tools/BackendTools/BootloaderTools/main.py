@@ -46,11 +46,14 @@ class Main(): #*** Refactor and test all of these ***
 
             OSListWithPackageManagers = []
         
-            #Use OSList to find all partitions with Linux OSs on them.
+            #Use OSInfo to find all partitions with Linux OSs on them.
+            Keys = OSInfo.keys()
+            Keys.sort()
+
             #Start of for loop.
-            for OS in OSList:
+            for OS in Keys:
                 #Get the partition that each OS is on.
-                Partition = OS.split()[-1]
+                Partition = OSInfo[OS]["Partition"]
 
                 #If not on a live disk, and this OS is the one running, skip some stuff.
                 if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:
@@ -58,10 +61,10 @@ class Main(): #*** Refactor and test all of these ***
                     #This is the RootFS, so don't use chroot in the given command lists.
                     APT = HelperBackendTools.LookForAPTOnPartition(APTExecCmds="which apt-get")
 
-                    #Add the OS and its package manager to the list, if there is one.
+                    #Add the OS and its package manager to the list, if there is one. *** Add this to OSInfo when moved to startup tools ***
                     if APT:
                        logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager apt-get")
-                       OSListWithPackageManagers.append(OS+" with Package Manager apt-get")
+                       OSListWithPackageManagers.append(OS+" (Current OS) "+OSInfo[OS]["Arch"]+" on partition "+Partition+" with Package Manager apt-get")
                             
                     #Skip the rest of the for loop.
                     continue
@@ -82,7 +85,7 @@ class Main(): #*** Refactor and test all of these ***
                     #Add the OS and its package manager to the list, if there is one.
                     if APT:
                         logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager apt-get")
-                        OSListWithPackageManagers.append(OS+" with Package Manager apt-get")
+                        OSListWithPackageManagers.append(OS+" "+OSInfo[OS]["Arch"]+" on partition "+Partition+" with Package Manager apt-get")
 
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 70)
 
