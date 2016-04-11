@@ -68,7 +68,7 @@ class Main():
             Result = True
 
         else:
-            Result = DialogTools.ShowYesNoDlg(Message="There is a Linux operating system on partition: "+Partition+" but WxFixBoot couldn't find its name. It isn't the currently running OS. Do you want to name it and include it in the list?. Only click yes if you believe it is a recent OS.")
+            Result = DialogTools.ShowYesNoDlg(Message="There is a Linux operating system on partition: "+Partition+" but WxFixBoot couldn't find its name. It isn't the currently running OS. Do you want to name it and include it in the list? Only click yes if you believe it is a recent OS.")
 
         if Result == False:
             logger.info("CoreStartupTools: Main().AskForOSName(): User didn't want to name the OS in "+Partition+"! Ignoring it...")
@@ -123,38 +123,31 @@ class Main():
             return False
 
     def DetermineGRUBBIOSVersion(self, SystemInfo):
-        """Try to determine which version of GRUB BIOS is installed""" #*** See if we can find a better way of doing this ***
+        """Try to determine which version of GRUB BIOS is installed""" #*** See if we can find a better way of doing this *** *** Test this again with both bootloaders ***
         logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Determining GRUB version...")
-        #*** This is a mess ***
-        #Check if the system is using grub-legacy or grub2. *** There are better ways of doing this, like using a variable or dictionary instead of having to find the current os's name over and over ***
+        #Check if the system is using grub-legacy or grub2.
         if SystemInfo["IsLiveDisk"] == False:
             #Ask the user if this OS installed the bootloader.
             Result = DialogTools.ShowYesNoDlg(Message="Was the bootloader installed by the current OS ("+SystemInfo["CurrentOS"]["Name"]+")? If this OS is the most recently installed one, it probably installed the bootloader. If you're not sure, click No.")
         
             if Result:
-                #Run a command to print grub's version. *** There has got to be a better way of processing this ***
-                Stdout = CoreTools.StartProcess("grub-install --version", ReturnOutput=True)[1].replace("(", "").replace(")", "")
+                #Run a command to print grub's version.
+                Output = CoreTools.StartProcess("grub-install --version", ReturnOutput=True)[1]
+
+                GRUBVersion = Output.split()[-1].replace(")", "")
 
                 #Try to grab the first number in the list. If it fails, we've almost certainly got GRUB2.
-                Temp = "empty"
-                for version in Stdout.split():
-                    try:
-                        float(version)
+                try:
+                    float(GRUBVersion)
 
-                    except ValueError: pass
-
-                    else:
-                        Temp = version
-                        break
-
-                #Check if there is a version number found. If not, it's grub2.
-                if Temp == "empty":
+                except ValueError:
                     logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Found GRUB2 in MBR (Shown as GRUB2 in GUI). Continuing...")
                     return "GRUB2"
 
-                else:
+                else: pass
+                finally:
                     #If a number was found, check if it's lower than or equal to 1.97 (aka it's grub legacy)
-                    if float(Temp) <= 1.97:
+                    if float(GRUBVersion) <= 1.97:
                         return "GRUB-LEGACY"
                         logger.warning("CoreStartupTools: Main().DetermineGRUBVersion(): Found GRUB-LEGACY in MBR! Some options will be disabled, as grub legacy isn't fully supported because it is obsolete. Continuing...")
 
@@ -179,11 +172,11 @@ class Main():
         logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): Manually selecting bootloader...")
 
         #Offer different selection based on the current state of the system.
-        if UEFISystemPartition == "None" and FirmwareType == "UEFI":
+        if UEFISystemPartition == None and FirmwareType == "UEFI":
             logger.warning("CoreStartupTools: Main().ManualBootloaderSelect(): Only listing BIOS bootloaders, as there is no UEFI partition.")
             Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "LILO"])
 
-        elif UEFISystemPartition != "None" and FirmwareType == "UEFI":
+        elif UEFISystemPartition != None and FirmwareType == "UEFI":
             Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "GRUB-UEFI", "LILO", "ELILO"])
 
         else:
@@ -198,7 +191,7 @@ class Main():
             logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def CheckForUEFIPartition(self, SystemInfo): #*** Test again ***
+    def CheckForUEFIPartition(self, SystemInfo): #*** Test again *** *** We can also use GUIDs on GPT systems, what about MBR systems? ***
         """Find the UEFI system partition and return it"""
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
         AskForUEFIPartition = True

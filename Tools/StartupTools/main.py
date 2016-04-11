@@ -23,11 +23,11 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def CheckDepends(self): #*** Add blockdev if needed? ***
+    def CheckDepends(self): #*** Is blockdev (for blocksizes) needed? ***
         """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
         logger.info("MainStartupTools(): Main().CheckDepends(): Checking dependencies...")
         #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies.
-        CmdList = ("lshw", "mount", "lsb_release", "dmidecode", "chroot", "dd", "gdisk")
+        CmdList = ("lshw", "mount", "lsb_release", "dmidecode", "chroot", "dd", "gdisk", "blockdev")
 
         #Create a list to contain names of failed commands.
         FailedList = []
@@ -303,7 +303,7 @@ class Main():
 
         return Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition
 
-    def SetDefaults(self):
+    def SetDefaults(self): #*** Modify to use dictionaries later ***
         """Set Default for some variables"""
         #Options in MainWindow
         ReinstallBootloader = False
@@ -340,7 +340,7 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition): #*** This is where I am in optimising these functions, and I will do this later *** *** This is a real mess! ***
+    def FinalCheck(self, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
         """Check for any conflicting options, and that each variable is set."""
         #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], OSInfo.
         VarList = ('LinuxPartList', 'DeviceList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'DefaultOS', 'AutoDefaultOS', 'FirmwareType', 'AutoFirmwareType', 'UEFIVariables', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')

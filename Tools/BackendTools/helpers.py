@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 #Begin Main Class. *** These need testing and refactoring ***
 class Main():
     def FindMissingFSCKModules(self):
-        """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc).""" #*** Test this again ***
+        """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc)."""
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Looking for missing FSCK modules to ignore...")
         FailedList = []
 
@@ -51,7 +51,7 @@ class Main():
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
         return FailedList
 
-    def LookForAPTOnPartition(self, APTExecCmds): #*** Test again *** *** Maybe move to startup tools on switch to dictionaries *** *** Does this need to be in a function? ***
+    def LookForAPTOnPartition(self, APTExecCmds): #*** Maybe move to startup tools on switch to dictionaries *** *** Does this need to be in a function? ***
         """Look for apt using the command lists given (they include the partition, by the way)."""
         logger.debug("HelperBackendTools: Main().LookForAPTOnPartition(): Running "+APTExecCmds+"...")
 
@@ -363,24 +363,17 @@ class Main():
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Done!")
 
     def FindLatestVersion(self, Directory, Type):
-        """Try the find the latest kernel/initrd in the given directory.""" #*** Refactor this and use some kind of looping to make it shorter *** *** Would it be easier to use CoreTools.Find() and get rid of most of this? ***
-        FileList = os.listdir(Directory)
-
+        """Try the find the latest kernel/initrd in the given directory.""" #*** Would it be easier to use CoreTools.Find() and get rid of most of this? ***
+        #Make a list of kerels/initrds.
         if Type == "Kernel":
-            #Make a list of kernels.
             logger.info("HelperBackendTools: Main().FindLatestVersion(): Looking for latest kernel in "+Directory+"...")
-            List = []
-            for File in FileList:
-                if 'vmlinu' in File:
-                    List.append(File)
+            RegExp = r"(.*)vmlinuz(.*)"
 
         else:
-            #Make a list of initrds.
-            logger.info("HelperBackendTools: Main().FindLatestVersion(): Looking for latest Initrd in "+Directory+"...")
-            List = []
-            for File in FileList:
-                if 'initr' in File:
-                    List.append(File)
+            logger.info("HelperBackendTools: Main().FindLatestVersion(): Looking for latest initramfs in "+Directory+"...")
+            RegExp = r"(.*)initrd(.*)"
+
+        List = CoreTools.Find(Regexp, Directory)
 
         logger.debug("HelperBackendTools: Main().FindLatestVersion(): Contents of Kernel/Initrd list: "+', '.join(List))
 
@@ -396,7 +389,11 @@ class Main():
 
         else:
             #Multiple kernels/initrds found!
-            logger.info("HelperBackendTools: Main().FindLatestVersion(): Found multiple Kernels/Initrds in "+Directory+". Picking the one with the highest version number...")
+            #Look for the one with highest version number, and if needed highest revision number.
+            logger.info("HelperBackendTools: Main().FindLatestVersion(): Found multiple Kernels/Initrds in "+Directory+". Picking the newest one...")
+
+            #while True:
+            
 
             #Find the one with the highest version number.
             #Make a list of version numbers.

@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def GetOldBootloaderConfig(self): #*** Check this works ***
+    def GetOldBootloaderConfig(self): #*** Check this works on GRUB-EFI, ELILO and LILO. ***
         """Get the old bootloader's config before removing it, so we can reuse it (if possible) with the new one."""
         logger.debug("MainBackendTools: Main().GetOldBootloaderConfig(): Preparing to get bootloader config...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to get bootloader config...")
@@ -174,7 +174,7 @@ class Main():
 
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
 
-    def RemoveOldBootloader(self): #*** Handle return values *** *** Check this works ***
+    def RemoveOldBootloader(self): #*** Handle return values better, and return them *** *** Check this works ***
         """Remove the currently installed bootloader."""
         logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Preparing to remove old bootloaders...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Removing old bootloaders...")
@@ -202,7 +202,7 @@ class Main():
                 UseChroot = True
                 MountPoint = "/mnt"+Partition
 
-                #Check if the partition is mounted. *** Check this works ***
+                #Check if the partition is mounted.
                 if CoreTools.IsMounted(Partition, MountPoint):
                     UnmountAfter = False
 
@@ -298,7 +298,7 @@ class Main():
                 UseChroot = True
                 MountPoint = "/mnt"+Partition
 
-                #Check if the partition is mounted. *** Check this works ***
+                #Check if the partition is mounted.
                 if CoreTools.IsMounted(Partition, MountPoint):
                     UnmountAfter = False
 
@@ -352,7 +352,7 @@ class Main():
                 logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing ELILO...")
                 #Unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
                 if CoreTools.Unmount(UEFISystemPartition) != 0:
-                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount the EFI partition! Continuing anyway...") #*** Installation won't work if unmounting failed! ***
+                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount the EFI partition! If installing ELILO fails this might be the reason. Continuing anyway...") #*** Installation won't work if unmounting failed! ***
 
                 if UseChroot:
                     CoreBackendTools.UpdateChrootMtab(MountPoint=MountPoint)
@@ -361,7 +361,7 @@ class Main():
 
             #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot.
             if CoreTools.Unmount(MountPoint+"/boot") != 0:
-                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot! *** TODO: Check if there is a /boot partition first ***. This probably doesn't matter...") #*** Test that this works *** *** Why not check if there is one first? ***
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot! *** TODO: Check if there is a /boot partition first ***. This probably doesn't matter...") #*** Why not check if there is one first? ***
 
             if UseChroot:
                 logger.debug("MainBackendTools: Main().InstallNewBootloader(): Removing chroot...")
@@ -503,7 +503,7 @@ class Main():
                 else:
                     CoreTools.StartProcess("chroot "+MountPoint+" liloconfig -f", ShowOutput=False)
 
-                #Check the config file exists for lilo. *** What do we do if it doesn't? Check the last command ran successfully ***
+                #Check the config file exists for lilo. *** What do we do if it doesn't? Check liloconfig ran successfully ***
                 if os.path.isfile(MountPoint+"/etc/lilo.conf"):
                     #It does, we'll run the function to set the config now.
                     logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting LILO Configuration...")
@@ -520,7 +520,7 @@ class Main():
             elif BootloaderToInstall == "ELILO":
                 #Unmount the UEFI Partition now, and update mtab in the chroot.
                 if CoreTools.Unmount(UEFISystemPartition) != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+UEFISystemPartition+"! Cotinuing anyway...") #*** Installation will fail if this happens! ***
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+UEFISystemPartition+"! Continuing anyway...") #*** Installation will fail if this happens! ***
 
                 CoreBackendTools.UpdateChrootMtab(MountPoint=MountPoint)
 

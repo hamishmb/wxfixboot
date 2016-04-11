@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+#*** Write a function to get the mountpoint of a partition ***
 #*** Add gdisk to dependencies list in package ***
 #*** Re-evaluate dependencies at packaging time ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
@@ -25,6 +26,7 @@
 #*** On wx 3, use custom buttons for dialogs ***
 #*** Add recovery boot options for LILO/ELILO ***
 #*** Check if LILO installs on GPT disks (GRUB does) ***
+#*** Keep partition UUIDs in Disk Info ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import

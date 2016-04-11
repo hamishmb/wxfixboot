@@ -161,7 +161,7 @@ class Main():
                     MountPointFound = Line.split()[2]
 
             if MountPointFound != MountPoint:
-                #Unmount the partition, and continue.
+                #Something else is in the way. Unmount that partition, and continue.
                 logger.warning("CoreTools: Main().MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
                 Retval = self.Unmount(MountPoint)
 
