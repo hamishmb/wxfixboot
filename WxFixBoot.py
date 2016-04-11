@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#*** Add gdisk to dependencies list ***
+#*** Add gdisk to dependencies list in package ***
 #*** Re-evaluate dependencies at packaging time ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
@@ -23,7 +23,7 @@
 #*** Figure out what to do in each instance where something might fail ***
 #*** Return return values in chroot functions (CoreBackendTools) ***
 #*** On wx 3, use custom buttons for dialogs ***
-#*** Add recovery options for LILO/ELILO ***
+#*** Add recovery boot options for LILO/ELILO ***
 #*** Check if LILO installs on GPT disks (GRUB does) ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
@@ -194,7 +194,6 @@ Tools.BackendTools.helpers.LooseVersion = LooseVersion
 Tools.BackendTools.essentials.wx = wx
 Tools.BackendTools.essentials.logger = logger
 Tools.BackendTools.essentials.CoreTools = CoreTools
-Tools.BackendTools.essentials.CoreBackendTools = CoreBackendTools #*** Is this needed? ***
 Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.essentials.DialogTools = DialogTools
 
@@ -211,13 +210,9 @@ Tools.BackendTools.main.DialogTools = DialogTools
 Tools.BackendTools.BootloaderTools.main.wx = wx
 Tools.BackendTools.BootloaderTools.main.logger = logger
 Tools.BackendTools.BootloaderTools.main.CoreTools = CoreTools
-Tools.BackendTools.BootloaderTools.main.CoreBackendTools = CoreBackendTools #*** Is this needed? ***
 Tools.BackendTools.BootloaderTools.main.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.main.EssentialBackendTools = EssentialBackendTools
 Tools.BackendTools.BootloaderTools.main.MainBackendTools = MainBackendTools
-Tools.BackendTools.BootloaderTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools #*** Is this needed? ***
-Tools.BackendTools.BootloaderTools.main.BootloaderRemovalTools = BootloaderRemovalTools #*** Is this needed? ***
-Tools.BackendTools.BootloaderTools.main.BootloaderInstallationTools = BootloaderInstallationTools #*** Is this needed? ***
 Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
 
 #BootloaderTools Package (GetConfigTools)
