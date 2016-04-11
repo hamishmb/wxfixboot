@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor and test all of these ***
+class Main(): #*** Test all of these ***
     def UpdatePackageLists(self, PackageManager, UseChroot, MountPoint=None):
         """Update the package lists so the required packages can always be found."""
         if PackageManager == "apt-get":

@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor and test all of these ***
+class Main(): #*** Test all of these ***
     def RemoveGRUBLEGACY(self, PackageManager, UseChroot, MountPoint=None):
         """Remove GRUB-LEGACY."""
         if PackageManager == "apt-get":

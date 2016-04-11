@@ -176,10 +176,8 @@ class Main(): #*** Refactor and test all of these ***
         GRUBOSNameList = []
 
         for OSName in GrubMenuEntries:
-            #Get each OS name, removing all of the unneeeded characters. *** Can we use .split() instead? ***
-            junk,sep,info = OSName.partition("'")
-            info,sep,junk = info.partition("'")
-            GRUBOSNameList.append(info)
+            #Get each OS name, removing all of the unneeeded stuff.
+            GRUBOSNameList.append(OSName.split("\'")[1])
 
         #Now ask the user to select the correct one.
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done! Asking user to choose a default OS...")

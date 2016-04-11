@@ -58,15 +58,14 @@ class Main(): #*** Refactor and test all of these ***
         #Open the file in read mode, so we can save the important bits of config.
         infile = open(filetoopen, 'r')
 
-        #Loop through each line in the file, paying attention only to the important ones. *** Can we use .split("=") instead? ***
+        #Loop through each line in the file, paying attention only to the important ones.
         for line in infile:
             #Look for the timeout setting.
             if 'GRUB_TIMEOUT' in line and '=' in line:
                 #Found it! Save it, but only if BootloaderTimeout = -1 (we aren't changing the timeout).
                 if BootloaderTimeout == -1: #*** If we check this earlier it'll save CPU time ***
                     #Save it, carefully avoiding errors.
-                    junk, sep, Temp = line.partition('=')
-                    Temp = Temp.replace(' ','').replace('\n', '').replace("\'", "")
+                    Temp = line.split("=")[1]
                     if Temp.isdigit():
                         #Great! We got it.
                         Timeout = int(Temp)
@@ -74,8 +73,7 @@ class Main(): #*** Refactor and test all of these ***
             #Look for kernel options used globally in all the boot options.
             elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line:
                 #Found them! Save it to GlobalKernelOptions
-                junk, sep, Temp = line.partition('=')
-                Kopts = Temp.replace('\"', '').replace("\'", "").replace("\n", "")
+                Kopts = line.split("=")[1].replace("\'", "")
 
         #Close the file.
         infile.close()
@@ -96,11 +94,10 @@ class Main(): #*** Refactor and test all of these ***
         for line in infile:
             #Look for the delay/timeout setting.
             if ('delay' in line or 'timeout' in line) and '=' in line:
-                #Found it! Save it to BootloaderTimeout, but only if BootloaderTimeout = -1 (we aren't changing the timeout). *** Can we use .split("=") instead? ***
+                #Found it! Save it to BootloaderTimeout, but only if BootloaderTimeout = -1 (we aren't changing the timeout).
                 if BootloaderTimeout == -1: #*** If we check this earlier it'll save CPU time ***
                     #Save it, carefully avoiding errors.
-                    junk, sep, Temp = line.partition('=')
-                    Temp = Temp.replace(' ','').replace('\n', '')
+                    Temp = line.split("=")[1].replace(" ","")
                     if Temp.isdigit():
                         #Great! We got it.
                         #However, because lilo and elilo save this in 10ths of a second, divide it by ten first.
@@ -109,8 +106,7 @@ class Main(): #*** Refactor and test all of these ***
             #Look for kernel options used globally in all the boot options.
             elif 'append' in line and '=' in line:
                 #Found them! Save it to GlobalKernelOptions
-                junk, sep, Temp = line.partition('=')
-                Kopts = Temp.replace('\"', '').replace("\'", "").replace("\n", "")
+                Kopts = ' '.join(line.split("=")[1:]).replace("\"", "")
 
         #Close the file.
         infile.close()

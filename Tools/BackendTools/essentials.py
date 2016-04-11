@@ -21,13 +21,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#################### These functions are run before any others in the list of operations to do ####################
-
 #Begin Main Class.
 class Main(): #*** These need refactoring and proper testing ***
     def CheckInternetConnection(self):
         """Check the internet connection."""
-        DialogTools.ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations.") #*** Note what we're pinging so the user knows exactly what we're doing ***
+        DialogTools.ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations. This will be done by pinging the OpenDNS DNS servers.")
         Retry = True
 
         logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Checking the Internet Connection...")
@@ -76,7 +74,7 @@ class Main(): #*** These need refactoring and proper testing ***
         #Exit, and return with a bool stating whether or not to disable Bootloader Operations.
         return DisableBootloaderOperations
 
-    def BackupPartitionTable(self): #*** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save partition table backup file like this, move to settings window *** *** Reduce duplication ***
+    def BackupPartitionTable(self): #*** Will need modification when we switch away from the rootdevice model *** *** Can't save partition table backup file variable like this, move to settings window *** *** Handle return values *** *** Reduce duplication with function below ***
         """Backup the partition table."""
         #For GPT disks, backup with sgdisk -b/--backup=<file> <SOURCEDIRVE>.
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
@@ -96,13 +94,7 @@ class Main(): #*** These need refactoring and proper testing ***
             if PartitionTableBackupFile[-4:] != ".mbr":
                 PartitionTableBackupFile = PartitionTableBackupFile+".mbr"
 
-            wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Backing up Partition Table...")
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Backing up the Partition Table...###\n")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
-
-            #Backup the MBR of RootDevice.
-            logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Backing up MBR partition table to file: "+PartitionTableBackupFile+", from device: "+RootDevice+"...")
-            retval = CoreTools.StartProcess("dd if="+RootDevice+" of="+PartitionTableBackupFile+" bs=512 count=1", ShowOutput=False)
+            Cmd = "dd if="+RootDevice+" of="+PartitionTableBackupFile+" bs=512 count=1"
 
         else:
             #Let's backup the GPT, but we need to ask where to back it up first. *** Maybe do this in settings window? ***
@@ -112,13 +104,15 @@ class Main(): #*** These need refactoring and proper testing ***
             if PartitionTableBackupFile[-4:] != ".gpt":
                 PartitionTableBackupFile = PartitionTableBackupFile+".gpt"
 
-            wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Backing up Partition Table...")
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Backing up the Partition Table...###\n")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
+            Cmd = "sgdisk --backup="+PartitionTableBackupFile+" "+RootDevice
 
-            #Backup the GPT.
-            logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Backing up GPT partition table to file: "+PartitionTableBackupFile+", from device: "+RootDevice+"...")
-            retval = CoreTools.StartProcess("sgdisk --backup="+PartitionTableBackupFile+" "+RootDevice, ShowOutput=False)
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Backing up Partition Table...")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Backing up the Partition Table...###\n")
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
+
+        #Backup the partition table.
+        logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Backing up partition table to file: "+PartitionTableBackupFile+", from device: "+RootDevice+"...")
+        retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
 
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Backing up Partition Table!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
@@ -145,35 +139,30 @@ class Main(): #*** These need refactoring and proper testing ***
             if BootSectorBackupFile[-4:] != ".img":
                 BootSectorBackupFile = BootSectorBackupFile+".img"
 
-            wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Backing up the Boot Sector...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Backing up the Boot Sector...###\n")
+            Cmd = "dd if="+RootDevice+" of="+BootSectorBackupFile+" bs=512 count=1"
 
-            #Backup the MBR of RootDevice.
-            logger.info("EssentialBackendTools: Main().BackupBootSector(): Backing up MBR bootsector to file: "+BootSectorBackupFile+", from device: "+RootDevice+"...")
-            retval = CoreTools.StartProcess("dd if="+RootDevice+" of="+BootSectorBackupFile+" bs=512 count=1", ShowOutput=False)
+        elif UEFISystemPartition != None:
+            #We need to ask where to back it up to. *** Maybe do this in settings window? ***
+            BootSectorBackupFile = DialogTools.ShowSaveFileDlg(Title="WxFixBoot - Select Bootsector Backup Target File", Wildcard="IMG Image file (*.img)|*.img|All Files/Devices (*)|*")
+
+            #Make sure the backup file always has the correct file extension on it.
+            if BootSectorBackupFile[-4:] != ".img":
+                BootSectorBackupFile = BootSectorBackupFile+".img"
+
+            Cmd = "dd if="+UEFISystemPartition+" of="+BootSectorBackupFile
 
         else:
-            #Let's backup the UEFISystemPartition, but check there is one first.
-            if UEFISystemPartition == None:
-                logger.error("EssentialBackendTools: Main().BackupBootSector(): Failed to backup UEFI Partition, because there isn't one!") #*** What if we're booting GRUB on gpt? ***
-                DialogTools.ShowMsgDlg(Kind="error", Message="You have no UEFI Partition, so WxFixBoot couldn't backup your bootsector! Click okay to skip this operation.")
-                retval = 1
+            logger.error("EssentialBackendTools: Main().BackupBootSector(): Failed to backup UEFI Partition, because there isn't one!") #*** What if we're booting GRUB on gpt? ***
+            DialogTools.ShowMsgDlg(Kind="error", Message="You have no UEFI Partition, so WxFixBoot couldn't backup your bootsector! Click okay to skip this operation.")
+            return
 
-            else:
-                #We need to ask where to back it up to. *** Maybe do this in settings window? ***
-                BootSectorBackupFile = DialogTools.ShowSaveFileDlg(Title="WxFixBoot - Select Bootsector Backup Target File", Wildcard="IMG Image file (*.img)|*.img|All Files/Devices (*)|*")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Backing up the Boot Sector...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOutputBox, Message="\n###Backing up the Boot Sector...###\n")
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
 
-                #Make sure the backup file always has the correct file extension on it.
-                if BootSectorBackupFile[-4:] != ".img":
-                    BootSectorBackupFile = BootSectorBackupFile+".img"
-
-                wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Backing up the Boot Sector...")
-                wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
-
-                #Backup the UEFISystemPartition.
-                logger.info("EssentialBackendTools: Main().BackupBootSector(): Backing up UEFI System Partition ("+UEFISystemPartition+") to file: "+BootSectorBackupFile+"...")
-                retval = CoreTools.StartProcess("dd if="+UEFISystemPartition+" of="+BootSectorBackupFile, ShowOutput=False)
+        #Backup the boot sector.
+        logger.info("EssentialBackendTools: Main().BackupBootSector(): Backing up the boot sector to file: "+BootSectorBackupFile+"...")
+        retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
 
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Backing up the Boot Sector!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
