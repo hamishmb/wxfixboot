@@ -391,8 +391,13 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "2")
         logger.info("InitThread(): Done Checking For Dependencies!")
 
-        #Check if we're on a Live Disk. *** Ask in a separate function? *** *** See if we can determine this automatically ***
-        SystemInfo["IsLiveDisk"] = DialogTools.ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk, or Parted Magic?", Title="WxFixBoot - Live Disk?")
+        #Check if we're on a Live Disk. *** Ask in a separate function *** *** See if we can determine ubuntu livecd automatically ***
+        #Detect Parted Magic automatically. Ask on non-pmagic systems.
+        if "pmagic" in CoreTools.StartProcess("uname -r", ReturnOutput=True):
+            SystemInfo["IsLiveDisk"] = True
+
+        else:
+            SystemInfo["IsLiveDisk"] = DialogTools.ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", Title="WxFixBoot - Live Media?")
 
         if SystemInfo["IsLiveDisk"]:
             logger.info("InitThread(): We're on a live disk...")
