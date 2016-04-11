@@ -88,6 +88,7 @@ class Main():
         logger.info("MainStartupTools: Main().GetLinuxOSs(): Finding Linux operating systems...")
         RootFS = ""
         OSInfo = {}
+        SystemInfo["UserFriendlyOSNames"] = []
 
         if SystemInfo["IsLiveDisk"] == False:
             logger.info("MainStartupTools: Main().GetLinuxOSs(): Getting name and arch of current OS...")
@@ -117,6 +118,7 @@ class Main():
                 OSInfo[OSName]["Arch"] = OSArch
                 OSInfo[OSName]["Partition"] = RootFS
                 SystemInfo["CurrentOS"] = OSInfo[OSName].copy()
+                SystemInfo["UserFriendlyOSNames"].append(OSName)
 
         #Get Linux OSs.
         for Partition in LinuxPartList:
