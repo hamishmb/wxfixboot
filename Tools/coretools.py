@@ -72,7 +72,7 @@ class Main():
             #Return the return code, as well as the output.
             return (Retval, '\n'.join(LineList))
 
-    def IsMounted(self, Partition, MountPoint=None): #*** Check this works *** *** Reduce duplication maybe ***
+    def IsMounted(self, Partition, MountPoint=None): #*** Reduce duplication maybe ***
         """Checks if the given partition is mounted.
         Partition is the given partition to check.
         If MountPoint is specified, check if the partition is mounted there, rather than just if it's mounted.

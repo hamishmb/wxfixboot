@@ -23,31 +23,28 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** Check and test all of this and optimise/reorganise it again later ***
 class Main():
-    def DetermineOSArchitecture(self, Partition, Chroot): #*** Tidy this up ***
+    def DetermineOSArchitecture(self, Partition, Chroot):
         """Look for OS architecture on given partition, looking for 64-bit first, then 32-bit."""
         logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for OS on "+Partition+"...")
-        #Look for the 64-bit arch first. 
+
+        #Do setup and look for 64-bit first.
+        OSArch = None
         WantedArch = "64-bit"
 
+        cmd = "file -L /usr/bin/ld"
+
+        #If we're using chroot, add that to the command.
+        if Chroot == True:
+            cmd = "chroot /mnt"+Partition+" "+cmd
+
+        Output = CoreTools.StartProcess(cmd, ReturnOutput=True)[1] #*** Check it worked! Actually, does it matter if it didn't? ***
+
         #Use a loop to avoid duplicating code.
-        while True:
-            cmd = "file -L /usr/bin/ld"
-
-            #If we're using chroot, add that to the command.
-            if Chroot == True:
-                cmd = "chroot /mnt"+Partition+" "+cmd
-
+        while OSArch == None:
             #Now let's check if the OS uses this architecture.
-            if WantedArch in CoreTools.StartProcess(cmd, ReturnOutput=True)[1]:
-                if WantedArch == "64-bit":
-                    logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): OS on "+Partition+" is 64-bit...")
-                    OSArch = "x86_64"
-
-                else:
-                    logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): OS on "+Partition+" is 64-bit...")
-                    OSArch = "i686"
-
-                break
+            if WantedArch in Output:
+                logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): OS on "+Partition+" is "+WantedArch+"...")
+                OSArch = WantedArch
 
             elif WantedArch == "64-bit":
                 #Now look for 32-bit and restart the loop.
@@ -57,7 +54,6 @@ class Main():
             else:
                 #We couldn't find it as either 32-bit or 64-bit!
                 logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Couldn't find architecture for OS on "+Partition+"! Returning None...")
-                OSArch = None
                 break
 
         #Return the arch (or None, if we didn't find it).

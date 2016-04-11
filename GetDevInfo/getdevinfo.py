@@ -172,7 +172,7 @@ class Main():
 
         return Description
 
-    def GetPartitionScheme(self, Disk, DiskLineNumber=None): #*** Test this again ***
+    def GetPartitionScheme(self, Disk, DiskLineNumber=None):
         """Get the partition scheme for devices"""
         logger.info("GetDevInfo: Main().GetPartitionScheme(): Getting partition scheme info for Disk: "+Disk+"...")
 
@@ -223,7 +223,7 @@ class Main():
 
         return Flags
 
-    def GetFSType(self, Disk, DiskLineNumber=None): #*** Test this again ***
+    def GetFSType(self, Disk, DiskLineNumber=None):
         """Get the filesystem type for devices"""
         logger.info("GetDevInfo: Main().GetFSType(): Getting filesystem type info for Disk: "+Disk+"...")
 

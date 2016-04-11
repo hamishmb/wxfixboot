@@ -1080,7 +1080,7 @@ class MainWindow(wx.Frame):
         #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
 
         #Check if we need to prepare to install a new bootloader, and do so first if needed.
-        if MainBootloaderTools.ManageBootloaders or MainBootloaderTools.ReinstallBootloader or MainBootloaderTools.UpdateBootloader in Operations:
+        if MainBootloaderTools.ManageBootloaders in Operations or MainBootloaderTools.ReinstallBootloader in Operations or MainBootloaderTools.UpdateBootloader in Operations:
             logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding MainBootloaderTools.PrepareForBootloaderInstallation()...")
             Operations.insert(0, MainBootloaderTools.PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations *** *** Why not? *** *** Must be before these three though ***
 
@@ -2396,7 +2396,7 @@ class RestoreWindow(wx.Frame):
         else:
             self.TargetDeviceChoice.SetSelection(0)
 
-    def SelectFile(self, Event=None): #*** Start in /home here ***
+    def SelectFile(self, Event=None):
         """Grab Image path"""
         logger.debug("RestoreWindow().SelectFile(): File selection choice box changed...")
 
@@ -2416,7 +2416,7 @@ class RestoreWindow(wx.Frame):
             Restore = False
 
         elif File == "Specify File Path...":
-            Dlg = wx.FileDialog(self.Panel, "Select "+self.Type+" File...", wildcard="All Files/Devices (*)|*|GPT Backup File (*.gpt)|*.gpt|MBR Backup File (*.mbr)|*.mbr|IMG Image file (*.img)|*.img", style=wx.OPEN)
+            Dlg = wx.FileDialog(self.Panel, "Select "+self.Type+" File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|GPT Backup File (*.gpt)|*.gpt|MBR Backup File (*.mbr)|*.mbr|IMG Image file (*.img)|*.img", style=wx.OPEN)
 
             if Dlg.ShowModal() == wx.ID_OK:
                 Restore = True
@@ -2458,7 +2458,7 @@ class RestoreWindow(wx.Frame):
                 BackupType = "mbr"
                 self.MBRBackupTypeRadio.SetValue(True)
 
-            elif Temp > 512 and Temp < 20000: #*** GPT must have an exact size too! Be safer and make sure it's exactly right! ***
+            elif Temp >= 16384 and Temp < 20000: #*** Find the max size of a GPT ***
                 #Backup is GPT  
                 BackupType = "gpt"
                 self.GPTBackupTypeRadio.SetValue(True)
@@ -2796,7 +2796,7 @@ class ProgressWindow(wx.Frame):
         self.RestartButton.Enable()
         self.ExitButton.Enable()
 
-    def RestartWxFixBoot(self, Event=None): #*** Test this ***
+    def RestartWxFixBoot(self, Event=None):
         """Restart WxFixBoot"""
         logger.debug("ProgressWindow().RestartWxFixBoot(): Restarting WxFixBoot...")
         self.Hide()
@@ -2896,8 +2896,6 @@ class BackendThread(threading.Thread):
 
     def run(self):
         """Do setup, and call self.StartOperations()"""
-        time.sleep(1) #*** Why sleep here? ***
-
         #*** Temporarily do this until I switch to dictionaries ***
         #Define global var
         global KernelOptions
