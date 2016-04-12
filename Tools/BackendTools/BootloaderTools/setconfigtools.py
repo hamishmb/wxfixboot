@@ -229,17 +229,16 @@ class Main(): #*** Refactor and test all of these ***
                 SetBootDevice = True
                 head, sep, Temp = line.partition('=')
 
-                #Now let's find the ID of RootDevice.
-                ID = CoreBackendTools.GetDeviceID(Device=RootDevice)
-                if ID != "None":
+                if DiskInfo[UEFISystemPartition]["ID"] != "Unknown":
                     #Good, we've got the ID.
-                    logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+ID+"...")
+                    logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]+"...")
+
                     #Set it to RootDevice's ID.                    
-                    Temp = "/dev/disk/by-id/"+ID
+                    Temp = "/dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]
 
                 else:
                     #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
-                    logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to "+RootDevice+"! This may cause problems if the device name changes!")
+                    logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): We don't have the ID! Setting boot to "+RootDevice+". This may cause problems if the device name changes!")
                     Temp = RootDevice
 
                 #Reassemble the line.
@@ -255,12 +254,13 @@ class Main(): #*** Refactor and test all of these ***
         if SetBootDevice == False:
             #Now let's find the ID of RootDevice.
             logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+RootDevice+"'s ID if possible, else just "+RootDevice+"...")
-            ID = CoreBackendTools.GetDeviceID(Device=RootDevice)
-            if ID != "None":
+
+            if DiskInfo[UEFISystemPartition]["ID"] != "Unknown":
                 #Good, we've got the ID.
-                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+ID+"...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]+"...")
+
                 #Set it to RootDevice's ID.                    
-                Temp = "/dev/disk/by-id/"+ID
+                Temp = "/dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]
 
             else:
                 #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
@@ -311,19 +311,16 @@ class Main(): #*** Refactor and test all of these ***
                 SetUEFIPart = True
                 head, sep, Temp = line.partition('=')
 
-                #Now let's find the ID of UEFISystemPartition.
-                ID = CoreBackendTools.GetDeviceID(Device=UEFISystemPartition)
-
-                if ID != "None":
+                if DiskInfo[UEFISystemPartition]["ID"] != "Unknown":
                     #Good, we've got the ID.
-                    logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+ID+"...")
+                    logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]+"...")
 
                     #Set it to UEFISystemPartition's ID.                    
-                    Temp = "/dev/disk/by-id/"+ID
+                    Temp = "/dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]
 
                 else:
                     #Not so good... We'll have to use the partition's name, which may change, especially if we're using chroot.
-                    logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to "+UEFISystemPartition+"! This may cause problems if the device name changes!")
+                    logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): We don't have the ID! Setting boot to "+UEFISystemPartition+". This may cause problems if the device name changes!")
                     Temp = UEFISystemPartition
 
                 #Reassemble the line.
@@ -345,17 +342,17 @@ class Main(): #*** Refactor and test all of these ***
         if SetUEFIPart == False:
             #Now let's find the ID of UEFISystemPartition.
             logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+UEFISystemPartition+"'s ID if possible, else just "+UEFISystemPartition+"...")
-            ID = CoreBackendTools.GetDeviceID(Device=UEFISystemPartition)
-            if ID != "None":
+
+            if DiskInfo[UEFISystemPartition]["ID"] != "Unknown":
                 #Good, we've got the ID.
-                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+ID+"...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]+"...")
 
                 #Set it to UEFISystemPartition's ID.                    
-                Temp = "/dev/disk/by-id/"+ID
+                Temp = "/dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]
 
             else:
                 #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
-                logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to "+UEFISystemPartition+"! This may cause problems if the device name changes!")
+                logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): We don't have the ID! Setting boot to "+UEFISystemPartition+". This may cause problems if the device name changes!")
                 Temp = UEFISystemPartition
 
             NewFileContents.append("boot="+Temp+"\n")

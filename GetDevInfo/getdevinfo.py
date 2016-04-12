@@ -215,8 +215,8 @@ class Main():
         return FSType
 
     def GetUUID(self, Disk):
-        """Get the given partition's UUID""" #*** Test this again ***
-        cmd = subprocess.Popen("blkid -o list", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)    
+        """Get the given partition's UUID""" #*** Test this again *** *** Refactor ***
+        cmd = subprocess.Popen("blkid -o list", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True) #*** No need to call this for each disk. Call it once, and use it each time. ***
         Output, stderr = cmd.communicate()
         Output = Output.split('\n')
         Retval = cmd.returncode
@@ -241,6 +241,42 @@ class Main():
                 logger.warning("GetDevInfo: Main().GetUUID(): Couldn't find UUID: "+Disk+"! This may cause problems down the line.")
 
             return UUID
+
+    def GetID(self, Disk): #*** Test this again *** *** Refactor ***
+        """Retrive the given partition's/device's ID."""
+        logger.info("GetDevInfo: Main().GetID(): Getting ID for: "+Disk+"...")
+
+        cmd = subprocess.Popen("ls -l /dev/disk/by-id/", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True) #*** No need to call this for each disk. Call it once, and use it each time. ***
+        Output, stderr = cmd.communicate()
+        Output = Output.split('\n')
+        Retval = cmd.returncode
+
+        if Retval != 0:
+            #We couldn't find the ID! Return "None".
+            logger.warning("GetDevInfo: Main().GetID(): Couldn't find ID for: "+Disk+"! This may cause problems down the line.")
+            return "Unknown"
+
+        else:
+            #Try to get the ID from ls's output.
+            ID = "Unknown"
+
+            for Line in Output: #*** Tidy this up ***
+                try:
+                    SplitLine = Line.split()
+
+                    if "../../"+Disk.split('/')[-1] == SplitLine[-1]:
+                        ID = SplitLine[-3]
+
+                except:
+                    pass
+
+            if ID != "Unknown":
+                logger.info("GetDevInfo: Main().GetID(): Found ID ("+ID+") for: "+Disk+"...")
+
+            else:
+                logger.warning("GetDevInfo: Main().GetID(): Couldn't find ID for: "+Disk+"! This may cause problems down the line.")
+
+            return ID
 
     def GetInfo(self): #*** When attributes don't apply e.g. partitions for a partition/fstype for disk, set them to "N/A"/[] ***
         """Get Disk information."""
@@ -422,6 +458,9 @@ class Main():
 
             else:
                 DiskInfo[Disk]["UUID"] = "N/A"
+
+            #ID.
+            DiskInfo[Disk]["ID"] = self.GetID(Disk)
 
         #Return the info.
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")

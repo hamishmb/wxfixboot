@@ -79,37 +79,4 @@ class Main(): #*** These need refactoring and proper testing ***
 
         logger.debug("CoreBackendTools: Main().TearDownChroot(): Finished removing chroot at MountPoint: "+MountPoint+"...")
 
-    def GetDeviceID(self, Device):
-        """Retrive the given partition's/device's ID.""" #*** Will be removed/moved to startuptools soon after switching to dictionaries *** *** Give full path? ***
-        logger.info("CoreBackendTools: Main().GetDeviceID(): Getting ID for partition/device: "+Device+"...")
-
-        Temp = CoreTools.StartProcess("ls -l /dev/disk/by-id/", ShowOutput=False, ReturnOutput=True)
-        retval = Temp[0]
-        output = Temp[1].split('\n')
-
-        if retval != 0:
-            #We couldn't find the ID! Return "None".
-            logger.warning("CoreBackendTools: Main().GetDeviceID(): Couldn't find ID for partition/device: "+Device+"! This may cause problems down the line.")
-            return "None"
-
-        else:
-            #Try to get the ID from ls's output.
-            ID = "None"
-
-            for line in output:
-                try:
-                    SplitLine = line.split()
-                    if "../../"+Device.split('/')[-1] == SplitLine[-1]:
-                        ID = SplitLine[-3]
-                except:
-                    pass
-
-            if ID != "None":
-                logger.info("CoreBackendTools: Main().GetDeviceID(): Found ID ("+ID+") for partition/device: "+Device+"...")
-
-            else:
-                logger.warning("CoreBackendTools: Main().GetDeviceID(): Couldn't find ID for partition/device: "+Device+"! This may cause problems down the line.")
-
-            return ID
-
 #End main Class.
