@@ -51,7 +51,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "11/4/2016"
+ReleaseDate = "12/4/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -439,14 +439,10 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "63")
         logger.info("InitThread(): Done Mounting Core Filsystems!")
 
-        #*** Temporary abstraction code ***
-        #Define Global Variables. *** Switch to using dictionary soon ***
-        global DeviceList
+        #*** Put this somewhere else ***
+        SystemInfo["Devices"] = []
         SystemInfo["GPTDisks"] = []
         SystemInfo["MBRDisks"] = []
-
-        #DeviceList.
-        DeviceList = []
 
         Keys = DiskInfo.keys()
         Keys.sort()
@@ -454,7 +450,7 @@ class InitThread(threading.Thread):
         for Disk in Keys:
             if DiskInfo[Disk]["Type"] == "Device":
                 if Disk[5:7] in ("sd", "hd"):
-                    DeviceList.append(Disk)
+                    SystemInfo["Devices"].append(Disk)
 
             try:
                 Temp = DiskInfo[Disk]["Partitioning"]
@@ -466,8 +462,6 @@ class InitThread(threading.Thread):
                     SystemInfo["MBRDisks"].append(Temp)
 
             except: pass
-
-        logger.debug("InitThread(): *** ABSTRACTION CODE *** DeviceList Populated okay. Contents: "+', '.join(DeviceList)+"...")
 
         #*** Temporary abstraction code ***
         #Detect Linux Partitions. *** Switch to using dictionary soon ***
@@ -581,7 +575,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        AutoFirmwareType, FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        AutoFirmwareType, FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -1359,7 +1353,7 @@ class SettingsWindow(wx.Frame):
         self.DefaultOSChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=SystemInfo["UserFriendlyOSNames"])
 
         #Advanced settings
-        self.RootDeviceChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=["Auto: "+AutoRootDevice]+DeviceList)
+        self.RootDeviceChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=["Auto: "+AutoRootDevice]+SystemInfo["Devices"])
 
     def CreateSpinners(self):
         """Create the bootloader time out spinner"""
@@ -2323,7 +2317,7 @@ class RestoreWindow(wx.Frame):
     def CreateChoiceBs(self):
         """Create Choice Boxes"""
         self.BackupFileChoice = wx.Choice(self.Panel, -1, size=(150,30), choices=['-- Please Select --', 'Specify File Path...'])
-        self.TargetDeviceChoice = wx.Choice(self.Panel, -1, size=(150,30), choices=['-- Please Select --', 'Auto: '+AutoRootDevice]+DeviceList+['Specify Path...'])
+        self.TargetDeviceChoice = wx.Choice(self.Panel, -1, size=(150,30), choices=['-- Please Select --', 'Auto: '+AutoRootDevice]+SystemInfo["Devices"]+['Specify Path...'])
 
     def CreateButtons(self):
         """Create Buttons"""
@@ -2946,7 +2940,6 @@ class BackendThread(threading.Thread):
 
             #*** Essential backend tools ***
             Tools.BackendTools.essentials.RootDevice = RootDevice
-            Tools.BackendTools.essentials.DeviceList = DeviceList
             Tools.BackendTools.essentials.PartitionTableFile = PartitionTableFile
             Tools.BackendTools.essentials.PartitionTableBackupType = PartitionTableBackupType
             Tools.BackendTools.essentials.PartitionTableTargetDevice = PartitionTableTargetDevice

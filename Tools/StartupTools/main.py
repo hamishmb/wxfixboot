@@ -340,10 +340,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, LinuxPartList, DeviceList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
+    def FinalCheck(self, LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], OSInfo.
-        VarList = ('LinuxPartList', 'DeviceList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'DefaultOS', 'AutoDefaultOS', 'FirmwareType', 'AutoFirmwareType', 'UEFIVariables', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], OSInfo.
+        VarList = ('LinuxPartList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'DefaultOS', 'AutoDefaultOS', 'FirmwareType', 'AutoFirmwareType', 'UEFIVariables', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.
