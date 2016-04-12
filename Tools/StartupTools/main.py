@@ -176,15 +176,15 @@ class Main():
         if "UEFI" not in Output:
             #It's BIOS.
             logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as BIOS...")
-            FirmwareType = "BIOS"
-            AutoFirmwareType = "BIOS"
+            Settings["MainSettings"]["FirmwareType"] = "BIOS"
+            SystemInfo["DetectedFirmwareType"] = "BIOS"
             UEFIVariables = False
 
         else:
             #It's UEFI.
             logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as UEFI. Looking for UEFI Variables...")
-            FirmwareType = "UEFI"
-            AutoFirmwareType = "UEFI"
+            Settings["MainSettings"]["FirmwareType"] = "UEFI"
+            SystemInfo["DetectedFirmwareType"] = "UEFI"
 
             #Also, look for UEFI variables.
             #Make sure efivars module is loaded. If it doesn't exist, continue anyway.
@@ -218,9 +218,9 @@ class Main():
                     UEFIVariables = True
                     logger.info("MainStartupTools: Main().GetFirmwareType(): Mounted UEFI Variables at: /sys/firmware/efi/vars. Continuing...")
 
-        return FirmwareType, AutoFirmwareType, UEFIVariables
+        return UEFIVariables
 
-    def GetBootloader(self, RootDevice, SystemInfo, FirmwareType):
+    def GetBootloader(self, RootDevice, SystemInfo):
         """Determine the current bootloader."""
         #*** Do some of this for each OS *** *** Will need a LOT of modification when I switch to dictionaries ***
         logger.debug("MainStartupTools: Main().GetBootloader(): Trying to determine bootloader...")
@@ -261,7 +261,7 @@ class Main():
                 #No bootloader was found, so ask the user instead.
                 #Do a manual selection of the bootloader.
                 logger.warning("MainStartupTools: Main().GetBootloader(): Asking user what the bootloader is, as neither GRUB nor LILO was detected in MBR, and no UEFI partition was found...")
-                AutoBootloader = CoreStartupTools.ManualBootloaderSelect(UEFISystemPartition=UEFISystemPartition, FirmwareType=FirmwareType)
+                AutoBootloader = CoreStartupTools.ManualBootloaderSelect(UEFISystemPartition=UEFISystemPartition)
                 break
 
             #Mount (or skip if mounted) the UEFI partition.
@@ -293,7 +293,7 @@ class Main():
             #Obviously, no bootloader has been found.
             #Do a manual selection.
             logger.warning("MainStartupTools: Main().GetBootloader(): Asking user what the bootloader is, as no bootloader was found...")
-            AutoBootloader = CoreStartupTools.ManualBootloaderSelect(UEFISystemPartition=UEFISystemPartition, FirmwareType=FirmwareType)
+            AutoBootloader = CoreStartupTools.ManualBootloaderSelect(UEFISystemPartition=UEFISystemPartition)
 
             #The program waits until something was chosen, so if it executes this, the bootloader has been set.
             break
@@ -340,10 +340,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, FirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
+    def FinalCheck(self, LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], OSInfo.
-        VarList = ('LinuxPartList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'FirmwareType', 'UEFIVariables', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], Settings["MainSettings"]["FirmwareType"], OSInfo.
+        VarList = ('LinuxPartList', 'AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'UEFIVariables', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.
@@ -365,18 +365,15 @@ class Main():
             logger.critical("MainStartupTools: Main().FinalCheck(): Required Settings: "+', '.join(FailedList)+" have not been Determined! This is probably a bug in the program! Exiting...")
             CoreTools.EmergencyExit("The required variables: "+', '.join(FailedList)+", have not been set! WxFixBoot will now shut down to prevent damage to your system. This is probably a bug in the program.")
 
-        #*** Abstraction code ***
-        DetectedFirmwareType = SystemInfo["DetectedFirmwareType"]
-
         #Check and warn about conflicting settings. *** These aren't helpful to people who are new and just want to fix it quick. Maybe try to clarify them/automatically deal with this stuff? Perhaps avoid some of these situations completely by improving startup code *** *** Check we're doing the right things here ***
         #Firmware type warnings.
-        if FirmwareType == "BIOS" and Bootloader in ('GRUB-UEFI', 'ELILO'):
+        if Settings["MainSettings"]["FirmwareType"] == "BIOS" and Bootloader in ('GRUB-UEFI', 'ELILO'):
             logger.warning("MainStartupTools: Main().FinalCheck(): Bootloader is UEFI-type, but system firmware is BIOS! Odd, perhaps a migrated drive? Continuing and setting firmware type to UEFI...")
             DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer seems to use BIOS firmware, but you're using a UEFI-enabled bootloader! WxFixBoot reckons your firmware type was misdetected, and will now set it to UEFI. BIOS firmware does not support booting UEFI-enabled bootloaders, so if you think your firmware type actually is BIOS, it is recommended to install a BIOS-enabled bootloader instead, such as GRUB2. You can safely ignore this message if your firmware type is UEFI.")
-            DetectedFirmwareType = "UEFI"
-            FirmwareType = "UEFI"
+            SystemInfo["DetectedFirmwareType"] = "UEFI"
+            Settings["MainSettings"]["FirmwareType"] = "UEFI"
 
-        if FirmwareType == "BIOS" and SystemInfo["GPTDisks"] != []:
+        if Settings["MainSettings"]["FirmwareType"] == "BIOS" and SystemInfo["GPTDisks"] != []:
             logger.warning("MainStartupTools: Main().FinalCheck(): Firmware is BIOS, but at least one device on the system is using a gpt partition table! This device probably won't be bootable. WxFixBoot suggests repartitioning, if you intend to boot from that device.")
             DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses BIOS firmware, but you're using an incompatable partition system on at least one device! BIOS firmware will probably fail to boot your operating system, if it resides on that device, so a repartition may be necessary for that device. You can safely ignore this message if your firmware type has been misdetected, or if you aren't booting from that device.")
 
@@ -389,7 +386,5 @@ class Main():
         if HelpfulUEFIPartition == False and UEFISystemPartition != None:
             logger.warning("MainStartupTools: Main().FinalCheck(): Empty UEFI partition!")
             DialogTools.ShowMsgDlg(Kind="warning", Message="Your UEFI system partition is empty or doesn't contain any detected bootloaders. If you just created your UEFI system partition, please ensure it's formatted as fat32 or fat16 (Known as vfat in Linux), and then you may continue to install a UEFI bootloader on it. If WxFixBoot didn't detect your UEFI-enabled bootloader, it's still safe to perform operations on the bootloader.")
-
-        return DetectedFirmwareType, FirmwareType
 
 #End main Class.

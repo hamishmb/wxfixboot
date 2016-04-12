@@ -434,9 +434,11 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "60")
         logger.info("InitThread(): Finished Getting Device Information...")
 
-        #Make disk info available to modules.
+        #Make dictionaries available to modules.
         Tools.StartupTools.core.DiskInfo = DiskInfo
+        Tools.StartupTools.core.Settings = Settings
         Tools.StartupTools.main.SystemInfo = SystemInfo
+        Tools.StartupTools.main.Settings = Settings
 
         #Mount all filesystems.
         logger.info("InitThread(): Mounting Core Filesystems...")
@@ -523,14 +525,13 @@ class InitThread(threading.Thread):
 
         #Get the firmware type. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
         #Define global variables.
-        global FirmwareType
         global UEFIVariables
 
         logger.info("InitThread(): Determining Firmware Type...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining Firmware Type...")
-        FirmwareType, SystemInfo["DetectedFirmwareType"], UEFIVariables = MainStartupTools.GetFirmwareType()
+        UEFIVariables = MainStartupTools.GetFirmwareType()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "70")
-        logger.info("InitThread(): Determined Firmware Type as: "+FirmwareType)
+        logger.info("InitThread(): Determined Firmware Type as: "+Settings["MainSettings"]["FirmwareType"])
 
         #*** Temporary abstraction code ***
         #Define Global Variables.
@@ -559,14 +560,14 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(RootDevice, SystemInfo, FirmwareType)
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(RootDevice, SystemInfo)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): Bootloader is: "+Bootloader)
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        SystemInfo["DetectedFirmwareType"], FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, FirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        MainStartupTools.FinalCheck(LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -813,7 +814,7 @@ class MainWindow(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
 
-        if FirmwareType == "BIOS":
+        if Settings["MainSettings"]["FirmwareType"] == "BIOS":
             dlg = wx.MessageDialog(self.Panel, "Make sure you set the Root Device correctly here! Chances are, you won't need to change it, but it always needs to be set to the device your system boots off (usually the first hard drive in the system). You can see this information in the default OS selection in the following window. For example if your OS boots off /dev/sdc3, the root device should be set to /dev/sdc. The root device here will also be the device that's backed up if either backup option is selected. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
 
@@ -1325,7 +1326,7 @@ class SettingsWindow(wx.Frame):
         self.AdvancedSettingsText = wx.StaticText(self.Panel, -1, "Advanced Settings:")
         self.RootDeviceText = wx.StaticText(self.Panel, -1, "Root device:")
         self.BootloaderToInstallText = wx.StaticText(self.Panel, -1, "Bootloader To Install: "+BootloaderToInstall)
-        self.FirmwareTypeText = wx.StaticText(self.Panel, -1, "Selected Firmware Type: "+FirmwareType)
+        self.FirmwareTypeText = wx.StaticText(self.Panel, -1, "Selected Firmware Type: "+Settings["MainSettings"]["FirmwareType"])
 
     def CreateCBs(self):
         """Create the checkboxes"""
@@ -1573,7 +1574,7 @@ class SettingsWindow(wx.Frame):
             dlg.Destroy()
 
         #Recommend a MBR bootloader on BIOS systems.
-        if FirmwareType == "BIOS":
+        if Settings["MainSettings"]["FirmwareType"] == "BIOS":
             dlg = wx.MessageDialog(self.Panel, "Your firmware type is BIOS. Unless you're sure WxFixBoot has misdetected this, and it's actually UEFI, it's recommended that you install an BIOS bootloader, if you are installing a bootloader, such as GRUB2 or LILO, or your system might not boot correctly.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
 
         #Recommend a UEFI boot loader on UEFI systems, if needed.
@@ -1642,9 +1643,8 @@ class SettingsWindow(wx.Frame):
 
             #Reset some settings.
             global BootloaderToInstall
-            global FirmwareType
             BootloaderToInstall = "None"
-            FirmwareType = SystemInfo["DetectedFirmwareType"]
+            Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
 
         else:
             #Enable some options.
@@ -1663,7 +1663,7 @@ class SettingsWindow(wx.Frame):
 
         #Update the BootloaderToInstall and FirmwareType text.
         self.BootloaderToInstallText.SetLabel("Bootloader To Install: "+BootloaderToInstall)
-        self.FirmwareTypeText.SetLabel("Selected Firmware Type: "+FirmwareType)
+        self.FirmwareTypeText.SetLabel("Selected Firmware Type: "+Settings["MainSettings"]["FirmwareType"])
 
         #Show OptionsDlg1.
         self.Show()
@@ -1884,17 +1884,17 @@ class BootloaderOptionsWindow(wx.Frame):
             #Setup using the previous options.
             #First do options that will be set even if the current bootloader is to be reinstalled or updated.
             #Set up Firmware Type radio buttons.
-            if FirmwareType == SystemInfo["DetectedFirmwareType"]:
+            if Settings["MainSettings"]["FirmwareType"] == SystemInfo["DetectedFirmwareType"]:
                 self.UEFIFirmwareTypeRadioButton.SetValue(False)
                 self.BIOSFirmwareTypeRadioButton.SetValue(False)
                 self.AutoFirmwareTypeRadioButton.SetValue(True)
 
-            elif FirmwareType == "BIOS":
+            elif Settings["MainSettings"]["FirmwareType"] == "BIOS":
                 self.UEFIFirmwareTypeRadioButton.SetValue(False)
                 self.BIOSFirmwareTypeRadioButton.SetValue(True)
                 self.AutoFirmwareTypeRadioButton.SetValue(False)
 
-            elif FirmwareType == "UEFI":
+            elif Settings["MainSettings"]["FirmwareType"] == "UEFI":
                 self.UEFIFirmwareTypeRadioButton.SetValue(True)
                 self.BIOSFirmwareTypeRadioButton.SetValue(False)
                 self.AutoFirmwareTypeRadioButton.SetValue(False)
@@ -2110,7 +2110,7 @@ class BootloaderOptionsWindow(wx.Frame):
         AutoUEFISystemPartition = "None"
 
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(RootDevice, SystemInfo, FirmwareType)
+        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(RootDevice, SystemInfo)
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+Bootloader)
 
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
@@ -2137,7 +2137,6 @@ class BootloaderOptionsWindow(wx.Frame):
         global BootloaderToInstall
         global PrevBootloaderSetting
         global Bootloader
-        global FirmwareType
 
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Saving Options...")
 
@@ -2145,16 +2144,16 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Firmware Choice.
         if self.UEFIFirmwareTypeRadioButton.GetValue():
-            FirmwareType = "UEFI"
+            Settings["MainSettings"]["FirmwareType"] = "UEFI"
 
         elif self.BIOSFirmwareTypeRadioButton.GetValue():
-            FirmwareType = "BIOS"
+            Settings["MainSettings"]["FirmwareType"] = "BIOS"
 
         else:
             #Use auto value.
-            FirmwareType = SystemInfo["DetectedFirmwareType"]
+            Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
 
-        logger.info("BootloaderOptionsWindow().SaveBLOpts(): Value of FirmwareType is: "+FirmwareType)
+        logger.info("BootloaderOptionsWindow().SaveBLOpts(): Firmware type is: "+Settings["MainSettings"]["FirmwareType"])
 
         #Bootloader to install choice.
         #Offer some warnings here if needed. This is a little complicated, but is still fairly easy to read. *** Refactor ***
@@ -2166,15 +2165,15 @@ class BootloaderOptionsWindow(wx.Frame):
 
                     bootloadernum = BootloaderList.index(Bootloader)
 
-                    if FirmwareType == "BIOS" and Bootloader not in ('GRUB2', 'LILO', 'GRUB-LEGACY'):
+                    if Settings["MainSettings"]["FirmwareType"] == "BIOS" and Bootloader not in ('GRUB2', 'LILO', 'GRUB-LEGACY'):
                         #Find the BIOS/MBR equivalent to a UEFI bootloader.
                         BootloaderToInstall = BootloaderList[bootloadernum+1]
 
-                    elif FirmwareType == "UEFI" and Bootloader not in ('GRUB-UEFI', 'ELILO', 'GRUB-LEGACY') and UEFISystemPartition != "None":
+                    elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and Bootloader not in ('GRUB-UEFI', 'ELILO', 'GRUB-LEGACY') and UEFISystemPartition != "None":
                         #Find the EFI/UEFI equivalent to a BIOS bootloader, provided there is a UEFI partition, and it isn't GRUB-LEGACY
                         BootloaderToInstall = BootloaderList[bootloadernum-1]
 
-                    elif FirmwareType == "BIOS" and Bootloader == "GRUB-LEGACY":
+                    elif Settings["MainSettings"]["FirmwareType"] == "BIOS" and Bootloader == "GRUB-LEGACY":
                         #Recommend GRUB2 for BIOS systems using GRUB-LEGACY
                         dlg = wx.MessageDialog(self.Panel, 'Seeing as your bootloader is grub legacy, and you use BIOS firmware, the recommended bootloader for your hardware is GRUB2. If you want to install a different bootloader, click no and return to this window to manually select your bootloader. Click yes to comfirm installing GRUB2.', 'WxFixBoot -- Comfirmation', wx.YES_NO | wx.ICON_QUESTION).ShowModal()
                         if dlg == wx.ID_YES:
@@ -2183,12 +2182,12 @@ class BootloaderOptionsWindow(wx.Frame):
                             #Do nothing
                             BootloaderToInstall = "None"
 
-                    elif FirmwareType == "UEFI" and Bootloader == "GRUB-LEGACY":
+                    elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and Bootloader == "GRUB-LEGACY":
                         #Suggest GRUB-UEFI for UEFI systems using GRUB-LEGACY
                         wx.MessageDialog(self.Panel, "You have a combination of UEFI firmware and grub legacy. This is an odd combination, and WxFixBoot doesn't know what to do. If you've imaged your HDD from another system, you probably want to install GRUB-UEFI manually by returning to this window after it closes. If you manually suggested you have grub legacy earlier, please double check that was correct.", "WxFixBoot - Warning!", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
                         BootloaderToInstall = "Unknown"
 
-                    elif FirmwareType == "UEFI" and UEFISystemPartition == "None":
+                    elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and UEFISystemPartition == "None":
                         #Refuse to install a UEFI bootloader, as there is no UEFI partition.
                         wx.MessageDialog(self.Panel, "Your current bootloader to install requires a UEFI partition, which either doesn't exist or has not been selected. Please create or select a UEFI partition to install a UEFI bootloader or the operation will be cancelled.", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition).ShowModal()
                         BootloaderToInstall = "None"
@@ -2781,14 +2780,13 @@ class ProgressWindow(wx.Frame):
         MainStartupTools.SetDefaults()
 
         global Bootloader
-        global FirmwareType
         global RootFS
         global RootDevice
         global PartScheme
         global UEFISystemPartition
 
         Bootloader = AutoBootloader
-        FirmwareType = SystemInfo["DetectedFirmwareType"]
+        Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
         RootFS = AutoRootFS
         RootDevice = AutoRootDevice
         UEFISystemPartition = AutoUEFISystemPartition
@@ -3040,10 +3038,10 @@ class BackendThread(threading.Thread):
         #Do Firmware Information.
         ReportList.write("\n##########Firmware Information##########\n")
         ReportList.write("Detected firmware type: "+SystemInfo["DetectedFirmwareType"]+"\n")
-        ReportList.write("Selected Firmware Type: "+FirmwareType+"\n")
+        ReportList.write("Selected Firmware Type: "+Settings["MainSettings"]["FirmwareType"]+"\n")
         ReportList.write("UEFI System Partition (UEFI Bootloader target): "+UEFISystemPartition+"\n")
 
-        if FirmwareType == "UEFI":
+        if Settings["MainSettings"]["FirmwareType"] == "UEFI":
             ReportList.write("Found UEFI Variables: "+unicode(UEFIVariables)+"\n")
 
         #Do Bootloader information
