@@ -503,7 +503,6 @@ class InitThread(threading.Thread):
 
         #Define globals.
         global DefaultOS
-        global AutoDefaultOS
 
         Keys = OSInfo.keys()
         Keys.sort()
@@ -515,8 +514,6 @@ class InitThread(threading.Thread):
 
         else:
             DefaultOS = OS+" "+OSInfo[OS]["Arch"]+" on partition "+OSInfo[OS]["Partition"]
-
-        AutoDefaultOS = DefaultOS
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
 
@@ -575,7 +572,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        AutoFirmwareType, FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, AutoDefaultOS, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        AutoFirmwareType, FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -1451,7 +1448,6 @@ class SettingsWindow(wx.Frame):
 
             #Reset some settings.
             BootloaderToInstall = "None"
-            DefaultOS = AutoDefaultOS
 
         else:
             #Enable some options.
@@ -1657,7 +1653,6 @@ class SettingsWindow(wx.Frame):
             global DefaultOS
             BootloaderToInstall = "None"
             FirmwareType = AutoFirmwareType
-            DefaultOS = AutoDefaultOS
 
         else:
             #Enable some options.
@@ -2812,7 +2807,6 @@ class ProgressWindow(wx.Frame):
         FirmwareType = AutoFirmwareType
         RootFS = AutoRootFS
         RootDevice = AutoRootDevice
-        DefaultOS = AutoDefaultOS
         UEFISystemPartition = AutoUEFISystemPartition
 
         #Show MainWindow
