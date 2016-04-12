@@ -43,29 +43,14 @@ class Main():
 
     def IsPartition(self, Disk, DiskInfo=None):
         """Check if the given Disk is a partition"""
-        logger.debug("GetDevInfo: Main().IsPartition(): Checking if Disk: "+Disk+" is a partition...")
-
         if Disk[0:7] not in ["/dev/sr", "/dev/fd"] and Disk[-1].isdigit() and Disk[0:8] in DiskInfo:
             Result = True
 
         else:
             Result = False
 
-        logger.info("GetDevInfo: Main().IsPartition(): Result: "+str(Result)+"...")
+        logger.info("GetDevInfo: Main().IsPartition(): "+Disk+" is a partition: "+str(Result)+"...")
         return Result
-
-    def GetPartitions(self, Device, DiskInfo): #*** Might not need this ***
-        """Find and return all partitions contained by the given device"""
-        logger.debug("GetDevInfo: Main().GetPartitions(): Finding all partitions contained by "+Device+" using the given disk list...")
-        PartitionsList = []
-
-        for Disk in DiskInfo:
-            if Device != Disk and Device in Disk:
-                PartitionsList.append(Disk)
-
-        #Return the results.
-        logger.info("GetDevInfo: Main().GetPartitions(): Results: "+str(PartitionsList)+"...")
-        return PartitionsList
 
     def DeduplicateList(self, ListToDeduplicate): #*** Might not need this ***
         """Deduplicate the given list."""
@@ -82,8 +67,6 @@ class Main():
 
     def GetVendor(self, Disk, DiskLineNumber=None):
         """Find vendor information for the given Disk."""
-        logger.info("GetDevInfo: Main().GetVendor(): Getting vendor info for Disk: "+Disk+"...")
-
         #Look for the information using the Disk's line number.
         Vendor = "Unknown"
 
@@ -94,15 +77,12 @@ class Main():
                 logger.info("GetDevInfo: Main().GetVendor(): Found vendor info: "+Vendor)
                 break
 
-            else:
-                logger.warning("GetDevInfo: Main().GetVendor(): Found probable wrong vendor: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it...")
+            else: pass
 
         return Vendor
 
     def GetProduct(self, Disk, DiskInfo, DiskIsPartition, DiskLineNumber=None):
         """Find product information for the given Disk."""
-        logger.info("GetDevInfo: Main().GetProduct(): Getting product info for Disk: "+Disk+"...")
-
         #Check if the Disk is actually a partition.
         if DiskIsPartition:
             #Use the host device's product instead.
@@ -120,16 +100,13 @@ class Main():
                 logger.info("GetDevInfo: Main().GetProduct(): Found product info: "+Product+"...")
                 break
 
-            else:
-                logger.warning("GetDevInfo: Main().GetProduct(): Found probable wrong product: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it...")
+            else: pass
 
         #Return the value.
         return Product
 
     def GetSize(self, Disk, DiskLineNumber=None):
         """Find size information for the given Disk."""
-        logger.info("GetDevInfo: Main().GetSize(): Getting size info for Disk: "+Disk+"...")
-
         #Look for the information using the Disk's line number.
         Size = "Unknown"
 
@@ -148,15 +125,12 @@ class Main():
                     logger.info("GetDevInfo: Main().GetSize(): Disk is an optical drive, and getting size info isn't supported for optical drives. Returning 'N/A'...")
                     return "N/A"
 
-                else:
-                    logger.warning("GetDevInfo: Main().GetSize(): Found probable wrong size: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it...")
+                else: pass
 
         return Size
 
     def GetDescription(self, Disk, DiskLineNumber=None):
         """Find description information for the given Disk."""
-        logger.info("GetDevInfo: Main().GetDescription(): Getting description info for Disk: "+Disk+"...")
-
         #Look for the information using the Disk's line number.
         Description = "Unknown"
 
@@ -167,15 +141,12 @@ class Main():
                 logger.info("GetDevInfo: Main().GetDescription(): Found description info: "+Description+"...")
                 break
 
-            else:
-                logger.warning("GetDevInfo: Main().GetDescription(): Found probable wrong description: "+' '.join(self.Output[LineNumber].split()[1:])+". Ignoring it...")
+            else: pass
 
         return Description
 
     def GetPartitionScheme(self, Disk, DiskLineNumber=None):
         """Get the partition scheme for devices"""
-        logger.info("GetDevInfo: Main().GetPartitionScheme(): Getting partition scheme info for Disk: "+Disk+"...")
-
         #Look for the information using the Disk's line number.
         PartitionScheme = "Unknown"
 
@@ -194,18 +165,14 @@ class Main():
                     logger.info("GetDevInfo: Main().GetPartitionScheme(): Found Partition Scheme info: "+PartitionScheme+"...")
 
                 else:
-                    logger.warning("GetDevInfo: Main().GetPartitionScheme(): Found probable wrong Partition Scheme: "+self.Output[LineNumber].split(":")[-1]+". Ignoring it...")
                     PartitionScheme = "Unknown"
 
-            else:
-                logger.warning("GetDevInfo: Main().GetPartitionScheme(): Found probable wrong Partition Scheme: "+self.Output[LineNumber].split(":")[-1]+". Ignoring it...")
+            else: pass
 
         return PartitionScheme
 
     def GetFlags(self, Disk, DiskLineNumber=None): #*** Test this again ***
         """Get the flags"""
-        logger.info("GetDevInfo: Main().GetFlags(): Getting flags for Disk: "+Disk+"...")
-
         #Look for the information using the Disk's line number.
         Flags = []
 
@@ -218,15 +185,12 @@ class Main():
 
                 logger.info("GetDevInfo: Main().GetPartitionScheme(): Found flags: "+unicode(Flags)+"...")
 
-            else:
-                logger.warning("GetDevInfo: Main().GetPartitionScheme(): Found probable wrong flags: "+unicode(self.Output[LineNumber].split()[1:])+". Ignoring them...")
+            else: pass
 
         return Flags
 
     def GetFSType(self, Disk, DiskLineNumber=None):
         """Get the filesystem type for devices"""
-        logger.info("GetDevInfo: Main().GetFSType(): Getting filesystem type info for Disk: "+Disk+"...")
-
         #Look for the information using the Disk's line number.
         FSType = "Unknown"
 
@@ -246,10 +210,37 @@ class Main():
                 if FSType == "fat":
                     FSType = "vfat"
 
-            else:
-                logger.warning("GetDevInfo: Main().GetFSType(): Found probable wrong FSType: "+self.Output[LineNumber].split(":")[-1]+". Ignoring it...")
+            else: pass
 
         return FSType
+
+    def GetUUID(self, Disk):
+        """Get the given partition's UUID""" #*** Test this again ***
+        cmd = subprocess.Popen("blkid -o list", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)    
+        Output, stderr = cmd.communicate()
+        Output = Output.split('\n')
+        Retval = cmd.returncode
+
+        if Retval != 0:
+            #We couldn't find the UUID! Return "None".
+            logger.warning("GetDevInfo: Main().GetUUID(): Couldn't find UUID for: "+Disk+"! This may cause problems down the line.")
+            return "Unknown"
+
+        else:
+            #Try to get the UUID from blkid's output.
+            UUID = "Unknown"
+
+            for Line in Output:
+                if Disk in Line:
+                    UUID = Line.split()[-1]
+
+            if UUID != "Unknown":
+                logger.info("GetDevInfo: Main().GetUUID(): Found UUID ("+UUID+") for: "+Disk+"...")
+
+            else:
+                logger.warning("GetDevInfo: Main().GetUUID(): Couldn't find UUID: "+Disk+"! This may cause problems down the line.")
+
+            return UUID
 
     def GetInfo(self): #*** When attributes don't apply e.g. partitions for a partition/fstype for disk, set them to "N/A"/[] ***
         """Get Disk information."""
@@ -424,6 +415,13 @@ class Main():
 
             else:
                 DiskInfo[Disk]["FileSystem"] = "N/A"
+
+            #UUID.
+            if DiskInfo[Disk]["Type"] == "Partition":
+                DiskInfo[Disk]["UUID"] = self.GetUUID(Disk)
+
+            else:
+                DiskInfo[Disk]["UUID"] = "N/A"
 
         #Return the info.
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")

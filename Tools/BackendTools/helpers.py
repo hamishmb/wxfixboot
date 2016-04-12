@@ -322,15 +322,12 @@ class Main():
         if os.path.isdir(MountPoint+"/boot/efi") == False:
             os.makedirs(MountPoint+"/boot/efi")
 
-        #Get the UEFI System Partition's UUID. *** Will be in dictionary soon ***
-        UUID = CoreBackendTools.GetPartitionUUID(UEFISystemPartition)
-
         #Open the MountPoint/etc/fstab file for reading. If we aren't using chroot, this'll just be /etc/fstab, otherwise, /mnt/dev/sdxy/etc/fstab. Also, save its contents in a variable.
         fstab = open(MountPoint+"/etc/fstab", "r")
         NewFileContents = []
 
         for line in fstab:
-            if UEFISystemPartition in line or "UUID="+UUID in line:
+            if UEFISystemPartition in line or "UUID="+DiskInfo[UEFISystemPartition]["UUID"] in line:
                 #This fstab already has an entry for the UEFI System Partition!
                 WriteEntry = False
 
@@ -346,12 +343,12 @@ class Main():
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Writing fstab entry...")
             NewFileContents.append("\n#fstab entry for UEFI System Partition (Partition "+UEFISystemPartition+"), written by WxFixBoot.\n")
 
-            if UUID != "None":
-                logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Found UUID for UEFI Partition: "+UEFISystemPartition+". We'll use it to prevent problems down the line...")
+            if DiskInfo[UEFISystemPartition]["UUID"] != "Unknown":
+                logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Using UUID to prevent problems down the line...")
                 NewFileContents.append("UUID="+UUID+" /boot/efi vfat defaults 0 2\n")
 
             else:
-                logger.warning("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): The UUID for the UEFI Partition: "+UEFISystemPartition+" couldn't be found! This isn't good, and may cause problems down the line. Continuing anyway, using device name instead...")
+                logger.warning("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): We have no UUID for the UEFI Partition: "+UEFISystemPartition+"! This isn't good, and may cause problems down the line. Continuing anyway, using device name instead...")
                 NewFileContents.append(UEFISystemPartition+" /boot/efi vfat defaults 0 2\n")
 
             #Write the finished lines to the file.

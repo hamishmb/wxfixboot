@@ -458,20 +458,19 @@ class Main(): #*** Refactor and test all of these ***
             #Set the root device.
             #Use UUID's here if we can.
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs as a UUID if possible...")
-            UUID = CoreBackendTools.GetPartitionUUID(Partition) #*** This will be in the dictionary soon ***
 
-            if UUID == "None": #*** Warn user? ***
+            if DiskInfo[UEFISystemPartition]["UUID"] == "Unknown": #*** Warn user? ***
                 logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+Partition+"! This might not work cos it can change!")
                 NewFileContents.append("\troot="+Partition+"\n")
 
             else:
                 #If we're using ELILO, we have to do this differently for some weird reason.
-                logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+UUID+"...")
+                logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[UEFISystemPartition]["UUID"]+"...")
                 if BootloaderToInstall == "ELILO":
-                    NewFileContents.append("\troot=UUID="+UUID+"\n")
+                    NewFileContents.append("\troot=UUID="+DiskInfo[UEFISystemPartition]["UUID"]+"\n")
 
                 else:
-                    NewFileContents.append("\troot=\"UUID="+UUID+"\"\n")
+                    NewFileContents.append("\troot=\"UUID="+DiskInfo[UEFISystemPartition]["UUID"]+"\"\n")
 
             #Set the label.
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS label to "+OSName+"...")

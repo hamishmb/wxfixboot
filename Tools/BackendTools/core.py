@@ -79,35 +79,6 @@ class Main(): #*** These need refactoring and proper testing ***
 
         logger.debug("CoreBackendTools: Main().TearDownChroot(): Finished removing chroot at MountPoint: "+MountPoint+"...")
 
-    def GetPartitionUUID(self, Partition):
-        """Retrive the given partition's UUID""" #*** Will be removed/moved to startuptools soon after switching to dictionaries *** *** Give full path? ***
-        logger.info("CoreBackendTools: Main().GetPartitionUUID(): Getting UUID for partition: "+Partition+"...")
-
-        Temp = CoreTools.StartProcess("blkid -o list", ShowOutput=False, ReturnOutput=True)
-        retval = Temp[0]
-        output = Temp[1].split('\n')
-
-        if retval != 0:
-            #We couldn't find the UUID! Return "None".
-            logger.warning("CoreBackendTools: Main().GetPartitionUUID(): Couldn't find UUID for partition: "+Partition+"! This may cause problems down the line.")
-            return "None"
-
-        else:
-            #Try to get the UUID from blkid's output.
-            UUID="None"
-
-            for line in output:
-                if Partition in line:
-                    UUID=line.split()[-1]
-
-            if UUID != "None":
-                logger.info("CoreBackendTools: Main().GetPartitionUUID(): Found UUID ("+UUID+") for partition: "+Partition+"...")
-
-            else:
-                logger.warning("CoreBackendTools: Main().GetPartitionUUID(): Couldn't find UUID for partition: "+Partition+"! This may cause problems down the line.")
-
-            return UUID
-
     def GetDeviceID(self, Device):
         """Retrive the given partition's/device's ID.""" #*** Will be removed/moved to startuptools soon after switching to dictionaries *** *** Give full path? ***
         logger.info("CoreBackendTools: Main().GetDeviceID(): Getting ID for partition/device: "+Device+"...")
