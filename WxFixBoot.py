@@ -498,16 +498,13 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
         logger.info("InitThread(): Done...")
 
-        #Set default OS.
-        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting default OS...")
-
-        #Define globals.
-        global DefaultOS
+        #*** Put this somewhere else ***
+        SystemInfo["DefaultOS"] = ""
 
         Keys = OSInfo.keys()
         Keys.sort()
 
-        DefaultOS = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=Keys) #*** Get rid of this; soon to be selected on a per-bootloader basis in Bootloader Options Window ***
+        SystemInfo["DefaultOS"] = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=Keys) #*** Get rid of this; soon to be selected on a per-bootloader basis in Bootloader Options Window ***
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
 
@@ -515,7 +512,7 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): *** ABSTRACTION CODE *** Setting RootFS and RootDev...")
 
         if SystemInfo["IsLiveDisk"] == False:
-            RootFS = OSInfo[DefaultOS]["Partition"]
+            RootFS = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
             AutoRootFS = RootFS
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
@@ -566,7 +563,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        AutoFirmwareType, FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, DefaultOS, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        AutoFirmwareType, FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -1368,7 +1365,6 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().SetupOptions(): Setting up options...")
 
         global BootloaderToInstall
-        global DefaultOS
 
         #Boot Loader Time Out
         self.BootloaderTimeoutSpinner.SetValue(BootloaderTimeout)
@@ -1423,7 +1419,7 @@ class SettingsWindow(wx.Frame):
             self.InstalledBootloaderChoice.SetSelection(0)
 
         #Default OS
-        self.DefaultOSChoice.SetStringSelection(DefaultOS)
+        self.DefaultOSChoice.SetStringSelection(SystemInfo["DefaultOS"])
         
         #Root Device
         if RootDevice != AutoRootDevice:
@@ -1644,7 +1640,6 @@ class SettingsWindow(wx.Frame):
             #Reset some settings.
             global BootloaderToInstall
             global FirmwareType
-            global DefaultOS
             BootloaderToInstall = "None"
             FirmwareType = AutoFirmwareType
 
@@ -1680,7 +1675,6 @@ class SettingsWindow(wx.Frame):
         global MakeSystemSummary
         global Bootloader
         global PrevBootloaderSetting
-        global DefaultOS
         global RootDevice
         global RootFS
         global BootloaderTimeout
@@ -1755,12 +1749,12 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+Bootloader)
 
         #Default OS choicebox.
-        DefaultOS = self.DefaultOSChoice.GetStringSelection()
+        SystemInfo["DefaultOS"] = self.DefaultOSChoice.GetStringSelection()
 
-        logger.debug("SettingsWindow().SaveOptions(): Value of DefaultOS is: "+DefaultOS)
+        logger.debug("SettingsWindow().SaveOptions(): The default OS is: "+SystemInfo["DefaultOS"])
 
         #Root Filesystem.
-        RootFS = OSInfo[DefaultOS]["Partition"]
+        RootFS = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
         logger.debug("SettingsWindow().SaveOptions(): Value of RootFS is: "+RootFS)
 
         #Root device ChoiceBox
@@ -2788,7 +2782,6 @@ class ProgressWindow(wx.Frame):
         global FirmwareType
         global RootFS
         global RootDevice
-        global DefaultOS
         global PartScheme
         global UEFISystemPartition
 
@@ -2919,7 +2912,6 @@ class BackendThread(threading.Thread):
             global OSsForBootloaderInstallation
             global OSsForBootloaderRemoval
             global BootloaderToInstall
-            global DefaultOS
 
             #*** Essential backend tools ***
             Tools.BackendTools.essentials.RootDevice = RootDevice
@@ -2980,7 +2972,6 @@ class BackendThread(threading.Thread):
 
             #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.setconfigtools.RootDevice = RootDevice
-            Tools.BackendTools.BootloaderTools.setconfigtools.DefaultOS = DefaultOS
             Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderToInstall = BootloaderToInstall
             Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderTimeout = BootloaderTimeout
 
@@ -3059,7 +3050,7 @@ class BackendThread(threading.Thread):
         ReportList.write("Selected Bootloader: "+Bootloader+"\n")
 
         if BootloaderToInstall != "None":
-            #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else).
+            #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else). *** Use dictionary for DefaultOS ***
             ReportList.write("Disabled Bootloader Operations: "+unicode(DisableBootloaderOperations)+"\n")
 
             if DisableBootloaderOperations == False:

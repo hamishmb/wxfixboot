@@ -143,9 +143,8 @@ class Main(): #*** Refactor and test all of these ***
 
     def SetGRUB2DefaultOS(self, OS, PackageManager, MountPoint): #*** Make this more user-friendly ***
         """Set GRUB2's (both BIOS and EFI/UEFI) default OS to boot"""
-        #I couldn't find a reliable way of doing this automatically, so give the user a choice box instead. *** Do this before release of final v2.0, probably in the 1st or 2nd rc. Maybe use disk names and save grub's name for each one *** *** Do it sooner, cos restarting after running this won't work (the default OS isn't reset) ***
+        #I couldn't find a reliable way of doing this automatically, so give the user a choice box instead. *** Do this before release of final v2.0, probably in the 1st or 2nd rc. Maybe use disk names and save grub's name for each one ***
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Setting GRUB2's Default OS...")
-        global DefaultOS
 
         #Make a list of OSs grub2 found (hopefully all of them).
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Finding GRUB2's menu entries...")
@@ -505,7 +504,7 @@ class Main(): #*** Refactor and test all of these ***
         NewFileContents = []
 
         #Remove all of the spaces, truncating the OS name if necessary.
-        DefaultOSName = DefaultOS.replace(' ','')
+        DefaultOSName = SystemInfo["DefaultOS"].replace(' ','')
 
         #Check that the name is no longer than 15 characters.
         if len(DefaultOSName) > 15:
