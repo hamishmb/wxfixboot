@@ -507,13 +507,7 @@ class InitThread(threading.Thread):
         Keys = OSInfo.keys()
         Keys.sort()
 
-        OS = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=Keys) #*** Get rid of this; soon to be selected on a per-bootloader basis in Bootloader Options Window ***
-
-        if OSInfo[OS]["IsCurrentOS"]:
-            DefaultOS = OS+" (Current OS) "+OSInfo[OS]["Arch"]+" on partition "+OSInfo[OS]["Partition"]
-
-        else:
-            DefaultOS = OS+" "+OSInfo[OS]["Arch"]+" on partition "+OSInfo[OS]["Partition"]
+        DefaultOS = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=Keys) #*** Get rid of this; soon to be selected on a per-bootloader basis in Bootloader Options Window ***
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
 
@@ -521,7 +515,7 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): *** ABSTRACTION CODE *** Setting RootFS and RootDev...")
 
         if SystemInfo["IsLiveDisk"] == False:
-            RootFS = DefaultOS.split()[-1]
+            RootFS = OSInfo[DefaultOS]["Partition"]
             AutoRootFS = RootFS
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
@@ -1761,17 +1755,12 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+Bootloader)
 
         #Default OS choicebox.
-        OS = self.DefaultOSChoice.GetStringSelection()
-        if OSInfo[OS]["IsCurrentOS"]:
-            DefaultOS = OS+" (Current OS) "+OSInfo[OS]["Arch"]+" on partition "+OSInfo[OS]["Partition"]
-
-        else:
-            DefaultOS = OS+" "+OSInfo[OS]["Arch"]+" on partition "+OSInfo[OS]["Partition"]
+        DefaultOS = self.DefaultOSChoice.GetStringSelection()
 
         logger.debug("SettingsWindow().SaveOptions(): Value of DefaultOS is: "+DefaultOS)
 
         #Root Filesystem.
-        RootFS = OSInfo[OS]["Partition"]
+        RootFS = OSInfo[DefaultOS]["Partition"]
         logger.debug("SettingsWindow().SaveOptions(): Value of RootFS is: "+RootFS)
 
         #Root device ChoiceBox
@@ -3028,11 +3017,6 @@ class BackendThread(threading.Thread):
 
             try:
                 KernelOptions = Tools.BackendTools.main.KernelOptions
-
-            except AttributeError: pass
-
-            try:
-                DefaultOS = Tools.BackendTools.main.DefaultOS
 
             except AttributeError: pass
 
