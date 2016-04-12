@@ -380,11 +380,17 @@ class InitThread(threading.Thread):
         global DiskInfo
         global OSInfo
         global BootloaderInfo
+        global Settings
 
         SystemInfo = {}
         DiskInfo = {}
         OSInfo = {}
         BootloaderInfo = {}
+        Settings = {}
+
+        #*** Put this somewhere else ***
+        Settings["MainSettings"] = {}
+        Settings["BootloaderSettings"] = {}
 
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
@@ -498,13 +504,11 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
         logger.info("InitThread(): Done...")
 
-        #*** Put this somewhere else ***
-        SystemInfo["DefaultOS"] = ""
-
+        #*** Put this somewhere else *** *** Get rid of this; soon to be selected on a per-bootloader basis in Bootloader Options Window ***
         Keys = OSInfo.keys()
         Keys.sort()
 
-        SystemInfo["DefaultOS"] = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=Keys) #*** Get rid of this; soon to be selected on a per-bootloader basis in Bootloader Options Window ***
+        SystemInfo["DefaultOS"] = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=Keys)
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
 
@@ -520,12 +524,11 @@ class InitThread(threading.Thread):
         #Get the firmware type. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
         #Define global variables.
         global FirmwareType
-        global AutoFirmwareType
         global UEFIVariables
 
         logger.info("InitThread(): Determining Firmware Type...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining Firmware Type...")
-        FirmwareType, AutoFirmwareType, UEFIVariables = MainStartupTools.GetFirmwareType()
+        FirmwareType, SystemInfo["DetectedFirmwareType"], UEFIVariables = MainStartupTools.GetFirmwareType()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "70")
         logger.info("InitThread(): Determined Firmware Type as: "+FirmwareType)
 
@@ -563,7 +566,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        AutoFirmwareType, FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, FirmwareType, AutoFirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        SystemInfo["DetectedFirmwareType"], FirmwareType = MainStartupTools.FinalCheck(LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, FirmwareType, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -1641,7 +1644,7 @@ class SettingsWindow(wx.Frame):
             global BootloaderToInstall
             global FirmwareType
             BootloaderToInstall = "None"
-            FirmwareType = AutoFirmwareType
+            FirmwareType = SystemInfo["DetectedFirmwareType"]
 
         else:
             #Enable some options.
@@ -1829,7 +1832,7 @@ class BootloaderOptionsWindow(wx.Frame):
  
     def CreateRadios(self):
         """Create radio buttons"""
-        self.AutoFirmwareTypeRadioButton = wx.RadioButton(self.Panel, -1, "Auto: "+AutoFirmwareType, style=wx.RB_GROUP)
+        self.AutoFirmwareTypeRadioButton = wx.RadioButton(self.Panel, -1, "Auto: "+SystemInfo["DetectedFirmwareType"], style=wx.RB_GROUP)
         self.UEFIFirmwareTypeRadioButton = wx.RadioButton(self.Panel, -1, "EFI/UEFI")
         self.BIOSFirmwareTypeRadioButton = wx.RadioButton(self.Panel, -1, "BIOS/Legacy")
 
@@ -1881,7 +1884,7 @@ class BootloaderOptionsWindow(wx.Frame):
             #Setup using the previous options.
             #First do options that will be set even if the current bootloader is to be reinstalled or updated.
             #Set up Firmware Type radio buttons.
-            if FirmwareType == AutoFirmwareType:
+            if FirmwareType == SystemInfo["DetectedFirmwareType"]:
                 self.UEFIFirmwareTypeRadioButton.SetValue(False)
                 self.BIOSFirmwareTypeRadioButton.SetValue(False)
                 self.AutoFirmwareTypeRadioButton.SetValue(True)
@@ -2135,7 +2138,6 @@ class BootloaderOptionsWindow(wx.Frame):
         global PrevBootloaderSetting
         global Bootloader
         global FirmwareType
-        global AutoFirmwareType
 
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Saving Options...")
 
@@ -2150,7 +2152,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         else:
             #Use auto value.
-            FirmwareType = AutoFirmwareType
+            FirmwareType = SystemInfo["DetectedFirmwareType"]
 
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Value of FirmwareType is: "+FirmwareType)
 
@@ -2786,7 +2788,7 @@ class ProgressWindow(wx.Frame):
         global UEFISystemPartition
 
         Bootloader = AutoBootloader
-        FirmwareType = AutoFirmwareType
+        FirmwareType = SystemInfo["DetectedFirmwareType"]
         RootFS = AutoRootFS
         RootDevice = AutoRootDevice
         UEFISystemPartition = AutoUEFISystemPartition
@@ -3037,7 +3039,7 @@ class BackendThread(threading.Thread):
 
         #Do Firmware Information.
         ReportList.write("\n##########Firmware Information##########\n")
-        ReportList.write("Detected firmware type: "+AutoFirmwareType+"\n")
+        ReportList.write("Detected firmware type: "+SystemInfo["DetectedFirmwareType"]+"\n")
         ReportList.write("Selected Firmware Type: "+FirmwareType+"\n")
         ReportList.write("UEFI System Partition (UEFI Bootloader target): "+UEFISystemPartition+"\n")
 
