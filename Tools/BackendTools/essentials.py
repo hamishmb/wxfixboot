@@ -32,7 +32,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking the Internet Connection...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking the Internet Connection...###\n")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 5)
-        DisableBootloaderOperations = False
+        SystemInfo["DisableBootloaderOperations"] = False
 
         while True:
             #Test the internet connection by pinging an OpenDNS DNS server.
@@ -63,16 +63,13 @@ class Main(): #*** These need refactoring and proper testing ***
 
                 if Result == False:
                     logger.warning("EssentialBackendTools: Main().CheckInternetConnection(): Disabling bootloader operations due to bad internet connection...")
-                    DisableBootloaderOperations = True
+                    SystemInfo["DisableBootloaderOperations"] = True
                     break
 
                 else:
                     #We'll just run the loop again
                     logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
-
-        #Exit, and return with a bool stating whether or not to disable Bootloader Operations.
-        return DisableBootloaderOperations
 
     def BackupPartitionTable(self): #*** Will need modification when we switch away from the rootdevice model *** *** Can't save partition table backup file variable like this, move to settings window *** *** Handle return values *** *** Reduce duplication with function below ***
         """Backup the partition table."""

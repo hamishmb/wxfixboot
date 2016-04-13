@@ -24,14 +24,14 @@ from __future__ import unicode_literals
 class Main(): #*** Refactor and test all of these ***
     def PrepareForBootloaderInstallation(self):
         """Run checks, gather information, and prepare for bootloader operations.""" #*** Make this more customisable *** 
-        #First, check the Internet connection.
-        DisableBootloaderOperations = EssentialBackendTools.CheckInternetConnection()
+        #First, check the Internet connection, and disable bootloader operations if needed.
+        EssentialBackendTools.CheckInternetConnection()
 
         #*** Temporarily define these as global until switch to dictionaries ***
         global OSsForBootloaderRemoval
         global OSsForBootloaderInstallation
 
-        if DisableBootloaderOperations:
+        if SystemInfo["DisableBootloaderOperations"]:
             #Disable bootloader operations.
             OSsForBootloaderRemoval = []
             OSsForBootloaderInstallation = []
@@ -121,10 +121,6 @@ class Main(): #*** Refactor and test all of these ***
 
     def ReinstallBootloader(self):
         """Reinstall/fix the bootloader."""
-        #*** Temporarily define this as global until switch to dictionaries ***
-        global DisableBootloaderOperations
-        DisableBootloaderOperations = False
-
         logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Preparing to reinstall the bootloader...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to reinstall the bootloader...###\n")
 
@@ -134,7 +130,7 @@ class Main(): #*** Refactor and test all of these ***
             DialogTools.ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
-            DisableBootloaderOperations = True
+            SystemInfo["DisableBootloaderOperations"] = True
 
         else:
             #Set BootloaderToInstall as the current bootloader to allow this to work properly.
@@ -149,8 +145,6 @@ class Main(): #*** Refactor and test all of these ***
 
     def UpdateBootloader(self):
         """Update bootloader menu and config"""
-        global DisableBootloaderOperations
-        DisableBootloaderOperations = False
         logger.info("MainBootloaderTools: Main().UpdateBootloader(): Preparing to update the bootloader...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader...###\n")
 
@@ -160,7 +154,7 @@ class Main(): #*** Refactor and test all of these ***
             DialogTools.ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
-            DisableBootloaderOperations = True
+            SystemInfo["DisableBootloaderOperations"] = True
 
         else:
             #Set BootloaderToInstall as the current bootloader to allow this to work properly. *** Doesn't work because it needs to be set to tools.BackendTools.main.BootloaderToInstall ***
