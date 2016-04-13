@@ -218,20 +218,20 @@ class Main():
 
                 return OSsForBootloaderRemoval, OSsForBootloaderInstallation
 
-    def AskUserForBootloaderInstallationOSs(self, OSListWithPackageManagers, UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval): #*** Maybe move to BootloaderTools package ***
+    def AskUserForBootloaderInstallationOSs(self, UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval): #*** Maybe move to BootloaderTools package ***
         """Ask the user where the new bootloader is to be installed."""
         #*** Temporarily define this as global until switch to dictionaries ***
         global OSsForBootloaderInstallation
         OSsForBootloaderInstallation = []
 
-        if len(OSListWithPackageManagers) == 1:
+        if len(SystemInfo["OSsWithPackageManagers"]) == 1:
             if UpdateBootloader:
                 DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be updated.")
 
             else:
                 DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be removed from the following Operating Systems ("+', '.join(OSsForBootloaderRemoval)+").")
 
-            OSsForBootloaderInstallation = OSListWithPackageManagers[:]
+            OSsForBootloaderInstallation = SystemInfo["OSsWithPackageManagers"][:]
             logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Installing the new bootloader in OS(s): "+', '.join(OSsForBootloaderInstallation))
 
         else:
@@ -244,7 +244,7 @@ class Main():
                 DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be removed in all Operating Systems it is installed in ("+', '.join(OSsForBootloaderRemoval)+"). You will now be asked which Operating Systems you want your new bootloader to be installed in.")
 
                 #Make a list of candidates to install the bootloader in (only including OSes that will have their bootloaders removed).
-                BootloaderCandidatesList = OSListWithPackageManagers[:]
+                BootloaderCandidatesList = SystemInfo["OSsWithPackageManagers"][:]
 
                 logger.debug("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Contents of BootloaderCandidatesList: "+', '.join(BootloaderCandidatesList))
                 logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Asking the user which new OS to install the bootloader to...")
@@ -257,7 +257,7 @@ class Main():
         logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Finished selecting OSs! Modifying or Installing the new bootloader in: "+', '.join(OSsForBootloaderInstallation))
         return OSsForBootloaderInstallation
 
-    def FindBootloaderRemovalOSs(self, OSListWithPackageManagers, AutoRootFS, Bootloader): #*** Check this works ***
+    def FindBootloaderRemovalOSs(self, AutoRootFS, Bootloader): #*** Check this works ***
         """Find the OS(es) that currently have the bootloader installed, so we know where to remove it from."""
         logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Looking for Operating Systems that currently have the bootloader installed, to add to the removal list...")
         #*** Temporarily define this as global until switch to dictionaries ***
@@ -265,10 +265,10 @@ class Main():
 
         OSsForBootloaderRemoval = []
 
-        for OS in OSListWithPackageManagers:
-            #Grab the Package Manager and the partition the OS resides on. *** Keep this in the dictionary instead of having to do this kind of crap ***
-            PackageManager = OS.split()[-1]
-            Partition = OS.split()[-5]
+        for OS in SystemInfo["OSsWithPackageManagers"]:
+            #Grab the Package Manager and the partition the OS resides on.
+            PackageManager = OSInfo[OS]["PackageManager"]
+            Partition = OSInfo[OS]["Partition"]
 
             #Run some different instructions depending on whether the partition = AutoRootFS or not. *** Use a dictionary key to say which OS is the current one instead of doing this ***
             if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:

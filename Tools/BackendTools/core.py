@@ -22,7 +22,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Begin Main Class.
-class Main(): #*** These need refactoring and proper testing ***
+class Main(): #*** These need refactoring and proper testing *** *** Return return values in chroot functions ***
     def UpdateChrootMtab(self, MountPoint):
         """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right.""" #*** Don't copy to /etc/mtab, as this may screw up mounting in target os later. Copy to MountPoint/proc/self/mounts. Actually, /proc is bound to /MountPoint/proc. What's not working with this command?! ***
         logger.debug("CoreBackendTools: Main().UpdateChrootMtab: Updating /etc/mtab for chroot at: "+MountPoint+"...")

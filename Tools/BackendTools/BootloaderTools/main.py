@@ -44,8 +44,8 @@ class Main(): #*** Refactor and test all of these ***
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
             wx.CallAfter(ParentWindow.UpdateOutputBox,"\n###Preparing for bootloader operations...###\n")
 
-            OSListWithPackageManagers = []
-        
+            SystemInfo["OSsWithPackageManagers"] = []
+
             #Use OSInfo to find all partitions with Linux OSs on them.
             Keys = OSInfo.keys()
             Keys.sort()
@@ -61,10 +61,11 @@ class Main(): #*** Refactor and test all of these ***
                     #This is the RootFS, so don't use chroot in the given command lists.
                     APT = HelperBackendTools.LookForAPTOnPartition(APTExecCmds="which apt-get")
 
-                    #Add the OS and its package manager to the list, if there is one. *** Add this to OSInfo when moved to startup tools ***
+                    #Add the OS and its package manager to the list, if there is one.
                     if APT:
-                       logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager apt-get")
-                       OSListWithPackageManagers.append(OS+" (Current OS) "+OSInfo[OS]["Arch"]+" on partition "+Partition+" with Package Manager apt-get")
+                        logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager apt-get")
+                        OSInfo[OS]["PackageManager"] = "apt-get"
+                        SystemInfo["OSsWithPackageManagers"].append(OS)
                             
                     #Skip the rest of the for loop.
                     continue
@@ -85,12 +86,13 @@ class Main(): #*** Refactor and test all of these ***
                     #Add the OS and its package manager to the list, if there is one.
                     if APT:
                         logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager apt-get")
-                        OSListWithPackageManagers.append(OS+" "+OSInfo[OS]["Arch"]+" on partition "+Partition+" with Package Manager apt-get")
+                        OSInfo[OS]["PackageManager"] = "apt-get"
+                        SystemInfo["OSsWithPackageManagers"].append(OS)
 
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 70)
 
             #Check if there are any candidates for bootloader installation/removal. Hopefully there are!
-            if OSListWithPackageManagers == []:
+            if SystemInfo["OSsWithPackageManagers"] == []:
                 #Oh dear... There aren't.
                 logger.error("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Couldn't find an OS with APT! Will have to disable some operations!")
                 DialogTools.ShowMsgDlg(Kind="error", Message="No supported package managers could be found on any of your operating systems! At the moment, APT is supported, which covers most Linux Operating Systems. WxFixBoot will have to skip all operations that require a package manager, such as installing, removing and reinstalling the bootloader. In a later release WxFixBoot will likely support another package manager, such as Slackware's system. If you think you do have an OS with a supported package manager, please report a bug or email me directly via my Launchpad page, so I can try to help. In the meantime, you can probably follow some online instructions for your operating system.")
@@ -107,12 +109,12 @@ class Main(): #*** Refactor and test all of these ***
                 logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found at least one candidate for installing and removing bootloaders! Continuing...")
 
                 #Also, we need to find which OS(es) installed the bootloader (or have it installed currently), and ask the user which OS to install the bootloader with.
-                OSsForBootloaderRemoval = HelperBackendTools.FindBootloaderRemovalOSs(OSListWithPackageManagers, AutoRootFS, Bootloader)
+                OSsForBootloaderRemoval = HelperBackendTools.FindBootloaderRemovalOSs(AutoRootFS, Bootloader)
                 logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): List of OSs to have the bootloader removed: "+', '.join(OSsForBootloaderRemoval)+"...")
 
                 #Update Current Operation Text.
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 85)
-                OSsForBootloaderInstallation = HelperBackendTools.AskUserForBootloaderInstallationOSs(OSListWithPackageManagers, UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval)
+                OSsForBootloaderInstallation = HelperBackendTools.AskUserForBootloaderInstallationOSs(UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval)
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Done!###\n") 
