@@ -26,7 +26,6 @@
 #*** On wx 3, use custom buttons for dialogs ***
 #*** Add recovery boot options for LILO/ELILO ***
 #*** Check if LILO installs on GPT disks (GRUB does) ***
-#*** Keep partition UUIDs in Disk Info ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -51,7 +50,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "12/4/2016"
+ReleaseDate = "13/4/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -338,8 +337,8 @@ class InitialWindow(wx.Frame):
         self.ProgressText.SetLabel(Message)
         self.Panel.Layout()
 
-    def UpdateOutputBox(self, Message):
-        """Dummy function, accepts a message argument but ignores it."""
+    def UpdateOutputBox(self, Message): #*** Get rid of this later? ***
+        """Dummy function, accepts a message argument but ignores it. Allow CoreTools.StartProcess to work."""
         pass
 
     def FinishedInit(self, Event=None):
@@ -470,26 +469,21 @@ class InitThread(threading.Thread):
 
             except: pass
 
-        #*** Temporary abstraction code ***
-        #Detect Linux Partitions. *** Switch to using dictionary soon ***
-        #Define Global Variables.
-        global LinuxPartList
-        LinuxPartList = []
+        #Detect Linux Partitions. *** Move somewhere else ***
+        SystemInfo["LinuxPartitions"] = []
 
         for Disk in Keys:
             if DiskInfo[Disk]["Type"] == "Partition":
                 if DiskInfo[Disk]["FileSystem"] in ("ext", "ext2", "ext3", "ext4", "btrfs", "xfs", "jfs", "zfs", "minix", "reiserfs"):
-                    LinuxPartList.append(Disk)
+                    SystemInfo["LinuxPartitions"].append(Disk)
 
         #Check if there are any linux partitions in the list.
-        if LinuxPartList == []:
+        if SystemInfo["LinuxPartitions"] == []:
             #There are none, exit. *** Clarify this message ***
             logger.critical("InitThread(): No Linux Partitions (on HDD) of type ext(1,2,3,4), btrfs, xfs, jfs, zfs, minix or resierfs found! Exiting...")
 
             #Exit.
             CoreTools.EmergencyExit("You don't appear to have any Linux partitions on your hard disks. If you do have Linux partitions but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
-
-        logger.debug("InitThread(): *** ABSTRACTION CODE *** LinuxPartList Populated okay. Contents: "+', '.join(LinuxPartList))
 
         #Get a list of Linux OSs. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
         #Define global variables.
@@ -498,7 +492,7 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Finding Linux OSs...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Linux Operating Systems...")
-        OSInfo, SystemInfo, RootFS = MainStartupTools.GetLinuxOSs(LinuxPartList, SystemInfo)
+        OSInfo, SystemInfo, RootFS = MainStartupTools.GetLinuxOSs(SystemInfo)
 
         AutoRootFS = RootFS
 
@@ -566,7 +560,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        MainStartupTools.FinalCheck(LinuxPartList, AutoRootFS, RootFS, AutoRootDevice, RootDevice, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        MainStartupTools.FinalCheck(AutoRootFS, RootFS, AutoRootDevice, RootDevice, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -3083,7 +3077,7 @@ class BackendThread(threading.Thread):
 
         #Do Disk Information *** Use dictionary ***
         ReportList.write("\n##########Disk Information##########\n")
-        ReportList.write("Detected Linux Partitions: "+', '.join(LinuxPartList)+"\n")
+        ReportList.write("Detected Linux Partitions: "+', '.join(SystemInfo["LinuxPartitions"])+"\n")
         ReportList.write("Detected Root Filesystem (MBR bootloader target): "+AutoRootFS+"\n")
         ReportList.write("Selected Root Filesystem (MBR bootloader target): "+RootFS+"\n")
         ReportList.write("Detected Root Device (MBR Bootloader Target): "+AutoRootDevice+"\n")
