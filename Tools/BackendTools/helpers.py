@@ -51,22 +51,6 @@ class Main():
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
         return FailedList
 
-    def LookForAPTOnPartition(self, APTExecCmds): #*** Maybe move to startup tools on switch to dictionaries *** *** Does this need to be in a function? ***
-        """Look for apt using the command lists given (they include the partition, by the way)."""
-        logger.debug("HelperBackendTools: Main().LookForAPTOnPartition(): Running "+APTExecCmds+"...")
-
-        Retval = CoreTools.StartProcess(APTExecCmds, ShowOutput=False)
-
-        if Retval != 0:
-            #Couldn't find apt!
-            logger.info("HelperBackendTools: Main().LookForAPTOnPartition(): Didn't find apt...")
-            return False
-
-        else:
-            #Found APT!
-            logger.info("HelperBackendTools: Main().LookForAPTOnPartition(): Found apt...")
-            return True
-
     def LookForBootloaderOnPartition(self, Bootloader, PackageManager, MountPoint, UsingChroot): #*** Test again *** *** Maybe move this to MainStartupTools later ***
         """Look for the currently installed bootloader in the given mount point."""
         logger.debug("HelperBackendTools: Main().LookForBootloaderOnPartition(): Looking for "+Bootloader+" in "+MountPoint+"...")
