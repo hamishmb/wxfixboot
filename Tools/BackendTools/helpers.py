@@ -184,7 +184,7 @@ class Main():
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Done! Filesystems that won't be checked: "+'\n'.join(DoNotCheckList)+"...")
         return CheckList
 
-    def HandleFilesystemCheckReturnValues(self, ExecList, Retval, Partition, OSsForBootloaderRemoval, OSsForBootloaderInstallation):
+    def HandleFilesystemCheckReturnValues(self, ExecList, Retval, Partition, OSsForBootloaderRemoval):
         """Handle Filesystem Checker return codes."""
         #Return values of 1,2 or 3 happen if errors were corrected.
         if Retval in (1, 2, 3):
@@ -205,18 +205,18 @@ class Main():
             Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, WxFixBoot could become unstable, and your system could become unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?")
 
             if Result:
-                #A good choice. WxFixBoot will now disable any bootloader operations.
+                #A good choice. WxFixBoot will now disable any bootloader operations. *** Keep note of why we disabled bootloader operations here ***
                 logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User disabled bootloader operations as recommended, due to bad sectors/HDD problems/FS Checker problems...")
 
                 OSsForBootloaderRemoval = []
-                OSsForBootloaderInstallation = ["None,FSCKProblems"]
-                return OSsForBootloaderRemoval, OSsForBootloaderInstallation
+                SystemInfo["DisableBootloaderOperations"] = True
+                return OSsForBootloaderRemoval
 
             else:
                 #Seriously? Well, okay, we'll do it anyway... This is probably a very bad idea...
                 logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User ignored the warning and went ahead with bootloader modifications (if any) anyway, even with possible HDD problems/Bad sectors! This is a REALLY bad idea, but we'll do it anyway, as requested...")
 
-                return OSsForBootloaderRemoval, OSsForBootloaderInstallation
+                return OSsForBootloaderRemoval
 
     def AskUserForBootloaderInstallationOSs(self, UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval): #*** Maybe move to BootloaderTools package ***
         """Ask the user where the new bootloader is to be installed."""

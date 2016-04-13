@@ -345,11 +345,10 @@ class Main(): #*** These need refactoring and proper testing ***
                     logger.info("EssentialBackendTools: Main().QuickFileSystemCheck(): Checked partition: "+Partition+". No Errors Found!")
 
                 else:
-                    #*** Temporarily define these as global until switch to dictionaries ***
+                    #*** Temporarily define this as global until switch to dictionaries ***
                     global OSsForBootloaderRemoval
-                    global OSsForBootloaderInstallation
 
-                    #*** Disabled temporarily due to the above vars causing problems *** *** Needs to change to use strings *** OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools.HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
+                    #*** Disabled temporarily due to the above var causing problems *** *** Needs to change to use strings *** OSsForBootloaderRemoval = HelperBackendTools.HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval)
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Remounting Partition: "+Partition+" Read-Write...")
@@ -432,11 +431,10 @@ class Main(): #*** These need refactoring and proper testing ***
                     logger.info("EssentialBackendTools: Main().BadSectorCheck(): Checked partition: "+Partition+" No Errors Found!")
 
                 else:
-                    #*** Temporarily define these as global until switch to dictionaries ***
+                    #*** Temporarily define this as global until switch to dictionaries ***
                     global OSsForBootloaderRemoval
-                    global OSsForBootloaderInstallation
 
-                    #*** Disabled temporarily due to the above vars causing problems *** *** Needs to change to use strings *** OSsForBootloaderRemoval, OSsForBootloaderInstallation = HelperBackendTools.HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval, OSsForBootloaderInstallation=OSsForBootloaderInstallation)
+                    #*** Disabled temporarily due to the above vars causing problems *** *** Needs to change to use strings *** OSsForBootloaderRemoval = HelperBackendTools.HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition, OSsForBootloaderRemoval=OSsForBootloaderRemoval)
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().BadSectorCheck(): Remounting Partition: "+Partition+" Read-Write...")

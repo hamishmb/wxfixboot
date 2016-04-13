@@ -32,7 +32,7 @@ class Main(): #*** Refactor and test all of these ***
         global OSsForBootloaderInstallation
 
         if SystemInfo["DisableBootloaderOperations"]:
-            #Disable bootloader operations.
+            #Disable bootloader operations. *** Set them here, just so they are set? ***
             OSsForBootloaderRemoval = []
             OSsForBootloaderInstallation = []
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
@@ -97,9 +97,10 @@ class Main(): #*** Refactor and test all of these ***
                 logger.error("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Couldn't find an OS with APT! Will have to disable some operations!")
                 DialogTools.ShowMsgDlg(Kind="error", Message="No supported package managers could be found on any of your operating systems! At the moment, APT is supported, which covers most Linux Operating Systems. WxFixBoot will have to skip all operations that require a package manager, such as installing, removing and reinstalling the bootloader. In a later release WxFixBoot will likely support another package manager, such as Slackware's system. If you think you do have an OS with a supported package manager, please report a bug or email me directly via my Launchpad page, so I can try to help. In the meantime, you can probably follow some online instructions for your operating system.")
 
-                #Set these to "None", so the packagemanager-dependant code can skip itself.
+                #Disable bootloader operations. *** Set them here, just so they are set? ***
                 OSsForBootloaderRemoval = []
                 OSsForBootloaderInstallation = []
+                SystemInfo["DisableBootloaderOperations"] = True
 
                 #Update Current Operation Text.
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
@@ -124,13 +125,12 @@ class Main(): #*** Refactor and test all of these ***
         logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Preparing to reinstall the bootloader...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to reinstall the bootloader...###\n")
 
-        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
+        if SystemInfo["DisableBootloaderOperations"]:
             #These operations have been disabled. Notify the user and skip them.
             logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Cancelled because bootloader operations have been disabled, or the required information wasn't found...")
             DialogTools.ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
-            SystemInfo["DisableBootloaderOperations"] = True
 
         else:
             #Set BootloaderToInstall as the current bootloader to allow this to work properly.
@@ -148,13 +148,12 @@ class Main(): #*** Refactor and test all of these ***
         logger.info("MainBootloaderTools: Main().UpdateBootloader(): Preparing to update the bootloader...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader...###\n")
 
-        if OSsForBootloaderInstallation in (["None,FSCKProblems"], []):
-            #These operations have been disabled. Notify the user and skip them.
+        if SystemInfo["DisableBootloaderOperations"]:
+            #These operations have been disabled. Notify the user and skip them. *** Note why they were disabled ***
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Cancelled because bootloader operations have been disabled, or the required information wasn't found...")
             DialogTools.ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
-            SystemInfo["DisableBootloaderOperations"] = True
 
         else:
             #Set BootloaderToInstall as the current bootloader to allow this to work properly. *** Doesn't work because it needs to be set to tools.BackendTools.main.BootloaderToInstall ***

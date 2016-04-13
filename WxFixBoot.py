@@ -2934,11 +2934,6 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
             Tools.BackendTools.BootloaderTools.main.BootloaderToInstall = BootloaderToInstall
 
-            try:
-                Tools.BackendTools.BootloaderTools.main.DisableBootloaderOperations = DisableBootloaderOperations
-
-            except NameError: pass
-
             #*** Main Backend Tools ***
             Tools.BackendTools.main.BootloaderTimeout = BootloaderTimeout
             Tools.BackendTools.main.BootloaderToInstall = BootloaderToInstall
@@ -3041,10 +3036,10 @@ class BackendThread(threading.Thread):
         ReportList.write("Selected Bootloader: "+Bootloader+"\n")
 
         if BootloaderToInstall != "None":
-            #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else). *** Use dictionary for DefaultOS ***
-            ReportList.write("Disabled Bootloader Operations: "+unicode(DisableBootloaderOperations)+"\n")
+            #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else). *** Use dictionary for DefaultOS *** *** Show what we would do if they weren't disabled too ***
+            ReportList.write("Disabled Bootloader Operations: "+unicode(SystemInfo["DisableBootloaderOperations"])+"\n")
 
-            if DisableBootloaderOperations == False:
+            if SystemInfo["DisableBootloaderOperations"] == False:
                 if ReinstallBootloader:
                     ReportList.write("Reinstall/Fix The Current BootLoader: "+unicode(ReinstallBootloader)+"\n")
                     ReportList.write("Selected Bootloader To Reinstall/Fix: "+BootloaderToInstall+"\n")
