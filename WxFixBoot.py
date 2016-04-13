@@ -22,7 +22,6 @@
 #*** DevInfoTools.GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** On wx 3, use custom buttons for dialogs ***OsListWithPackaeManagers
-#*** Make sure code that uses OSsForBootloaderInstallation/Removal is modified to use the new OS format ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -2886,6 +2885,7 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.helpers.OSInfo = OSInfo
             Tools.BackendTools.helpers.SystemInfo = SystemInfo
 
+            Tools.BackendTools.main.OSInfo
             Tools.BackendTools.main.SystemInfo = SystemInfo
 
             Tools.BackendTools.BootloaderTools.main.SystemInfo = SystemInfo

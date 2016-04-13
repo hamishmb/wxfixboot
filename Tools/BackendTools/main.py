@@ -45,7 +45,7 @@ class Main():
         logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Looking for configuration in OSs marked for bootloader removal...")
         for OS in OSsForBootloaderRemoval:
             #Grab the OS's partition.
-            Partition = OS.split()[-5]
+            Partition = OSInfo[OS]["Partition"]
             logger.debug("MainBackendTools: Main().GetOldBootloaderConfig(): Looking for config in OS: "+OS+"...")
 
             #Check if the Partition is AutoRootFS, if we're not on a live disk.
@@ -184,8 +184,8 @@ class Main():
         #Loop through each OS in OSsForBootloaderRemoval, and provide information to the function that will remove the bootloader.
         for OS in OSsForBootloaderRemoval:
             #For each OS that needs the bootloader removed, grab the partition, and the package manager.
-            Partition = OS.split()[-5]
-            PackageManager = OS.split()[-1]
+            Partition = OSInfo[OS]["Partition"]
+            PackageManager = OSInfo[OS]["PackageManager"]
 
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+Bootloader+" from OS: "+OS+"...")
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing the old bootloader from OS: "+OS+"...###\n")
@@ -278,8 +278,8 @@ class Main():
         #Loop through OSsForBootloaderInstallation, and provide information to the function that will install the bootloader.
         for OS in OSsForBootloaderInstallation:
             #For each OS that needs the new bootloader installed, grab the partition, and the package manager.
-            Partition = OS.split()[-5]
-            PackageManager = OS.split()[-1]
+            Partition = OSInfo[OS]["Partition"]
+            PackageManager = OSInfo[OS]["PackageManager"]
 
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Preparing to install the new bootloader ("+BootloaderToInstall+") in OS: "+OS+"...")
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to install "+BootloaderToInstall+" in OS: "+OS+"...###\n")
@@ -398,13 +398,13 @@ class Main():
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting the new bootloader config for OS: "+OS+"...")
 
             #Grab the OS's partition and package manager.
-            Partition = OS.split()[-5]
-            PackageManager = OS.split()[-1]
+            Partition = OSInfo[OS]["Partition"]
+            PackageManager = OSInfo[OS]["PackageManager"]
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to set the new bootloaders' config for OS: "+OS+"...###\n")
 
             #Grab the architecture.
-            Arch = OS.split()[-8]
+            Arch = OSInfo[OS]["Arch"]
 
             wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Setting the new bootloader's config...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 79)
