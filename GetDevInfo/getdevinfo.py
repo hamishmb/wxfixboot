@@ -258,7 +258,7 @@ class Main():
 
         return ID
 
-    def GetInfo(self): #*** When attributes don't apply e.g. partitions for a partition/fstype for disk, set them to "N/A"/[] ***
+    def GetInfo(self, Standalone=False): #*** When attributes don't apply e.g. partitions for a partition/fstype for disk, set them to "N/A"/[] ***
         """Get Disk information."""
         logger.info("GetDevInfo: Main().GetInfo(): Preparing to get Disk info...")
 
@@ -268,7 +268,11 @@ class Main():
 
         #Get the output.
         stdout, stderr = runcmd.communicate()
-        DiskInfo = {}
+
+        if Standalone:
+            global DiskInfo
+            DiskInfo = {}
+
         logger.debug("GetDevInfo: Main().GetInfo(): Done.")
 
         #Now we should be able to grab the names of all Disks, and detailed info on each Disk we find.
@@ -452,9 +456,7 @@ class Main():
             #ID.
             DiskInfo[Disk]["ID"] = self.GetID(Disk)
 
-        #Return the info.
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
-        return DiskInfo
 
     def GetBlockSize(self, Disk): #*** Is this needed in wxfixboot? ***
         """Find the given Disk's blocksize, and return it"""
@@ -495,7 +497,7 @@ if __name__ == "__main__":
     logger = logging
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=logging.DEBUG)
 
-    DiskInfo = Main().GetInfo()
+    Main().GetInfo(Standalone=True)
 
     #Get blocksizes.
     for Disk in DiskInfo:

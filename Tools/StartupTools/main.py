@@ -47,6 +47,20 @@ class Main():
             logger.critical("MainStartupTools: Main().CheckDepends(): Dependencies missing! WxFixBoot will exit. The missing dependencies are: "+', '.join(FailedList)+". Exiting.")
             CoreTools.EmergencyExit("The following dependencies could not be found on your system: "+', '.join(FailedList)+".\n\nPlease install the missing dependencies.")
 
+    def CheckForLiveDisk(self):
+        """Try to determine if we're running on a live disk."""
+        #Detect Parted Magic automatically.
+        if "pmagic" in CoreTools.StartProcess("uname -r", ReturnOutput=True):
+            SystemInfo["IsLiveDisk"] = True
+
+        #Try to detect ubuntu-based livecds. *** Does this work for e.g. fedora based ones? ***
+        elif CoreTools.IsMounted("/cow", "/") and os.path.isfile("/cdrom/casper/filesystem.squashfs"):
+            SystemInfo["IsLiveDisk"] = True
+
+        #Ask the user if we're running on a live disk.
+        else:
+            SystemInfo["IsLiveDisk"] = DialogTools.ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", Title="WxFixBoot - Live Media?")
+
     def UnmountAllFS(self, SystemInfo):
         """Unmount any unnecessary filesystems, to prevent data corruption."""
         #Warn about removing devices. *** Fix this if possible ***

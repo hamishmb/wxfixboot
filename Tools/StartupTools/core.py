@@ -167,16 +167,16 @@ class Main():
             logger.debug("CoreStartupTools: Main().DetermineGRUBVersion(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def ManualBootloaderSelect(self, UEFISystemPartition, FirmwareType): #*** This will need modification when switching to dictionaries ***
+    def ManualBootloaderSelect(self, UEFISystemPartition): #*** This will need modification when switching to dictionaries ***
         """Presents the user with a wx.ChoiceBox to select the bootloader manually"""
         logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): Manually selecting bootloader...")
 
         #Offer different selection based on the current state of the system.
-        if UEFISystemPartition == None and FirmwareType == "UEFI":
+        if UEFISystemPartition == None and Settings["MainSettings"]["FirmwareType"] == "UEFI":
             logger.warning("CoreStartupTools: Main().ManualBootloaderSelect(): Only listing BIOS bootloaders, as there is no UEFI partition.")
             Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "LILO"])
 
-        elif UEFISystemPartition != None and FirmwareType == "UEFI":
+        elif UEFISystemPartition != None and Settings["MainSettings"]["FirmwareType"] == "UEFI":
             Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "GRUB-UEFI", "LILO", "ELILO"])
 
         else:

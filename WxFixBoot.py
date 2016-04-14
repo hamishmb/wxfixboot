@@ -386,6 +386,13 @@ class InitThread(threading.Thread):
         Settings["MainSettings"] = {}
         Settings["BootloaderSettings"] = {}
 
+        #Make dictionaries available to modules.
+        Tools.StartupTools.core.DiskInfo = DiskInfo
+        Tools.StartupTools.core.Settings = Settings
+        Tools.StartupTools.main.SystemInfo = SystemInfo
+        Tools.StartupTools.main.Settings = Settings
+        GetDevInfo.getdevinfo.DiskInfo = DiskInfo
+
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking For Dependencies...")
@@ -393,13 +400,8 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "2")
         logger.info("InitThread(): Done Checking For Dependencies!")
 
-        #Check if we're on a Live Disk. *** Ask in a separate function *** *** See if we can determine ubuntu livecd automatically ***
-        #Detect Parted Magic automatically. Ask on non-pmagic systems.
-        if "pmagic" in CoreTools.StartProcess("uname -r", ReturnOutput=True):
-            SystemInfo["IsLiveDisk"] = True
-
-        else:
-            SystemInfo["IsLiveDisk"] = DialogTools.ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", Title="WxFixBoot - Live Media?")
+        #Check if we're on a Live Disk.
+        MainStartupTools.CheckForLiveDisk()
 
         if SystemInfo["IsLiveDisk"]:
             logger.info("InitThread(): We're on a live disk...")
@@ -424,15 +426,9 @@ class InitThread(threading.Thread):
         #Get device info. *** Replaces some of the functionality used here ***
         logger.info("InitThread(): Getting Device Information...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Getting Device Information...")
-        DiskInfo = DevInfoTools.GetInfo()
+        DevInfoTools.GetInfo()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "60")
         logger.info("InitThread(): Finished Getting Device Information...")
-
-        #Make dictionaries available to modules.
-        Tools.StartupTools.core.DiskInfo = DiskInfo
-        Tools.StartupTools.core.Settings = Settings
-        Tools.StartupTools.main.SystemInfo = SystemInfo
-        Tools.StartupTools.main.Settings = Settings
 
         #Mount all filesystems.
         logger.info("InitThread(): Mounting Core Filesystems...")
