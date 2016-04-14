@@ -38,7 +38,7 @@ class Main(): #*** Refactor and test all of these ***
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
 
         else:
-            #Determine all the package managers on the system, including all OSs and the OS running, but not the live disk (if there is one). #*** Move this to startuptools *** *** Refactor ***
+            #Determine all the package managers on the system, including all OSs and the OS running, but not the live disk (if there is one). #*** Move this to startuptools ***
             logger.debug("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Determining package managers for all Linux OSs...")
             wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing for bootloader operations...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
@@ -59,55 +59,39 @@ class Main(): #*** Refactor and test all of these ***
                 if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:
                     #Find the package manager on this partition, if one exists.
                     #This is the RootFS, so don't use chroot in the given command lists.
-                    Retval = CoreTools.StartProcess("which apt-get", ShowOutput=False)
-
-                    if Retval != 0:
-                        #Couldn't find apt!
-                        logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Didn't find apt...")
-                        APT = False
-
-                    else:
-                        #Found APT!
-                        logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Found apt...")
-                        APT = True
-
-                    #Add the OS and its package manager to the list, if there is one.
-                    if APT:
-                        logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager apt-get")
-                        OSInfo[OS]["PackageManager"] = "apt-get"
-                        SystemInfo["OSsWithPackageManagers"].append(OS)
-                            
-                    #Skip the rest of the for loop.
-                    continue
-
-                #Mount the partition.
-                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint="/mnt"+Partition)
-
-                #Check if anything went wrong.
-                if Retval != 0:
-                    #Ignore this partition.
-                    logger.warning("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Failed to mount "+Partition+"! Ignoring this partition...")
+                    Cmd = "which apt-get"
 
                 else:
+                    #Mount the partition.
+                    Retval = CoreTools.MountPartition(Partition=Partition, MountPoint="/mnt"+Partition)
+
+                    #Check if anything went wrong.
+                    if Retval != 0:
+                        #Ignore this partition.
+                        logger.warning("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Failed to mount "+Partition+"! Ignoring this partition...")
+                        continue
+
                     #Find the package manager on this partition, if one exists.
                     #This isn't the RootFS, so use chroot in the given command lists.
-                    Retval = CoreTools.StartProcess("chroot /mnt"+Partition+" which apt-get", ShowOutput=False)
+                    Cmd = "chroot /mnt"+Partition+" which apt-get"
 
-                    if Retval != 0:
-                        #Couldn't find apt!
-                        logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Didn't find apt...")
-                        APT = False
+                Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
 
-                    else:
-                        #Found APT!
-                        logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Found apt...")
-                        APT = True
+                if Retval != 0:
+                    #Couldn't find apt!
+                    logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Didn't find apt...")
+                    APT = False
 
-                    #Add the OS and its package manager to the list, if there is one.
-                    if APT:
-                        logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager apt-get")
-                        OSInfo[OS]["PackageManager"] = "apt-get"
-                        SystemInfo["OSsWithPackageManagers"].append(OS)
+                else:
+                    #Found APT!
+                    logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Found apt...")
+                    APT = True
+
+                #Add the OS and its package manager to the list, if there is one.
+                if APT:
+                    logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager apt-get")
+                    OSInfo[OS]["PackageManager"] = "apt-get"
+                    SystemInfo["OSsWithPackageManagers"].append(OS)
 
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 70)
 
