@@ -503,12 +503,11 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
 
-        #Set rootfs if needed, and set root device.
-        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting RootFS and RootDev...")
+        #Set rootfs.
+        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting RootFS...")
 
-        if SystemInfo["IsLiveDisk"] == False:
-            RootFS = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
-            AutoRootFS = RootFS
+        RootFS = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
+        AutoRootFS = RootFS
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
 
@@ -527,7 +526,7 @@ class InitThread(threading.Thread):
         global AutoRootDevice
         global RootDevice
 
-        logger.info("InitThread(): *** ABSTRACTION CODE *** Determining Root Filesystem and Root Device...")
+        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting RootDev...")
 
         RootDevice = DiskInfo[RootFS]["HostDevice"]
         AutoRootDevice = RootDevice
