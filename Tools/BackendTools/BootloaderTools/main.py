@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 class Main(): #*** Refactor and test all of these ***
     def PrepareForBootloaderInstallation(self):
-        """Run checks, gather information, and prepare for bootloader operations.""" #*** Make this more customisable *** 
+        """Run checks, gather information, and prepare for bootloader operations.""" #*** Is this still needed? *** 
         #First, check the Internet connection, and disable bootloader operations if needed.
         EssentialBackendTools.CheckInternetConnection()
 
@@ -38,61 +38,10 @@ class Main(): #*** Refactor and test all of these ***
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
 
         else:
-            #Determine all the package managers on the system, including all OSs and the OS running, but not the live disk (if there is one). #*** Move this to startuptools ***
-            logger.debug("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Determining package managers for all Linux OSs...")
+            #*** This does nothing right now ***
             wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing for bootloader operations...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
             wx.CallAfter(ParentWindow.UpdateOutputBox,"\n###Preparing for bootloader operations...###\n")
-
-            SystemInfo["OSsWithPackageManagers"] = []
-
-            #Use OSInfo to find all partitions with Linux OSs on them.
-            Keys = OSInfo.keys()
-            Keys.sort()
-
-            #Start of for loop.
-            for OS in Keys:
-                #Get the partition that each OS is on.
-                Partition = OSInfo[OS]["Partition"]
-
-                #If not on a live disk, and this OS is the one running, skip some stuff.
-                if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:
-                    #Find the package manager on this partition, if one exists.
-                    #This is the RootFS, so don't use chroot in the given command lists.
-                    Cmd = "which apt-get"
-
-                else:
-                    #Mount the partition.
-                    Retval = CoreTools.MountPartition(Partition=Partition, MountPoint="/mnt"+Partition)
-
-                    #Check if anything went wrong.
-                    if Retval != 0:
-                        #Ignore this partition.
-                        logger.warning("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Failed to mount "+Partition+"! Ignoring this partition...")
-                        continue
-
-                    #Find the package manager on this partition, if one exists.
-                    #This isn't the RootFS, so use chroot in the given command lists.
-                    Cmd = "chroot /mnt"+Partition+" which apt-get"
-
-                Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
-
-                if Retval != 0:
-                    #Couldn't find apt!
-                    logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Didn't find apt...")
-                    APT = False
-
-                else:
-                    #Found APT!
-                    logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Found apt...")
-                    APT = True
-
-                #Add the OS and its package manager to the list, if there is one.
-                if APT:
-                    logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found possible package management candidate: "+OS+" with Package Manager apt-get")
-                    OSInfo[OS]["PackageManager"] = "apt-get"
-                    SystemInfo["OSsWithPackageManagers"].append(OS)
-
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 70)
 
             #Check if there are any candidates for bootloader installation/removal. Hopefully there are!

@@ -82,13 +82,14 @@ class Main():
             logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
             CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
-    def GetLinuxOSs(self, SystemInfo): #*** Refactor ***
+    def GetLinuxOSs(self, SystemInfo):
         """Get the names of all Linux OSs on the HDDs."""
         #*** Crashes at log line in InitThread().run() if we couldn't detect the current OS ***
         logger.info("MainStartupTools: Main().GetLinuxOSs(): Finding Linux operating systems...")
         RootFS = ""
         OSInfo = {}
         SystemInfo["UserFriendlyOSNames"] = []
+        SystemInfo["OSsWithPackageManagers"] = []
 
         #Get Linux OSs.
         for Partition in SystemInfo["LinuxPartitions"]:
@@ -96,10 +97,12 @@ class Main():
 
             if Partition == RootFS:
                 Cmd = "lsb_release -sd"
+                APTCmd = "which apt-get"
                 Chroot = False
 
             else:
                 Cmd = "chroot /mnt"+Partition+" lsb_release -sd"
+                APTCmd = "chroot /mnt"+Partition+" which apt-get"
                 Chroot = True
 
                 #Mount the partition and check if anything went wrong.
@@ -119,15 +122,30 @@ class Main():
             if Retval != 0 and OSArch != None:
                 OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch, AutoRootFS=AutoRootFS)
 
+            #Look for APT.
+            Retval = CoreTools.StartProcess(APTCmd, ShowOutput=False)
+
+            if Retval != 0:
+                #Couldn't find apt!
+                logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Didn't find apt...")
+                APT = False
+
+            else:
+                #Found APT!
+                logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Found apt...")
+                APT = True
+
             #Don't use elif here, so we'll also save it if CoreStartupTools.AskForOSName was used to determine the name. If it is still None, the user skipped naming it. Ignore it instead and skip the rest of the loop. *** I don't understand this, so check back later ***
-            if OSName != None and OSArch != None:
+            if OSName != None and OSArch != None and APT:
                 #Add this information to OSInfo.
                 OSInfo[OSName] = {}
                 OSInfo[OSName]["Name"] = OSName
                 OSInfo[OSName]["IsCurrentOS"] = False
                 OSInfo[OSName]["Arch"] = OSArch
                 OSInfo[OSName]["Partition"] = Partition
+                OSInfo[OSName]["PackageManager"] = "apt-get"
                 SystemInfo["UserFriendlyOSNames"].append(OSName)
+                SystemInfo["OSsWithPackageManagers"].append(OSName) #*** Get rid of this soon ***
 
                 if Chroot == False:
                     SystemInfo["CurrentOS"] = OSInfo[OSName].copy()
