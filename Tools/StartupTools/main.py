@@ -90,67 +90,49 @@ class Main():
         OSInfo = {}
         SystemInfo["UserFriendlyOSNames"] = []
 
-        if SystemInfo["IsLiveDisk"] == False:
-            logger.info("MainStartupTools: Main().GetLinuxOSs(): Getting name and arch of current OS...")
-
-            #Get the partition it's on.
-            RootFS = CoreTools.GetPartitionMountedAt("/")
-
-            Retval, Temp = CoreTools.StartProcess("lsb_release -sd", ReturnOutput=True)
-            OSName = Temp.replace('\n', '')
-
-            #Run the function to get the architechure, letting the function know that it shouldn't use chroot.
-            OSArch = CoreStartupTools.DetermineOSArchitecture(Partition=RootFS, Chroot=False)
-
-            #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name.
-            if Retval != 0 and OSArch != None:
-                #As this is the current OS, force the user to name it, or be stuck permanently in a loop.
-                OSName = None
-                while OSName == None:
-                    OSName = CoreStartupTools.AskForOSName(Partition=RootFS, OSArch=OSArch, AutoRootFS=AutoRootFS)
-
-            #If we found all of the information!
-            if OSName != "" and OSArch != None:
-                #Add this information to OSInfo and SystemInfo.
-                OSInfo[OSName] = {}
-                OSInfo[OSName]["Name"] = OSName
-                OSInfo[OSName]["IsCurrentOS"] = True
-                OSInfo[OSName]["Arch"] = OSArch
-                OSInfo[OSName]["Partition"] = RootFS
-                SystemInfo["CurrentOS"] = OSInfo[OSName].copy()
-                SystemInfo["UserFriendlyOSNames"].append(OSName)
-
         #Get Linux OSs.
         for Partition in SystemInfo["LinuxPartitions"]:
-            if Partition != RootFS:
-                #Mount the partition and check if anything went wrong.
-                logger.debug("MainStartupTools: Main().GetLinuxOSs(): Looking on "+Partition+"...")
+            logger.debug("MainStartupTools: Main().GetLinuxOSs(): Looking on "+Partition+"...")
 
+            if Partition == RootFS:
+                Cmd = "lsb_release -sd"
+                Chroot = False
+
+            else:
+                Cmd = "chroot /mnt"+Partition+" lsb_release -sd"
+                Chroot = True
+
+                #Mount the partition and check if anything went wrong.
                 if CoreTools.MountPartition(Partition=Partition, MountPoint="/mnt"+Partition) != 0:
                     #Ignore the partition.
                     logger.warning("MainStartupTools: Main().GetLinuxOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
                     continue
 
-                #Look for an OS on this partition.
-                Retval, Temp = CoreTools.StartProcess("chroot /mnt"+Partition+" lsb_release -sd", ReturnOutput=True)
-                OSName = Temp.replace('\n', '')
+            #Look for an OS on this partition.
+            Retval, Temp = CoreTools.StartProcess(Cmd, ReturnOutput=True)
+            OSName = Temp.replace('\n', '')
 
-                #Run the function to get the architechure, letting the function know that it shouldn't use chroot.
-                OSArch = CoreStartupTools.DetermineOSArchitecture(Partition=Partition, Chroot=True)
+            #Run the function to get the architechure.
+            OSArch = CoreStartupTools.DetermineOSArchitecture(Partition=Partition, Chroot=Chroot)
 
-                #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name.
-                if Retval != 0 and OSArch != None:
-                    OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch, AutoRootFS=AutoRootFS)
+            #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name. *** For current OS, quit if not named ***
+            if Retval != 0 and OSArch != None:
+                OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch, AutoRootFS=AutoRootFS)
 
-                #Don't use elif here, so we'll also save it if CoreStartupTools.AskForOSName was used to determine the name. If it is still None, the user skipped naming it. Ignore it instead and skip the rest of the loop. *** I don't understand this, so check back later ***
-                if OSName != None and OSArch != None:
-                    #Add this information to OSInfo.
-                    OSInfo[OSName] = {}
-                    OSInfo[OSName]["Name"] = OSName
-                    OSInfo[OSName]["IsCurrentOS"] = False
-                    OSInfo[OSName]["Arch"] = OSArch
-                    OSInfo[OSName]["Partition"] = Partition
+            #Don't use elif here, so we'll also save it if CoreStartupTools.AskForOSName was used to determine the name. If it is still None, the user skipped naming it. Ignore it instead and skip the rest of the loop. *** I don't understand this, so check back later ***
+            if OSName != None and OSArch != None:
+                #Add this information to OSInfo.
+                OSInfo[OSName] = {}
+                OSInfo[OSName]["Name"] = OSName
+                OSInfo[OSName]["IsCurrentOS"] = False
+                OSInfo[OSName]["Arch"] = OSArch
+                OSInfo[OSName]["Partition"] = Partition
+                SystemInfo["UserFriendlyOSNames"].append(OSName)
 
+                if Chroot == False:
+                    SystemInfo["CurrentOS"] = OSInfo[OSName].copy()
+
+            if Chroot:
                 #Unmount the filesystem.
                 if CoreTools.Unmount("/mnt"+Partition) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
                     logger.error("MainStartupTools: Main().GetLinuxOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
