@@ -445,7 +445,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
                 #We can't make an entry for this OS. Warn the user. *** Check this beforehand ***
                 logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Couldn't find /initrd.img for "+OS+"! Telling the user we can't make an entry...")
 
-                Result = DialogTools.ShowYesNoDlg(Message="Warning: /initrd.img (shortcut to the latest Initial Filesystem) wasn't found for: "+OS+"! Unfortunately, this means WxFixBoot can't make a bootloader entry for this OS. Click okay to continue.", Title="WxFixBoot - Add OS to boot menu?")
+                Result = DialogTools.ShowMsgDlg(Message="Warning: /initrd.img (shortcut to the latest Initial Filesystem) wasn't found for: "+OS+"! Unfortunately, this means WxFixBoot can't make a bootloader entry for this OS. Click okay to continue.", Title="WxFixBoot - Add OS to boot menu?")
 
                 #Okay, delete the last entry, so we don't have an unconfigured image, and then go back to the start of the loop.
                 logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Deleting the unconfigured image, and skipping this OS...")

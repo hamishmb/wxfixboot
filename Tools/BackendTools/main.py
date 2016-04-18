@@ -140,7 +140,7 @@ class Main():
         if len(KernelOptsList) == 0:
             #No kernel options were found!
             #Ask the user to use WxFixBoot's default, or do manual config.
-            Result = DialogTools.ShowYesNoDlg(Message="WxFixBoot couldn't find the current bootloader's default kernel options. Do you want to use WxFixBoot's default options? You should click yes and use the defaults, which are almost always fine. However, if you know exactly what you're doing, you can click no, and modify them yourself.", Title="WxFixBoot - Use Default Kernel Options?")
+            Result = DialogTools.ShowYesNoDlg(Message="WxFixBoot couldn't find the current bootloader's default kernel options. Do you want to use WxFixBoot's default options? Unless you know exactly what you're doing, you should use the defaults, which are almost always fine. However, if you want to, you can click no, and modify them yourself, but otherwise click yes.", Title="WxFixBoot - Use Default Kernel Options?", Buttons=("I do", "I don't"))
 
             if Result:
                 KernelOptions = "quiet splash nomodeset"

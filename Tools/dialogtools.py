@@ -59,10 +59,19 @@ class Main():
         while self.DlgClosed == None:
             time.sleep(0.5)
 
-    def ShowThreadYesNoDlg(self, msg, title="WxFixBoot - Question"):
+    def ShowThreadYesNoDlg(self, msg, title="WxFixBoot - Question", buttons=(None, None)):
         """Shows a yes/no dialog from a thread upon instruction"""
         logger.debug("DialogTools: Main().ShowThreadYesNoDlg(): Showing Thread Yes/No Dialog...")
         dlg = wx.MessageDialog(ParentWindow.Panel, msg, title, wx.YES_NO | wx.ICON_QUESTION)
+
+        #Try to set custom buttons labels if needed (handle attribute error on wx 2.8.11).
+        if buttons != (None, None):
+            try:
+                if dlg.SetYesNoLabels(buttons[0], button[1]):
+                    #If it worked get rid of the last unneccessary sentence in the message.
+                    dlg.SetMessage(' '.join(msg.split(".")[0:-1]))
+
+            except AttributeError: pass
 
         #Where possible, destroy just before setting self.DlgResult to avoid potential race conditions.
         if dlg.ShowModal() == wx.ID_YES:
@@ -75,15 +84,16 @@ class Main():
 
         logger.debug("DialogTools: Main().ShowThreadYesNoDlg(): Result of Thread Yes/No Dialog was: "+unicode(self.DlgResult))
 
-    def ShowYesNoDlg(self, Message, Title="WxFixBoot - Question"):
+    def ShowYesNoDlg(self, Message, Title="WxFixBoot - Question", Buttons=(None, None)): #*** Test custom buttons work and are in the right order ***
         """Handle showing thread yes/no dialogs, reducing code duplication and compilications and errors.
         It can be used like this: DialogTools().ShowYesNoDlg(Message=<message>, Title=<title>)
         Message is whatever you want the dialog to say.
+        Buttons is the text for the button labels.
         Title sets the title bar text on the dialog.
         """
         self.DlgResult = None
 
-        wx.CallAfter(self.ShowThreadYesNoDlg, msg=Message, title=Title)
+        wx.CallAfter(self.ShowThreadYesNoDlg, msg=Message, title=Title, buttons=Buttons)
 
         #Trap the thread until the user responds.
         while self.DlgResult == None:

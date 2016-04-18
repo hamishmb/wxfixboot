@@ -143,7 +143,7 @@ class Main(): #*** Refactor and test all of these ***
         else:
             #Bootloader installation failed for at least one OS! *** Clarify this message with better info ***
             logger.error("MainBootloaderTools(): Main().ManageBootloaders(): Failed to install new bootloader in at least one OS! Asking user whether to continue with configuration or not...")
-            Result = DialogTools.ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Do you want to continue and configure the new bootloader(s), or skip the rest of the bootloader operations? You probably want to configure the bootloader anyway.", Title="WxFixBoot - Configure Bootloader(s)?")
+            Result = DialogTools.ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Please tell WxFixBoot what to do now. Click Yes to configure bootloaders anyway, and no to skip configuration.", Title="WxFixBoot - Configure Bootloader(s)?", Buttons=("Configure Bootloaders Anyway", "Skip Bootloader Configuration"))
 
             if Result:
                 #Continue and configure bootloaders. Otherwise, do nothing.

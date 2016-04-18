@@ -21,7 +21,6 @@
 #*** Test DialogTools.ShowMultiChoiceDlg() ***
 #*** DevInfoTools.GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
 #*** Figure out what to do in each instance where something might fail ***
-#*** On wx 3, use custom buttons for dialogs ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -2153,9 +2152,10 @@ class BootloaderOptionsWindow(wx.Frame):
 
                     elif Settings["MainSettings"]["FirmwareType"] == "BIOS" and Bootloader == "GRUB-LEGACY":
                         #Recommend GRUB2 for BIOS systems using GRUB-LEGACY
-                        dlg = wx.MessageDialog(self.Panel, 'Seeing as your bootloader is grub legacy, and you use BIOS firmware, the recommended bootloader for your hardware is GRUB2. If you want to install a different bootloader, click no and return to this window to manually select your bootloader. Click yes to comfirm installing GRUB2.', 'WxFixBoot -- Comfirmation', wx.YES_NO | wx.ICON_QUESTION).ShowModal()
+                        dlg = wx.MessageDialog(self.Panel, 'Seeing as your bootloader is grub legacy, and you use BIOS firmware, the recommended bootloader for your hardware is GRUB2. If you want to install a different bootloader, click no and return to this window to manually select your bootloader. Do you want to install GRUB2?', 'WxFixBoot -- Comfirmation', wx.YES_NO | wx.ICON_QUESTION).ShowModal()
                         if dlg == wx.ID_YES:
                             BootloaderToInstall = "GRUB2"
+
                         else:
                             #Do nothing
                             BootloaderToInstall = "None"
