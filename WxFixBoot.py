@@ -2889,7 +2889,6 @@ class BackendThread(threading.Thread):
             #*** Define globals so if they're assigned to here, python won't think they're local. ***
             global BootloaderTimeout
             global KernelOptions
-            global OSsForBootloaderInstallation
             global BootloaderToInstall
 
             #*** Essential backend tools ***
@@ -2903,17 +2902,7 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.essentials.UEFISystemPartition = UEFISystemPartition
             Tools.BackendTools.essentials.AutoRootFS = AutoRootFS
 
-            try:
-                Tools.BackendTools.essentials.OSsForBootloaderInstallation = OSsForBootloaderInstallation
-
-            except NameError: pass
-
             #*** Main Bootloader Tools (in Backend Tools package) ***
-            try:
-                Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
-
-            except NameError: pass
-
             Tools.BackendTools.BootloaderTools.main.AutoRootFS = AutoRootFS
             Tools.BackendTools.BootloaderTools.main.Bootloader = Bootloader
             Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
@@ -2926,11 +2915,6 @@ class BackendThread(threading.Thread):
 
             try:
                 Tools.BackendTools.main.KernelOptions = KernelOptions
-
-            except NameError: pass
-
-            try:
-                Tools.BackendTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
 
             except NameError: pass
 
@@ -2955,18 +2939,7 @@ class BackendThread(threading.Thread):
             function()
 
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set the vars global to this file) ***
-            #*** Essential backend tools ***
-            try:
-                OSsForBootloaderInstallation = Tools.BackendTools.essentials.OSsForBootloaderInstallation
-
-            except AttributeError: pass
-  
             #*** Main Bootloader Tools (in Backend Tools package) ***
-            try:
-                OSsForBootloaderInstallation = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation
-
-            except AttributeError: pass
-
             try:
                 BootloaderToInstall = Tools.BackendTools.BootloaderTools.main.BootloaderToInstall
 
@@ -3026,7 +2999,7 @@ class BackendThread(threading.Thread):
                 if ReinstallBootloader:
                     ReportList.write("Reinstall/Fix The Current BootLoader: "+unicode(ReinstallBootloader)+"\n")
                     ReportList.write("Selected Bootloader To Reinstall/Fix: "+BootloaderToInstall+"\n")
-                    ReportList.write("Reinstall/Fix bootloader in: "+', '.join(OSsForBootloaderInstallation)+"\n")
+                    ReportList.write("Reinstall/Fix bootloader in: "+', '.join(OSsForBootloaderInstallation)+"\n") #*** Use dictionary ***
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
                     ReportList.write("\tDefault OS: "+DefaultOS+"\n")
                     ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")

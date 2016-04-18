@@ -27,13 +27,10 @@ class Main(): #*** Refactor and test all of these ***
         #First, check the Internet connection, and disable bootloader operations if needed.
         EssentialBackendTools.CheckInternetConnection()
 
-        #*** Temporarily define these as global until switch to dictionaries ***
-        global OSsForBootloaderInstallation
-
         if SystemInfo["DisableBootloaderOperations"]:
             #Disable bootloader operations. *** Set them here, just so they are set? ***
             SystemInfo["OSsForBootloaderRemoval"] = []
-            OSsForBootloaderInstallation = []
+            SystemInfo["OSsForBootloaderInstallation"] = []
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
 
         else:
@@ -51,7 +48,7 @@ class Main(): #*** Refactor and test all of these ***
 
                 #Disable bootloader operations. *** Set them here, just so they are set? ***
                 SystemInfo["OSsForBootloaderRemoval"] = []
-                OSsForBootloaderInstallation = []
+                SystemInfo["OSsForBootloaderInstallation"] = []
                 SystemInfo["DisableBootloaderOperations"] = True
 
                 #Update Current Operation Text.
@@ -67,7 +64,7 @@ class Main(): #*** Refactor and test all of these ***
 
                 #Update Current Operation Text.
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 85)
-                OSsForBootloaderInstallation = HelperBackendTools.AskUserForBootloaderInstallationOSs(UpdateBootloader, ReinstallBootloader)
+                HelperBackendTools.AskUserForBootloaderInstallationOSs(UpdateBootloader, ReinstallBootloader)
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Done!###\n") 

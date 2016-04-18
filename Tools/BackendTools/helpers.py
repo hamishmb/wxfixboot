@@ -201,9 +201,7 @@ class Main():
 
     def AskUserForBootloaderInstallationOSs(self, UpdateBootloader, ReinstallBootloader): #*** Maybe move to BootloaderTools package ***
         """Ask the user where the new bootloader is to be installed."""
-        #*** Temporarily define this as global until switch to dictionaries ***
-        global OSsForBootloaderInstallation
-        OSsForBootloaderInstallation = []
+        SystemInfo["OSsForBootloaderInstallation"] = []
 
         if len(SystemInfo["OSsWithPackageManagers"]) == 1:
             if UpdateBootloader:
@@ -212,13 +210,13 @@ class Main():
             else:
                 DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be removed from the following Operating Systems ("+', '.join(SystemInfo["OSsForBootloaderRemoval"])+").")
 
-            OSsForBootloaderInstallation = SystemInfo["OSsWithPackageManagers"][:]
-            logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Installing the new bootloader in OS(s): "+', '.join(OSsForBootloaderInstallation))
+            SystemInfo["OSsForBootloaderInstallation"] = SystemInfo["OSsWithPackageManagers"][:]
+            logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Installing the new bootloader in OS(s): "+', '.join(SystemInfo["OSsForBootloaderInstallation"]))
 
         else:
             if UpdateBootloader or ReinstallBootloader:
                 DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be updated or reinstalled in all Operating Systems it is installed in ("+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"). Click okay to continue.")
-                OSsForBootloaderInstallation = SystemInfo["OSsForBootloaderRemoval"][:]
+                SystemInfo["OSsForBootloaderInstallation"] = SystemInfo["OSsForBootloaderRemoval"][:]
 
             else: #*** Check all this works ***
                 logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): There is more than one Operating System with a supported package manager. Asking the user which ones to install the new bootloader in...")
@@ -231,12 +229,11 @@ class Main():
                 logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Asking the user which new OS to install the bootloader to...")
 
                 #Ask the user which candidate(s) to use for bootloader installation. *** Is this bad advice? ***
-                OSsForBootloaderInstallation = DialogTools.ShowMultiChoiceDlg(Message="Please select each OS you'd like to modify or install the bootloader to.\nIdeally, select the ones that you use most frequently.", Title="WxFixBoot - Select Operating Systems For Bootloader Installation", Choices=BootloaderCandidatesList)
+                SystemInfo["OSsForBootloaderInstallation"] = DialogTools.ShowMultiChoiceDlg(Message="Please select each OS you'd like to modify or install the bootloader to.\nIdeally, select the ones that you use most frequently.", Title="WxFixBoot - Select Operating Systems For Bootloader Installation", Choices=BootloaderCandidatesList)
 
                 logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): User selected: "+Result+"...")
 
-        logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Finished selecting OSs! Modifying or Installing the new bootloader in: "+', '.join(OSsForBootloaderInstallation))
-        return OSsForBootloaderInstallation
+        logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Finished selecting OSs! Modifying or Installing the new bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"]))
 
     def FindBootloaderRemovalOSs(self, AutoRootFS, Bootloader): #*** Check this works ***
         """Find the OS(es) that currently have the bootloader installed, so we know where to remove it from."""
