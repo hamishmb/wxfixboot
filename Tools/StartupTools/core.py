@@ -59,11 +59,11 @@ class Main():
         #Return the arch (or None, if we didn't find it).
         return OSArch
 
-    def AskForOSName(self, Partition, OSArch, AutoRootFS):
-        """Ask the user if an OS exists on the given partition.""" #*** There might be a better way of doing this *** *** Will need modification at time of switch to dictionaries as it uses AutoRootFS ***
+    def AskForOSName(self, Partition, OSArch):
+        """Ask the user if an OS exists on the given partition.""" #*** There might be a better way of doing this ***
         logger.info("CoreStartupTools: Main().AskForOSName(): Asking the user for the name of the OS in "+Partition+"...")
 
-        if Partition == AutoRootFS:
+        if Partition == SystemInfo["RootFS"]:
             DialogTools.ShowMsgDlg(Kind="warning", Message="WxFixBoot couldn't find the name of the current OS. Please name it so that WxFixBoot can function correctly.")
             Result = True
 

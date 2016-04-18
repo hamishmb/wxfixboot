@@ -290,7 +290,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to do the Quick Filesystem Check...###\n")
 
         #Determine which partitions are to be checked.
-        CheckList = HelperBackendTools.FindCheckableFileSystems(AutoRootFS=AutoRootFS)
+        CheckList = HelperBackendTools.FindCheckableFileSystems()
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30)
 
         #Find the length of the list (this is needed to update the progressbars).
@@ -369,7 +369,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to do the Bad Sector Check...###\n")
 
         #Determine which partitions are to be checked.
-        CheckList = HelperBackendTools.FindCheckableFileSystems(AutoRootFS=AutoRootFS)
+        CheckList = HelperBackendTools.FindCheckableFileSystems()
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30)
 
         #Find the length of the list (this is needed to update the progressbars).

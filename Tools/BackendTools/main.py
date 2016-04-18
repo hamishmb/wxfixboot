@@ -48,8 +48,8 @@ class Main():
             Partition = OSInfo[OS]["Partition"]
             logger.debug("MainBackendTools: Main().GetOldBootloaderConfig(): Looking for config in OS: "+OS+"...")
 
-            #Check if the Partition is AutoRootFS, if we're not on a live disk.
-            if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:
+            #Check if the Partition is RootFS, if we're not on a live disk.
+            if SystemInfo["IsLiveDisk"] == False and Partition == SystemInfo["RootFS"]:
                 #If so, make sure this will work for this OS too, and avoid setting mountpoint, so the config instructions below look in the right place for the config files.
                 MountPoint = ""
 
@@ -190,8 +190,8 @@ class Main():
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+Bootloader+" from OS: "+OS+"...")
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing the old bootloader from OS: "+OS+"...###\n")
             
-            #If we're not on a live disk, and the partition is AutoRootFS, let the remover function know that we aren't using chroot.
-            if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:
+            #If we're not on a live disk, and the partition is RootFS, let the remover function know that we aren't using chroot.
+            if SystemInfo["IsLiveDisk"] == False and Partition == SystemInfo["RootFS"]:
                 logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Modifying current OS so not using chroot...")
                 UseChroot = False
                 UnmountAfter = False
@@ -285,8 +285,8 @@ class Main():
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to install "+BootloaderToInstall+" in OS: "+OS+"...###\n")
             wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to install the new bootloader(s)...")
 
-            #If we're not on a live disk, and the partition is AutoRootFS, let the installer functions know that we aren't using chroot.
-            if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:
+            #If we're not on a live disk, and the partition is RootFS, let the installer functions know that we aren't using chroot.
+            if SystemInfo["IsLiveDisk"] == False and Partition == SystemInfo["RootFS"]:
                 logger.debug("MainBackendTools: Main().InstallNewBootloader(): Modifying current OS so not using chroot...")
                 UseChroot = False
                 UnmountAfter = False
@@ -410,8 +410,8 @@ class Main():
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 79)
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Setting the new bootloader's config for OS: "+OS+"...###\n")
 
-            #Check if the Partition is AutoRootFS, if we're not on a live disk.
-            if SystemInfo["IsLiveDisk"] == False and Partition == AutoRootFS:
+            #Check if the Partition is RootFS, if we're not on a live disk.
+            if SystemInfo["IsLiveDisk"] == False and Partition == SystemInfo["RootFS"]:
                 logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're modifying the current OS...")
                 #If so, make sure this will work for this OS too, and avoid setting mountpoint, so the config instructions below look in the right place for the config files.
                 MountPoint = ""

@@ -341,7 +341,9 @@ class InitialWindow(wx.Frame):
         logger.info("Closing Initial Window and Starting Main Window...")
 
         #Show the user some important information
-        wx.MessageDialog(self.Panel, "Make sure you have a working internet connection before performing any operations. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
+        dlg = wx.MessageDialog(self.Panel, "Make sure you have a working internet connection before performing any operations. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+        dlg.ShowModal()
+        dlg.Destroy()
 
         MainGUI = MainWindow()
         app.SetTopWindow(MainGUI)
@@ -387,7 +389,9 @@ class InitThread(threading.Thread):
 
         #Make dictionaries available to modules.
         Tools.StartupTools.core.DiskInfo = DiskInfo
+        Tools.StartupTools.core.SystemInfo = SystemInfo
         Tools.StartupTools.core.Settings = Settings
+        Tools.StartupTools.main.DiskInfo = DiskInfo #*** Temporary cos of MainStartupTools.SortSomeInfo() ***
         Tools.StartupTools.main.SystemInfo = SystemInfo
         Tools.StartupTools.main.Settings = Settings
         GetDevInfo.getdevinfo.DiskInfo = DiskInfo
@@ -400,7 +404,11 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Done Checking For Dependencies!")
 
         #Check if we're on a Live Disk.
+        logger.info("InitThread(): Checking For Live Disk...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking For Live Disk...")
         MainStartupTools.CheckForLiveDisk()
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "4")
+        logger.info("InitThread(): Done Checking For Live Disk!")
 
         #Unmount all filesystems, to avoid any data corruption.
         logger.info("InitThread(): Unmounting Filesystems...")
@@ -416,12 +424,15 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "15")
         logger.info("InitThread(): Filesystems Checked!")
 
-        #Get device info. *** Replaces some of the functionality used here ***
+        #Get device info.
         logger.info("InitThread(): Getting Device Information...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Getting Device Information...")
         DevInfoTools.GetInfo()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "60")
         logger.info("InitThread(): Finished Getting Device Information...")
+
+        #Sort some info. *** Move it again later ***
+        MainStartupTools.SortSomeInfo()
 
         #Mount all filesystems.
         logger.info("InitThread(): Mounting Core Filesystems...")
@@ -429,38 +440,6 @@ class InitThread(threading.Thread):
         MainStartupTools.MountCoreFS()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "63")
         logger.info("InitThread(): Done Mounting Core Filsystems!")
-
-        #*** Put this somewhere else ***
-        SystemInfo["Devices"] = []
-        SystemInfo["GPTDisks"] = []
-        SystemInfo["MBRDisks"] = []
-
-        Keys = DiskInfo.keys()
-        Keys.sort()
-
-        for Disk in Keys:
-            if DiskInfo[Disk]["Type"] == "Device":
-                if Disk[5:7] in ("sd", "hd"):
-                    SystemInfo["Devices"].append(Disk)
-
-            try:
-                Temp = DiskInfo[Disk]["Partitioning"]
-
-                if Temp == "gpt":
-                    SystemInfo["GPTDisks"].append(Temp)
-
-                else:
-                    SystemInfo["MBRDisks"].append(Temp)
-
-            except: pass
-
-        #Detect Linux Partitions. *** Move somewhere else ***
-        SystemInfo["LinuxPartitions"] = []
-
-        for Disk in Keys:
-            if DiskInfo[Disk]["Type"] == "Partition":
-                if DiskInfo[Disk]["FileSystem"] in ("ext", "ext2", "ext3", "ext4", "btrfs", "xfs", "jfs", "zfs", "minix", "reiserfs"):
-                    SystemInfo["LinuxPartitions"].append(Disk)
 
         #Check if there are any linux partitions in the list.
         if SystemInfo["LinuxPartitions"] == []:
@@ -470,33 +449,24 @@ class InitThread(threading.Thread):
             #Exit.
             CoreTools.EmergencyExit("You don't appear to have any Linux partitions on your hard disks. If you do have Linux partitions but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
 
-        #Get a list of Linux OSs. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
-        #Define global variables.
-        global RootFS
-        global AutoRootFS
-
+        #Get a list of Linux OSs.
         logger.info("InitThread(): Finding Linux OSs...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Linux Operating Systems...")
-        OSInfo, SystemInfo, RootFS = MainStartupTools.GetLinuxOSs(SystemInfo)
+        OSInfo, SystemInfo = MainStartupTools.GetLinuxOSs()
 
-        AutoRootFS = RootFS
+        Tools.StartupTools.main.OSInfo = OSInfo
 
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
         logger.info("InitThread(): Done...")
 
-        #*** Put this somewhere else *** *** Get rid of this; soon to be selected on a per-bootloader basis in Bootloader Options Window ***
-        Keys = OSInfo.keys()
-        Keys.sort()
-
-        SystemInfo["DefaultOS"] = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=Keys)
-
+        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting default OS...")
+        MainStartupTools.SetDefaultOS() #*** Get rid of this; soon to be selected on a per-bootloader basis in Bootloader Options Window ***
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
 
-        #Set rootfs.
-        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting RootFS...")
+        #Set rootfs. *** Find mountpoint of / if not on livedisk ***
+        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting SystemInfo['RootFS']...")
 
-        RootFS = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
-        AutoRootFS = RootFS
+        SystemInfo["RootFS"] = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
 
@@ -517,7 +487,7 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): *** ABSTRACTION CODE *** Setting RootDev...")
 
-        RootDevice = DiskInfo[RootFS]["HostDevice"]
+        RootDevice = DiskInfo[SystemInfo["RootFS"]]["HostDevice"]
         AutoRootDevice = RootDevice
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
@@ -544,7 +514,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        MainStartupTools.FinalCheck(AutoRootFS, RootFS, AutoRootDevice, RootDevice, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        MainStartupTools.FinalCheck(AutoRootDevice, RootDevice, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -1656,7 +1626,6 @@ class SettingsWindow(wx.Frame):
         global Bootloader
         global PrevBootloaderSetting
         global RootDevice
-        global RootFS
         global BootloaderTimeout
 
         logger.info("SettingsWindow().SaveOptions(): Saving Options...")
@@ -1734,8 +1703,8 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().SaveOptions(): The default OS is: "+SystemInfo["DefaultOS"])
 
         #Root Filesystem.
-        RootFS = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
-        logger.debug("SettingsWindow().SaveOptions(): Value of RootFS is: "+RootFS)
+        SystemInfo["RootFS"] = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
+        logger.debug("SettingsWindow().SaveOptions(): Value of SystemInfo['RootFS'] is: "+SystemInfo["RootFS"])
 
         #Root device ChoiceBox
         if self.RootDeviceChoice.GetSelection() != 0:
@@ -2758,14 +2727,12 @@ class ProgressWindow(wx.Frame):
         MainStartupTools.SetDefaults()
 
         global Bootloader
-        global RootFS
         global RootDevice
         global PartScheme
         global UEFISystemPartition
 
         Bootloader = AutoBootloader
         Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
-        RootFS = AutoRootFS
         RootDevice = AutoRootDevice
         UEFISystemPartition = AutoUEFISystemPartition
 
@@ -2900,10 +2867,8 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.essentials.BootSectorBackupType = BootSectorBackupType
             Tools.BackendTools.essentials.BootSectorTargetDevice = BootSectorTargetDevice
             Tools.BackendTools.essentials.UEFISystemPartition = UEFISystemPartition
-            Tools.BackendTools.essentials.AutoRootFS = AutoRootFS
 
             #*** Main Bootloader Tools (in Backend Tools package) ***
-            Tools.BackendTools.BootloaderTools.main.AutoRootFS = AutoRootFS
             Tools.BackendTools.BootloaderTools.main.Bootloader = Bootloader
             Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
             Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
@@ -2918,7 +2883,6 @@ class BackendThread(threading.Thread):
 
             except NameError: pass
 
-            Tools.BackendTools.main.AutoRootFS = AutoRootFS
             Tools.BackendTools.main.Bootloader = Bootloader
             Tools.BackendTools.main.UEFISystemPartition = UEFISystemPartition
 
@@ -3027,7 +2991,7 @@ class BackendThread(threading.Thread):
         #Do Disk Information *** Use dictionary ***
         ReportList.write("\n##########Disk Information##########\n")
         ReportList.write("Detected Linux Partitions: "+', '.join(SystemInfo["LinuxPartitions"])+"\n")
-        ReportList.write("Detected Root Filesystem (MBR bootloader target): "+AutoRootFS+"\n")
+        ReportList.write("Detected Root Filesystem (MBR bootloader target): "+AutoRootFS+"\n") #*** Use Dictionary ***
         ReportList.write("Selected Root Filesystem (MBR bootloader target): "+RootFS+"\n")
         ReportList.write("Detected Root Device (MBR Bootloader Target): "+AutoRootDevice+"\n")
         ReportList.write("Selected Root Device (MBR Bootloader Target): "+RootDevice+"\n")

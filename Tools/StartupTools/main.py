@@ -104,6 +104,39 @@ class Main():
             logger.critical("MainStartupTools: Main().CheckFS(): Failed to check filesystems! Doing emergency exit...")
             CoreTools.EmergencyExit("Failed to check filesystems! Please fix your filesystems and then run WxFixBoot again.")
 
+    def SortSomeInfo(self): #*** Put this somewhere else ***
+        """TEMPORARY function to hold this stuff before I put it somewhere else"""
+        SystemInfo["Devices"] = []
+        SystemInfo["GPTDisks"] = []
+        SystemInfo["MBRDisks"] = []
+
+        Keys = DiskInfo.keys()
+        Keys.sort()
+
+        for Disk in Keys:
+            if DiskInfo[Disk]["Type"] == "Device":
+                if Disk[5:7] in ("sd", "hd"):
+                    SystemInfo["Devices"].append(Disk)
+
+            try:
+                Temp = DiskInfo[Disk]["Partitioning"]
+
+                if Temp == "gpt":
+                    SystemInfo["GPTDisks"].append(Temp)
+
+                else:
+                    SystemInfo["MBRDisks"].append(Temp)
+
+            except: pass
+
+        #Detect Linux Partitions.
+        SystemInfo["LinuxPartitions"] = []
+
+        for Disk in Keys:
+            if DiskInfo[Disk]["Type"] == "Partition":
+                if DiskInfo[Disk]["FileSystem"] in ("ext", "ext2", "ext3", "ext4", "btrfs", "xfs", "jfs", "zfs", "minix", "reiserfs"):
+                    SystemInfo["LinuxPartitions"].append(Disk)
+
     def MountCoreFS(self):
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
@@ -112,11 +145,11 @@ class Main():
             logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
             CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
-    def GetLinuxOSs(self, SystemInfo):
+    def GetLinuxOSs(self):
         """Get the names of all Linux OSs on the HDDs."""
         #*** Crashes at log line in InitThread().run() if we couldn't detect the current OS ***
         logger.info("MainStartupTools: Main().GetLinuxOSs(): Finding Linux operating systems...")
-        RootFS = ""
+        RootFS = "" #*** Why is this here? ***
         OSInfo = {}
         SystemInfo["UserFriendlyOSNames"] = []
         SystemInfo["OSsWithPackageManagers"] = []
@@ -150,7 +183,7 @@ class Main():
 
             #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name. *** For current OS, quit if not named ***
             if Retval != 0 and OSArch != None:
-                OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch, AutoRootFS=AutoRootFS)
+                OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch)
 
             #Look for APT.
             Retval = CoreTools.StartProcess(APTCmd, ShowOutput=False)
@@ -192,11 +225,26 @@ class Main():
         #Check that at least one Linux OS was detected.
         if len(OSInfo) >= 1:
             logger.debug("MainStartupTools: Main().GetLinuxOSs(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
-            return OSInfo, SystemInfo, RootFS
+            return OSInfo, SystemInfo
 
         else:
             logger.critical("MainStartupTools: Main().GetLinuxOSs(): Couldn't find any linux operating systems! Linux partitions were detected, but don't appear to contain any OSs! WxFixBoot will now exit, and warn the user...")
             CoreTools.EmergencyExit("Linux partitions were found on your computer, but no Linux operating systems were found! Perhaps you need to recover data from your hard drive, or restore an image first? If you're using Parted Magic, you'll have access to tools that can do that for you now. Otherwise, you may need to install them.")
+
+    def SetDefaultOS(self):
+        """*** ABSTRACTION CODE *** Set the default OS"""
+        Keys = OSInfo.keys()
+        Keys.sort()
+
+        if len(Keys) == 0:
+            #*** Emergency exit TODO ***
+            pass
+
+        elif len(Keys) == 1:
+            SystemInfo["DefaultOS"] = Keys[0]
+
+        else:
+            SystemInfo["DefaultOS"] = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=Keys)
 
     def GetFirmwareType(self):
         """Get the firmware type"""
@@ -370,10 +418,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, AutoRootFS, RootFS, AutoRootDevice, RootDevice, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
+    def FinalCheck(self, AutoRootDevice, RootDevice, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], Settings["MainSettings"]["FirmwareType"], OSInfo.
-        VarList = ('AutoRootFS', 'RootFS', 'AutoRootDevice', 'RootDevice', 'UEFIVariables', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], Settings["MainSettings"]["FirmwareType"], OSInfo.
+        VarList = ('AutoRootDevice', 'RootDevice', 'UEFIVariables', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.
