@@ -168,7 +168,7 @@ class Main():
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Done! Filesystems that won't be checked: "+'\n'.join(DoNotCheckList)+"...")
         return CheckList
 
-    def HandleFilesystemCheckReturnValues(self, ExecList, Retval, Partition, OSsForBootloaderRemoval):
+    def HandleFilesystemCheckReturnValues(self, ExecList, Retval, Partition):
         """Handle Filesystem Checker return codes."""
         #Return values of 1,2 or 3 happen if errors were corrected.
         if Retval in (1, 2, 3):
@@ -192,17 +192,14 @@ class Main():
                 #A good choice. WxFixBoot will now disable any bootloader operations. *** Keep note of why we disabled bootloader operations here ***
                 logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User disabled bootloader operations as recommended, due to bad sectors/HDD problems/FS Checker problems...")
 
-                OSsForBootloaderRemoval = []
+                SystemInfo["OSsForBootloaderRemoval"] = []
                 SystemInfo["DisableBootloaderOperations"] = True
-                return OSsForBootloaderRemoval
 
             else:
                 #Seriously? Well, okay, we'll do it anyway... This is probably a very bad idea...
                 logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User ignored the warning and went ahead with bootloader modifications (if any) anyway, even with possible HDD problems/Bad sectors! This is a REALLY bad idea, but we'll do it anyway, as requested...")
 
-                return OSsForBootloaderRemoval
-
-    def AskUserForBootloaderInstallationOSs(self, UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval): #*** Maybe move to BootloaderTools package ***
+    def AskUserForBootloaderInstallationOSs(self, UpdateBootloader, ReinstallBootloader): #*** Maybe move to BootloaderTools package ***
         """Ask the user where the new bootloader is to be installed."""
         #*** Temporarily define this as global until switch to dictionaries ***
         global OSsForBootloaderInstallation
@@ -213,19 +210,19 @@ class Main():
                 DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be updated.")
 
             else:
-                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be removed from the following Operating Systems ("+', '.join(OSsForBootloaderRemoval)+").")
+                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be removed from the following Operating Systems ("+', '.join(SystemInfo["OSsForBootloaderRemoval"])+").")
 
             OSsForBootloaderInstallation = SystemInfo["OSsWithPackageManagers"][:]
             logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Installing the new bootloader in OS(s): "+', '.join(OSsForBootloaderInstallation))
 
         else:
             if UpdateBootloader or ReinstallBootloader:
-                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be updated or reinstalled in all Operating Systems it is installed in ("+', '.join(OSsForBootloaderRemoval)+"). Click okay to continue.")
-                OSsForBootloaderInstallation = OSsForBootloaderRemoval[:]
+                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be updated or reinstalled in all Operating Systems it is installed in ("+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"). Click okay to continue.")
+                OSsForBootloaderInstallation = SystemInfo["OSsForBootloaderRemoval"][:]
 
             else: #*** Check all this works ***
                 logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): There is more than one Operating System with a supported package manager. Asking the user which ones to install the new bootloader in...")
-                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be removed in all Operating Systems it is installed in ("+', '.join(OSsForBootloaderRemoval)+"). You will now be asked which Operating Systems you want your new bootloader to be installed in.")
+                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be removed in all Operating Systems it is installed in ("+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"). You will now be asked which Operating Systems you want your new bootloader to be installed in.")
 
                 #Make a list of candidates to install the bootloader in (only including OSes that will have their bootloaders removed).
                 BootloaderCandidatesList = SystemInfo["OSsWithPackageManagers"][:]
@@ -244,10 +241,8 @@ class Main():
     def FindBootloaderRemovalOSs(self, AutoRootFS, Bootloader): #*** Check this works ***
         """Find the OS(es) that currently have the bootloader installed, so we know where to remove it from."""
         logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Looking for Operating Systems that currently have the bootloader installed, to add to the removal list...")
-        #*** Temporarily define this as global until switch to dictionaries ***
-        global OSsForBootloaderRemoval
 
-        OSsForBootloaderRemoval = []
+        SystemInfo["OSsForBootloaderRemoval"] = []
 
         for OS in SystemInfo["OSsWithPackageManagers"]:
             #Grab the Package Manager and the partition the OS resides on.
@@ -289,12 +284,11 @@ class Main():
             #Check if the bootloader was found on that partition. If it wasn't, don't do anything.
             if Found:
                 #It was! Add it to the list.
-                OSsForBootloaderRemoval.append(OS)
+                SystemInfo["OSsForBootloaderRemoval"].append(OS)
                 logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Found bootloader to remove: "+Bootloader+" On OS: "+OS+". Adding it to the list. Continuing...")
 
         #Return the list to self.PrepareForBootloaderInstallation()
-        logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Finished populating OSsForBootloaderRemoval. Contents: "+', '.join(OSsForBootloaderRemoval)+"...")
-        return OSsForBootloaderRemoval
+        logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Finished populating SystemInfo['OSsForBootloaderRemoval']. Contents: "+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"...")
 
     def WriteFSTABEntryForUEFIPartition(self, MountPoint, UEFISystemPartition):
         """Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one."""

@@ -2890,7 +2890,6 @@ class BackendThread(threading.Thread):
             global BootloaderTimeout
             global KernelOptions
             global OSsForBootloaderInstallation
-            global OSsForBootloaderRemoval
             global BootloaderToInstall
 
             #*** Essential backend tools ***
@@ -2906,14 +2905,12 @@ class BackendThread(threading.Thread):
 
             try:
                 Tools.BackendTools.essentials.OSsForBootloaderInstallation = OSsForBootloaderInstallation
-                Tools.BackendTools.essentials.OSsForBootloaderRemoval = OSsForBootloaderRemoval
 
             except NameError: pass
 
             #*** Main Bootloader Tools (in Backend Tools package) ***
             try:
                 Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
-                Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
 
             except NameError: pass
 
@@ -2934,7 +2931,6 @@ class BackendThread(threading.Thread):
 
             try:
                 Tools.BackendTools.main.OSsForBootloaderInstallation = OSsForBootloaderInstallation
-                Tools.BackendTools.main.OSsForBootloaderRemoval = OSsForBootloaderRemoval
 
             except NameError: pass
 
@@ -2962,14 +2958,12 @@ class BackendThread(threading.Thread):
             #*** Essential backend tools ***
             try:
                 OSsForBootloaderInstallation = Tools.BackendTools.essentials.OSsForBootloaderInstallation
-                OSsForBootloaderRemoval = Tools.BackendTools.essentials.OSsForBootloaderRemoval
 
             except AttributeError: pass
   
             #*** Main Bootloader Tools (in Backend Tools package) ***
             try:
                 OSsForBootloaderInstallation = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderInstallation
-                OSsForBootloaderRemoval = Tools.BackendTools.BootloaderTools.main.OSsForBootloaderRemoval
 
             except AttributeError: pass
 
@@ -3050,7 +3044,7 @@ class BackendThread(threading.Thread):
                 else:
                     #We must be installing a new bootloader.
                     ReportList.write("Selected Bootloader To Install: "+BootloaderToInstall+"\n")
-                    ReportList.write("Remove Old Bootloader from: "+', '.join(OSsForBootloaderRemoval)+"\n")
+                    ReportList.write("Remove Old Bootloader from: "+', '.join(OSsForBootloaderRemoval)+"\n") #*** Use dictionary ***
                     ReportList.write("Install New Bootloader to: "+', '.join(OSsForBootloaderInstallation)+"\n")
                     ReportList.write("\nNew Bootloader's Configuration:"+"\n")
                     ReportList.write("\tDefault OS: "+DefaultOS+"\n")

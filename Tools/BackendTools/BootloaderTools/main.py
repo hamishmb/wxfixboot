@@ -28,12 +28,11 @@ class Main(): #*** Refactor and test all of these ***
         EssentialBackendTools.CheckInternetConnection()
 
         #*** Temporarily define these as global until switch to dictionaries ***
-        global OSsForBootloaderRemoval
         global OSsForBootloaderInstallation
 
         if SystemInfo["DisableBootloaderOperations"]:
             #Disable bootloader operations. *** Set them here, just so they are set? ***
-            OSsForBootloaderRemoval = []
+            SystemInfo["OSsForBootloaderRemoval"] = []
             OSsForBootloaderInstallation = []
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
 
@@ -51,7 +50,7 @@ class Main(): #*** Refactor and test all of these ***
                 DialogTools.ShowMsgDlg(Kind="error", Message="No supported package managers could be found on any of your operating systems! At the moment, APT is supported, which covers most Linux Operating Systems. WxFixBoot will have to skip all operations that require a package manager, such as installing, removing and reinstalling the bootloader. In a later release WxFixBoot will likely support another package manager, such as Slackware's system. If you think you do have an OS with a supported package manager, please report a bug or email me directly via my Launchpad page, so I can try to help. In the meantime, you can probably follow some online instructions for your operating system.")
 
                 #Disable bootloader operations. *** Set them here, just so they are set? ***
-                OSsForBootloaderRemoval = []
+                SystemInfo["OSsForBootloaderRemoval"] = []
                 OSsForBootloaderInstallation = []
                 SystemInfo["DisableBootloaderOperations"] = True
 
@@ -63,12 +62,12 @@ class Main(): #*** Refactor and test all of these ***
                 logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found at least one candidate for installing and removing bootloaders! Continuing...")
 
                 #Also, we need to find which OS(es) installed the bootloader (or have it installed currently), and ask the user which OS to install the bootloader with.
-                OSsForBootloaderRemoval = HelperBackendTools.FindBootloaderRemovalOSs(AutoRootFS, Bootloader)
-                logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): List of OSs to have the bootloader removed: "+', '.join(OSsForBootloaderRemoval)+"...")
+                HelperBackendTools.FindBootloaderRemovalOSs(AutoRootFS, Bootloader)
+                logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): List of OSs to have the bootloader removed: "+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"...")
 
                 #Update Current Operation Text.
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 85)
-                OSsForBootloaderInstallation = HelperBackendTools.AskUserForBootloaderInstallationOSs(UpdateBootloader, ReinstallBootloader, OSsForBootloaderRemoval)
+                OSsForBootloaderInstallation = HelperBackendTools.AskUserForBootloaderInstallationOSs(UpdateBootloader, ReinstallBootloader)
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Done!###\n") 

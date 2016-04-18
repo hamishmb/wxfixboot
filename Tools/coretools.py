@@ -52,7 +52,7 @@ class Main():
                 if unicode(type(Line)) != "<type 'unicode'>":
                     Line = unicode(Line, errors="replace").replace("\x00", "")
 
-                #wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
+                wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
                 LineList.append(Line.replace("\n", "").replace("\r", ""))
 
                 #Reset Line.
