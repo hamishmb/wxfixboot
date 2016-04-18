@@ -52,7 +52,7 @@ class Main():
                 if unicode(type(Line)) != "<type 'unicode'>":
                     Line = unicode(Line, errors="replace").replace("\x00", "")
 
-                wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
+                #wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
                 LineList.append(Line.replace("\n", "").replace("\r", ""))
 
                 #Reset Line.
@@ -137,6 +137,28 @@ class Main():
 
         return Partition
 
+    def GetMountPointOf(self, Partition): #*** Check this works ***
+        """Returns the mountpoint of the given partition, if any.
+        Otherwise, return None"""
+        logger.info("CoreTools: Main().GetMountPointOf(): Trying to mount point of partition "+Partition+"...")
+
+        MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
+        MountPoint = None
+
+        for Line in MountInfo.split("\n"):
+            SplitLine = Line.split()
+
+            if Partition == SplitLine[0]:
+                MountPoint = SplitLine[2]
+
+        if MountPoint != None:
+            logger.info("CoreTools: Main().GetMountPointOf(): Found it! MountPoint is "+MountPoint+"...")
+
+        else:
+            logger.info("CoreTools: Main().GetMountPointOf(): Didn't find it...")
+
+        return MountPoint
+
     def MountPartition(self, Partition, MountPoint, Options=""): #*** Check this works *** *** Check this over: What if our partition is mounted somewhere else? Does that matter? Make this more bullet-proof ***
         """Mounts the given partition.
         Partition is the partition to mount.
@@ -149,30 +171,23 @@ class Main():
 
         else:
             logger.info("CoreTools: Main().MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with no extra options...")
-
+            
         MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
 
-        if MountPoint in MountInfo:
-            #There is a partition mounted here. Check if our partition is already mounted in the right place.
-            MountPointFound = None
+        #There is a partition mounted here. Check if our partition is already mounted in the right place.
+        if MountPoint == self.GetMountPointOf(Partition):
+            #The correct partition is already mounted here.
+            logger.debug("CoreTools: Main().MountPartition(): Partition: "+Partition+" was already mounted at: "+MountPoint+". Continuing...")
+            return 0
 
-            for Line in MountInfo.split("\n"):
-                if Partition in Line:
-                    MountPointFound = Line.split()[2]
+        elif MountPoint in MountInfo:
+            #Something else is in the way. Unmount that partition, and continue.
+            logger.warning("CoreTools: Main().MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
+            Retval = self.Unmount(MountPoint)
 
-            if MountPointFound != MountPoint:
-                #Something else is in the way. Unmount that partition, and continue.
-                logger.warning("CoreTools: Main().MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
-                Retval = self.Unmount(MountPoint)
-
-                if Retval != 0:
-                    logger.error("CoreTools: Main().MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
-                    return False
-
-            else:
-                #The correct partition is already mounted here.
-                logger.debug("CoreTools: Main().MountPartition(): Partition: "+Partition+" was already mounted at: "+MountPoint+". Continuing...")
-                return 0
+            if Retval != 0:
+                logger.error("CoreTools: Main().MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
+                return False
 
         #Create the dir if needed.
         if os.path.isdir(MountPoint) == False:
