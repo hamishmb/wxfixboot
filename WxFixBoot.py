@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+#*** Where did we want to use CoreTools.GetMountPointOf()? ***
 #*** Re-evaluate dependencies at packaging time *** *** Add gdisk to dependencies list in package ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
@@ -45,7 +46,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "14/4/2016"
+ReleaseDate = "18/4/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -401,12 +402,6 @@ class InitThread(threading.Thread):
 
         #Check if we're on a Live Disk.
         MainStartupTools.CheckForLiveDisk()
-
-        if SystemInfo["IsLiveDisk"]:
-            logger.info("InitThread(): We're on a live disk...")
-
-        else:
-            logger.info("InitThread(): We're not on a live disk...")
 
         #Unmount all filesystems, to avoid any data corruption.
         logger.info("InitThread(): Unmounting Filesystems...")
@@ -2869,25 +2864,25 @@ class BackendThread(threading.Thread):
 
         DialogTools.ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
 
+        #Make dictionaries accessible. *** Add as needed *** *** Minimise these later if possible ***
+        Tools.BackendTools.essentials.DiskInfo = DiskInfo
+        Tools.BackendTools.essentials.SystemInfo = SystemInfo
+
+        Tools.BackendTools.helpers.DiskInfo = DiskInfo
+        Tools.BackendTools.helpers.OSInfo = OSInfo
+        Tools.BackendTools.helpers.SystemInfo = SystemInfo
+
+        Tools.BackendTools.main.OSInfo
+        Tools.BackendTools.main.SystemInfo = SystemInfo
+
+        Tools.BackendTools.BootloaderTools.main.SystemInfo = SystemInfo
+        Tools.BackendTools.BootloaderTools.main.OSInfo = OSInfo
+
+        Tools.BackendTools.BootloaderTools.setconfigtools.SystemInfo = SystemInfo
+        Tools.BackendTools.BootloaderTools.setconfigtools.OSInfo = OSInfo
+
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
         for function in Operations:
-            #Make dictionaries accessible. *** Do we need to do this each time? *** *** Add as needed *** *** Does all of this need to go in here? *** *** Minimise these later if possible ***
-            Tools.BackendTools.essentials.DiskInfo = DiskInfo
-            Tools.BackendTools.essentials.SystemInfo = SystemInfo
-
-            Tools.BackendTools.helpers.DiskInfo = DiskInfo
-            Tools.BackendTools.helpers.OSInfo = OSInfo
-            Tools.BackendTools.helpers.SystemInfo = SystemInfo
-
-            Tools.BackendTools.main.OSInfo
-            Tools.BackendTools.main.SystemInfo = SystemInfo
-
-            Tools.BackendTools.BootloaderTools.main.SystemInfo = SystemInfo
-            Tools.BackendTools.BootloaderTools.main.OSInfo = OSInfo
-
-            Tools.BackendTools.BootloaderTools.setconfigtools.SystemInfo = SystemInfo
-            Tools.BackendTools.BootloaderTools.setconfigtools.OSInfo = OSInfo
-
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
             #*** We temporarily need global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
             #*** Might need to add logging stuff here temporarily for when it fails for debugging purposes ***

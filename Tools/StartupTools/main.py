@@ -49,17 +49,33 @@ class Main():
 
     def CheckForLiveDisk(self):
         """Try to determine if we're running on a live disk."""
+        logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Attempting to check if we're on a live disk...")
+
         #Detect Parted Magic automatically.
         if "pmagic" in CoreTools.StartProcess("uname -r", ReturnOutput=True):
+            logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Running on Parted Magic...")
             SystemInfo["IsLiveDisk"] = True
 
-        #Try to detect ubuntu-based livecds. *** Does this work for e.g. fedora based ones? ***
+        #Try to detect ubuntu-based livecds.
         elif CoreTools.IsMounted("/cow", "/") and os.path.isfile("/cdrom/casper/filesystem.squashfs"):
+            logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Running on Ubuntu-based live disk...")
             SystemInfo["IsLiveDisk"] = True
+
+        #Try to detect fedora-based livcds.
+        elif CoreTools.IsMounted("/dev/mapper/live-rw", "/") and os.path.isfile("/run/initramfs/live/LiveOS/squashfs.img"):
+            logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Running on Fedora-based live disk...")
+            SystemInfo["IsLiveDisk"] = True
+
+        #Try to detect if we're not running on a live disk.
+        elif "/dev/sd" in CoreTools.GetPartitionMountedAt("/"):
+            logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Not running on live disk...")
+            SystemInfo["IsLiveDisk"] = False
 
         #Ask the user if we're running on a live disk.
         else:
+            logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Asking the user if we're running on live media...")
             SystemInfo["IsLiveDisk"] = DialogTools.ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", Title="WxFixBoot - Live Media?")
+            logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Result: "+unicode(SystemInfo["IsLiveDisk"]))
 
     def UnmountAllFS(self, SystemInfo):
         """Unmount any unnecessary filesystems, to prevent data corruption."""
