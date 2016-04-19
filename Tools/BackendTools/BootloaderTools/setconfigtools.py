@@ -187,7 +187,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
 
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): User chose "+DefaultOS+". Setting default OS...")
         #Use the user's selection to set the default OS.
-        if PackageManager == "apt-get":
+        if OSInfo[OS]["PackageManager"] == "apt-get":
             Cmd = "grub-set-default "+DefaultOS
 
         if not (SystemInfo["IsLiveDisk"] == False and MountPoint == ""):
