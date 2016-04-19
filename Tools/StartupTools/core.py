@@ -144,8 +144,7 @@ class Main():
                     logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Found GRUB2 in MBR (Shown as GRUB2 in GUI). Continuing...")
                     return "GRUB2"
 
-                else: pass
-                finally:
+                else:
                     #If a number was found, check if it's lower than or equal to 1.97 (aka it's grub legacy)
                     if float(GRUBVersion) <= 1.97:
                         return "GRUB-LEGACY"
