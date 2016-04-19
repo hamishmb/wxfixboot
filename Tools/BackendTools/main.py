@@ -290,7 +290,7 @@ class Main():
                 logger.debug("MainBackendTools: Main().InstallNewBootloader(): Modifying current OS so not using chroot...")
                 UseChroot = False
                 UnmountAfter = False
-                MountPoint = None
+                MountPoint = "/"
 
             #Otherwise, setup the chroot and everything else first, and tell them we are using chroot, and pass the mountpoint to them.
             else:
