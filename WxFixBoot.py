@@ -200,6 +200,8 @@ Tools.BackendTools.main.os = os
 Tools.BackendTools.main.CoreTools = CoreTools
 Tools.BackendTools.main.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
+Tools.BackendTools.main.BootloaderRemovalTools = BootloaderRemovalTools
+Tools.BackendTools.main.BootloaderInstallationTools = BootloaderInstallationTools
 Tools.BackendTools.main.BootloaderConfigSettingTools = BootloaderConfigSettingTools
 Tools.BackendTools.main.DialogTools = DialogTools
 
