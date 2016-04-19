@@ -179,7 +179,8 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
             try:
                 GRUBOSNameList.append(OSName.split("\'")[1])
 
-            except IndexError: pass
+            except IndexError:
+                GRUBOSNameList.append(OSName.split("\"")[1])
 
         #Now ask the user to select the correct one.
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done! Asking user to choose a default OS...")
@@ -188,7 +189,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): User chose "+DefaultOS+". Setting default OS...")
         #Use the user's selection to set the default OS.
         if OSInfo[OS]["PackageManager"] == "apt-get":
-            Cmd = "grub-set-default "+DefaultOS
+            Cmd = "grub-set-default '"+DefaultOS+"'"
 
         if not (SystemInfo["IsLiveDisk"] == False and MountPoint == ""):
             Cmd = "chroot "+MountPoint+" "+Cmd
