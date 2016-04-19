@@ -1084,7 +1084,7 @@ class MainWindow(wx.Frame):
             self.Destroy()
 
 #End Main window
-#Begin Disk Info Window
+#Begin Disk Info Window #*** Updating here doesn't work right now ***
 class DevInfoWindow(wx.Frame):
     def __init__(self,ParentWindow):
         """Initialize DevInfoWindow"""
@@ -2839,7 +2839,7 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.helpers.OSInfo = OSInfo
         Tools.BackendTools.helpers.SystemInfo = SystemInfo
 
-        Tools.BackendTools.main.OSInfo
+        Tools.BackendTools.main.OSInfo = OSInfo
         Tools.BackendTools.main.SystemInfo = SystemInfo
 
         Tools.BackendTools.BootloaderTools.main.SystemInfo = SystemInfo
