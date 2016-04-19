@@ -131,7 +131,7 @@ class Main(): #*** Refactor and test all of these ***
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
 
         logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().InstallNewBootloader()...")
-        BootloaderInstallSucceded = MainBackendTools().InstallNewBootloader()
+        BootloaderInstallSucceded = MainBackendTools.InstallNewBootloader()
 
         if BootloaderInstallSucceded:
             logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Installing new bootloader succeeded! Calling MainBackendTools().SetNewBootloaderConfig()...")
