@@ -149,7 +149,7 @@ class Main():
         """Get the names of all Linux OSs on the HDDs."""
         #*** Crashes at log line in InitThread().run() if we couldn't detect the current OS ***
         logger.info("MainStartupTools: Main().GetLinuxOSs(): Finding Linux operating systems...")
-        RootFS = "" #*** Why is this here? ***
+        RootFS = CoreTools.GetPartitionMountedAt("/")
         OSInfo = {}
         SystemInfo["UserFriendlyOSNames"] = []
         SystemInfo["OSsWithPackageManagers"] = []
