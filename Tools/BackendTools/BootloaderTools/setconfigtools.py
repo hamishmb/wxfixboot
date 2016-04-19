@@ -105,7 +105,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
         if PackageManager == "apt-get":
             Cmd = "grub-install --force "+RootDevice
 
-        if MountPoint == "":
+        if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
@@ -119,7 +119,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
         if PackageManager == "apt-get":
             Cmd = "grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi"
 
-        if MountPoint == "":
+        if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
  
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
@@ -133,7 +133,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
         if PackageManager == "apt-get":
             Cmd = "update-grub"
 
-        if MountPoint == "":
+        if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
