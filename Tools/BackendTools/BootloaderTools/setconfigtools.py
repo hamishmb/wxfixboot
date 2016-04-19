@@ -157,7 +157,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
 
         if PackageManager == "apt-get":
             GrubConfigFile = open("/boot/grub/grub.cfg", "r")
-            GrubConfig = GrubCfgFile.read()
+            GrubConfig = GrubConfigFile.read()
             GrubConfigFile.close()
 
         for Line in GrubConfig.split("\n"):
