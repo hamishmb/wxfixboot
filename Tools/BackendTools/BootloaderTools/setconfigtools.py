@@ -180,7 +180,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
 
         #Now ask the user to select the correct one.
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done! Asking user to choose a default OS...")
-        DefaultOS = DialogTools.ShowChoiceDlg(Message="Please select the OS you want to use as "+BootloaderToInstall+"'s Default OS. You are setting configuration for: "+OS, Title="WxFixBoot - Select Default OS", Choices=GRUBOSNameList)
+        DefaultOS = DialogTools.ShowChoiceDlg(Message="Please select the OS you want to use as "+SystemInfo["BootloaderToInstall"]+"'s Default OS. You are setting configuration for: "+OS, Title="WxFixBoot - Select Default OS", Choices=GRUBOSNameList)
 
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): User chose "+DefaultOS+". Setting default OS...")
         #Use the user's selection to set the default OS.
@@ -367,7 +367,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
 
     def MakeLILOOSEntries(self, filetoopen, PackageManager, MountPoint): #*** Maybe set default OS in a seperate function? *** *** FIX THIS LATER, IT DOESN'T WORK! ***
         """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS"""
-        logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make OS entries for "+BootloaderToInstall+"...")
+        logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make OS entries for "+SystemInfo["BootloaderToInstall"]+"...")
         #Okay, we've saved the kopts, timeout, and the boot device in the list.
         #Now we'll set the OS entries, and then the default OS.
         #Open the file, and add each entry to a temporary list, which will be written to the file later.
@@ -394,7 +394,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
         #Make the OS entries.
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Making OS Entries...")
 
-        if BootloaderToInstall == "ELILO":
+        if SystemInfo["BootloaderToInstall"] == "ELILO":
             NewFileContents.append("#################### ELILO per-image section ####################")
 
         #As we make these entries, we'll record which ones were actually made, as the user can cancel them if it looks like it won't work.
@@ -463,7 +463,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
             else:
                 #If we're using ELILO, we have to do this differently for some weird reason.
                 logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[UEFISystemPartition]["UUID"]+"...")
-                if BootloaderToInstall == "ELILO":
+                if SystemInfo["BootloaderToInstall"] == "ELILO":
                     NewFileContents.append("\troot=UUID="+DiskInfo[UEFISystemPartition]["UUID"]+"\n")
 
                 else:

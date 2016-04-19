@@ -400,7 +400,7 @@ class Main():
         BootloaderTimeout = -1 #Don't change the timeout by default.
 
         #Options in Bootloader Options dlg
-        BootloaderToInstall = "None"
+        SystemInfo["BootloaderToInstall"] = "None"
         BLOptsDlgRun = False
 
         #Options in Restore dlgs
@@ -416,7 +416,7 @@ class Main():
         #Other Options
         OptionsDlg1Run = False
 
-        return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BootloaderToInstall, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
+        return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
     def FinalCheck(self, AutoRootDevice, RootDevice, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
         """Check for any conflicting options, and that each variable is set."""

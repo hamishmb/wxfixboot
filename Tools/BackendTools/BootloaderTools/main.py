@@ -83,8 +83,7 @@ class Main(): #*** Refactor and test all of these ***
 
         else:
             #Set BootloaderToInstall as the current bootloader to allow this to work properly.
-            global BootloaderToInstall
-            BootloaderToInstall = Bootloader
+            SystemInfo["BootloaderToInstall"] = Bootloader
 
             #Call self.ManageBootloaders to perform the reinstallation safely.
             logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Reinstalling the Bootloader...")
@@ -105,9 +104,8 @@ class Main(): #*** Refactor and test all of these ***
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
 
         else:
-            #Set BootloaderToInstall as the current bootloader to allow this to work properly. *** Doesn't work because it needs to be set to tools.BackendTools.main.BootloaderToInstall ***
-            global BootloaderToInstall
-            BootloaderToInstall = Bootloader
+            #Set BootloaderToInstall as the current bootloader to allow this to work properly.
+            SystemInfo["BootloaderToInstall"] = Bootloader
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Updating the bootloader's config...")
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader's configuration...###\n")
 

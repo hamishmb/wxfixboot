@@ -281,8 +281,8 @@ class Main():
             Partition = OSInfo[OS]["Partition"]
             PackageManager = OSInfo[OS]["PackageManager"]
 
-            logger.info("MainBackendTools: Main().InstallNewBootloader(): Preparing to install the new bootloader ("+BootloaderToInstall+") in OS: "+OS+"...")
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to install "+BootloaderToInstall+" in OS: "+OS+"...###\n")
+            logger.info("MainBackendTools: Main().InstallNewBootloader(): Preparing to install the new bootloader ("+SystemInfo["BootloaderToInstall"]+") in OS: "+OS+"...")
+            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to install "+SystemInfo["BootloaderToInstall"]+" in OS: "+OS+"...###\n")
             wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to install the new bootloader(s)...")
 
             #If we're not on a live disk, and the partition is RootFS, let the installer functions know that we aren't using chroot.
@@ -327,15 +327,15 @@ class Main():
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Installing the new bootloader in OS: "+OS+"...###\n")
 
             #Install the bootloader.
-            if BootloaderToInstall == "GRUB2":
+            if SystemInfo["BootloaderToInstall"] == "GRUB2":
                 logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing GRUB2...")
                 retval = BootloaderInstallationTools.InstallGRUB2(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-            elif BootloaderToInstall == "LILO":
+            elif SystemInfo["BootloaderToInstall"] == "LILO":
                 logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing LILO...")
                 retval = BootloaderInstallationTools.InstallLILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-            elif BootloaderToInstall == "GRUB-UEFI":
+            elif SystemInfo["BootloaderToInstall"] == "GRUB-UEFI":
                 logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing GRUB-UEFI...")
                 #Mount the UEFI partition at MountPoint/boot/efi.
                 #Unmount it first though, in case it's already mounted. *** Alternately check where it's mounted and leave it if it's okay ***
@@ -348,7 +348,7 @@ class Main():
 
                 retval = BootloaderInstallationTools.InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-            elif BootloaderToInstall == "ELILO":
+            elif SystemInfo["BootloaderToInstall"] == "ELILO":
                 logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing ELILO...")
                 #Unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
                 if CoreTools.Unmount(UEFISystemPartition) != 0:
@@ -375,10 +375,10 @@ class Main():
             if retval != 0:
                 #Something went wrong! Log it and notify the user.
                 BootloaderInstallSucceded = False
-                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to install "+BootloaderToInstall+" in OS: "+OS+"! This may mean the system (or this OS) is now unbootable! We'll continue anyway. Warn the user.")
-                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+BootloaderToInstall+" in: "+OS+"! This may leave this OS, or your system, in an unbootable state. It is recommended to do a Bad Sector check, unplug any non-essential devices, and then try again.") #*** Maybe ask to try again right now ***
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to install "+SystemInfo["BootloaderToInstall"]+" in OS: "+OS+"! This may mean the system (or this OS) is now unbootable! We'll continue anyway. Warn the user.")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+SystemInfo["BootloaderToInstall"]+" in: "+OS+"! This may leave this OS, or your system, in an unbootable state. It is recommended to do a Bad Sector check, unplug any non-essential devices, and then try again.") #*** Maybe ask to try again right now ***
 
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished installing "+BootloaderToInstall+" in OS: "+OS+"...###\n")
+            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished installing "+SystemInfo["BootloaderToInstall"]+" in OS: "+OS+"...###\n")
 
         #Log and notify the user that we're finished removing bootloaders.
         logger.info("MainBackendTools: Main().InstallNewBootloader(): Finished Installing bootloaders...")
@@ -442,10 +442,10 @@ class Main():
 
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
 
-            print(BootloaderToInstall)
+            print(SystemInfo["BootloaderToInstall"])
 
             #Look for the configuration file, based on which SetConfig() function we're about to run.
-            if BootloaderToInstall == "GRUB2":
+            if SystemInfo["BootloaderToInstall"] == "GRUB2":
                 #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
                 if os.path.isfile(MountPoint+"/etc/default/grub"):
                     #It does, we'll run the function to set the config now.
@@ -464,7 +464,7 @@ class Main():
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
                 BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, PackageManager=PackageManager, MountPoint=MountPoint)
 
-            elif BootloaderToInstall == "GRUB-UEFI":
+            elif SystemInfo["BootloaderToInstall"] == "GRUB-UEFI":
                 #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
                 if os.path.isfile(MountPoint+"/etc/default/grub"):
                     #It does, we'll run the function to set the config now.
@@ -494,7 +494,7 @@ class Main():
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
                 BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, PackageManager=PackageManager, MountPoint=MountPoint)
 
-            elif BootloaderToInstall == "LILO":
+            elif SystemInfo["BootloaderToInstall"] == "LILO":
                 #Make LILO's config file.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making LILO's configuration file...")
                 if MountPoint == "":
@@ -517,7 +517,7 @@ class Main():
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing LILO to the MBR...")
                 BootloaderConfigSettingTools.InstallLILOToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
 
-            elif BootloaderToInstall == "ELILO":
+            elif SystemInfo["BootloaderToInstall"] == "ELILO":
                 #Unmount the UEFI Partition now, and update mtab in the chroot.
                 if CoreTools.Unmount(UEFISystemPartition) != 0:
                     logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+UEFISystemPartition+"! Continuing anyway...") #*** Installation will fail if this happens! ***

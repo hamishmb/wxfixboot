@@ -385,12 +385,12 @@ class Main():
             os.mkdir(UEFIBootDir)
 
         #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
-        if BootloaderToInstall == "ELILO":
+        if SystemInfo["BootloaderToInstall"] == "ELILO":
             #We need to copy both elilo.efi, and elilo.conf to UEFIBootDir.
             retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False)
             retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.conf "+UEFIBootDir+"/", ShowOutput=False) #*** We're ignoring the last return value here! ***
 
-        elif BootloaderToInstall == "GRUB-UEFI":
+        elif SystemInfo["BootloaderToInstall"] == "GRUB-UEFI":
             #We need to copy grub*.efi to UEFIBootDir.
             retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/grub*.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False)
 
