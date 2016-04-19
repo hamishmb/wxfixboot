@@ -141,7 +141,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
         #Return the return value.
         return Retval
 
-    def SetGRUB2DefaultOS(self, OS, PackageManager, MountPoint): #*** Make this more user-friendly ***
+    def SetGRUB2DefaultOS(self, OS, MountPoint): #*** Make this more user-friendly ***
         """Set GRUB2's (both BIOS and EFI/UEFI) default OS to boot"""
         #I couldn't find a reliable way of doing this automatically, so give the user a choice box instead. *** Do this before release of final v2.0, probably in the 1st or 2nd rc. Maybe use disk names and save grub's name for each one ***
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Setting GRUB2's Default OS...")
@@ -155,7 +155,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
 
         GrubMenuEntries = []
 
-        if PackageManager == "apt-get":
+        if OSInfo[OS]["PackageManager"] == "apt-get":
             GrubConfigFile = open("/boot/grub/grub.cfg", "r")
             GrubConfig = GrubConfigFile.read()
             GrubConfigFile.close()
@@ -176,7 +176,10 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
 
         for OSName in GrubMenuEntries:
             #Get each OS name, removing all of the unneeeded stuff.
-            GRUBOSNameList.append(OSName.split("\'")[1])
+            try:
+                GRUBOSNameList.append(OSName.split("\'")[1])
+
+            except IndexError: pass
 
         #Now ask the user to select the correct one.
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done! Asking user to choose a default OS...")

@@ -442,8 +442,6 @@ class Main():
 
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
 
-            print(SystemInfo["BootloaderToInstall"])
-
             #Look for the configuration file, based on which SetConfig() function we're about to run.
             if SystemInfo["BootloaderToInstall"] == "GRUB2":
                 #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
@@ -452,7 +450,7 @@ class Main():
                     logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
                     BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
 
-                #Now Install GRUB2 to the MBR.
+                #Now Install GRUB2 to the MBR. *** Is this necessary when updating it? ***
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to MBR...")
                 BootloaderConfigSettingTools.InstallGRUB2ToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
 
@@ -492,7 +490,7 @@ class Main():
 
                 #Set the default OS.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
-                BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, PackageManager=PackageManager, MountPoint=MountPoint)
+                BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, MountPoint=MountPoint)
 
             elif SystemInfo["BootloaderToInstall"] == "LILO":
                 #Make LILO's config file.
