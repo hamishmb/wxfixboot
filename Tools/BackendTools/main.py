@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def GetOldBootloaderConfig(self): #*** Check this works on GRUB-EFI, ELILO and LILO. ***
+    def GetOldBootloaderConfig(self): #*** Check this works ***
         """Get the old bootloader's config before removing it, so we can reuse it (if possible) with the new one."""
         logger.debug("MainBackendTools: Main().GetOldBootloaderConfig(): Preparing to get bootloader config...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to get bootloader config...")
@@ -41,9 +41,9 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Getting old bootloader config...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Getting old bootloader config...###\n")
 
-        #Loop through each OS in OSsForBootloaderRemoval, and provide information to the function that gets the configuration.
+        #Loop through each OS in SystemInfo["OSsForBootloaderInstallation"], and provide information to the function that gets the configuration.
         logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Looking for configuration in OSs marked for bootloader removal...")
-        for OS in OSsForBootloaderRemoval:
+        for OS in SystemInfo["OSsForBootloaderInstallation"]:
             #Grab the OS's partition.
             Partition = OSInfo[OS]["Partition"]
             logger.debug("MainBackendTools: Main().GetOldBootloaderConfig(): Looking for config in OS: "+OS+"...")
@@ -98,7 +98,7 @@ class Main():
             if kopts != "" and kopts not in KernelOptsList:
                 KernelOptsList.append(kopts)
 
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 2+(14//len(OSsForBootloaderRemoval)))
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 2+(14//len(SystemInfo["OSsForBootloaderInstallation"])))
 
         #We're finished getting the config.
         logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Finished looking for configuration in OSs marked for bootloader removal.")
@@ -181,8 +181,8 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing old bootloaders...###\n")
 
-        #Loop through each OS in OSsForBootloaderRemoval, and provide information to the function that will remove the bootloader.
-        for OS in OSsForBootloaderRemoval:
+        #Loop through each OS in SystemInfo["OSsForBootloaderInstallation"], and provide information to the function that will remove the bootloader.
+        for OS in SystemInfo["OSsForBootloaderInstallation"]:
             #For each OS that needs the bootloader removed, grab the partition, and the package manager.
             Partition = OSInfo[OS]["Partition"]
             PackageManager = OSInfo[OS]["PackageManager"]
@@ -262,7 +262,7 @@ class Main():
                 logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+Bootloader+" from OS: "+OS+"! We'll continue anyway. Warn the user.")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+Bootloader+" from: "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that OS after WxFixBoot finishes its operations.")
 
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27+(22//len(OSsForBootloaderRemoval)))
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27+(22//len(SystemInfo["OSsForBootloaderInstallation"])))
 
         #Log and notify the user that we're finished remving bootloaders.
         logger.info("MainBackendTools: Main().RemoveOldBootloader(): Finished removing bootloaders...")
