@@ -460,7 +460,7 @@ class Main():
 
                 #Set the default OS.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
-                BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, PackageManager=PackageManager, MountPoint=MountPoint)
+                BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, MountPoint=MountPoint)
 
             elif SystemInfo["BootloaderToInstall"] == "GRUB-UEFI":
                 #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
@@ -473,7 +473,7 @@ class Main():
                 if CoreTools.MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
                     logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't mount EFI partition "+UEFISystemPartition+" to install bootloader! *** TODO: Cancel bootloader operations *** Continuing for now...")
 
-                #Now Install GRUB-UEFI to the UEFI Partition.
+                #Now Install GRUB-UEFI to the UEFI Partition. *** Is this necessary when updating it? ***
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to UEFISystemPartition...")
                 BootloaderConfigSettingTools.InstallGRUBUEFIToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=Arch)
 
