@@ -168,8 +168,10 @@ class Main():
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Done! Filesystems that won't be checked: "+'\n'.join(DoNotCheckList)+"...")
         return CheckList
 
-    def HandleFilesystemCheckReturnValues(self, ExecList, Retval, Partition):
+    def HandleFilesystemCheckReturnValues(self, ExecCmds, Retval, Partition):
         """Handle Filesystem Checker return codes."""
+        ExecList = ExecCmds.split()
+
         #Return values of 1,2 or 3 happen if errors were corrected.
         if Retval in (1, 2, 3):
             if ExecList[0] == "xfs_repair":

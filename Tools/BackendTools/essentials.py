@@ -345,7 +345,7 @@ class Main(): #*** These need refactoring and proper testing ***
                     logger.info("EssentialBackendTools: Main().QuickFileSystemCheck(): Checked partition: "+Partition+". No Errors Found!")
 
                 else:
-                    HelperBackendTools.HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition) #*** Needs to change to use strings ***
+                    HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Partition) #*** Needs to change to use strings ***
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Remounting Partition: "+Partition+" Read-Write...")
@@ -428,7 +428,7 @@ class Main(): #*** These need refactoring and proper testing ***
                     logger.info("EssentialBackendTools: Main().BadSectorCheck(): Checked partition: "+Partition+" No Errors Found!")
 
                 else:
-                    HelperBackendTools.HandleFilesystemCheckReturnValues(ExecList=ExecList, Retval=retval, Partition=Partition) #*** Needs to change to use strings *** 
+                    HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Partition) #*** Needs to change to use strings *** 
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().BadSectorCheck(): Remounting Partition: "+Partition+" Read-Write...")
