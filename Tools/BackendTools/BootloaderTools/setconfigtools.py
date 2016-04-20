@@ -233,12 +233,12 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
                 SetBootDevice = True
                 head, sep, Temp = line.partition('=')
 
-                if DiskInfo[UEFISystemPartition]["ID"] != "Unknown":
+                if DiskInfo[RootDevice]["ID"] != "Unknown":
                     #Good, we've got the ID.
-                    logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]+"...")
+                    logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[RootDevice]["ID"]+"...")
 
                     #Set it to RootDevice's ID.                    
-                    Temp = "/dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]
+                    Temp = "/dev/disk/by-id/"+DiskInfo[RootDevice]["ID"]
 
                 else:
                     #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
@@ -259,12 +259,12 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
             #Now let's find the ID of RootDevice.
             logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+RootDevice+"'s ID if possible, else just "+RootDevice+"...")
 
-            if DiskInfo[UEFISystemPartition]["ID"] != "Unknown":
+            if DiskInfo[RootDevice]["ID"] != "Unknown":
                 #Good, we've got the ID.
-                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]+"...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[RootDevice]["ID"]+"...")
 
                 #Set it to RootDevice's ID.                    
-                Temp = "/dev/disk/by-id/"+DiskInfo[UEFISystemPartition]["ID"]
+                Temp = "/dev/disk/by-id/"+DiskInfo[RootDevice]["ID"]
 
             else:
                 #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
