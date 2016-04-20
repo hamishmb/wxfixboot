@@ -566,7 +566,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
         """Install LILO into the MBR."""
         Cmd = "lilo"
 
-        if MountPoint == "":
+        if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
@@ -580,7 +580,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
         if PackageManager == "apt-get":
             Cmd = "elilo -b "+UEFISystemPartition+" --efiboot"
 
-        if MountPoint == "":
+        if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
