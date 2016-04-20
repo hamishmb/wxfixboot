@@ -45,7 +45,7 @@ from wx.animate import Animation
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "19/4/2016"
+ReleaseDate = "20/4/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -225,6 +225,7 @@ Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools
 
 #BootloaderTools Package (SetConfigTools)
 Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
+Tools.BackendTools.BootloaderTools.setconfigtools.os = os
 Tools.BackendTools.BootloaderTools.setconfigtools.CoreTools = CoreTools
 Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
