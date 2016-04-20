@@ -460,18 +460,23 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
             #Use UUID's here if we can.
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs as a UUID if possible...")
 
-            if DiskInfo[UEFISystemPartition]["UUID"] == "Unknown": #*** Warn user? ***
-                logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+Partition+"! This might not work cos it can change!")
-                NewFileContents.append("\troot="+Partition+"\n")
-
-            else:
-                #If we're using ELILO, we have to do this differently for some weird reason.
-                logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[UEFISystemPartition]["UUID"]+"...")
-                if SystemInfo["BootloaderToInstall"] == "ELILO":
-                    NewFileContents.append("\troot=UUID="+DiskInfo[UEFISystemPartition]["UUID"]+"\n")
+            if SystemInfo["BootloaderToInstall"] == "ELILO": #*** Test this works ***
+                if DiskInfo[UEFISystemPartition]["UUID"] == "Unknown": #*** Warn user? ***
+                    logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+UEFISystemPartition+"! This might not work cos it can change!")
+                    NewFileContents.append("\troot="+UEFISystemPartition+"\n")
 
                 else:
-                    NewFileContents.append("\troot=\"UUID="+DiskInfo[UEFISystemPartition]["UUID"]+"\"\n")
+                    logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[UEFISystemPartition]["UUID"]+"...")
+                    NewFileContents.append("\troot=UUID="+DiskInfo[UEFISystemPartition]["UUID"]+"\n")
+
+            else:
+                if DiskInfo[Partition]["UUID"] == "Unknown": #*** Warn user? ***
+                    logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+Partition+"! This might not work cos it can change!")
+                    NewFileContents.append("\troot="+Partition+"\n")
+
+                else:
+                    logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[Partition]["UUID"]+"...")
+                    NewFileContents.append("\troot=\"UUID="+DiskInfo[Partition]["UUID"]+"\"\n")
 
             #Set the label.
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS label to "+OSName+"...")
