@@ -31,7 +31,7 @@ class Main():
         #Make sure output is always in English.
         ExecCmds = "LC_ALL=C "+ExecCmds
 
-        #Get ready to run the command(s).
+        #Get ready to run the command(s). *** Come up with something smarter than counter ***
         Counter = 0
         Line = str("")
         LineList = []
@@ -40,7 +40,7 @@ class Main():
         logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds)
         cmd = subprocess.Popen(ExecCmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
-        while cmd.poll() == None or Counter < 10000:
+        while cmd.poll() == None or Counter < 100000:
             if cmd.poll() != None:
                 Counter += 1
 

@@ -103,7 +103,7 @@ class Main(): #*** Refactor and test all of these ***
                         #However, because lilo and elilo save this in 10ths of a second, divide it by ten first.
                         Timeout = int(Temp)//10
 
-            #Look for kernel options used globally in all the boot options.
+            #Look for kernel options used globally in all the boot options. *** Doesn't seem to work ***
             elif 'append' in line and '=' in line:
                 #Found them! Save it to GlobalKernelOptions
                 Kopts = ' '.join(line.split("=")[1:]).replace("\"", "")
