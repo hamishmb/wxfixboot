@@ -2886,6 +2886,7 @@ class BackendThread(threading.Thread):
             #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.setconfigtools.RootDevice = RootDevice
             Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderTimeout = BootloaderTimeout
+            Tools.BackendTools.BootloaderTools.setconfigtools.UEFISystemPartition = UEFISystemPartition
 
             try:
                 Tools.BackendTools.BootloaderTools.setconfigtools.KernelOptions = KernelOptions
