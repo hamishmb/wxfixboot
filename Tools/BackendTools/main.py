@@ -467,7 +467,7 @@ class Main():
                 if os.path.isfile(MountPoint+"/etc/default/grub"):
                     #It does, we'll run the function to set the config now.
                     logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-UEFI Configuration...")
-                    BootloaderConfigSettingTools().SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
+                    BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
 
                 #Mount the UEFI partition at MountPoint/boot/efi.
                 if CoreTools.MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
