@@ -201,11 +201,8 @@ class Main():
         Keys.sort()
 
         for Disk in Keys:
-            print(DiskInfo[Disk]["Name"])
-            print(DiskInfo[Disk]["FileSystem"])
-
             if DiskInfo[Disk]["Type"] == "Partition":
-                if DiskInfo[Disk]["FileSystem"] == "vfat" and "boot" in DiskInfo[Disk]["Flags"]:
+                if DiskInfo[Disk]["FileSystem"] == "vfat" and "boot" in DiskInfo[Disk]["Flags"]: #*** The boot flag may not be set on some badly set up efi partitions ***
                     FatPartitions.append(Disk)
 
         #If this leaves just one partition, then that's out EFI partition.
