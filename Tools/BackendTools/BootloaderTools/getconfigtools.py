@@ -63,7 +63,7 @@ class Main(): #*** Refactor and test all of these ***
             #Look for the timeout setting.
             if 'GRUB_TIMEOUT' in line and '=' in line:
                 #Found it! Save it, but only if BootloaderTimeout = -1 (we aren't changing the timeout).
-                if BootloaderTimeout == -1: #*** If we check this earlier it'll save CPU time *** *** Doesn't looks like this works ***
+                if BootloaderTimeout == -1: #*** If we check this earlier it'll save CPU time ***
                     #Save it, carefully avoiding errors.
                     Temp = line.split("=")[1]
                     if Temp.isdigit():

@@ -249,52 +249,61 @@ class Main():
     def GetFirmwareType(self):
         """Get the firmware type"""
         #Check if the firmware type is UEFI.
-        Output = CoreTools.StartProcess("dmidecode -q -t BIOS", ReturnOutput=True)[1]
+        #Also, look for UEFI variables.
+        #Make sure efivars module is loaded. If it doesn't exist, continue anyway.
+        CoreTools.StartProcess("modprobe efivars")
 
-        if "UEFI" not in Output:
-            #It's BIOS.
-            logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as BIOS...")
-            Settings["MainSettings"]["FirmwareType"] = "BIOS"
-            SystemInfo["DetectedFirmwareType"] = "BIOS"
-            UEFIVariables = False
+        #Look for the UEFI vars in some common directories. *** Just because the dir is there doesn't mean the vars are (I think) ***
+        if os.path.isdir("/sys/firmware/efi/vars"):
+            UEFIVariables = True
+            logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/vars...")
+
+        elif os.path.isdir("/sys/firmware/efi/efivars"):  
+            UEFIVariables = True
+            logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/efivars...")
 
         else:
+            logger.warning("MainStartupTools: Main().GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars or /sys/firmware/efi/efivars. Attempting manual mount...")
+
+            #Attempt to manually mount the efi vars, as we couldn't find them.
+            if not os.path.isdir("/sys/firmware/efi/vars"):
+                os.mkdir("/sys/firmware/efi/vars")
+
+            if CoreTools.MountPartition(Partition="efivars", MountPoint="/sys/firmware/efi/vars", Options="-t efivarfs") != 0: #*** Check this works ***
+                logger.warning("MainStartupTools: Main().GetFirmwareType(): Failed to mount UEFI vars! Warning user. Ignoring and continuing.")
+
+                #UEFI vars not available or couldn't be mounted.
+                DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
+                UEFIVariables = False
+
+            else:
+                #Successfully mounted them.
+                UEFIVariables = True
+                logger.info("MainStartupTools: Main().GetFirmwareType(): Mounted UEFI Variables at: /sys/firmware/efi/vars. Continuing...")
+
+        if UEFIVariables:
             #It's UEFI.
-            logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as UEFI. Looking for UEFI Variables...")
+            logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as UEFI.")
             Settings["MainSettings"]["FirmwareType"] = "UEFI"
             SystemInfo["DetectedFirmwareType"] = "UEFI"
 
-            #Also, look for UEFI variables.
-            #Make sure efivars module is loaded. If it doesn't exist, continue anyway.
-            CoreTools.StartProcess("modprobe efivars")
+        else:
+            #Look a second way.
+            Output = CoreTools.StartProcess("dmidecode -q -t BIOS", ReturnOutput=True)[1]
 
-            #Look for the UEFI vars in some common directories. *** Just because the dir is there doesn't mean the vars are (I think) ***
-            if os.path.isdir("/sys/firmware/efi/vars"):
-                UEFIVariables = True
-                logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/vars...")
-
-            elif os.path.isdir("/sys/firmware/efi/efivars"):  
-                UEFIVariables = True
-                logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/efivars...")
+            if "UEFI" not in Output:
+                #It's BIOS.
+                logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as BIOS...")
+                Settings["MainSettings"]["FirmwareType"] = "BIOS"
+                SystemInfo["DetectedFirmwareType"] = "BIOS"
+                UEFIVariables = False
 
             else:
-                logger.warning("MainStartupTools: Main().GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars or /sys/firmware/efi/efivars. Attempting manual mount...")
-
-                #Attempt to manually mount the efi vars, as we couldn't find them.
-                if not os.path.isdir("/sys/firmware/efi/vars"):
-                    os.mkdir("/sys/firmware/efi/vars")
-
-                if CoreTools.MountPartition(Partition="efivars", MountPoint="/sys/firmware/efi/vars", Options="-t efivarfs") != 0: #*** Check this works ***
-                    logger.warning("MainStartupTools: Main().GetFirmwareType(): Failed to mount UEFI vars! Warning user. Ignoring and continuing.")
-
-                    #UEFI vars not available or couldn't be mounted.
-                    DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
-                    UEFIVariables = False
-
-                else:
-                    #Successfully mounted them.
-                    UEFIVariables = True
-                    logger.info("MainStartupTools: Main().GetFirmwareType(): Mounted UEFI Variables at: /sys/firmware/efi/vars. Continuing...")
+                #It's UEFI.
+                logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as UEFI. Looking for UEFI Variables...")
+                Settings["MainSettings"]["FirmwareType"] = "UEFI"
+                SystemInfo["DetectedFirmwareType"] = "UEFI"
+                UEFIVariables = False
 
         return UEFIVariables
 

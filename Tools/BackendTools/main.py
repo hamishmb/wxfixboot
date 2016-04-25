@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def GetOldBootloaderConfig(self): #*** Check this works ***
+    def GetOldBootloaderConfig(self): #*** Looks like this intermittently doesn't work *** *** Move to startup tools later ***
         """Get the old bootloader's config before removing it, so we can reuse it (if possible) with the new one."""
         logger.debug("MainBackendTools: Main().GetOldBootloaderConfig(): Preparing to get bootloader config...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to get bootloader config...")
