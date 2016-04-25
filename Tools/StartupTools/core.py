@@ -201,6 +201,9 @@ class Main():
         Keys.sort()
 
         for Disk in Keys:
+            print(DiskInfo[Disk]["Name"])
+            print(DiskInfo[Disk]["FileSystem"])
+
             if DiskInfo[Disk]["Type"] == "Partition":
                 if DiskInfo[Disk]["FileSystem"] == "vfat" and "boot" in DiskInfo[Disk]["Flags"]:
                     FatPartitions.append(Disk)

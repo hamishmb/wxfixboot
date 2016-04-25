@@ -318,7 +318,7 @@ class Main():
 
         #Wrap this in a loop, so once a Bootloader is found, searching can stop.
         while True:
-            #Check for a UEFI partition.
+            #Check for a UEFI partition. *** Maybe read fstabs in GetLinuxOSs ***
             #Check for a UEFI system partition.
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking For a UEFI partition...")
             AutoUEFISystemPartition = CoreStartupTools.CheckForUEFIPartition(SystemInfo)
