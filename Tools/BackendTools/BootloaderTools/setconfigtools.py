@@ -123,7 +123,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
             GRUBArch = "i386"
 
         if PackageManager == "apt-get":
-            Cmd = "grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi"
+            Cmd = "grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+GRUBArch+"-efi"
 
         if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd

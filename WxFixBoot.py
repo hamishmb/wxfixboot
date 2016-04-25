@@ -181,6 +181,7 @@ Tools.BackendTools.core.CoreTools = CoreTools
 
 #BackendTools Package (Helpers)
 Tools.BackendTools.helpers.logger = logger
+Tools.BackendTools.helpers.os = os
 Tools.BackendTools.helpers.CoreTools = CoreTools
 Tools.BackendTools.helpers.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.helpers.DialogTools = DialogTools
