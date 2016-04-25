@@ -116,7 +116,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
     def InstallGRUBUEFIToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch): #*** Change the name to "InstallGRUB2ToEFIPartition" ***
         """Install GRUB2 (EFI/UEFI version) into the EFI/UEFI partition"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
-        if Arch = "64-bit":
+        if Arch == "64-bit":
             GRUBArch = "x86_64"
 
         else:
