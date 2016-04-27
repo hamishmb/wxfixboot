@@ -15,12 +15,12 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Where did we want to use CoreTools.GetMountPointOf()? ***
-#*** Re-evaluate dependencies at packaging time *** *** Add gdisk to dependencies list in package ***
+#*** Re-evaluate dependencies at packaging time *** *** Add gdisk to dependencies list in package *** *** Add package dependency for python-bs4 and python-lxml ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Test DialogTools.ShowMultiChoiceDlg() ***
-#*** DevInfoTools.GetInfo() must be run while filesystems are unmounted or it may miss ESPs ***
 #*** Figure out what to do in each instance where something might fail ***
+#*** Allow getting device info after startup (run some startup scripts again) ****
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -42,10 +42,11 @@ import re
 from distutils.version import LooseVersion
 from wx.animate import AnimationCtrl
 from wx.animate import Animation
+from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "25/4/2016"
+ReleaseDate = "27/4/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -147,6 +148,7 @@ BootloaderConfigSettingTools = BootloaderConfigSettingToolsCallable()
 GetDevInfo.getdevinfo.subprocess = subprocess
 GetDevInfo.getdevinfo.logger = logger
 GetDevInfo.getdevinfo.re = re
+GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
 #CoreTools Module.
 Tools.coretools.wx = wx

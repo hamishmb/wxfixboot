@@ -190,7 +190,7 @@ class Main():
             logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def CheckForUEFIPartition(self, SystemInfo): #*** Test again *** *** We can also use GUIDs on GPT systems, what about MBR systems? ***
+    def CheckForUEFIPartition(self, SystemInfo): #*** Test again *** *** We can also use GUIDs on GPT systems, what about MBR systems? *** *** Refactor ***
         """Find the UEFI system partition and return it"""
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
         AskForUEFIPartition = True

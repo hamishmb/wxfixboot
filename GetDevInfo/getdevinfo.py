@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. #*** Refactor and test again *** *** Must be run while filesystems are unmounted (wxfixboot) ***
+#Begin Main Class. #*** Refactor and test again ***
 class Main():
     def FoundExactMatch(self, Item, Text, Log=True):
         """Check if an exact match of "Item" (arg) can be found in "Text" (arg), seperated by commas or spaces."""
@@ -41,7 +41,7 @@ class Main():
 
         return Result
 
-    def IsPartition(self, Disk, DiskInfo=None):
+    def IsPartition(self, Disk, DiskInfo=None): #*** Is this needed any more? ***
         """Check if the given Disk is a partition"""
         if Disk[0:7] not in ["/dev/sr", "/dev/fd"] and Disk[-1].isdigit() and Disk[0:8] in DiskInfo:
             Result = True
@@ -65,155 +65,6 @@ class Main():
         logger.info("GetDevInfo: Main().DeduplicateList(): Results: "+str(ResultsList)+"...")
         return ResultsList
 
-    def GetVendor(self, Disk, DiskLineNumber=None):
-        """Find vendor information for the given Disk."""
-        #Look for the information using the Disk's line number.
-        Vendor = "Unknown"
-
-        for LineNumber in self.VendorLinesList:
-            #Return the Vendor info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
-            if DiskLineNumber - LineNumber < 10:
-                Vendor = ' '.join(self.Output[LineNumber].split()[1:])
-                logger.info("GetDevInfo: Main().GetVendor(): Found vendor info: "+Vendor)
-                break
-
-            else: pass
-
-        return Vendor
-
-    def GetProduct(self, Disk, DiskInfo, DiskIsPartition, DiskLineNumber=None):
-        """Find product information for the given Disk."""
-        #Check if the Disk is actually a partition.
-        if DiskIsPartition:
-            #Use the host device's product instead.
-            HostDevice = DiskInfo[Disk]["HostDevice"]
-            Product = DiskInfo[HostDevice]["Product"]
-            return "Host Device: "+Product
-
-        #Look for the information using the Disk's line number.
-        Product = "Unknown"
-
-        for LineNumber in self.ProductLinesList:
-            #Save the Product info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
-            if DiskLineNumber - LineNumber < 10:
-                Product = ' '.join(self.Output[LineNumber].split()[1:])
-                logger.info("GetDevInfo: Main().GetProduct(): Found product info: "+Product+"...")
-                break
-
-            else: pass
-
-        #Return the value.
-        return Product
-
-    def GetSize(self, Disk, DiskLineNumber=None):
-        """Find size information for the given Disk."""
-        #Look for the information using the Disk's line number.
-        Size = "Unknown"
-
-        for LineNumber in self.SizeLinesList:
-            #Return the Size info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
-            Result = LineNumber - DiskLineNumber
-
-            if Result < 10 and Result > 0:
-                Size = ' '.join(self.Output[LineNumber].split()[1:])
-                logger.info("GetDevInfo: Main().GetSize(): Found size info: "+Size+"...")
-                break
-
-            else:
-                if Disk[0:7] == "/dev/sr":
-                    #Report size information in a more friendly way for optical drives.
-                    logger.info("GetDevInfo: Main().GetSize(): Disk is an optical drive, and getting size info isn't supported for optical drives. Returning 'N/A'...")
-                    return "N/A"
-
-                else: pass
-
-        return Size
-
-    def GetDescription(self, Disk, DiskLineNumber=None):
-        """Find description information for the given Disk."""
-        #Look for the information using the Disk's line number.
-        Description = "Unknown"
-
-        for LineNumber in self.DescriptionLinesList:
-            #Return the Description info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus. 
-            if DiskLineNumber - LineNumber < 10:
-                Description = ' '.join(self.Output[LineNumber].split()[1:])
-                logger.info("GetDevInfo: Main().GetDescription(): Found description info: "+Description+"...")
-                break
-
-            else: pass
-
-        return Description
-
-    def GetPartitionScheme(self, Disk, DiskLineNumber=None):
-        """Get the partition scheme for devices"""
-        #Look for the information using the Disk's line number.
-        PartitionScheme = "Unknown"
-
-        for LineNumber in self.CapabilitiesLinesList:
-            #Return the Size info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
-            Result = LineNumber - DiskLineNumber
-
-            if Result < 15 and Result > 0:
-                PartitionScheme = self.Output[LineNumber].split(":")[-1]
-
-                if PartitionScheme in ("dos", "gpt"):
-                    #Use different terminology where wanted.
-                    if PartitionScheme == "dos":
-                        PartitionScheme = "mbr"
-
-                    logger.info("GetDevInfo: Main().GetPartitionScheme(): Found Partition Scheme info: "+PartitionScheme+"...")
-
-                else:
-                    PartitionScheme = "Unknown"
-
-            else: pass
-
-        return PartitionScheme
-
-    def GetFlags(self, Disk, DiskLineNumber=None): #*** Test this again ***
-        """Get the flags"""
-        #Look for the information using the Disk's line number.
-        Flags = []
-
-        for LineNumber in self.CapabilitiesLinesList:
-            #Return the Flags. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
-            Result = LineNumber - DiskLineNumber
-
-            if Result < 15 and Result > 0:
-                Flags = self.Output[LineNumber].split()[1:]
-
-                logger.info("GetDevInfo: Main().GetPartitionScheme(): Found flags: "+unicode(Flags)+"...")
-
-            else: pass
-
-        return Flags
-
-    def GetFSType(self, Disk, DiskLineNumber=None):
-        """Get the filesystem type for devices"""
-        #Look for the information using the Disk's line number.
-        FSType = "Unknown"
-
-        for LineNumber in self.ConfigurationLinesList:
-            #Return the FSType info. Use the found line if it is less than ten lines apart from the Disk line. Otherwise it's probably bogus.
-            Result = LineNumber - DiskLineNumber
-
-            if Result < 10 and Result > 0:
-                try:
-                    FSType = self.Output[LineNumber].split("filesystem=")[1].split()[0]
-
-                except IndexError:
-                    logger.warning("GetDevInfo: Main().GetFSType(): Couldn't get FSTYpe! Ignoring it...")
-                    continue
-
-                #Use different terminology where wanted.
-                if FSType == "fat":
-                    FSType = "vfat"
-
-            else: pass
-
-        return FSType
-
     def GetUUID(self, Disk):
         """Get the given partition's UUID""" #*** Test this again ***
         UUID = "Unknown"
@@ -228,7 +79,7 @@ class Main():
             logger.info("GetDevInfo: Main().GetUUID(): Found UUID ("+UUID+") for: "+Disk+"...")
 
         else:
-            logger.warning("GetDevInfo: Main().GetUUID(): Couldn't find UUID: "+Disk+"! This may cause problems down the line.")
+            logger.warning("GetDevInfo: Main().GetUUID(): Couldn't find UUID for: "+Disk+"! This may cause problems down the line.")
 
         return UUID
 
@@ -258,13 +109,13 @@ class Main():
 
         return ID
 
-    def GetInfo(self, Standalone=False): #*** When attributes don't apply e.g. partitions for a partition/fstype for disk, set them to "N/A"/[] ***
-        """Get Disk information."""
+    def GetInfo(self, Standalone=False): #*** Test this ***
+        """Get Disk Information."""
         logger.info("GetDevInfo: Main().GetInfo(): Preparing to get Disk info...")
 
         #Run lshw to try and get disk information.
-        logger.debug("GetDevInfo: Main().GetInfo(): Running 'lshw -sanitize -class disk -class volume'...")
-        runcmd = subprocess.Popen("LC_ALL=C lshw -sanitize -class disk -class volume", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        logger.debug("GetDevInfo: Main().GetInfo(): Running 'lshw -sanitize -class disk -class volume -xml'...")
+        runcmd = subprocess.Popen("LC_ALL=C lshw -sanitize -class disk -class volume -xml", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
         #Get the output.
         stdout, stderr = runcmd.communicate()
@@ -272,57 +123,6 @@ class Main():
         if Standalone:
             global DiskInfo
             DiskInfo = {}
-
-        logger.debug("GetDevInfo: Main().GetInfo(): Done.")
-
-        #Now we should be able to grab the names of all Disks, and detailed info on each Disk we find.
-        #Use rather a lot of lists to keep track of the line numbers of each Disk, Vendor, Product, Size, Description, and Capability line.
-        #I'm using my own counter here to make sure I get the right line number, not the first line with similar contents.
-        self.Output = stdout.split("\n")
-        DiskLinesList = []
-        self.VendorLinesList = []
-        self.ProductLinesList = []
-        self.SizeLinesList = []
-        self.DescriptionLinesList = []
-        self.CapabilitiesLinesList = []
-        self.ConfigurationLinesList = []
-
-        TempLineCount = -1
-
-        for Line in self.Output:
-            TempLineCount += 1
-
-            #Try to grab info.
-            if "logical name:" in Line:
-                try:
-                    Disk = Line.split()[2]
-
-                except IndexError:
-                    continue
-
-                #See if it's a Disk that's in our categories, and add it to the list if it is.
-                if '/dev/sd' in Disk or '/dev/sr' in Disk or '/dev/fd' in Disk or '/dev/hd' in Disk:
-                    DiskInfo[Disk] = {}
-                    DiskInfo[Disk]["Name"] = Disk
-                    DiskLinesList.append(TempLineCount)
-
-            elif "vendor:" in Line:
-                self.VendorLinesList.append(TempLineCount)
-
-            elif "product:" in Line:
-                self.ProductLinesList.append(TempLineCount)
-
-            elif "size:" in Line or "capacity:" in Line:
-                self.SizeLinesList.append(TempLineCount)
-
-            elif "description:" in Line:
-                self.DescriptionLinesList.append(TempLineCount)
-
-            elif "capabilities:" in Line:
-                self.CapabilitiesLinesList.append(TempLineCount)
-
-            elif "configuration:" in Line:
-                self.ConfigurationLinesList.append(TempLineCount)
 
         #Save some info for later use.
         #UUIDs.
@@ -333,128 +133,154 @@ class Main():
         cmd = subprocess.Popen("ls -l /dev/disk/by-id/", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.LsOutput = cmd.communicate()[0]
 
-        logger.info("GetDevInfo: Main().GetInfo(): Getting Disk info...")
+        logger.debug("GetDevInfo: Main().GetInfo(): Done.")
 
-        Keys = DiskInfo.keys()
-        Keys.sort()
+        self.Output = BeautifulSoup(stdout, "xml")
 
-        for Disk in Keys:
-            #Get the Vendor, Product, Size and Description for each drive.
-            #First find the line number where the Disk is. Don't log the output here, because it will waste lots of time and fill the log file with junk.
-            logger.debug("GetDevInfo: Main().GetInfo(): Finding Disk line number (number of line where Disk name is)...")
-            for Line in self.Output:
-                if self.FoundExactMatch(Item=Disk, Text=Line, Log=False):
-                    DiskLineNumber = self.Output.index(Line)
-                    break
+        #Find the disks.
+        for Node in self.Output.list.children:
+            if unicode(type(Node)) != "<class 'bs4.element.Tag'>":
+                continue
 
-            #Check if the Disk is a partition.
-            DiskIsPartition = self.IsPartition(Disk, DiskInfo)
+            #These are devices.
+            HostDisk = unicode(Node.logicalname.string)
+            DiskInfo[HostDisk] = {}
+            DiskInfo[HostDisk]["Name"] = HostDisk
+            DiskInfo[HostDisk]["Type"] = "Device"
+            DiskInfo[HostDisk]["HostDevice"] = "N/A"
+            DiskInfo[HostDisk]["Partitions"] = []
+            DiskInfo[HostDisk]["Vendor"] = unicode(Node.vendor.string)
+            DiskInfo[HostDisk]["Product"] = unicode(Node.product.string)
 
-            if DiskIsPartition:
-                DiskInfo[Disk]["Type"] = "Partition"
-                DiskInfo[Disk]["HostDevice"] = Disk[0:8]
-                DiskInfo[Disk]["Partitions"] = []
-                DiskInfo[Disk[0:8]]["Partitions"].append(Disk)
+            try:
+                DiskInfo[HostDisk]["RawCapacity"] = unicode(Node.size.string)
 
-            else:
-                DiskInfo[Disk]["Type"] = "Device"
-                DiskInfo[Disk]["HostDevice"] = "N/A"
-                DiskInfo[Disk]["Partitions"] = []
+            except AttributeError:
+                try:
+                    DiskInfo[HostDisk]["RawCapacity"] = unicode(Node.capacity.string)
 
-            #Get all other information, making sure it remains stable even if we found no info at all.
-            #Vendor.
-            if len(self.VendorLinesList) > 0:
-                Vendor = self.GetVendor(Disk, DiskLineNumber=DiskLineNumber)
+                except AttributeError:
+                    DiskInfo[HostDisk]["RawCapacity"] = "Unknown"
 
-            else:
-                Vendor = "Unknown"
+            #Round the sizes to make them human-readable.
+            UnitList = [None, "B", "KB", "MB", "GB", "TB", "PB"]
+            Unit = "B"
 
-            if Vendor != None:
-                DiskInfo[Disk]["Vendor"] = Vendor
+            #Catch an error in case Size is unknown.
+            try:
+                HumanSize = int(DiskInfo[HostDisk]["RawCapacity"])
 
-            else:
-                DiskInfo[Disk]["Vendor"] = "Unknown"
-
-            #Product.
-            if len(self.ProductLinesList) > 0:
-                Product = self.GetProduct(Disk, DiskInfo, DiskIsPartition, DiskLineNumber)
+            except ValueError:
+                DiskInfo[HostDisk]["Capacity"] = DiskInfo[HostDisk]["RawCapacity"]
 
             else:
-                Product = "Unknown"
+                while len(unicode(HumanSize)) > 3:
+                    #Shift up one unit.
+                    Unit = UnitList[UnitList.index(Unit)+1]
+                    HumanSize = HumanSize//1000
 
-            if Product != None:
-                DiskInfo[Disk]["Product"] = Product
+                #Include the unit in the result for both exact and human-readable sizes.
+                DiskInfo[HostDisk]["Capacity"] = unicode(HumanSize)+" "+Unit
 
-            else:
-                DiskInfo[Disk]["Product"] = "Unknown"
+            DiskInfo[HostDisk]["Description"] = unicode(Node.description.string)
+            DiskInfo[HostDisk]["Flags"] = []
 
-            #Size.
-            if len(self.SizeLinesList) > 0:
-                Size = self.GetSize(Disk, DiskLineNumber)
+            for Capability in Node.capabilities.children:
+                if unicode(type(Capability)) != "<class 'bs4.element.Tag'>" or Capability.name != "capability":
+                    continue
 
-            else:
-                Size = "Unknown"
+                DiskInfo[HostDisk]["Flags"].append(Capability["id"])
 
-            if Size != None:
-                DiskInfo[Disk]["Capacity"] = Size
+            DiskInfo[HostDisk]["Partitioning"] = DiskInfo[HostDisk]["Flags"][-1].split(":")[-1]
 
-            else:
-                DiskInfo[Disk]["Capacity"] = "Unknown"
-
-            #Description.
-            if len(self.DescriptionLinesList) > 0:
-                Description = self.GetDescription(Disk, DiskLineNumber=DiskLineNumber)
+            if DiskInfo[HostDisk]["Partitioning"] in ("gpt", "dos"):
+                if DiskInfo[HostDisk]["Partitioning"] == "dos":
+                    DiskInfo[HostDisk]["Partitioning"] = "mbr"
 
             else:
-                Description = "Unknown"
+                DiskInfo[HostDisk]["Partitioning"] = "Unknown"
 
-            if Description != None:
-                DiskInfo[Disk]["Description"] = Description
+            DiskInfo[HostDisk]["FileSystem"] = "N/A"
+            DiskInfo[HostDisk]["UUID"] = "N/A"
+            DiskInfo[HostDisk]["ID"] = self.GetID(HostDisk)
 
-            else:
-                DiskInfo[Disk]["Description"] = "Unknown"
+            #Get the info of any partitions these devices contain.
+            for SubNode in Node.children:
+                if unicode(type(SubNode)) != "<class 'bs4.element.Tag'>" or SubNode.name != "node":
+                    continue
 
-            #Partition Scheme and Flags. *** Needs testing ***
-            if len(self.CapabilitiesLinesList) > 0:
-                #Flags.
-                Flags = self.GetFlags(Disk, DiskLineNumber=DiskLineNumber)
+                try:
+                    Volume = unicode(SubNode.logicalname.string)
 
-                #Partition Scheme.
-                if DiskInfo[Disk]["Type"] == "Device" and "/dev/sr" not in Disk:
-                    PartitionScheme = self.GetPartitionScheme(Disk, DiskLineNumber=DiskLineNumber)
+                except AttributeError:
+                    Volume = HostDisk+unicode(SubNode.physid.string)
+
+                DiskInfo[Volume] = {}
+                DiskInfo[Volume]["Name"] = Volume
+                DiskInfo[Volume]["Type"] = "Partition"
+                DiskInfo[Volume]["HostDevice"] = HostDisk
+                DiskInfo[Volume]["Partitions"] = []
+                DiskInfo[HostDisk]["Partitions"].append(Volume)
+                DiskInfo[Volume]["Vendor"] = unicode(SubNode.vendor.string)
+                DiskInfo[Volume]["Product"] = "Host Device: "+DiskInfo[HostDisk]["Product"]
+
+                try:
+                    DiskInfo[Volume]["RawCapacity"] = unicode(SubNode.size.string)
+
+                except AttributeError:
+                    try:
+                        DiskInfo[Volume]["RawCapacity"] = unicode(SubNode.capacity.string)
+
+                    except AttributeError:
+                        DiskInfo[Volume]["RawCapacity"] = "Unknown"
+
+                #Round the sizes to make them human-readable.
+                UnitList = [None, "B", "KB", "MB", "GB", "TB", "PB"]
+                Unit = "B"
+
+                #Catch an error in case Size is unknown.
+                try:
+                    HumanSize = int(DiskInfo[Volume]["RawCapacity"])
+
+                except ValueError:
+                    DiskInfo[Volume]["Capacity"] = DiskInfo[Volume]["RawCapacity"]
 
                 else:
-                    PartitionScheme = "N/A"
+                    while len(unicode(HumanSize)) > 3:
+                        #Shift up one unit.
+                        Unit = UnitList[UnitList.index(Unit)+1]
+                        HumanSize = HumanSize//1000
 
-            else:
-                PartitionScheme = None
-                Flags = []
+                    #Include the unit in the result for both exact and human-readable sizes.
+                    DiskInfo[Volume]["Capacity"] = unicode(HumanSize)+" "+Unit
 
-            DiskInfo[Disk]["Partitioning"] = PartitionScheme
-            DiskInfo[Disk]["Flags"] = Flags
+                DiskInfo[Volume]["Description"] = unicode(SubNode.description.string)
+                DiskInfo[Volume]["Flags"] = []
 
-            #FSType.
-            if DiskInfo[Disk]["Type"] == "Partition":
-                if len(self.ConfigurationLinesList) > 0:
-                    FSType = self.GetFSType(Disk, DiskLineNumber=DiskLineNumber)
+                for Capability in SubNode.capabilities.children:
+                    if unicode(type(Capability)) != "<class 'bs4.element.Tag'>" or Capability.name != "capability":
+                        continue
 
-                else:
-                    FSType = "Unknown"
+                    DiskInfo[Volume]["Flags"].append(Capability["id"])
 
-                DiskInfo[Disk]["FileSystem"] = FSType
+                DiskInfo[Volume]["FileSystem"] = "Unknown"
 
-            else:
-                DiskInfo[Disk]["FileSystem"] = "N/A"
+                for Config in SubNode.configuration.children:
+                    if unicode(type(Config)) != "<class 'bs4.element.Tag'>" or Config.name != "setting":
+                        continue
 
-            #UUID.
-            if DiskInfo[Disk]["Type"] == "Partition":
-                DiskInfo[Disk]["UUID"] = self.GetUUID(Disk)
+                    if Config["id"] == "filesystem":
+                        DiskInfo[Volume]["FileSystem"] = unicode(Config["value"])
 
-            else:
-                DiskInfo[Disk]["UUID"] = "N/A"
+                        #Use different terminology where wanted.
+                        if DiskInfo[Volume]["FileSystem"] == "fat":
+                            DiskInfo[Volume]["FileSystem"] = "vfat"
 
-            #ID.
-            DiskInfo[Disk]["ID"] = self.GetID(Disk)
+                        break
+
+                DiskInfo[Volume]["Partitioning"] = "N/A"
+                DiskInfo[Volume]["UUID"] = self.GetUUID(Volume)
+                DiskInfo[Volume]["ID"] = self.GetID(Volume)
 
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
 
@@ -492,7 +318,8 @@ if __name__ == "__main__":
     import subprocess
     import re
     import logging
-    
+    from bs4 import BeautifulSoup
+
     #Set up basic logging to stdout.
     logger = logging
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=logging.DEBUG)
