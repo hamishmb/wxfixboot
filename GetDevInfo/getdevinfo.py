@@ -65,6 +65,101 @@ class Main():
         logger.info("GetDevInfo: Main().DeduplicateList(): Results: "+str(ResultsList)+"...")
         return ResultsList
 
+    def GetVendor(self, Node):
+        """Get the vendor"""
+        try:
+            return unicode(Node.vendor.string)
+
+        except AttributeError:
+            return "Unknown"
+
+    def GetProduct(self, Node):
+        """Get the product"""
+        try:
+            return unicode(Node.product.string)
+
+        except AttributeError:
+            return "Unknown"
+
+    def GetCapacity(self, Node):
+        """Get the capacity and human-readable capacity"""
+        try:
+            RawCapacity = unicode(Node.size.string)
+
+        except AttributeError:
+            try:
+                RawCapacity = unicode(Node.capacity.string)
+
+            except AttributeError:
+                return "Unknown", "Unknown"
+
+        #Round the sizes to make them human-readable.
+        UnitList = [None, "B", "KB", "MB", "GB", "TB", "PB"]
+        Unit = "B"
+        HumanSize = int(RawCapacity)
+
+        while len(unicode(HumanSize)) > 3:
+            #Shift up one unit.
+            Unit = UnitList[UnitList.index(Unit)+1]
+            HumanSize = HumanSize//1000
+
+        #Include the unit in the result for both exact and human-readable sizes.
+        return RawCapacity, unicode(HumanSize)+" "+Unit
+
+    def GetCapabilities(self, Node):
+        """Get the capabilities"""
+        Flags = []
+
+        try:
+            for Capability in Node.capabilities.children:
+                if unicode(type(Capability)) != "<class 'bs4.element.Tag'>" or Capability.name != "capability":
+                    continue
+
+                Flags.append(Capability["id"])
+
+        except AttributeError:
+            return []
+
+        else:
+            return Flags
+
+    def GetPartitioning(self, Node, Disk):
+        """Get the Paritioning"""
+        Partitioning = DiskInfo[Disk]["Flags"][-1].split(":")[-1]
+
+        if Partitioning in ("gpt", "dos"):
+            if Partitioning == "dos":
+                Partitioning = "mbr"
+
+        else:
+            Partitioning = "Unknown"
+
+        return Partitioning
+
+    def GetFileSystem(self, Node):
+        """Get the FileSystem type"""
+        FileSystem = "Unknown"
+
+        try:
+            for Config in Node.configuration.children:
+                if unicode(type(Config)) != "<class 'bs4.element.Tag'>" or Config.name != "setting":
+                    continue
+
+                if Config["id"] == "filesystem":
+                    FileSystem = unicode(Config["value"])
+
+                    #Use different terminology where wanted.
+                    if FileSystem == "fat":
+                        FileSystem = "vfat"
+
+                    break
+
+        except AttributeError:
+            return "Unknown"
+
+        else:
+            return FileSystem
+
     def GetUUID(self, Disk):
         """Get the given partition's UUID""" #*** Test this again ***
         UUID = "Unknown"
@@ -109,7 +204,52 @@ class Main():
 
         return ID
 
-    def GetInfo(self, Standalone=False): #*** Test this *** *** Doesn't detect logical partitions ***
+    def GetDeviceInfo(self, Node):
+        """Get Device Information"""
+        HostDisk = unicode(Node.logicalname.string)
+        DiskInfo[HostDisk] = {}
+        DiskInfo[HostDisk]["Name"] = HostDisk
+        DiskInfo[HostDisk]["Type"] = "Device"
+        DiskInfo[HostDisk]["HostDevice"] = "N/A"
+        DiskInfo[HostDisk]["Partitions"] = []
+        DiskInfo[HostDisk]["Vendor"] = self.GetVendor(Node)
+        DiskInfo[HostDisk]["Product"] = self.GetProduct(Node)
+        DiskInfo[HostDisk]["RawCapacity"], DiskInfo[HostDisk]["Capacity"] = self.GetCapacity(Node)
+        DiskInfo[HostDisk]["Description"] = unicode(Node.description.string)
+        DiskInfo[HostDisk]["Flags"] = self.GetCapabilities(Node)
+        DiskInfo[HostDisk]["Partitioning"] = self.GetPartitioning(Node, HostDisk)
+        DiskInfo[HostDisk]["FileSystem"] = "N/A"
+        DiskInfo[HostDisk]["UUID"] = "N/A"
+        DiskInfo[HostDisk]["ID"] = self.GetID(HostDisk)
+        return HostDisk
+
+    def GetPartitionInfo(self, SubNode, HostDisk):
+        """Get Partition Information"""
+        try:
+            Volume = unicode(SubNode.logicalname.string)
+
+        except AttributeError:
+            Volume = HostDisk+unicode(SubNode.physid.string)
+
+        DiskInfo[Volume] = {}
+        DiskInfo[Volume]["Name"] = Volume
+        DiskInfo[Volume]["Type"] = "Partition"
+        DiskInfo[Volume]["HostDevice"] = HostDisk
+        DiskInfo[Volume]["Partitions"] = []
+        DiskInfo[HostDisk]["Partitions"].append(Volume)
+        DiskInfo[Volume]["Vendor"] = self.GetVendor(SubNode)
+        DiskInfo[Volume]["Product"] = "Host Device: "+DiskInfo[HostDisk]["Product"]
+        DiskInfo[Volume]["RawCapacity"], DiskInfo[Volume]["Capacity"] = self.GetCapacity(SubNode)
+        DiskInfo[Volume]["Description"] = unicode(SubNode.description.string)
+        DiskInfo[Volume]["Flags"] = []
+        DiskInfo[Volume]["Flags"] = self.GetCapabilities(SubNode)
+        DiskInfo[Volume]["FileSystem"] = self.GetFileSystem(SubNode)
+        DiskInfo[Volume]["Partitioning"] = "N/A"
+        DiskInfo[Volume]["UUID"] = self.GetUUID(Volume)
+        DiskInfo[Volume]["ID"] = self.GetID(Volume)
+        return Volume
+
+    def GetInfo(self, Standalone=False): #*** Test this ***
         """Get Disk Information."""
         logger.info("GetDevInfo: Main().GetInfo(): Preparing to get Disk info...")
 
@@ -143,160 +283,18 @@ class Main():
                 continue
 
             #These are devices.
-            HostDisk = unicode(Node.logicalname.string)
-            DiskInfo[HostDisk] = {}
-            DiskInfo[HostDisk]["Name"] = HostDisk
-            DiskInfo[HostDisk]["Type"] = "Device"
-            DiskInfo[HostDisk]["HostDevice"] = "N/A"
-            DiskInfo[HostDisk]["Partitions"] = []
+            HostDisk = self.GetDeviceInfo(Node)
 
-            try:
-                DiskInfo[HostDisk]["Vendor"] = unicode(Node.vendor.string)
-
-            except AttributeError:
-                DiskInfo[HostDisk]["Vendor"] = "Unknown"
-
-            try:
-                DiskInfo[HostDisk]["Product"] = unicode(Node.product.string)
-
-            except AttributeError:
-                DiskInfo[HostDisk]["Product"] = "Unknown"
-
-            try:
-                DiskInfo[HostDisk]["RawCapacity"] = unicode(Node.size.string)
-
-            except AttributeError:
-                try:
-                    DiskInfo[HostDisk]["RawCapacity"] = unicode(Node.capacity.string)
-
-                except AttributeError:
-                    DiskInfo[HostDisk]["RawCapacity"] = "Unknown"
-
-            #Round the sizes to make them human-readable.
-            UnitList = [None, "B", "KB", "MB", "GB", "TB", "PB"]
-            Unit = "B"
-
-            #Catch an error in case Size is unknown.
-            try:
-                HumanSize = int(DiskInfo[HostDisk]["RawCapacity"])
-
-            except ValueError:
-                DiskInfo[HostDisk]["Capacity"] = DiskInfo[HostDisk]["RawCapacity"]
-
-            else:
-                while len(unicode(HumanSize)) > 3:
-                    #Shift up one unit.
-                    Unit = UnitList[UnitList.index(Unit)+1]
-                    HumanSize = HumanSize//1000
-
-                #Include the unit in the result for both exact and human-readable sizes.
-                DiskInfo[HostDisk]["Capacity"] = unicode(HumanSize)+" "+Unit
-
-            DiskInfo[HostDisk]["Description"] = unicode(Node.description.string)
-            DiskInfo[HostDisk]["Flags"] = []
-
-            for Capability in Node.capabilities.children:
-                if unicode(type(Capability)) != "<class 'bs4.element.Tag'>" or Capability.name != "capability":
-                    continue
-
-                DiskInfo[HostDisk]["Flags"].append(Capability["id"])
-
-            DiskInfo[HostDisk]["Partitioning"] = DiskInfo[HostDisk]["Flags"][-1].split(":")[-1]
-
-            if DiskInfo[HostDisk]["Partitioning"] in ("gpt", "dos"):
-                if DiskInfo[HostDisk]["Partitioning"] == "dos":
-                    DiskInfo[HostDisk]["Partitioning"] = "mbr"
-
-            else:
-                DiskInfo[HostDisk]["Partitioning"] = "Unknown"
-
-            DiskInfo[HostDisk]["FileSystem"] = "N/A"
-            DiskInfo[HostDisk]["UUID"] = "N/A"
-            DiskInfo[HostDisk]["ID"] = self.GetID(HostDisk)
+            #Detect any partitions and sub-partitions (logical partitions).
+            Partitions = Node.find_all("node")
 
             #Get the info of any partitions these devices contain.
-            for SubNode in Node.children:
+            for SubNode in Partitions:
                 if unicode(type(SubNode)) != "<class 'bs4.element.Tag'>" or SubNode.name != "node":
                     continue
 
-                try:
-                    Volume = unicode(SubNode.logicalname.string)
-
-                except AttributeError:
-                    Volume = HostDisk+unicode(SubNode.physid.string)
-
-                DiskInfo[Volume] = {}
-                DiskInfo[Volume]["Name"] = Volume
-                DiskInfo[Volume]["Type"] = "Partition"
-                DiskInfo[Volume]["HostDevice"] = HostDisk
-                DiskInfo[Volume]["Partitions"] = []
-                DiskInfo[HostDisk]["Partitions"].append(Volume)
-
-                try:
-                    DiskInfo[Volume]["Vendor"] = unicode(SubNode.vendor.string)
-
-                except AttributeError:
-                    DiskInfo[Volume]["Vendor"] = "Unknown"
-
-                DiskInfo[Volume]["Product"] = "Host Device: "+DiskInfo[HostDisk]["Product"]
-
-                try:
-                    DiskInfo[Volume]["RawCapacity"] = unicode(SubNode.size.string)
-
-                except AttributeError:
-                    try:
-                        DiskInfo[Volume]["RawCapacity"] = unicode(SubNode.capacity.string)
-
-                    except AttributeError:
-                        DiskInfo[Volume]["RawCapacity"] = "Unknown"
-
-                #Round the sizes to make them human-readable.
-                UnitList = [None, "B", "KB", "MB", "GB", "TB", "PB"]
-                Unit = "B"
-
-                #Catch an error in case Size is unknown.
-                try:
-                    HumanSize = int(DiskInfo[Volume]["RawCapacity"])
-
-                except ValueError:
-                    DiskInfo[Volume]["Capacity"] = DiskInfo[Volume]["RawCapacity"]
-
-                else:
-                    while len(unicode(HumanSize)) > 3:
-                        #Shift up one unit.
-                        Unit = UnitList[UnitList.index(Unit)+1]
-                        HumanSize = HumanSize//1000
-
-                    #Include the unit in the result for both exact and human-readable sizes.
-                    DiskInfo[Volume]["Capacity"] = unicode(HumanSize)+" "+Unit
-
-                DiskInfo[Volume]["Description"] = unicode(SubNode.description.string)
-                DiskInfo[Volume]["Flags"] = []
-
-                for Capability in SubNode.capabilities.children:
-                    if unicode(type(Capability)) != "<class 'bs4.element.Tag'>" or Capability.name != "capability":
-                        continue
-
-                    DiskInfo[Volume]["Flags"].append(Capability["id"])
-
-                DiskInfo[Volume]["FileSystem"] = "Unknown"
-
-                for Config in SubNode.configuration.children:
-                    if unicode(type(Config)) != "<class 'bs4.element.Tag'>" or Config.name != "setting":
-                        continue
-
-                    if Config["id"] == "filesystem":
-                        DiskInfo[Volume]["FileSystem"] = unicode(Config["value"])
-
-                        #Use different terminology where wanted.
-                        if DiskInfo[Volume]["FileSystem"] == "fat":
-                            DiskInfo[Volume]["FileSystem"] = "vfat"
-
-                        break
-
-                DiskInfo[Volume]["Partitioning"] = "N/A"
-                DiskInfo[Volume]["UUID"] = self.GetUUID(Volume)
-                DiskInfo[Volume]["ID"] = self.GetID(Volume)
+                #Partitions.
+                Volume = self.GetPartitionInfo(SubNode, HostDisk)
 
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
 
