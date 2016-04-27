@@ -31,23 +31,25 @@ class Main():
         #Make sure output is always in English.
         ExecCmds = "LC_ALL=C "+ExecCmds
 
-        #Get ready to run the command(s). *** Come up with something smarter than counter ***
+        #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
         Counter = 0
         Line = str("")
         LineList = []
 
-        #Run the command(s).
+        #Run the command(s). *** Silence UnicodeWarning when failing to convert Char to unicode *** *** Not really a problem cos if char can't be converted it isn't = to \n anyway, but annoying ***
         logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds)
         cmd = subprocess.Popen(ExecCmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
-        while cmd.poll() == None or Counter < 100000:
-            if cmd.poll() != None:
-                Counter += 1
-
+        while cmd.poll() == None or Counter < 100:
             Char = cmd.stdout.read(1)
+
+            if cmd.poll() != None and Char == "":
+                Counter += 1
+                break
+
             Line += Char
 
-            if Char in ("\n", "\r"): #*** Silence UnicodeWarning when failing to convert Char to unicode *** *** Not really a problem cos if char can't be converted it isn't = to \n anyway, but annoying ***
+            if Char in ("\n", "\r"):
                 #Convert to unicode if needed and remove "NULL" characters.
                 if unicode(type(Line)) != "<type 'unicode'>":
                     Line = unicode(Line, errors="replace").replace("\x00", "")
