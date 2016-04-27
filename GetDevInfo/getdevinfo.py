@@ -109,7 +109,7 @@ class Main():
 
         return ID
 
-    def GetInfo(self, Standalone=False): #*** Test this ***
+    def GetInfo(self, Standalone=False): #*** Test this *** *** Doesn't detect logical partitions ***
         """Get Disk Information."""
         logger.info("GetDevInfo: Main().GetInfo(): Preparing to get Disk info...")
 
@@ -231,7 +231,13 @@ class Main():
                 DiskInfo[Volume]["HostDevice"] = HostDisk
                 DiskInfo[Volume]["Partitions"] = []
                 DiskInfo[HostDisk]["Partitions"].append(Volume)
-                DiskInfo[Volume]["Vendor"] = unicode(SubNode.vendor.string)
+
+                try:
+                    DiskInfo[Volume]["Vendor"] = unicode(SubNode.vendor.string)
+
+                except AttributeError:
+                    DiskInfo[Volume]["Vendor"] = "Unknown"
+
                 DiskInfo[Volume]["Product"] = "Host Device: "+DiskInfo[HostDisk]["Product"]
 
                 try:
