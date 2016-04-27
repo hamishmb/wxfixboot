@@ -149,8 +149,18 @@ class Main():
             DiskInfo[HostDisk]["Type"] = "Device"
             DiskInfo[HostDisk]["HostDevice"] = "N/A"
             DiskInfo[HostDisk]["Partitions"] = []
-            DiskInfo[HostDisk]["Vendor"] = unicode(Node.vendor.string)
-            DiskInfo[HostDisk]["Product"] = unicode(Node.product.string)
+
+            try:
+                DiskInfo[HostDisk]["Vendor"] = unicode(Node.vendor.string)
+
+            except AttributeError:
+                DiskInfo[HostDisk]["Vendor"] = "Unknown"
+
+            try:
+                DiskInfo[HostDisk]["Product"] = unicode(Node.product.string)
+
+            except AttributeError:
+                DiskInfo[HostDisk]["Product"] = "Unknown"
 
             try:
                 DiskInfo[HostDisk]["RawCapacity"] = unicode(Node.size.string)
