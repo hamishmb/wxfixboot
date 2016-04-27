@@ -469,11 +469,11 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
             if SystemInfo["BootloaderToInstall"] == "ELILO": #*** Test this works ***
                 if DiskInfo[UEFISystemPartition]["UUID"] == "Unknown": #*** Warn user? ***
                     logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+UEFISystemPartition+"! This might not work cos it can change!")
-                    NewFileContents.append("\troot="+UEFISystemPartition+"\n")
+                    NewFileContents.append("\troot="+Partition+"\n")
 
                 else:
                     logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[UEFISystemPartition]["UUID"]+"...")
-                    NewFileContents.append("\troot=UUID="+DiskInfo[UEFISystemPartition]["UUID"]+"\n")
+                    NewFileContents.append("\troot=UUID="+DiskInfo[Partition]["UUID"]+"\n")
 
             else:
                 if DiskInfo[Partition]["UUID"] == "Unknown": #*** Warn user? ***
