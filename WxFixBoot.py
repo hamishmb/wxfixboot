@@ -21,6 +21,8 @@
 #*** Test DialogTools.ShowMultiChoiceDlg() ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** Allow getting device info after startup (run some startup scripts again) ****
+#*** Remove grub.efi files after installing elilo and vice versa ***
+#*** Support EFI on 32-bit firmware? ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -46,7 +48,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "27/4/2016"
+ReleaseDate = "28/4/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -121,6 +123,8 @@ from Tools.BackendTools.BootloaderTools.getconfigtools import Main as Bootloader
 from Tools.BackendTools.BootloaderTools.removaltools import Main as BootloaderRemovalToolsCallable
 from Tools.BackendTools.BootloaderTools.installationtools import Main as BootloaderInstallationToolsCallable
 from Tools.BackendTools.BootloaderTools.setconfigtools import Main as BootloaderConfigSettingToolsCallable
+
+import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
 
 #Access these modules without the "()" so conditional tests can work.
 DevInfoTools = DevInfoToolsCallable()
@@ -233,6 +237,10 @@ Tools.BackendTools.BootloaderTools.setconfigtools.os = os
 Tools.BackendTools.BootloaderTools.setconfigtools.CoreTools = CoreTools
 Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
+
+#NoteBookSharedFunctions module.
+NoteBookSharedFunctions.wx = wx
+NoteBookSharedFunctions.logger = logger
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
@@ -404,6 +412,7 @@ class InitThread(threading.Thread):
         Tools.StartupTools.main.SystemInfo = SystemInfo
         Tools.StartupTools.main.Settings = Settings
         GetDevInfo.getdevinfo.DiskInfo = DiskInfo
+        NoteBookSharedFunctions.DiskInfo = DiskInfo
 
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
@@ -1024,7 +1033,7 @@ class MainWindow(wx.Frame):
         #Check if we need to prepare to install a new bootloader, and do so first if needed.
         if MainBootloaderTools.ManageBootloaders in Operations or MainBootloaderTools.ReinstallBootloader in Operations or MainBootloaderTools.UpdateBootloader in Operations:
             logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding MainBootloaderTools.PrepareForBootloaderInstallation()...")
-            Operations.insert(0, MainBootloaderTools.PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations *** *** Why not? *** *** Must be before these three though ***
+            Operations.insert(0, MainBootloaderTools.PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations *** *** Why not? *** *** Must be before these three though *** *** Get rid of this soon ***
 
         NumberOfOperations = len(Operations)
 
@@ -1091,80 +1100,26 @@ class MainWindow(wx.Frame):
             self.Destroy()
 
 #End Main window
-#Begin Disk Info Window #*** Updating here doesn't work right now ***
-class DevInfoWindow(wx.Frame):
-    def __init__(self,ParentWindow):
-        """Initialize DevInfoWindow"""
-        wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - Disk Information", size=(780,310), style=wx.DEFAULT_FRAME_STYLE)
-        self.Panel = wx.Panel(self)
-        self.SetClientSize(wx.Size(780,310))
+#Begin System Info Page 1.
+class SystemInfoPage1(wx.Panel):
+    def __init__(self, ParentWindow):
+        """Initialise SystemInfoPage1"""
+        wx.Panel.__init__(self, ParentWindow)
         self.ParentWindow = ParentWindow
-        wx.Frame.SetIcon(self, AppIcon)
 
-        logger.debug("DevInfoWindow().__init__(): Creating widgets...")
-        self.CreateWidgets()
+        logger.debug("SystemInfoPage1().__init__(): Creating widgets...")
+        NoteBookSharedFunctions.CreateWidgets(self)
 
-        logger.debug("DevInfoWindow().__init__(): Setting up sizers...")
-        self.SetupSizers()
+        logger.debug("SystemInfoPage1().__init__(): Setting up sizers...")
+        NoteBookSharedFunctions.SetupSizers(self)
 
-        logger.debug("DevInfoWindow().__init__(): Binding events...")
-        self.BindEvents()
+        logger.debug("SystemInfoPage1().__init__(): Binding events...")
+        NoteBookSharedFunctions.BindEvents(self)
 
         #Use already-present info for the list ctrl if possible.
         if 'DiskInfo' in globals():
-            logger.debug("DevInfoWindow().__init__(): Updating list ctrl with Disk info already present...")
-            self.UpdateListCtrl()
-
-        #Call Layout() on self.Panel() to ensure it displays properly.
-        self.Panel.Layout()
-
-        logger.info("DevInfoWindow().__init__(): Ready. Waiting for events...")
-
-    def CreateWidgets(self):
-        """Create all widgets for DevInfoWindow"""
-        self.TitleText = wx.StaticText(self.Panel, -1, "Here are all the detected disks on your computer")
-        self.ListCtrl = wx.ListCtrl(self.Panel, -1, style=wx.LC_REPORT|wx.LC_VRULES)
-        self.OkayButton = wx.Button(self.Panel, -1, "Okay")
-        self.RefreshButton = wx.Button(self.Panel, -1, "Refresh")
-
-        #Create the animation for the throbber.
-        throb = wx.animate.Animation("/usr/share/wxfixboot/images/Throbber.gif")
-        self.Throbber = wx.animate.AnimationCtrl(self.Panel, -1, throb)
-        self.Throbber.SetUseWindowBackgroundColour(True)
-        self.Throbber.SetInactiveBitmap(wx.Bitmap("/usr/share/wxfixboot/images/ThrobberRest.png", wx.BITMAP_TYPE_PNG))
-        self.Throbber.SetClientSize(wx.Size(30,30))
-
-    def SetupSizers(self):
-        """Set up the sizers for DevInfoWindow"""
-        #Make a button boxsizer.
-        BottomSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        #Add each object to the bottom sizer.
-        BottomSizer.Add(self.RefreshButton, 0, wx.LEFT|wx.RIGHT|wx.ALIGN_LEFT, 10)
-        BottomSizer.Add((20,20), 1)
-        BottomSizer.Add(self.Throbber, 0, wx.ALIGN_CENTER|wx.FIXED_MINSIZE)
-        BottomSizer.Add((20,20), 1)
-        BottomSizer.Add(self.OkayButton, 0, wx.LEFT|wx.RIGHT|wx.ALIGN_RIGHT, 10)
-
-        #Make a boxsizer.
-        MainSizer = wx.BoxSizer(wx.VERTICAL)
-
-        #Add each object to the main sizer.
-        MainSizer.Add(self.TitleText, 0, wx.ALL|wx.CENTER, 10)
-        MainSizer.Add(self.ListCtrl, 1, wx.EXPAND|wx.ALL, 10)
-        MainSizer.Add(BottomSizer, 0, wx.EXPAND|wx.ALL ^ wx.TOP, 10)
-
-        #Get the sizer set up for the frame.
-        self.Panel.SetSizer(MainSizer)
-        MainSizer.SetMinSize(wx.Size(780,310))
-        MainSizer.SetSizeHints(self)
-
-    def BindEvents(self):
-        """Bind all events for DevInfoWindow"""
-        self.Bind(wx.EVT_BUTTON, self.GetDiskInfo, self.RefreshButton)
-        self.Bind(wx.EVT_BUTTON, self.OnExit, self.OkayButton)
-        self.Bind(wx.EVT_SIZE, self.OnSize)
-        self.Bind(wx.EVT_CLOSE, self.OnExit)
+            logger.debug("SystemInfoPage1().__init__(): Updating list ctrl with Disk info already present...")
+            NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Vendor", "Product", "Capacity", "Description"])
 
     def OnSize(self, Event=None):
         """Auto resize the ListCtrl columns"""
@@ -1182,7 +1137,7 @@ class DevInfoWindow(wx.Frame):
 
     def GetDiskInfo(self, Event=None):
         """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
-        logger.info("DevInfoWindow().UpdateDevInfo(): Generating new Disk info...")
+        logger.info("SystemInfoPage1().UpdateDevInfo(): Generating new Disk info...")
         self.RefreshButton.Disable()
         self.Throbber.Play()
         GetDiskInformation(self)
@@ -1193,8 +1148,8 @@ class DevInfoWindow(wx.Frame):
         DiskInfo = Info
 
         #Update the list control.
-        logger.debug("DevInfoWindow().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
-        self.UpdateListCtrl()
+        logger.debug("SystemInfoPage1().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Vendor", "Product", "Capacity", "Description"])
 
         #Stop the throbber and enable the refresh button.
         self.Throbber.Stop()
@@ -1202,11 +1157,11 @@ class DevInfoWindow(wx.Frame):
 
     def UpdateListCtrl(self, Event=None):
         """Update the list control"""
-        logger.debug("DevInfoWindow().UpdateListCtrl(): Clearing all objects in list ctrl...")
+        logger.debug("SystemInfoPage1().UpdateListCtrl(): Clearing all objects in list ctrl...")
         self.ListCtrl.ClearAll()
 
         #Create the columns.
-        logger.debug("DevInfoWindow().UpdateListCtrl(): Inserting columns into list ctrl...")
+        logger.debug("SystemInfoPage1().UpdateListCtrl(): Inserting columns into list ctrl...")
         self.ListCtrl.InsertColumn(col=0, heading="Name", format=wx.LIST_FORMAT_CENTRE)
         self.ListCtrl.InsertColumn(col=1, heading="Type", format=wx.LIST_FORMAT_CENTRE)
         self.ListCtrl.InsertColumn(col=2, heading="Vendor", format=wx.LIST_FORMAT_CENTRE)
@@ -1215,7 +1170,7 @@ class DevInfoWindow(wx.Frame):
         self.ListCtrl.InsertColumn(col=5, heading="Description", format=wx.LIST_FORMAT_CENTRE) 
 
         #Add info from the custom module.
-        logger.debug("DevInfoWindow().UpdateListCtrl(): Adding Disk info to list ctrl...")
+        logger.debug("SystemInfoPage1().UpdateListCtrl(): Adding Disk info to list ctrl...")
 
         Keys = DiskInfo.keys()
         Keys.sort()
@@ -1234,6 +1189,99 @@ class DevInfoWindow(wx.Frame):
 
         #Auto Resize the columns.
         self.OnSize()
+
+#End System Info Page 1
+#Begin System Info Page 2.
+class SystemInfoPage2(wx.Panel):
+    def __init__(self, ParentWindow):
+        """Initialise SystemInfoPage2"""
+        wx.Panel.__init__(self, ParentWindow)
+        self.ParentWindow = ParentWindow
+
+        logger.debug("SystemInfoPage2().__init__(): Creating widgets...")
+        NoteBookSharedFunctions.CreateWidgets(self)
+
+        logger.debug("SystemInfoPage2().__init__(): Setting up sizers...")
+        NoteBookSharedFunctions.SetupSizers(self)
+
+        logger.debug("SystemInfoPage2().__init__(): Binding events...")
+        NoteBookSharedFunctions.BindEvents(self)
+
+        #Use already-present info for the list ctrl if possible.
+        if 'DiskInfo' in globals():
+            logger.debug("SystemInfoPage2().__init__(): Updating list ctrl with Disk info already present...")
+            NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Partitions", "Flags", "Partitioning", "FileSystem"])
+
+    def OnSize(self, Event=None):
+        """Auto resize the ListCtrl columns"""
+        Width, Height = self.ListCtrl.GetClientSizeTuple()
+
+        self.ListCtrl.SetColumnWidth(0, int(Width * 0.15))
+        self.ListCtrl.SetColumnWidth(1, int(Width * 0.1))
+        self.ListCtrl.SetColumnWidth(2, int(Width * 0.25))
+        self.ListCtrl.SetColumnWidth(3, int(Width * 0.3))
+        self.ListCtrl.SetColumnWidth(4, int(Width * 0.1))
+        self.ListCtrl.SetColumnWidth(5, int(Width * 0.1))
+
+        if Event != None:
+            Event.Skip()
+
+    def GetDiskInfo(self, Event=None):
+        """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
+        logger.info("SystemInfoPage2().UpdateDevInfo(): Generating new Disk info...")
+        self.RefreshButton.Disable()
+        self.Throbber.Play()
+        GetDiskInformation(self)
+
+    def ReceiveDiskInfo(self, Info):
+        """Get Disk data, call self.UpdateListCtrl()"""
+        global DiskInfo
+        DiskInfo = Info
+
+        #Update the list control.
+        logger.debug("SystemInfoPage2().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Partitions", "Flags", "Partitioning", "FileSystem"])
+
+        #Stop the throbber and enable the refresh button.
+        self.Throbber.Stop()
+        self.RefreshButton.Enable()
+
+#End System Info Page 2
+#Begin System Info Window #*** Updating disk info here doesn't work right now *** *** Try to save RAM and refactor here ***
+class DevInfoWindow(wx.Frame):
+    def __init__(self, ParentWindow):
+        """Initialize DevInfoWindow"""
+        wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - Disk Information", size=(780,310), style=wx.DEFAULT_FRAME_STYLE)
+        self.Panel = wx.Panel(self)
+        self.SetClientSize(wx.Size(780,310))
+        self.ParentWindow = ParentWindow
+        wx.Frame.SetIcon(self, AppIcon)
+
+        #Set up the notebook and the pages.
+        self.NoteBook = wx.Notebook(self.Panel)
+        Page1 = SystemInfoPage1(self.NoteBook)
+        Page2 = SystemInfoPage2(self.NoteBook)
+
+        self.NoteBook.AddPage(Page1, "Disk Info 1")
+        self.NoteBook.AddPage(Page2, "Disk Info 2")
+
+        #Set up the sizer.
+        MainSizer = wx.BoxSizer()
+        MainSizer.Add(self.NoteBook, 1, wx.EXPAND)
+        self.Panel.SetSizer(MainSizer)
+        MainSizer.SetMinSize(wx.Size(780,310))
+        MainSizer.SetSizeHints(self)
+
+        self.BindEvents()
+
+        #Call Layout() on self.Panel() to ensure it displays properly.
+        self.Panel.Layout()
+
+        logger.info("DevInfoWindow().__init__(): Ready. Waiting for events...")
+
+    def BindEvents(self):
+        """Bind all events for SystemInfoWindow"""
+        self.Bind(wx.EVT_CLOSE, self.OnExit)
 
     def OnExit(self, Event=None):
         """Exit DevInfoWindow"""
@@ -2190,10 +2238,57 @@ class BootloaderOptionsWindow(wx.Frame):
         self.Destroy()
 
 #End Bootloader Options Window
+#Begin New Bootloader Options Window.
+class NewBootloaderOptionsWindow(wx.Frame):
+    def __init__(self, ParentWindow):
+        """Initialise bootloader options window"""
+        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Bootloader Options", size=(400,200), style=wx.DEFAULT_FRAME_STYLE)
+        self.Panel = wx.Panel(self)
+        self.SetClientSize(wx.Size(400,200))
+        self.ParentWindow = ParentWindow
+        wx.Frame.SetIcon(self, AppIcon)
+
+        self.CreateText()
+        self.CreateChoiceBoxes()
+        self.CreateCheckBoxes()
+        self.CreateButtons()
+        self.SetupSizers()
+        self.BindEvents()
+
+        #Set up the window.
+        self.SetupOptions()
+        
+        logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Winow Started.")
+
+    def CreateText(self):
+        """Create the text"""
+        pass
+
+    def CreateChoiceBoxes(self):
+        """Create the choice boxes"""
+        pass
+
+    def CheckCheckBoxes(self):
+        """Create the check boxes"""
+        pass
+
+    def CreateButtons(self):
+        """Create the buttons"""
+        pass
+
+    def SetupSizers(self):
+        """Setup the sizers"""
+        pass
+
+    def BindEvents(self):
+        """Bind all events for BootloaderOptionsWindow"""
+        pass
+
+#End New Bootloader Options Window.
 #Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later ***
 class RestoreWindow(wx.Frame):
     def __init__(self, ParentWindow, Type):
-        """Initialise RetsoreWindow"""
+        """Initialise RestoreWindow"""
         logger.debug("RestoreWindow().__init__(): Restore "+Type+" Window Started.")
         title = "WxFixBoot - Restore the "+Type
 
@@ -2203,9 +2298,6 @@ class RestoreWindow(wx.Frame):
         self.ParentWindow = ParentWindow
         self.Type = Type
         wx.Frame.SetIcon(self, AppIcon)
-
-        #Save the frame's width and height, making it easier to centre text.
-        self.width, self.height = self.GetSizeTuple()
 
         self.CreateText()
         self.CreateRadios()
@@ -2507,9 +2599,6 @@ class ProgressWindow(wx.Frame):
         self.SetClientSize(wx.Size(500,300))
         wx.Frame.SetIcon(self, AppIcon)
         Tools.coretools.ParentWindow = self
-
-        #Save the frame's width and height, making it easier to centre text.
-        self.width, self.height = self.GetSizeTuple()
 
         self.CreateText()
         self.CreateButtons()
