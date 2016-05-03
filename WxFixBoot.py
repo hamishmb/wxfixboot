@@ -684,7 +684,7 @@ class MainWindow(wx.Frame):
         #Adding Menu Items.
         self.menuAbout = helpmenu.Append(wx.ID_ABOUT, "&About", "Information about this program")
         self.menuExit = filemenu.Append(wx.ID_EXIT,"&Exit", "Terminate this program")
-        self.menuDevInfo = viewmenu.Append(wx.ID_ANY,"&Device Information", "Information about all detected devices") 
+        self.menuSystemInfo = viewmenu.Append(wx.ID_ANY,"&System Information", "Information about all detected disks, OSs, and Bootloaders") 
         self.menuOpts = editmenu.Append(wx.ID_PREFERENCES, "&Options", "General settings used to modify your system")
 
         #Creating the menubar.
@@ -791,10 +791,10 @@ class MainWindow(wx.Frame):
         self.Hide()
         SettingsWindow(self).Show()
 
-    def DevInfo(self, Event=None):
-        """Start DevInfoWindow"""
-        logger.debug("MainWindow().DevInfo(): Starting Device Info Window...")
-        DevInfoWindow(self).Show()
+    def SystemInfo(self, Event=None):
+        """Start SystemInfoWindow"""
+        logger.debug("MainWindow().SystemInfo(): Starting System Info Window...")
+        SystemInfoWindow(self).Show()
 
     def ProgressWindow(self, Event=None):
         """Starts Progress Window"""
@@ -904,7 +904,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnExit)
         self.Bind(wx.EVT_BUTTON, self.OnAbout, self.AboutButton)
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.ExitButton)
-        self.Bind(wx.EVT_MENU, self.DevInfo, self.menuDevInfo)
+        self.Bind(wx.EVT_MENU, self.SystemInfo, self.menuSystemInfo)
         self.Bind(wx.EVT_MENU, self.Opts, self.menuOpts)
         self.Bind(wx.EVT_BUTTON, self.Opts, self.OptionsButton)
         self.Bind(wx.EVT_BUTTON, self.ProgressWindow, self.ApplyOperationsButton)
@@ -1265,11 +1265,65 @@ class SystemInfoPage3(wx.Panel):
         self.RefreshButton.Enable()
 
 #End System Info Page 3
-#Begin System Info Window #*** Updating disk info here doesn't work right now ***
-class DevInfoWindow(wx.Frame):
+#Begin System Info Page 4.
+class SystemInfoPage4(wx.Panel):
     def __init__(self, ParentWindow):
-        """Initialize DevInfoWindow"""
-        wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - Disk Information", size=(780,310), style=wx.DEFAULT_FRAME_STYLE)
+        """Initialise SystemInfoPage4"""
+        wx.Panel.__init__(self, ParentWindow)
+        self.ParentWindow = ParentWindow
+
+        logger.debug("SystemInfoPage4().__init__(): Creating widgets...")
+        NoteBookSharedFunctions.CreateWidgets(self)
+
+        logger.debug("SystemInfoPage4().__init__(): Setting up sizers...")
+        NoteBookSharedFunctions.SetupSizers(self)
+
+        logger.debug("SystemInfoPage4().__init__(): Binding events...")
+        NoteBookSharedFunctions.BindEvents(self)
+
+        logger.debug("SystemInfoPage4().__init__(): Updating list ctrl with OS Info...")
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager"], Dictionary=OSInfo)
+
+    def OnSize(self, Event=None):
+        """Auto resize the ListCtrl columns"""
+        Width, Height = self.ListCtrl.GetClientSizeTuple()
+
+        self.ListCtrl.SetColumnWidth(0, int(Width * 0.4))
+        self.ListCtrl.SetColumnWidth(1, int(Width * 0.1))
+        self.ListCtrl.SetColumnWidth(2, int(Width * 0.1))
+        self.ListCtrl.SetColumnWidth(3, int(Width * 0.2))
+        self.ListCtrl.SetColumnWidth(4, int(Width * 0.2))
+        #self.ListCtrl.SetColumnWidth(5, int(Width * 0.35)) *** Add IsModifyable ***
+
+        if Event != None:
+            Event.Skip()
+
+    def GetDiskInfo(self, Event=None):
+        """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
+        logger.info("SystemInfoPage4().UpdateDevInfo(): Generating new Disk info...")
+        self.RefreshButton.Disable()
+        self.Throbber.Play()
+        GetDiskInformation(self)
+
+    def ReceiveDiskInfo(self, Info):
+        """Get Disk data, call self.UpdateListCtrl()"""
+        global DiskInfo
+        DiskInfo = Info
+
+        #Update the list control.
+        logger.debug("SystemInfoPage4().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager"], Dictionary=OSInfo)
+
+        #Stop the throbber and enable the refresh button.
+        self.Throbber.Stop()
+        self.RefreshButton.Enable()
+
+#End System Info Page 4
+#Begin System Info Window #*** Updating disk info here doesn't work right now ***
+class SystemInfoWindow(wx.Frame):
+    def __init__(self, ParentWindow):
+        """Initialize SystemInfoWindow"""
+        wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - System Information", size=(780,310), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(780,310))
         self.ParentWindow = ParentWindow
@@ -1280,10 +1334,12 @@ class DevInfoWindow(wx.Frame):
         Page1 = SystemInfoPage1(self.NoteBook)
         Page2 = SystemInfoPage2(self.NoteBook)
         Page3 = SystemInfoPage3(self.NoteBook)
+        Page4 = SystemInfoPage4(self.NoteBook)
 
         self.NoteBook.AddPage(Page1, "Disk Info 1")
         self.NoteBook.AddPage(Page2, "Disk Info 2")
         self.NoteBook.AddPage(Page3, "Disk Info 3")
+        self.NoteBook.AddPage(Page4, "OS Info")
 
         #Set up the sizer.
         MainSizer = wx.BoxSizer()
@@ -1297,18 +1353,18 @@ class DevInfoWindow(wx.Frame):
         #Call Layout() on self.Panel() to ensure it displays properly.
         self.Panel.Layout()
 
-        logger.info("DevInfoWindow().__init__(): Ready. Waiting for events...")
+        logger.info("SystemInfoWindow().__init__(): Ready. Waiting for events...")
 
     def BindEvents(self):
         """Bind all events for SystemInfoWindow"""
         self.Bind(wx.EVT_CLOSE, self.OnExit)
 
     def OnExit(self, Event=None):
-        """Exit DevInfoWindow"""
-        logger.info("DevInfoWindow().OnExit(): Closing DevInfoWindow...")
+        """Exit SystemInfoWindow"""
+        logger.info("SystemInfoWindow().OnExit(): Closing SystemInfoWindow...")
         self.Destroy()
 
-#End Disk Info Window
+#End System Info Window
 #Begin Settings Window
 class SettingsWindow(wx.Frame):
     def __init__(self, ParentWindow):

@@ -162,11 +162,13 @@ class Main():
                 Cmd = "lsb_release -sd"
                 APTCmd = "which apt-get"
                 Chroot = False
+                IsCurrentOS = True
 
             else:
                 Cmd = "chroot /mnt"+Partition+" lsb_release -sd"
                 APTCmd = "chroot /mnt"+Partition+" which apt-get"
                 Chroot = True
+                IsCurrentOS = False
 
                 #Mount the partition and check if anything went wrong.
                 if CoreTools.MountPartition(Partition=Partition, MountPoint="/mnt"+Partition) != 0:
@@ -203,7 +205,7 @@ class Main():
                 #Add this information to OSInfo.
                 OSInfo[OSName] = {}
                 OSInfo[OSName]["Name"] = OSName
-                OSInfo[OSName]["IsCurrentOS"] = False
+                OSInfo[OSName]["IsCurrentOS"] = IsCurrentOS
                 OSInfo[OSName]["Arch"] = OSArch
                 OSInfo[OSName]["Partition"] = Partition
                 OSInfo[OSName]["PackageManager"] = "apt-get"

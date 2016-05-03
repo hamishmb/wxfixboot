@@ -98,6 +98,9 @@ def UpdateListCtrl(self, Event=None, Headings=[], Dictionary={}):
             if unicode(type(Data)) == "<type 'list'>":
                 Data = ', '.join(Data)
 
+            elif unicode(type(Data)) != "<type 'str'>" or unicode(type(Data)) != "<type 'unicode'>":
+                Data = unicode(Data)
+
             if Column == 0:
                 self.ListCtrl.InsertStringItem(index=Number, label=Data)
 
