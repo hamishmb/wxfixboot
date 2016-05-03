@@ -2423,14 +2423,18 @@ class NewBootloaderOptionsWindow(wx.Frame):
         OSInfoSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to OSInfoSizer.
-        OSInfoSizer.Add(self.OSInfoText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        OSInfoSizer.Add(self.Arrow1, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        OSInfoSizer.Add((5,5), 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        OSInfoSizer.Add(self.OSInfoText, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        OSInfoSizer.Add(self.Arrow1, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        OSInfoSizer.Add((5,5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         BasicOptionsSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to BasicOptionsSizer.
-        BasicOptionsSizer.Add(self.BasicOptionsText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        BasicOptionsSizer.Add(self.Arrow2, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        BasicOptionsSizer.Add((5,5), 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        BasicOptionsSizer.Add(self.BasicOptionsText, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        BasicOptionsSizer.Add(self.Arrow2, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        BasicOptionsSizer.Add((5,5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         FixAndUpdateBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -2441,9 +2445,10 @@ class NewBootloaderOptionsWindow(wx.Frame):
         TimeoutSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to TimeoutSizer.
-        TimeoutSizer.Add(self.KeepBootloaderTimeoutCheckBox, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        TimeoutSizer.Add(self.NewTimeoutText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        TimeoutSizer.Add(self.BootloaderTimeoutSpinner, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        TimeoutSizer.Add(self.KeepBootloaderTimeoutCheckBox, 3, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        TimeoutSizer.Add((5,5), 1, wx.RIGHT|wx.LEFT, 5)
+        TimeoutSizer.Add(self.NewTimeoutText, 2, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        TimeoutSizer.Add(self.BootloaderTimeoutSpinner, 3, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         DefaultOSSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -2454,29 +2459,31 @@ class NewBootloaderOptionsWindow(wx.Frame):
         AdvancedOptionsSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to AdvancedOptionsSizer.
-        AdvancedOptionsSizer.Add(self.AdvancedOptionsText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        AdvancedOptionsSizer.Add(self.Arrow3, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        AdvancedOptionsSizer.Add((5,5), 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        AdvancedOptionsSizer.Add(self.AdvancedOptionsText, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        AdvancedOptionsSizer.Add(self.Arrow3, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        AdvancedOptionsSizer.Add((5,5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         InstallNewBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to InstallNewBootloaderSizer.
-        InstallNewBootloaderSizer.Add(self.InstallNewBootloaderCheckBox, 1, wx.RIGHT, 5)
+        InstallNewBootloaderSizer.Add(self.InstallNewBootloaderCheckBox, 2, wx.RIGHT, 5)
         InstallNewBootloaderSizer.Add(self.NewBootloaderText, 1, wx.RIGHT|wx.LEFT, 5)
-        InstallNewBootloaderSizer.Add(self.NewBootloaderChoice, 1, wx.LEFT, 5)
+        InstallNewBootloaderSizer.Add(self.NewBootloaderChoice, 2, wx.LEFT, 5)
 
         BackupBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to BackupBootloaderSizer.
-        BackupBootloaderSizer.Add(self.BackupBootloaderCheckBox, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        BackupBootloaderSizer.Add(self.BackupBootloaderCheckBox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
         BackupBootloaderSizer.Add(self.BackupBootloaderText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        BackupBootloaderSizer.Add(self.BackupBootloaderChoice, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        BackupBootloaderSizer.Add(self.BackupBootloaderChoice, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         RestoreBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to RestoreBootloaderSizer.
-        RestoreBootloaderSizer.Add(self.RestoreBootloaderCheckBox, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        RestoreBootloaderSizer.Add(self.RestoreBootloaderCheckBox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
         RestoreBootloaderSizer.Add(self.RestoreBootloaderText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        RestoreBootloaderSizer.Add(self.RestoreBootloaderChoice, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        RestoreBootloaderSizer.Add(self.RestoreBootloaderChoice, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         BottomButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -2486,7 +2493,7 @@ class NewBootloaderOptionsWindow(wx.Frame):
         BottomButtonSizer.Add(self.SaveButton, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         #Add items to MainSizer.
-        MainSizer.Add(self.TitleText, 1, wx.ALL|wx.EXPAND, 10)
+        MainSizer.Add(self.TitleText, 1, wx.ALL|wx.CENTER, 10)
         MainSizer.Add(self.OSChoice, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
         MainSizer.Add(OSInfoSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
