@@ -32,6 +32,8 @@ from __future__ import unicode_literals
 
 #Import other modules
 import wx
+import wx.lib.statbmp
+import wx.lib.stattext
 import threading
 import subprocess
 import sys
@@ -684,7 +686,8 @@ class MainWindow(wx.Frame):
         #Adding Menu Items.
         self.menuAbout = helpmenu.Append(wx.ID_ABOUT, "&About", "Information about this program")
         self.menuExit = filemenu.Append(wx.ID_EXIT,"&Exit", "Terminate this program")
-        self.menuSystemInfo = viewmenu.Append(wx.ID_ANY,"&System Information", "Information about all detected disks, OSs, and Bootloaders") 
+        self.menuSystemInfo = viewmenu.Append(wx.ID_ANY,"&System Information", "Information about all detected disks, OSs, and Bootloaders")
+        self.menuNewBootloaderOptions = viewmenu.Append(wx.ID_ANY,"&New Bootloader Options Window", "Have a look at what the new bootloader options window will look like!")
         self.menuOpts = editmenu.Append(wx.ID_PREFERENCES, "&Options", "General settings used to modify your system")
 
         #Creating the menubar.
@@ -796,6 +799,11 @@ class MainWindow(wx.Frame):
         logger.debug("MainWindow().SystemInfo(): Starting System Info Window...")
         SystemInfoWindow(self).Show()
 
+    def ShowNewBLWindow(self, Event=None):
+        """Start NewBootloaderOptionsWindow"""
+        logger.debug("MainWindow().ShowNewBLWindow(): Starting New Bootloader Options Window...")
+        NewBootloaderOptionsWindow(self).Show()
+
     def ProgressWindow(self, Event=None):
         """Starts Progress Window"""
         if OptionsDlg1Run and self.ReinstallBootloaderCBwaschecked == False and self.UpdateBootloaderCBwaschecked == False:
@@ -905,6 +913,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnAbout, self.AboutButton)
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.ExitButton)
         self.Bind(wx.EVT_MENU, self.SystemInfo, self.menuSystemInfo)
+        self.Bind(wx.EVT_MENU, self.ShowNewBLWindow, self.menuNewBootloaderOptions)
         self.Bind(wx.EVT_MENU, self.Opts, self.menuOpts)
         self.Bind(wx.EVT_BUTTON, self.Opts, self.OptionsButton)
         self.Bind(wx.EVT_BUTTON, self.ProgressWindow, self.ApplyOperationsButton)
@@ -2328,33 +2337,178 @@ class NewBootloaderOptionsWindow(wx.Frame):
         self.CreateChoiceBoxes()
         self.CreateCheckBoxes()
         self.CreateButtons()
+        self.CreateOtherWidgets()
         self.SetupSizers()
         self.BindEvents()
 
         #Set up the window.
-        self.SetupOptions()
+        #self.SetupOptions()
         
         logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Winow Started.")
 
     def CreateText(self):
         """Create the text"""
-        pass
+        self.TitleText = wx.StaticText(self.Panel, -1, "Select each OS you want to modify")
+        self.OSInfoText = wx.lib.stattext.GenStaticText(self.Panel, -1, "OS Info")
+
+        #Basic Options.
+        self.BasicOptionsText = wx.lib.stattext.GenStaticText(self.Panel, -1, "Basic Options")
+        self.NewTimeoutText = wx.StaticText(self.Panel, -1, "New timeout (in seconds):")
+        self.DefaultOSText = wx.StaticText(self.Panel, -1, "Default OS to boot:")
+
+        #Advanced Options.
+        self.AdvancedOptionsText = wx.lib.stattext.GenStaticText(self.Panel, -1, "Advanced Options")
+        self.NewBootloaderText = wx.StaticText(self.Panel, -1, "Replace "+Bootloader+" with:")
+        self.BackupBootloaderText = wx.StaticText(self.Panel, -1, "Backup to:")
+        self.RestoreBootloaderText = wx.StaticText(self.Panel, -1, "Restore from:")
 
     def CreateChoiceBoxes(self):
         """Create the choice boxes"""
-        pass
+        self.OSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["UserFriendlyOSNames"])
 
-    def CheckCheckBoxes(self):
+        #Basic Options.
+        self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["UserFriendlyOSNames"])
+
+        #Advanced Options.
+        self.NewBootloaderChoice = wx.Choice(self.Panel, -1, choices=["GRUB-UEFI", "GRUB2", "ELILO", "LILO"]) #*** Disable EFI options on BIOS systems ***
+        self.BackupBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify"])
+        self.RestoreBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify"])
+
+    def CreateCheckBoxes(self):
         """Create the check boxes"""
-        pass
+        #Basic Options.
+        self.ReinstallBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Fix/Reinstall "+Bootloader)
+        self.UpdateBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Update "+Bootloader+"'s Config")
+        self.KeepBootloaderTimeoutCheckBox = wx.CheckBox(self.Panel, -1, "Keep "+Bootloader+"'s existing menu timeout")
+
+        #Advanced Options.
+        self.InstallNewBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Install a New Bootloader")
+        self.BackupBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Backup "+Bootloader)
+        self.RestoreBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Restore this OS's bootloader")
 
     def CreateButtons(self):
         """Create the buttons"""
-        pass
+        self.SystemInfoButton = wx.Button(self.Panel, -1, "View More Details")
+        self.RevertOSChangesButton = wx.Button(self.Panel, -1, "Revert Changes for this OS")
+        self.RevertAllChangesButton = wx.Button(self.Panel, -1, "Revert All Changes")
+        self.SaveButton = wx.Button(self.Panel, -1, "Save All Changes And Close")
+
+    def CreateOtherWidgets(self):
+        """Create all other widgets"""
+        #Bootloader timeout spinner.
+        self.BootloaderTimeoutSpinner = wx.SpinCtrl(self.Panel, -1, "")
+        self.BootloaderTimeoutSpinner.SetRange(1,100)
+        self.BootloaderTimeoutSpinner.SetValue(10)
+
+        #Arrows.
+        img1 = wx.Image("/usr/share/wxfixboot/images/ArrowDown.png", wx.BITMAP_TYPE_PNG)
+        img2 = wx.Image("/usr/share/wxfixboot/images/ArrowRight.png", wx.BITMAP_TYPE_PNG)
+        self.DownArrowImage = wx.BitmapFromImage(img1)
+        self.RightArrowImage = wx.BitmapFromImage(img2)
+
+        self.Arrow1 = wx.lib.statbmp.GenStaticBitmap(self.Panel, -1, self.DownArrowImage)
+        self.Arrow2 = wx.lib.statbmp.GenStaticBitmap(self.Panel, -1, self.DownArrowImage)
+        self.Arrow3 = wx.lib.statbmp.GenStaticBitmap(self.Panel, -1, self.DownArrowImage)
+
+        #List Ctrl.
+        self.ListCtrl = wx.ListCtrl(self.Panel, -1, style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_VRULES)
+        self.ListCtrl.InsertColumn(col=0, heading="Category", format=wx.LIST_FORMAT_CENTRE, width=150)
+        self.ListCtrl.InsertColumn(col=1, heading="Value", format=wx.LIST_FORMAT_CENTRE, width=-1)
+        #self.ListCtrl.SetMinSize(wx.Size(50, 240))
 
     def SetupSizers(self):
         """Setup the sizers"""
-        pass
+        MainSizer = wx.BoxSizer(wx.VERTICAL)
+
+        OSInfoSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to OSInfoSizer.
+        OSInfoSizer.Add(self.OSInfoText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        OSInfoSizer.Add(self.Arrow1, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        BasicOptionsSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to BasicOptionsSizer.
+        BasicOptionsSizer.Add(self.BasicOptionsText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        BasicOptionsSizer.Add(self.Arrow2, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        FixAndUpdateBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to FixAndUpdateBootloaderSizer.
+        FixAndUpdateBootloaderSizer.Add(self.ReinstallBootloaderCheckBox, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        FixAndUpdateBootloaderSizer.Add(self.UpdateBootloaderCheckBox, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        TimeoutSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to TimeoutSizer.
+        TimeoutSizer.Add(self.KeepBootloaderTimeoutCheckBox, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        TimeoutSizer.Add(self.NewTimeoutText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        TimeoutSizer.Add(self.BootloaderTimeoutSpinner, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        DefaultOSSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to DefaultOSSizer.
+        DefaultOSSizer.Add(self.DefaultOSText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        DefaultOSSizer.Add(self.DefaultOSChoice, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        AdvancedOptionsSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to AdvancedOptionsSizer.
+        AdvancedOptionsSizer.Add(self.AdvancedOptionsText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        AdvancedOptionsSizer.Add(self.Arrow3, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        InstallNewBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to InstallNewBootloaderSizer.
+        InstallNewBootloaderSizer.Add(self.InstallNewBootloaderCheckBox, 1, wx.RIGHT, 5)
+        InstallNewBootloaderSizer.Add(self.NewBootloaderText, 1, wx.RIGHT|wx.LEFT, 5)
+        InstallNewBootloaderSizer.Add(self.NewBootloaderChoice, 1, wx.LEFT, 5)
+
+        BackupBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to BackupBootloaderSizer.
+        BackupBootloaderSizer.Add(self.BackupBootloaderCheckBox, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        BackupBootloaderSizer.Add(self.BackupBootloaderText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        BackupBootloaderSizer.Add(self.BackupBootloaderChoice, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        RestoreBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to RestoreBootloaderSizer.
+        RestoreBootloaderSizer.Add(self.RestoreBootloaderCheckBox, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        RestoreBootloaderSizer.Add(self.RestoreBootloaderText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        RestoreBootloaderSizer.Add(self.RestoreBootloaderChoice, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        BottomButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to BottomButtonSizer.
+        BottomButtonSizer.Add(self.RevertOSChangesButton, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        BottomButtonSizer.Add(self.RevertAllChangesButton, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        BottomButtonSizer.Add(self.SaveButton, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        #Add items to MainSizer.
+        MainSizer.Add(self.TitleText, 1, wx.ALL|wx.EXPAND, 10)
+        MainSizer.Add(self.OSChoice, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
+        MainSizer.Add(OSInfoSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(self.ListCtrl, 5, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(self.SystemInfoButton, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
+        MainSizer.Add(BasicOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(FixAndUpdateBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(TimeoutSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(DefaultOSSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
+        MainSizer.Add(AdvancedOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(RestoreBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
+        MainSizer.Add(BottomButtonSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+        #Get the sizer set up for the frame.
+        self.Panel.SetSizer(MainSizer)
+        #MainSizer.SetMinSize(wx.Size(936,360))
+        MainSizer.SetSizeHints(self)
 
     def BindEvents(self):
         """Bind all events for BootloaderOptionsWindow"""
