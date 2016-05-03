@@ -2329,7 +2329,7 @@ class NewBootloaderOptionsWindow(wx.Frame):
         """Initialise bootloader options window"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Bootloader Options", size=(400,200), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
-        self.SetClientSize(wx.Size(400,200))
+        self.SetClientSize(wx.Size(800,800))
         self.ParentWindow = ParentWindow
         wx.Frame.SetIcon(self, AppIcon)
 
@@ -2344,7 +2344,7 @@ class NewBootloaderOptionsWindow(wx.Frame):
         #Set up the window.
         #self.SetupOptions()
         
-        logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Winow Started.")
+        logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Window Started.")
 
     def CreateText(self):
         """Create the text"""
@@ -2430,7 +2430,7 @@ class NewBootloaderOptionsWindow(wx.Frame):
 
     def SetupSizers(self):
         """Setup the sizers"""
-        MainSizer = wx.BoxSizer(wx.VERTICAL)
+        self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
         OSInfoSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -2505,33 +2505,67 @@ class NewBootloaderOptionsWindow(wx.Frame):
         BottomButtonSizer.Add(self.SaveButton, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         #Add items to MainSizer.
-        MainSizer.Add(self.TitleText, 1, wx.ALL|wx.CENTER, 10)
-        MainSizer.Add(self.OSChoice, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
-        MainSizer.Add(OSInfoSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(self.ListCtrl, 5, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(self.SystemInfoButton, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
-        MainSizer.Add(BasicOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(FixAndUpdateBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(TimeoutSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(DefaultOSSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
-        MainSizer.Add(AdvancedOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(RestoreBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
-        MainSizer.Add(BottomButtonSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(self.TitleText, 1, wx.ALL|wx.CENTER, 10)
+        self.MainSizer.Add(self.OSChoice, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
+        self.MainSizer.Add(OSInfoSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(self.ListCtrl, 5, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(self.SystemInfoButton, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
+        self.MainSizer.Add(BasicOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(FixAndUpdateBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(TimeoutSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(DefaultOSSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
+        self.MainSizer.Add(AdvancedOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(RestoreBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
+        self.MainSizer.Add(BottomButtonSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
 
         #Get the sizer set up for the frame.
-        self.Panel.SetSizer(MainSizer)
-        #MainSizer.SetMinSize(wx.Size(936,360))
-        MainSizer.SetSizeHints(self)
+        self.Panel.SetSizer(self.MainSizer)
+        #self.MainSizer.SetMinSize(wx.Size(936,360))
+        self.MainSizer.SetSizeHints(self)
 
     def BindEvents(self):
         """Bind all events for BootloaderOptionsWindow"""
         self.Bind(wx.EVT_SIZE, self.OnSize)
+
+        #Text.
+        self.OSInfoText.Bind(wx.EVT_LEFT_DOWN, self.OnOSInfo)
+        #self.TerminalOutputText.Bind(wx.EVT_LEFT_DOWN, self.OnTerminalOutput)
+
+        #Images.
+        self.Arrow1.Bind(wx.EVT_LEFT_DOWN, self.OnOSInfo)
+        #self.Arrow2.Bind(wx.EVT_LEFT_DOWN, self.OnTerminalOutput)
+
+    def OnOSInfo(self, Event=None):
+        """Hide/Show the OS info, and rotate the arrow"""
+        Width, Height = self.GetClientSizeTuple()
+
+        if self.ListCtrl.IsShown():
+            self.Arrow1.SetBitmap(self.RightArrowImage)
+
+            self.MainSizer.Detach(self.ListCtrl)
+            self.MainSizer.Detach(self.SystemInfoButton)
+
+            self.ListCtrl.Hide()
+            self.SystemInfoButton.Hide()
+
+            self.MainSizer.SetSizeHints(self)
+
+        else:
+            self.Arrow1.SetBitmap(self.DownArrowImage)
+
+            self.MainSizer.Insert(4, self.ListCtrl, 5, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(5, self.SystemInfoButton, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+            self.ListCtrl.Show()
+            self.SystemInfoButton.Show()
+
+            self.SetClientSize(wx.Size(Width, 800))
 
 #End New Bootloader Options Window.
 #Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later ***
