@@ -67,7 +67,7 @@ def SetupSizers(self):
     MainSizer.SetMinSize(wx.Size(780,310))
     MainSizer.SetSizeHints(self)
 
-def UpdateListCtrl(self, Event=None, Headings=[]):
+def UpdateListCtrl(self, Event=None, Headings=[], Dictionary={}):
     """Update the list control"""
     logger.debug("SystemInfoNoteBookSharedFunctions().UpdateListCtrl(): Clearing all objects in list ctrl...")
     self.ListCtrl.ClearAll()
@@ -82,14 +82,14 @@ def UpdateListCtrl(self, Event=None, Headings=[]):
     #Add info from the custom module.
     logger.debug("SystemInfoNoteBookSharedFunctions().UpdateListCtrl(): Adding Disk info to list ctrl...")
 
-    Keys = DiskInfo.keys()
+    Keys = Dictionary.keys()
     Keys.sort()
 
     #Do all of the data at the same time.
     Number = -1
-    for Disk in Keys:
+    for Thing in Keys:
         Number += 1
-        Info = DiskInfo[Disk]
+        Info = Dictionary[Thing]
 
         Column = 0
         for Heading in Headings:

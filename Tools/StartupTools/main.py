@@ -52,7 +52,7 @@ class Main():
         logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Attempting to check if we're on a live disk...")
 
         #Detect Parted Magic automatically.
-        if "pmagic" in CoreTools.StartProcess("uname -r", ReturnOutput=True):
+        if "pmagic" in CoreTools.StartProcess("uname -r", ReturnOutput=True)[1]:
             logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Running on Parted Magic...")
             SystemInfo["IsLiveDisk"] = True
 

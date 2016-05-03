@@ -48,7 +48,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "28/4/2016"
+ReleaseDate = "3/5/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -412,7 +412,6 @@ class InitThread(threading.Thread):
         Tools.StartupTools.main.SystemInfo = SystemInfo
         Tools.StartupTools.main.Settings = Settings
         GetDevInfo.getdevinfo.DiskInfo = DiskInfo
-        NoteBookSharedFunctions.DiskInfo = DiskInfo
 
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
@@ -1119,7 +1118,7 @@ class SystemInfoPage1(wx.Panel):
         #Use already-present info for the list ctrl if possible.
         if 'DiskInfo' in globals():
             logger.debug("SystemInfoPage1().__init__(): Updating list ctrl with Disk info already present...")
-            NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Vendor", "Product", "Capacity", "Description"])
+            NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Vendor", "Product", "Capacity", "Description"], Dictionary=DiskInfo)
 
     def OnSize(self, Event=None):
         """Auto resize the ListCtrl columns"""
@@ -1149,46 +1148,11 @@ class SystemInfoPage1(wx.Panel):
 
         #Update the list control.
         logger.debug("SystemInfoPage1().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
-        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Vendor", "Product", "Capacity", "Description"])
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Vendor", "Product", "Capacity", "Description"], Dictionary=DiskInfo)
 
         #Stop the throbber and enable the refresh button.
         self.Throbber.Stop()
         self.RefreshButton.Enable()
-
-    def UpdateListCtrl(self, Event=None):
-        """Update the list control"""
-        logger.debug("SystemInfoPage1().UpdateListCtrl(): Clearing all objects in list ctrl...")
-        self.ListCtrl.ClearAll()
-
-        #Create the columns.
-        logger.debug("SystemInfoPage1().UpdateListCtrl(): Inserting columns into list ctrl...")
-        self.ListCtrl.InsertColumn(col=0, heading="Name", format=wx.LIST_FORMAT_CENTRE)
-        self.ListCtrl.InsertColumn(col=1, heading="Type", format=wx.LIST_FORMAT_CENTRE)
-        self.ListCtrl.InsertColumn(col=2, heading="Vendor", format=wx.LIST_FORMAT_CENTRE)
-        self.ListCtrl.InsertColumn(col=3, heading="Product", format=wx.LIST_FORMAT_CENTRE)
-        self.ListCtrl.InsertColumn(col=4, heading="Size", format=wx.LIST_FORMAT_CENTRE)
-        self.ListCtrl.InsertColumn(col=5, heading="Description", format=wx.LIST_FORMAT_CENTRE) 
-
-        #Add info from the custom module.
-        logger.debug("SystemInfoPage1().UpdateListCtrl(): Adding Disk info to list ctrl...")
-
-        Keys = DiskInfo.keys()
-        Keys.sort()
-
-        #Do all of the data at the same time.
-        Number = -1
-        for Disk in Keys:
-            Number += 1
-            Info = DiskInfo[Disk]
-            self.ListCtrl.InsertStringItem(index=Number, label=Info["Name"])
-            self.ListCtrl.SetStringItem(index=Number, col=1, label=Info["Type"])
-            self.ListCtrl.SetStringItem(index=Number, col=2, label=Info["Vendor"])
-            self.ListCtrl.SetStringItem(index=Number, col=3, label=Info["Product"])
-            self.ListCtrl.SetStringItem(index=Number, col=4, label=Info["Capacity"])
-            self.ListCtrl.SetStringItem(index=Number, col=5, label=Info["Description"])
-
-        #Auto Resize the columns.
-        self.OnSize()
 
 #End System Info Page 1
 #Begin System Info Page 2.
@@ -1210,7 +1174,7 @@ class SystemInfoPage2(wx.Panel):
         #Use already-present info for the list ctrl if possible.
         if 'DiskInfo' in globals():
             logger.debug("SystemInfoPage2().__init__(): Updating list ctrl with Disk info already present...")
-            NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Partitions", "Flags", "Partitioning", "FileSystem"])
+            NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Partitions", "Flags", "Partitioning", "FileSystem"], Dictionary=DiskInfo)
 
     def OnSize(self, Event=None):
         """Auto resize the ListCtrl columns"""
@@ -1240,7 +1204,7 @@ class SystemInfoPage2(wx.Panel):
 
         #Update the list control.
         logger.debug("SystemInfoPage2().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
-        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Partitions", "Flags", "Partitioning", "FileSystem"])
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Partitions", "Flags", "Partitioning", "FileSystem"], Dictionary=DiskInfo)
 
         #Stop the throbber and enable the refresh button.
         self.Throbber.Stop()
