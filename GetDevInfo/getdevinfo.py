@@ -94,7 +94,7 @@ class Main():
                 return "Unknown", "Unknown"
 
         #Round the sizes to make them human-readable.
-        UnitList = [None, "B", "KB", "MB", "GB", "TB", "PB"]
+        UnitList = [None, "B", "KB", "MB", "GB", "TB", "PB", "EB"]
         Unit = "B"
         HumanSize = int(RawCapacity)
 
@@ -204,7 +204,7 @@ class Main():
 
         return ID
 
-    def GetDeviceInfo(self, Node):
+    def GetDeviceInfo(self, Node): #*** Ignore capacities for all optical drives (fixes bug on pmagic) ***
         """Get Device Information"""
         HostDisk = unicode(Node.logicalname.string)
         DiskInfo[HostDisk] = {}
@@ -230,6 +230,10 @@ class Main():
 
         except AttributeError:
             Volume = HostDisk+unicode(SubNode.physid.string)
+
+        #Fix bug on Pmagic, if the volume already exists in DiskInfo, or if it starts with /dev/cdrom, ignore it here.
+        if Volume in DiskInfo or "/dev/cdrom" in Volume:
+            return Volume
 
         DiskInfo[Volume] = {}
         DiskInfo[Volume]["Name"] = Volume

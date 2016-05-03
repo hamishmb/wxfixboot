@@ -162,7 +162,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
         GrubMenuEntries = []
 
         if OSInfo[OS]["PackageManager"] == "apt-get":
-            GrubConfigFile = open("/boot/grub/grub.cfg", "r")
+            GrubConfigFile = open(GrubConfigFilePath, "r")
             GrubConfig = GrubConfigFile.read()
             GrubConfigFile.close()
 

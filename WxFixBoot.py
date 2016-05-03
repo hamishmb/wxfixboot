@@ -23,6 +23,7 @@
 #*** Allow getting device info after startup (run some startup scripts again) ****
 #*** Remove grub.efi files after installing elilo and vice versa ***
 #*** Support EFI on 32-bit firmware? ***
+#*** /boot/efi not unmounted when modifying EFI bootloaders on parted magic (possibly also on other platforms) ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import

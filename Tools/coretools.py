@@ -248,7 +248,7 @@ class Main():
         #Return the return value
         return Retval
 
-    def Find(self, RegExp, TopLevelDirectory):
+    def Find(self, RegExp, TopLevelDirectory): #*** Check if this works on Parted Magic ***
         """Finds the given file, somewhere in or below the given directory, and returns True or False depending on if it was found or not"""
         logger.info("CoreTools: Main().Find(): Looking in "+TopLevelDirectory+" with regular expression "+RegExp+"...")
         FilesFound = []

@@ -123,7 +123,7 @@ class Main():
             return False
 
     def DetermineGRUBBIOSVersion(self, SystemInfo):
-        """Try to determine which version of GRUB BIOS is installed""" #*** See if we can find a better way of doing this *** *** Test this again with grub-legacy ***
+        """Try to determine which version of GRUB BIOS is installed""" #*** See if we can find a better way of doing this *** *** Test this again with grub-legacy *** *** Try to find even if on live disk ***
         logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Determining GRUB version...")
         #Check if the system is using grub-legacy or grub2.
         if SystemInfo["IsLiveDisk"] == False:

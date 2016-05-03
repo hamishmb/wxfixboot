@@ -141,9 +141,9 @@ class Main():
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
 
-        if CoreTools.StartProcess("mount -avw") != 0:
-            logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
-            CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
+        #if CoreTools.StartProcess("mount -avw") != 0: *** Always triggered on Parted Magic ***
+        #    logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
+        #    CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
     def GetLinuxOSs(self):
         """Get the names of all Linux OSs on the HDDs."""
@@ -255,7 +255,7 @@ class Main():
         #Make sure efivars module is loaded. If it doesn't exist, continue anyway.
         CoreTools.StartProcess("modprobe efivars")
 
-        #Look for the UEFI vars in some common directories. *** Just because the dir is there doesn't mean the vars are (I think) ***
+        #Look for the UEFI vars in some common directories. *** Just because the dir is there doesn't mean the vars are (I think) *** *** Also look for /proc/efi/vars ***
         if os.path.isdir("/sys/firmware/efi/vars"):
             UEFIVariables = True
             logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/vars...")
@@ -267,21 +267,21 @@ class Main():
         else:
             logger.warning("MainStartupTools: Main().GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars or /sys/firmware/efi/efivars. Attempting manual mount...")
 
-            #Attempt to manually mount the efi vars, as we couldn't find them.
-            if not os.path.isdir("/sys/firmware/efi/vars"):
-                os.mkdir("/sys/firmware/efi/vars")
+            #Attempt to manually mount the efi vars, as we couldn't find them. *** Disabled for the time being ***
+            #if not os.path.isdir("/sys/firmware/efi/vars"):
+            #    os.mkdir("/sys/firmware/efi/vars")
 
-            if CoreTools.MountPartition(Partition="efivars", MountPoint="/sys/firmware/efi/vars", Options="-t efivarfs") != 0: #*** Check this works ***
-                logger.warning("MainStartupTools: Main().GetFirmwareType(): Failed to mount UEFI vars! Warning user. Ignoring and continuing.")
+            #if CoreTools.MountPartition(Partition="efivars", MountPoint="/sys/firmware/efi/vars", Options="-t efivarfs") != 0: #*** Check this works ***
+            #    logger.warning("MainStartupTools: Main().GetFirmwareType(): Failed to mount UEFI vars! Warning user. Ignoring and continuing.")
 
-                #UEFI vars not available or couldn't be mounted.
-                DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
-                UEFIVariables = False
+            #UEFI vars not available or couldn't be mounted. *** This is incorrect on BIOS systems ***
+            DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
+            UEFIVariables = False
 
-            else:
-                #Successfully mounted them.
-                UEFIVariables = True
-                logger.info("MainStartupTools: Main().GetFirmwareType(): Mounted UEFI Variables at: /sys/firmware/efi/vars. Continuing...")
+            #else:
+            #    #Successfully mounted them.
+            #    UEFIVariables = True
+            #    logger.info("MainStartupTools: Main().GetFirmwareType(): Mounted UEFI Variables at: /sys/firmware/efi/vars. Continuing...")
 
         if UEFIVariables:
             #It's UEFI.
@@ -320,7 +320,7 @@ class Main():
 
         #Wrap this in a loop, so once a Bootloader is found, searching can stop.
         while True:
-            #Check for a UEFI partition. *** Maybe read fstabs in GetLinuxOSs ***
+            #Check for a UEFI partition. *** Maybe read fstabs in GetLinuxOSs *** *** Only check on EFI systems? ***
             #Check for a UEFI system partition.
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking For a UEFI partition...")
             AutoUEFISystemPartition = CoreStartupTools.CheckForUEFIPartition(SystemInfo)
