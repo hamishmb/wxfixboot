@@ -2448,25 +2448,25 @@ class NewBootloaderOptionsWindow(wx.Frame):
         BasicOptionsSizer.Add(self.Arrow2, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
         BasicOptionsSizer.Add((5,5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
-        FixAndUpdateBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.FixAndUpdateBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to FixAndUpdateBootloaderSizer.
-        FixAndUpdateBootloaderSizer.Add(self.ReinstallBootloaderCheckBox, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        FixAndUpdateBootloaderSizer.Add(self.UpdateBootloaderCheckBox, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.FixAndUpdateBootloaderSizer.Add(self.ReinstallBootloaderCheckBox, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        self.FixAndUpdateBootloaderSizer.Add(self.UpdateBootloaderCheckBox, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
-        TimeoutSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.TimeoutSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to TimeoutSizer.
-        TimeoutSizer.Add(self.KeepBootloaderTimeoutCheckBox, 3, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        TimeoutSizer.Add((5,5), 1, wx.RIGHT|wx.LEFT, 5)
-        TimeoutSizer.Add(self.NewTimeoutText, 2, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        TimeoutSizer.Add(self.BootloaderTimeoutSpinner, 3, wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.TimeoutSizer.Add(self.KeepBootloaderTimeoutCheckBox, 3, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        self.TimeoutSizer.Add((5,5), 1, wx.RIGHT|wx.LEFT, 5)
+        self.TimeoutSizer.Add(self.NewTimeoutText, 2, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.TimeoutSizer.Add(self.BootloaderTimeoutSpinner, 3, wx.LEFT|wx.ALIGN_CENTER, 5)
 
-        DefaultOSSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.DefaultOSSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to DefaultOSSizer.
-        DefaultOSSizer.Add(self.DefaultOSText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        DefaultOSSizer.Add(self.DefaultOSChoice, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.DefaultOSSizer.Add(self.DefaultOSText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        self.DefaultOSSizer.Add(self.DefaultOSChoice, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         AdvancedOptionsSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -2513,9 +2513,9 @@ class NewBootloaderOptionsWindow(wx.Frame):
         self.MainSizer.Add(self.SystemInfoButton, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
         self.MainSizer.Add(BasicOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        self.MainSizer.Add(FixAndUpdateBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        self.MainSizer.Add(TimeoutSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        self.MainSizer.Add(DefaultOSSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(self.FixAndUpdateBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(self.TimeoutSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(self.DefaultOSSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
         self.MainSizer.Add(AdvancedOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.MainSizer.Add(InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
@@ -2535,22 +2535,19 @@ class NewBootloaderOptionsWindow(wx.Frame):
 
         #Text.
         self.OSInfoText.Bind(wx.EVT_LEFT_DOWN, self.OnOSInfo)
-        #self.TerminalOutputText.Bind(wx.EVT_LEFT_DOWN, self.OnTerminalOutput)
+        self.BasicOptionsText.Bind(wx.EVT_LEFT_DOWN, self.OnBasicOptions)
 
         #Images.
         self.Arrow1.Bind(wx.EVT_LEFT_DOWN, self.OnOSInfo)
-        #self.Arrow2.Bind(wx.EVT_LEFT_DOWN, self.OnTerminalOutput)
+        self.Arrow2.Bind(wx.EVT_LEFT_DOWN, self.OnBasicOptions)
 
     def OnOSInfo(self, Event=None):
         """Hide/Show the OS info, and rotate the arrow"""
-        Width, Height = self.GetClientSizeTuple()
-
         if self.ListCtrl.IsShown():
             self.Arrow1.SetBitmap(self.RightArrowImage)
 
             self.MainSizer.Detach(self.ListCtrl)
             self.MainSizer.Detach(self.SystemInfoButton)
-
             self.ListCtrl.Hide()
             self.SystemInfoButton.Hide()
 
@@ -2561,11 +2558,52 @@ class NewBootloaderOptionsWindow(wx.Frame):
 
             self.MainSizer.Insert(4, self.ListCtrl, 5, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
             self.MainSizer.Insert(5, self.SystemInfoButton, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-
             self.ListCtrl.Show()
             self.SystemInfoButton.Show()
 
-            self.SetClientSize(wx.Size(Width, 800))
+            self.MainSizer.SetSizeHints(self)
+
+    def OnBasicOptions(self, Event=None):
+        """Hide/Show the basic options, and rotate the arrow"""
+        if self.ReinstallBootloaderCheckBox.IsShown():
+            self.Arrow2.SetBitmap(self.RightArrowImage)
+
+            self.MainSizer.Detach(self.FixAndUpdateBootloaderSizer)
+            self.MainSizer.Detach(self.TimeoutSizer)
+            self.MainSizer.Detach(self.DefaultOSSizer)
+
+            self.ReinstallBootloaderCheckBox.Hide()
+            self.UpdateBootloaderCheckBox.Hide()
+            self.KeepBootloaderTimeoutCheckBox.Hide()
+            self.NewTimeoutText.Hide()
+            self.BootloaderTimeoutSpinner.Hide()
+            self.DefaultOSText.Hide()
+            self.DefaultOSChoice.Hide()
+
+            self.MainSizer.SetSizeHints(self)
+
+        else:
+            self.Arrow2.SetBitmap(self.DownArrowImage)
+
+            if self.ListCtrl.IsShown():
+                FirstNumber = 8
+
+            else:
+                FirstNumber = 6
+
+            self.MainSizer.Insert(FirstNumber, self.FixAndUpdateBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+1, self.TimeoutSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+2, self.DefaultOSSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+            self.ReinstallBootloaderCheckBox.Show()
+            self.UpdateBootloaderCheckBox.Show()
+            self.KeepBootloaderTimeoutCheckBox.Show()
+            self.NewTimeoutText.Show()
+            self.BootloaderTimeoutSpinner.Show()
+            self.DefaultOSText.Show()
+            self.DefaultOSChoice.Show()
+
+            self.MainSizer.SetSizeHints(self)
 
 #End New Bootloader Options Window.
 #Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later ***
