@@ -1211,7 +1211,61 @@ class SystemInfoPage2(wx.Panel):
         self.RefreshButton.Enable()
 
 #End System Info Page 2
-#Begin System Info Window #*** Updating disk info here doesn't work right now *** *** Try to save RAM and refactor here ***
+#Begin System Info Page 3.
+class SystemInfoPage3(wx.Panel):
+    def __init__(self, ParentWindow):
+        """Initialise SystemInfoPage3"""
+        wx.Panel.__init__(self, ParentWindow)
+        self.ParentWindow = ParentWindow
+
+        logger.debug("SystemInfoPage3().__init__(): Creating widgets...")
+        NoteBookSharedFunctions.CreateWidgets(self)
+
+        logger.debug("SystemInfoPage3().__init__(): Setting up sizers...")
+        NoteBookSharedFunctions.SetupSizers(self)
+
+        logger.debug("SystemInfoPage3().__init__(): Binding events...")
+        NoteBookSharedFunctions.BindEvents(self)
+
+        #Use already-present info for the list ctrl if possible.
+        if 'DiskInfo' in globals():
+            logger.debug("SystemInfoPage3().__init__(): Updating list ctrl with Disk info already present...")
+            NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "ID", "UUID"], Dictionary=DiskInfo)
+
+    def OnSize(self, Event=None):
+        """Auto resize the ListCtrl columns"""
+        Width, Height = self.ListCtrl.GetClientSizeTuple()
+
+        self.ListCtrl.SetColumnWidth(0, int(Width * 0.15))
+        self.ListCtrl.SetColumnWidth(1, int(Width * 0.15))
+        self.ListCtrl.SetColumnWidth(2, int(Width * 0.35))
+        self.ListCtrl.SetColumnWidth(3, int(Width * 0.35))
+
+        if Event != None:
+            Event.Skip()
+
+    def GetDiskInfo(self, Event=None):
+        """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
+        logger.info("SystemInfoPage3().UpdateDevInfo(): Generating new Disk info...")
+        self.RefreshButton.Disable()
+        self.Throbber.Play()
+        GetDiskInformation(self)
+
+    def ReceiveDiskInfo(self, Info):
+        """Get Disk data, call self.UpdateListCtrl()"""
+        global DiskInfo
+        DiskInfo = Info
+
+        #Update the list control.
+        logger.debug("SystemInfoPage3().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "ID", "UUID"], Dictionary=DiskInfo)
+
+        #Stop the throbber and enable the refresh button.
+        self.Throbber.Stop()
+        self.RefreshButton.Enable()
+
+#End System Info Page 3
+#Begin System Info Window #*** Updating disk info here doesn't work right now ***
 class DevInfoWindow(wx.Frame):
     def __init__(self, ParentWindow):
         """Initialize DevInfoWindow"""
@@ -1225,9 +1279,11 @@ class DevInfoWindow(wx.Frame):
         self.NoteBook = wx.Notebook(self.Panel)
         Page1 = SystemInfoPage1(self.NoteBook)
         Page2 = SystemInfoPage2(self.NoteBook)
+        Page3 = SystemInfoPage3(self.NoteBook)
 
         self.NoteBook.AddPage(Page1, "Disk Info 1")
         self.NoteBook.AddPage(Page2, "Disk Info 2")
+        self.NoteBook.AddPage(Page3, "Disk Info 3")
 
         #Set up the sizer.
         MainSizer = wx.BoxSizer()
