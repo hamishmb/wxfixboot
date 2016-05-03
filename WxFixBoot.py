@@ -2412,9 +2412,21 @@ class NewBootloaderOptionsWindow(wx.Frame):
 
         #List Ctrl.
         self.ListCtrl = wx.ListCtrl(self.Panel, -1, style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_VRULES)
-        self.ListCtrl.InsertColumn(col=0, heading="Category", format=wx.LIST_FORMAT_CENTRE, width=150)
-        self.ListCtrl.InsertColumn(col=1, heading="Value", format=wx.LIST_FORMAT_CENTRE, width=-1)
-        #self.ListCtrl.SetMinSize(wx.Size(50, 240))
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager"], Dictionary=OSInfo)
+
+    def OnSize(self, Event=None):
+        """Auto resize the ListCtrl columns"""
+        Width, Height = self.ListCtrl.GetClientSizeTuple()
+
+        self.ListCtrl.SetColumnWidth(0, int(Width * 0.4))
+        self.ListCtrl.SetColumnWidth(1, int(Width * 0.1))
+        self.ListCtrl.SetColumnWidth(2, int(Width * 0.1))
+        self.ListCtrl.SetColumnWidth(3, int(Width * 0.2))
+        self.ListCtrl.SetColumnWidth(4, int(Width * 0.2))
+        #self.ListCtrl.SetColumnWidth(5, int(Width * 0.35)) *** Add IsModifyable ***
+
+        if Event != None:
+            Event.Skip()
 
     def SetupSizers(self):
         """Setup the sizers"""
@@ -2519,7 +2531,7 @@ class NewBootloaderOptionsWindow(wx.Frame):
 
     def BindEvents(self):
         """Bind all events for BootloaderOptionsWindow"""
-        pass
+        self.Bind(wx.EVT_SIZE, self.OnSize)
 
 #End New Bootloader Options Window.
 #Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later ***
