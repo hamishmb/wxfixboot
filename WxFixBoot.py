@@ -2476,26 +2476,26 @@ class NewBootloaderOptionsWindow(wx.Frame):
         AdvancedOptionsSizer.Add(self.Arrow3, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
         AdvancedOptionsSizer.Add((5,5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
-        InstallNewBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.InstallNewBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to InstallNewBootloaderSizer.
-        InstallNewBootloaderSizer.Add(self.InstallNewBootloaderCheckBox, 2, wx.RIGHT, 5)
-        InstallNewBootloaderSizer.Add(self.NewBootloaderText, 1, wx.RIGHT|wx.LEFT, 5)
-        InstallNewBootloaderSizer.Add(self.NewBootloaderChoice, 2, wx.LEFT, 5)
+        self.InstallNewBootloaderSizer.Add(self.InstallNewBootloaderCheckBox, 2, wx.RIGHT, 5)
+        self.InstallNewBootloaderSizer.Add(self.NewBootloaderText, 1, wx.RIGHT|wx.LEFT, 5)
+        self.InstallNewBootloaderSizer.Add(self.NewBootloaderChoice, 2, wx.LEFT, 5)
 
-        BackupBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.BackupBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to BackupBootloaderSizer.
-        BackupBootloaderSizer.Add(self.BackupBootloaderCheckBox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        BackupBootloaderSizer.Add(self.BackupBootloaderText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        BackupBootloaderSizer.Add(self.BackupBootloaderChoice, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.BackupBootloaderSizer.Add(self.BackupBootloaderCheckBox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        self.BackupBootloaderSizer.Add(self.BackupBootloaderText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.BackupBootloaderSizer.Add(self.BackupBootloaderChoice, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
 
-        RestoreBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.RestoreBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to RestoreBootloaderSizer.
-        RestoreBootloaderSizer.Add(self.RestoreBootloaderCheckBox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        RestoreBootloaderSizer.Add(self.RestoreBootloaderText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        RestoreBootloaderSizer.Add(self.RestoreBootloaderChoice, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.RestoreBootloaderSizer.Add(self.RestoreBootloaderCheckBox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        self.RestoreBootloaderSizer.Add(self.RestoreBootloaderText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.RestoreBootloaderSizer.Add(self.RestoreBootloaderChoice, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         BottomButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -2518,9 +2518,9 @@ class NewBootloaderOptionsWindow(wx.Frame):
         self.MainSizer.Add(self.DefaultOSSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
         self.MainSizer.Add(AdvancedOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        self.MainSizer.Add(InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        self.MainSizer.Add(BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        self.MainSizer.Add(RestoreBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(self.InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(self.BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(self.RestoreBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
         self.MainSizer.Add(BottomButtonSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
 
@@ -2536,10 +2536,12 @@ class NewBootloaderOptionsWindow(wx.Frame):
         #Text.
         self.OSInfoText.Bind(wx.EVT_LEFT_DOWN, self.OnOSInfo)
         self.BasicOptionsText.Bind(wx.EVT_LEFT_DOWN, self.OnBasicOptions)
+        self.AdvancedOptionsText.Bind(wx.EVT_LEFT_DOWN, self.OnAdvancedOptions)
 
         #Images.
         self.Arrow1.Bind(wx.EVT_LEFT_DOWN, self.OnOSInfo)
         self.Arrow2.Bind(wx.EVT_LEFT_DOWN, self.OnBasicOptions)
+        self.Arrow3.Bind(wx.EVT_LEFT_DOWN, self.OnAdvancedOptions)
 
     def OnOSInfo(self, Event=None):
         """Hide/Show the OS info, and rotate the arrow"""
@@ -2551,8 +2553,6 @@ class NewBootloaderOptionsWindow(wx.Frame):
             self.ListCtrl.Hide()
             self.SystemInfoButton.Hide()
 
-            self.MainSizer.SetSizeHints(self)
-
         else:
             self.Arrow1.SetBitmap(self.DownArrowImage)
 
@@ -2561,7 +2561,7 @@ class NewBootloaderOptionsWindow(wx.Frame):
             self.ListCtrl.Show()
             self.SystemInfoButton.Show()
 
-            self.MainSizer.SetSizeHints(self)
+        self.MainSizer.SetSizeHints(self)
 
     def OnBasicOptions(self, Event=None):
         """Hide/Show the basic options, and rotate the arrow"""
@@ -2579,8 +2579,6 @@ class NewBootloaderOptionsWindow(wx.Frame):
             self.BootloaderTimeoutSpinner.Hide()
             self.DefaultOSText.Hide()
             self.DefaultOSChoice.Hide()
-
-            self.MainSizer.SetSizeHints(self)
 
         else:
             self.Arrow2.SetBitmap(self.DownArrowImage)
@@ -2603,7 +2601,59 @@ class NewBootloaderOptionsWindow(wx.Frame):
             self.DefaultOSText.Show()
             self.DefaultOSChoice.Show()
 
-            self.MainSizer.SetSizeHints(self)
+        self.MainSizer.SetSizeHints(self)
+
+    def OnAdvancedOptions(self, Event=None):
+        """Show/Hide the advanced options, and rotate the arrow"""
+        if self.InstallNewBootloaderCheckBox.IsShown():
+            self.Arrow3.SetBitmap(self.RightArrowImage)
+
+            self.MainSizer.Detach(self.InstallNewBootloaderSizer)
+            self.MainSizer.Detach(self.BackupBootloaderSizer)
+            self.MainSizer.Detach(self.RestoreBootloaderSizer)
+
+            self.InstallNewBootloaderCheckBox.Hide()
+            self.NewBootloaderText.Hide()
+            self.NewBootloaderChoice.Hide()
+            self.BackupBootloaderCheckBox.Hide()
+            self.BackupBootloaderText.Hide()
+            self.BackupBootloaderChoice.Hide()
+            self.RestoreBootloaderCheckBox.Hide()
+            self.RestoreBootloaderText.Hide()
+            self.RestoreBootloaderChoice.Hide()
+
+        else:
+            self.Arrow3.SetBitmap(self.DownArrowImage)
+
+            if self.ListCtrl.IsShown():
+                if self.ReinstallBootloaderCheckBox.IsShown():
+                    FirstNumber = 13
+
+                else:
+                    FirstNumber = 10
+
+            else:
+                if self.ReinstallBootloaderCheckBox.IsShown():
+                    FirstNumber = 11
+
+                else:
+                    FirstNumber = 8
+
+            self.MainSizer.Insert(FirstNumber, self.InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+1, self.BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+2, self.RestoreBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+            self.InstallNewBootloaderCheckBox.Show()
+            self.NewBootloaderText.Show()
+            self.NewBootloaderChoice.Show()
+            self.BackupBootloaderCheckBox.Show()
+            self.BackupBootloaderText.Show()
+            self.BackupBootloaderChoice.Show()
+            self.RestoreBootloaderCheckBox.Show()
+            self.RestoreBootloaderText.Show()
+            self.RestoreBootloaderChoice.Show()
+
+        self.MainSizer.SetSizeHints(self)
 
 #End New Bootloader Options Window.
 #Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later ***
