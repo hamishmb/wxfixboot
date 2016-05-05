@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. *** These need testing and refactoring ***
+#Begin Main Class. *** These need refactoring ***
 class Main():
     def FindMissingFSCKModules(self):
         """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc)."""
@@ -51,7 +51,7 @@ class Main():
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
         return FailedList
 
-    def LookForBootloaderOnPartition(self, Bootloader, PackageManager, MountPoint, UsingChroot): #*** Test again *** *** Maybe move this to MainStartupTools later ***
+    def LookForBootloaderOnPartition(self, Bootloader, PackageManager, MountPoint, UsingChroot): #*** Maybe move this to MainStartupTools later, and use it to detect bootloaders ***
         """Look for the currently installed bootloader in the given mount point."""
         logger.debug("HelperBackendTools: Main().LookForBootloaderOnPartition(): Looking for "+Bootloader+" in "+MountPoint+"...")
 
@@ -230,14 +230,14 @@ class Main():
                 logger.debug("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Contents of BootloaderCandidatesList: "+', '.join(BootloaderCandidatesList))
                 logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Asking the user which new OS to install the bootloader to...")
 
-                #Ask the user which candidate(s) to use for bootloader installation. *** Is this bad advice? ***
+                #Ask the user which candidate(s) to use for bootloader installation.
                 SystemInfo["OSsForBootloaderInstallation"] = DialogTools.ShowMultiChoiceDlg(Message="Please select each OS you'd like to modify or install the bootloader to.\nIdeally, select the ones that you use most frequently.", Title="WxFixBoot - Select Operating Systems For Bootloader Installation", Choices=BootloaderCandidatesList)
 
                 logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): User selected: "+Result+"...")
 
         logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Finished selecting OSs! Modifying or Installing the new bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"]))
 
-    def FindBootloaderRemovalOSs(self, Bootloader): #*** Check this works ***
+    def FindBootloaderRemovalOSs(self, Bootloader):
         """Find the OS(es) that currently have the bootloader installed, so we know where to remove it from."""
         logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Looking for Operating Systems that currently have the bootloader installed, to add to the removal list...")
 
@@ -248,8 +248,8 @@ class Main():
             PackageManager = OSInfo[OS]["PackageManager"]
             Partition = OSInfo[OS]["Partition"]
 
-            #Run some different instructions depending on whether the partition == RootFS or not. *** Use a dictionary key to say which OS is the current one instead of doing this ***
-            if SystemInfo["IsLiveDisk"] == False and Partition == SystemInfo["RootFS"]:
+            #Run some different instructions depending on whether the OS is the current OS or not.
+            if OSInfo[OS]["IsCurrentOS"]:
                 UsingChroot = False
                 MountPoint = "/"
 

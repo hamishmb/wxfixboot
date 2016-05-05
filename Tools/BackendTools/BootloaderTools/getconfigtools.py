@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor and test all of these ***
+class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader time out *** *** Sometimes doesn't find kernel options ***
     def GetGRUBLEGACYConfig(self, filetoopen): #*** Add logging messages ***
         """Get important bits of config from grub-legacy before removing it."""
         #In this case, the only useful info is the timeout, so just get this.

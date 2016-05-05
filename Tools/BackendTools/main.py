@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def GetOldBootloaderConfig(self): #*** Looks like this intermittently doesn't work *** *** Move to startup tools later ***
+    def GetOldBootloaderConfig(self): #*** Looks like this intermittently doesn't work *** *** Move to startup tools later *** *** Test with grub-legacy ***
         """Get the old bootloader's config before removing it, so we can reuse it (if possible) with the new one."""
         logger.debug("MainBackendTools: Main().GetOldBootloaderConfig(): Preparing to get bootloader config...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to get bootloader config...")
@@ -174,7 +174,7 @@ class Main():
 
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
 
-    def RemoveOldBootloader(self): #*** Handle return values better, and return them *** *** Check this works ***
+    def RemoveOldBootloader(self): #*** Handle return values better, and return them ***
         """Remove the currently installed bootloader."""
         logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Preparing to remove old bootloaders...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Removing old bootloaders...")
@@ -270,7 +270,7 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
         DialogTools.ShowMsgDlg(Kind="info", Message="Finished removing old bootloaders! WxFixBoot will now install your new bootloader to: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+".")
 
-    def InstallNewBootloader(self): #*** Check this works ***
+    def InstallNewBootloader(self):
         """Install a new bootloader."""
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 52)  
         BootloaderInstallSucceded = True     
@@ -338,8 +338,7 @@ class Main():
             elif SystemInfo["BootloaderToInstall"] == "GRUB-UEFI":
                 logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing GRUB-UEFI...")
                 #Mount the UEFI partition at MountPoint/boot/efi.
-                #Unmount it first though, in case it's already mounted. *** Alternately check where it's mounted and leave it if it's okay ***
-
+                #Unmount it first though, in case it's already mounted. *** Alternately, check where it's mounted and leave it if it's okay ***
                 if CoreTools.Unmount(UEFISystemPartition) != 0:
                     logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+UEFISystemPartition+"! This probably doesn't matter...")
 
@@ -386,7 +385,7 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
         return BootloaderInstallSucceded #*** Keep the results for each OS here, and note which one(s) failed! ***
 
-    def SetNewBootloaderConfig(self): #*** Check this works *** *** Use UseChroot here for readability? ***
+    def SetNewBootloaderConfig(self): #*** Use UseChroot here for readability? ***
         """Manage setting new bootloader config."""
         logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): Preparing to set bootloader config in OS(s): "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to set the new bootloaders' config...")

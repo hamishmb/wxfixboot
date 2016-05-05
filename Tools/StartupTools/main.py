@@ -79,7 +79,7 @@ class Main():
 
     def UnmountAllFS(self, SystemInfo):
         """Unmount any unnecessary filesystems, to prevent data corruption."""
-        #Warn about removing devices. *** Fix this if possible ***
+        #Warn about removing devices. *** Allow this if possible ***
         logger.info("MainStartupTools: Main().UnmountAllFS(): Unmounting all Filesystems...")
         DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot is about to gather device information. After this point, you must not remove/add any devices from/to your computer, so do that now if you wish to.")
 
@@ -141,7 +141,7 @@ class Main():
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
 
-        #if CoreTools.StartProcess("mount -avw") != 0: *** Always triggered on Parted Magic ***
+        #if CoreTools.StartProcess("mount -avw") != 0: *** Disabled temporarily because always triggered on Parted Magic ***
         #    logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
         #    CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
@@ -200,7 +200,7 @@ class Main():
                 logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Found apt...")
                 APT = True
 
-            #Don't use elif here, so we'll also save it if CoreStartupTools.AskForOSName was used to determine the name. If it is still None, the user skipped naming it. Ignore it instead and skip the rest of the loop. *** I don't understand this, so check back later ***
+            #Also check if CoreStartupTools.AskForOSName was used to determine the name. If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
             if OSName != None and OSArch != None and APT:
                 #Add this information to OSInfo.
                 OSInfo[OSName] = {}
@@ -239,8 +239,7 @@ class Main():
         Keys.sort()
 
         if len(Keys) == 0:
-            #*** Emergency exit TODO ***
-            pass
+            CoreTools.EmergencyExit("No Linux Operating systems were found on your system, even though Linux partitions were found! This is very likely a bug in WxFixBoot.")
 
         elif len(Keys) == 1:
             SystemInfo["DefaultOS"] = Keys[0]
@@ -260,7 +259,7 @@ class Main():
             UEFIVariables = True
             logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/vars...")
 
-        elif os.path.isdir("/sys/firmware/efi/efivars"):  
+        elif os.path.isdir("/sys/firmware/efi/efivars"): #*** Check under /proc instead of doing this ***
             UEFIVariables = True
             logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/efivars...")
 
@@ -274,7 +273,7 @@ class Main():
             #if CoreTools.MountPartition(Partition="efivars", MountPoint="/sys/firmware/efi/vars", Options="-t efivarfs") != 0: #*** Check this works ***
             #    logger.warning("MainStartupTools: Main().GetFirmwareType(): Failed to mount UEFI vars! Warning user. Ignoring and continuing.")
 
-            #UEFI vars not available or couldn't be mounted. *** This is incorrect on BIOS systems ***
+            #UEFI vars not available or couldn't be mounted. *** This is an incorrect warning on BIOS systems ***
             DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
             UEFIVariables = False
 

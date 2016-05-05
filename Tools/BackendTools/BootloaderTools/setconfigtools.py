@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor and test all of these *** *** Add recovery boot options for LILO/ELILO *** *** Check if LILO installs on GPT disks (GRUB does) ***
+class Main(): #*** Refactor all of these *** *** Add recovery boot options for LILO/ELILO *** *** Check if LILO installs on GPT disks (GRUB does) ***
     def SetGRUB2Config(self, filetoopen):
         """Set GRUB2 config."""
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Setting GRUB2 Config in "+filetoopen+"...")
@@ -375,7 +375,7 @@ class Main(): #*** Refactor and test all of these *** *** Add recovery boot opti
         ConfigFile.close()
         logger.info("BootloaderConfigSettingTools: Main().SetELILOConfig(): Done!")
 
-    def MakeLILOOSEntries(self, filetoopen, PackageManager, MountPoint): #*** Maybe set default OS in a seperate function? *** *** FIX THIS LATER, IT DOESN'T WORK! ***
+    def MakeLILOOSEntries(self, filetoopen, PackageManager, MountPoint): #*** Maybe set default OS in a separate function? *** *** FIX THIS LATER, IT DOESN'T WORK! *** *** Actually, it seems to be working now??? ***
         """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS"""
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make OS entries for "+SystemInfo["BootloaderToInstall"]+"...")
         #Okay, we've saved the kopts, timeout, and the boot device in the list.

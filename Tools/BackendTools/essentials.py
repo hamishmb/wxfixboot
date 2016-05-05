@@ -22,7 +22,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Begin Main Class.
-class Main(): #*** These need refactoring and proper testing ***
+class Main(): #*** These need refactoring ***
     def CheckInternetConnection(self):
         """Check the internet connection."""
         DialogTools.ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations. This will be done by pinging the OpenDNS DNS servers.")
@@ -116,7 +116,7 @@ class Main(): #*** These need refactoring and proper testing ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Backing up the Partition Table!###\n")
         logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Finished Backing up Partition Table! Exit code: "+unicode(retval))
 
-    def BackupBootSector(self): #*** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save boot sector backup file variable like this, move to settings window *** *** Reduce duplication ***
+    def BackupBootSector(self): #*** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save boot sector backup file variable like this, move to settings window *** *** Reduce duplication *** *** What if we need to backup a PBR? ***
         """Backup the bootsector."""
         #For GPT disks, backup UEFI System Partition.
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
@@ -167,7 +167,7 @@ class Main(): #*** These need refactoring and proper testing ***
         logger.info("EssentialBackendTools: Main().BackupBootSector(): Finished backing up Boot Sector! Exit code: "+unicode(retval))
 
     def RestorePartitionTable(self):
-        """Restore the partition table.""" #*** Will need lots of modication when switching to dictionaries ***
+        """Restore the partition table.""" #*** Will need lots of modification when switching to dictionaries ***
         #Use sgdisk for GPT disks, restore with sgdisk -l/--load-backup=<file> <TARGETDEVICE>
         #Use dd for MBR disks, restore with dd if=<somefile> of=/dev/sdX bs=1 count=64 skip=446 seek=446
         logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Preparing to restore the Partition Table...")
@@ -345,7 +345,7 @@ class Main(): #*** These need refactoring and proper testing ***
                     logger.info("EssentialBackendTools: Main().QuickFileSystemCheck(): Checked partition: "+Partition+". No Errors Found!")
 
                 else:
-                    HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Partition) #*** Needs to change to use strings ***
+                    HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Partition) #*** Needs to change to use strings, at the moment it splits the string into a list ***
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Remounting Partition: "+Partition+" Read-Write...")
@@ -428,7 +428,7 @@ class Main(): #*** These need refactoring and proper testing ***
                     logger.info("EssentialBackendTools: Main().BadSectorCheck(): Checked partition: "+Partition+" No Errors Found!")
 
                 else:
-                    HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Partition) #*** Needs to change to use strings *** 
+                    HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Partition) #*** Needs to change to use strings, at the moment it splits the string into a list *** 
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().BadSectorCheck(): Remounting Partition: "+Partition+" Read-Write...")

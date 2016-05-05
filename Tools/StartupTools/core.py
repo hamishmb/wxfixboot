@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. *** Check and test all of this and optimise/reorganise it again later ***
+#Begin Main Class. *** Optimise/Reorganise this again later ***
 class Main():
     def DetermineOSArchitecture(self, Partition, Chroot):
         """Look for OS architecture on given partition, looking for 64-bit first, then 32-bit."""
@@ -82,7 +82,7 @@ class Main():
 
             return Result
 
-    def MountUEFIPartition(self, UEFISystemPartition): #*** Do we need this function? ***
+    def MountUEFIPartition(self, UEFISystemPartition): #*** Do we need this function? Maybe just call the mount function directly ***
         """Mount the UEFI partition if needed"""
         #Get the UEFI partition's current mountpoint, if it is mounted.
         logger.debug("CoreStartupTools: Main().MountUEFIPartition(): Preparing to mount UEFI system Partition if needed...")
@@ -190,7 +190,7 @@ class Main():
             logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def CheckForUEFIPartition(self, SystemInfo): #*** Test again *** *** We can also use GUIDs on GPT systems, what about MBR systems? *** *** Refactor ***
+    def CheckForUEFIPartition(self, SystemInfo): #*** We can also use GUIDs on GPT systems, what about MBR systems? *** *** Refactor ***
         """Find the UEFI system partition and return it"""
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
         AskForUEFIPartition = True

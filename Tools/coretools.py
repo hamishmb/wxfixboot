@@ -117,7 +117,7 @@ class Main():
                 logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
                 return False
 
-    def GetPartitionMountedAt(self, MountPoint): #*** Check this works *** *** What if we get a UUID? ***
+    def GetPartitionMountedAt(self, MountPoint): #*** What if we get a UUID? ***
         """Returns the partition mounted at the given mountpoint, if any.
         Otherwise, return None"""
         logger.info("CoreTools: Main().GetPartitionMountedAt(): Trying to get partition mounted at "+MountPoint+"...")
@@ -161,7 +161,7 @@ class Main():
 
         return MountPoint
 
-    def MountPartition(self, Partition, MountPoint, Options=""): #*** Check this works *** *** Check this over: What if our partition is mounted somewhere else? Does that matter? Make this more bullet-proof ***
+    def MountPartition(self, Partition, MountPoint, Options=""):
         """Mounts the given partition.
         Partition is the partition to mount.
         MountPoint is where you want to mount the partition.
@@ -248,7 +248,7 @@ class Main():
         #Return the return value
         return Retval
 
-    def Find(self, RegExp, TopLevelDirectory): #*** Check if this works on Parted Magic ***
+    def Find(self, RegExp, TopLevelDirectory): #*** Check that this is working on Parted Magic ***
         """Finds the given file, somewhere in or below the given directory, and returns True or False depending on if it was found or not"""
         logger.info("CoreTools: Main().Find(): Looking in "+TopLevelDirectory+" with regular expression "+RegExp+"...")
         FilesFound = []

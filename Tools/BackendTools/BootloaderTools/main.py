@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor and test all of these ***
+class Main(): #*** Refactor all of these ***
     def PrepareForBootloaderInstallation(self):
         """Run checks, gather information, and prepare for bootloader operations.""" #*** Is this still needed? *** 
         #First, check the Internet connection, and disable bootloader operations if needed.

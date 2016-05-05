@@ -15,7 +15,6 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Where did we want to use CoreTools.GetMountPointOf()? ***
-#*** Re-evaluate dependencies at packaging time *** *** Add gdisk to dependencies list in package *** *** Add package dependency for python-bs4 and python-lxml ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Test DialogTools.ShowMultiChoiceDlg() ***
@@ -23,7 +22,8 @@
 #*** Allow getting device info after startup (run some startup scripts again) ****
 #*** Remove grub.efi files after installing elilo and vice versa ***
 #*** Support EFI on 32-bit firmware? ***
-#*** /boot/efi not unmounted when modifying EFI bootloaders on parted magic (possibly also on other platforms) ***
+#*** /boot/efi not unmounted after modifying EFI bootloaders on parted magic (possibly also on other platforms), preventing unmounting of chrooted rootfs. Doesn't cause an error or any problems. ***
+#*** Use a variable to say if we're on Parted Magic or not ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -51,7 +51,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "3/5/2016"
+ReleaseDate = "5/5/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -463,8 +463,8 @@ class InitThread(threading.Thread):
 
         #Check if there are any linux partitions in the list.
         if SystemInfo["LinuxPartitions"] == []:
-            #There are none, exit. *** Clarify this message ***
-            logger.critical("InitThread(): No Linux Partitions (on HDD) of type ext(1,2,3,4), btrfs, xfs, jfs, zfs, minix or resierfs found! Exiting...")
+            #There are none, exit.
+            logger.critical("InitThread(): No Linux Partitions (on HDD) of type ext(1,2,3,4), btrfs, xfs, jfs, zfs, minix or resierfs found! If you do have Linux partitions but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
 
             #Exit.
             CoreTools.EmergencyExit("You don't appear to have any Linux partitions on your hard disks. If you do have Linux partitions but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
@@ -483,7 +483,7 @@ class InitThread(threading.Thread):
         MainStartupTools.SetDefaultOS() #*** Get rid of this; soon to be selected on a per-bootloader basis in Bootloader Options Window ***
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
 
-        #Set rootfs. *** Find mountpoint of / if not on livedisk ***
+        #Set rootfs. *** Find mountpoint of / if not on livedisk *** *** Can't do this yet cos other code doesn't expect that ***
         logger.info("InitThread(): *** ABSTRACTION CODE *** Setting SystemInfo['RootFS']...")
 
         SystemInfo["RootFS"] = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
@@ -517,7 +517,7 @@ class InitThread(threading.Thread):
         global PrevBootloaderSetting
         global AutoUEFISystemPartition
         global UEFISystemPartition
-        global EmptyEFIPartition #*** Is this var actually helpful? ***
+        global EmptyEFIPartition
 
         #Initialise them.
         EmptyEFIPartition = False
@@ -1873,7 +1873,7 @@ class SettingsWindow(wx.Frame):
         self.Destroy()
 
 #End Settings Window
-#Begin Bootloader Options Window *** Fix some bugs and use get/set selection instead of get/set string selection where possible, maybe write checkbox/radiobutton code from scratch ***
+#Begin Bootloader Options Window *** Remove Soon ***
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self,ParentWindow):
         """Initialise Bootloader options window"""
@@ -1903,7 +1903,7 @@ class BootloaderOptionsWindow(wx.Frame):
         #Disable self.ExitButton.
         self.ExitButton.Disable()
 
-    def CreateCheckboxes(self): #*** Change the text here to make it clearer ***
+    def CreateCheckboxes(self):
         """Create the checkboxes"""
         self.AutoDetermineCheckBox = wx.CheckBox(self.Panel, -1, "Automatically determine the bootloader to install")
         self.DoNotChangeBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Do not install a new bootloader")
@@ -2169,7 +2169,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.DoNotChangeBootloaderCheckBox.SetValue(False)
             self.DoNotChangeBootloaderCheckBox.Disable()
 
-    def RescanForBootloaders(self, Event=None):
+    def RescanForBootloaders(self, Event=None): #*** Are we keeping this? ***
         """Handle selection of new UEFI system partition. It's pretty self-explanatory."""
         logger.debug("BootloaderOptionsWindow().RescanForBootloaders(): Preparing to rescan for bootloaders...")
         dlg = wx.MessageDialog(self.Panel, "WxFixBoot will now rescan for bootloaders, please wait a few seconds.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
@@ -2214,7 +2214,7 @@ class BootloaderOptionsWindow(wx.Frame):
             logger.info("BootloaderOptionsWindow().CheckOpts(): Options are valid. Calling self.SaveBLOpts()...")
             self.SaveBLOpts()
 
-    def SaveBLOpts(self): #*** Tidy this up and refactor it ***
+    def SaveBLOpts(self):
         """Save all selected Operations"""
         global PrevBootloaderSetting
         global Bootloader
@@ -2237,7 +2237,7 @@ class BootloaderOptionsWindow(wx.Frame):
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Firmware type is: "+Settings["MainSettings"]["FirmwareType"])
 
         #Bootloader to install choice.
-        #Offer some warnings here if needed. This is a little complicated, but is still fairly easy to read. *** Refactor ***
+        #Offer some warnings here if needed. This is a little complicated, but is still fairly easy to read.
         if self.BootloaderToInstallChoice.GetStringSelection()[0:4] == "Auto" and ReinstallBootloader == False:
             #Use autodetect value
             if self.DoNotChangeBootloaderCheckBox.IsChecked() == False:
@@ -2657,7 +2657,7 @@ class NewBootloaderOptionsWindow(wx.Frame):
         self.MainSizer.SetSizeHints(self)
 
 #End New Bootloader Options Window.
-#Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later ***
+#Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later *** *** May be removed upon integration of the new bootloader options window ***
 class RestoreWindow(wx.Frame):
     def __init__(self, ParentWindow, Type):
         """Initialise RestoreWindow"""

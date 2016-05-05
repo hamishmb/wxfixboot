@@ -22,9 +22,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Begin Main Class.
-class Main(): #*** These need refactoring and proper testing *** *** Return return values in chroot functions ***
+class Main(): #*** These need refactoring *** *** Return return values in chroot functions ***
     def UpdateChrootMtab(self, MountPoint):
-        """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right.""" #*** Don't copy to /etc/mtab, as this may screw up mounting in target os later. Copy to MountPoint/proc/self/mounts. Actually, /proc is bound to /MountPoint/proc. What's not working with this command?! ***
+        """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right.""" #*** Don't copy to /etc/mtab, as this may screw up mounting in target os later. Copy to MountPoint/proc/self/mounts. Actually, /proc is bound to /MountPoint/proc. What's not working with this command?! *** *** Nothing wrong found during testing, what shall I do with this then? ***
         logger.debug("CoreBackendTools: Main().UpdateChrootMtab: Updating /etc/mtab for chroot at: "+MountPoint+"...")
 
         retval = CoreTools.StartProcess("cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab", ShowOutput=False)
@@ -34,7 +34,7 @@ class Main(): #*** These need refactoring and proper testing *** *** Return retu
 
         logger.debug("CoreBackendTools: Main().UpdateChrootMtab: Finished updating /etc/mtab for chroot at: "+MountPoint+".")
 
-    def SetUpChroot(self, MountPoint): #*** Test this again *** *** Return retval ***
+    def SetUpChroot(self, MountPoint): #*** Return retval ***
         """Set up a chroot for the given mountpoint."""
         logger.debug("CoreBackendTools: Main().SetUpChroot(): Setting up chroot for MountPoint: "+MountPoint+"...")
 
@@ -60,7 +60,7 @@ class Main(): #*** These need refactoring and proper testing *** *** Return retu
 
         logger.debug("CoreBackendTools: Main().SetUpChroot(): Finished setting up chroot for MountPoint: "+MountPoint+"...")
 
-    def TearDownChroot(self, MountPoint): #*** Test this again *** *** Return Retval ***
+    def TearDownChroot(self, MountPoint): #*** Return Retval ***
         """Remove a chroot at the given mountpoint."""
         logger.debug("CoreBackendTools: Main().TearDownChroot(): Removing chroot at MountPoint: "+MountPoint+"...")
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# NoteBook pages for the system info window for WxFixBoot Version 2.0~pre1
+# NoteBook page functions for the system info window for WxFixBoot Version 2.0~pre1
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -25,7 +25,7 @@ from __future__ import unicode_literals
 def BindEvents(self):
     """Bind all events for the caller"""
     self.Bind(wx.EVT_BUTTON, self.GetDiskInfo, self.RefreshButton)
-    #self.Bind(wx.EVT_BUTTON, self.ParentWindow.OnExit, self.OkayButton)
+    #self.Bind(wx.EVT_BUTTON, self.ParentWindow.OnExit, self.OkayButton) #*** Disabled until I find a way to make this work ***
     self.Bind(wx.EVT_SIZE, self.OnSize)
 
 def CreateWidgets(self):

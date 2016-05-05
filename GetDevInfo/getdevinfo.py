@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. #*** Refactor and test again ***
+#Begin Main Class. #*** Refactor ***
 class Main():
     def FoundExactMatch(self, Item, Text, Log=True):
         """Check if an exact match of "Item" (arg) can be found in "Text" (arg), seperated by commas or spaces."""
@@ -161,7 +161,7 @@ class Main():
             return FileSystem
 
     def GetUUID(self, Disk):
-        """Get the given partition's UUID""" #*** Test this again ***
+        """Get the given partition's UUID"""
         UUID = "Unknown"
 
         #Try to get the UUID from blkid's output.
@@ -178,7 +178,7 @@ class Main():
 
         return UUID
 
-    def GetID(self, Disk): #*** Test this again ***
+    def GetID(self, Disk):
         """Retrive the given partition's/device's ID."""
         logger.info("GetDevInfo: Main().GetID(): Getting ID for: "+Disk+"...")
 
@@ -204,7 +204,7 @@ class Main():
 
         return ID
 
-    def GetDeviceInfo(self, Node): #*** Ignore capacities for all optical drives (fixes bug on pmagic) ***
+    def GetDeviceInfo(self, Node): #*** Ignore capacities for all optical drives (will fix low priority bug on pmagic) ***
         """Get Device Information"""
         HostDisk = unicode(Node.logicalname.string)
         DiskInfo[HostDisk] = {}
@@ -253,7 +253,7 @@ class Main():
         DiskInfo[Volume]["ID"] = self.GetID(Volume)
         return Volume
 
-    def GetInfo(self, Standalone=False): #*** Test this ***
+    def GetInfo(self, Standalone=False):
         """Get Disk Information."""
         logger.info("GetDevInfo: Main().GetInfo(): Preparing to get Disk info...")
 
