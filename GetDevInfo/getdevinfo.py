@@ -283,7 +283,7 @@ class Main():
 
         print(self.Output.body)
 
-        print(type(self.Output.list.children))
+        print(type(self.Output.list))
 
         #Find the disks.
         for Node in self.Output.list.children:
