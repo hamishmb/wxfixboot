@@ -279,8 +279,7 @@ class Main():
 
         logger.debug("GetDevInfo: Main().GetInfo(): Done.")
 
-        self.Output = BeautifulSoup(stdout, "xml")
-        print(stdout)
+        self.Output = BeautifulSoup(stdout, "lxml")
 
         #Find the disks.
         for Node in self.Output.list.children:
