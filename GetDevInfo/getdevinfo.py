@@ -285,8 +285,14 @@ class Main():
 
         print(type(self.Output.list))
 
+        if unicode(type(self.Output.list)) == "<type 'NoneType'>":
+            ListOfDevices = self.Output.body.children
+
+        else:
+            ListOfDevices = self.Output.list.children
+
         #Find the disks.
-        for Node in self.Output.list.children:
+        for Node in ListOfDevices:
             if unicode(type(Node)) != "<class 'bs4.element.Tag'>":
                 continue
 
