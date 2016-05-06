@@ -280,7 +280,10 @@ class Main():
         logger.debug("GetDevInfo: Main().GetInfo(): Done.")
 
         self.Output = BeautifulSoup(stdout, "html")
-        print(self.Output)
+
+        print(self.Output.body)
+
+        print(type(self.Output.list.children))
 
         #Find the disks.
         for Node in self.Output.list.children:
