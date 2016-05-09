@@ -320,8 +320,8 @@ class Main():
             #Check for a UEFI partition. *** Maybe read fstabs in GetLinuxOSs *** *** Only check on EFI systems? ***
             #Check for a UEFI system partition.
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking For a UEFI partition...")
-            AutoUEFISystemPartition = CoreStartupTools.CheckForUEFIPartition(SystemInfo)
-            UEFISystemPartition = AutoUEFISystemPartition
+            SystemInfo["AutoUEFISystemPartition"] = CoreStartupTools.CheckForUEFIPartition(SystemInfo)
+            UEFISystemPartition = SystemInfo["AutoUEFISystemPartition"]
 
             #If there is no UEFI partition, only look for BIOS bootloaders.
             if UEFISystemPartition == None:
@@ -387,7 +387,7 @@ class Main():
         #Set the default bootloader value.
         SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
 
-        return AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition
+        return UEFISystemPartition, HelpfulUEFIPartition
 
     def SetDefaults(self): #*** Modify to use dictionaries later ***
         """Set Default for some variables"""

@@ -505,7 +505,6 @@ class InitThread(threading.Thread):
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
         #Define global variables.
-        global AutoUEFISystemPartition
         global UEFISystemPartition
         global EmptyEFIPartition
 
@@ -513,11 +512,10 @@ class InitThread(threading.Thread):
         EmptyEFIPartition = False
         SystemInfo["PrevBootloaderSetting"] = None
         UEFISystemPartition = None
-        AutoUEFISystemPartition = None
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-        AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
+        UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): Bootloader is: "+SystemInfo["Bootloader"])
 
@@ -2164,7 +2162,6 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
         #Define global variables.
-        global AutoUEFISystemPartition
         global UEFISystemPartition
         global EmptyEFIPartition
 
@@ -2172,10 +2169,9 @@ class BootloaderOptionsWindow(wx.Frame):
         EmptyEFIPartition = False
         PrevBootloaderSetting = None
         UEFISystemPartition = None
-        AutoUEFISystemPartition = None
 
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
-        AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
+        UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+SystemInfo["Bootloader"])
 
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
@@ -3174,7 +3170,7 @@ class ProgressWindow(wx.Frame):
         SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
         Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
         SystemInfo["RootDevice"] = SystemInfo["AutoRootDevice"]
-        UEFISystemPartition = AutoUEFISystemPartition
+        UEFISystemPartition = SystemInfo["AutoUEFISystemPartition"]
 
         #Show MainWindow
         MainFrame = MainWindow()
