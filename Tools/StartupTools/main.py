@@ -306,8 +306,6 @@ class Main():
                 SystemInfo["DetectedFirmwareType"] = "UEFI"
                 UEFIVariables = False
 
-        return UEFIVariables
-
     def GetBootloader(self, RootDevice, SystemInfo):
         """Determine the current bootloader."""
         #*** Do some of this for each OS *** *** Will need a LOT of modification when I switch to dictionaries ***
@@ -428,10 +426,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, AutoRootDevice, RootDevice, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
+    def FinalCheck(self, AutoRootDevice, RootDevice, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
         """Check for any conflicting options, and that each variable is set."""
         #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], Settings["MainSettings"]["FirmwareType"], OSInfo.
-        VarList = ('AutoRootDevice', 'RootDevice', 'UEFIVariables', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
+        VarList = ('AutoRootDevice', 'RootDevice', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.

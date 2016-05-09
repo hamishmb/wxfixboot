@@ -51,7 +51,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre1"
-ReleaseDate = "5/5/2016"
+ReleaseDate = "9/5/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -491,12 +491,9 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
 
         #Get the firmware type. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy ***
-        #Define global variables.
-        global UEFIVariables
-
         logger.info("InitThread(): Determining Firmware Type...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining Firmware Type...")
-        UEFIVariables = MainStartupTools.GetFirmwareType()
+        MainStartupTools.GetFirmwareType()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "70")
         logger.info("InitThread(): Determined Firmware Type as: "+Settings["MainSettings"]["FirmwareType"])
 
@@ -534,7 +531,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        MainStartupTools.FinalCheck(AutoRootDevice, RootDevice, UEFIVariables, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        MainStartupTools.FinalCheck(AutoRootDevice, RootDevice, Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -3400,9 +3397,6 @@ class BackendThread(threading.Thread):
         ReportList.write("Detected firmware type: "+SystemInfo["DetectedFirmwareType"]+"\n")
         ReportList.write("Selected Firmware Type: "+Settings["MainSettings"]["FirmwareType"]+"\n")
         ReportList.write("UEFI System Partition (UEFI Bootloader target): "+UEFISystemPartition+"\n")
-
-        if Settings["MainSettings"]["FirmwareType"] == "UEFI":
-            ReportList.write("Found UEFI Variables: "+unicode(UEFIVariables)+"\n")
 
         #Do Bootloader information
         ReportList.write("\n##########BootLoader Information##########\n")
