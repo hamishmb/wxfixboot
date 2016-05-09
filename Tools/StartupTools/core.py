@@ -82,7 +82,7 @@ class Main():
 
             return Result
 
-    def MountUEFIPartition(self, UEFISystemPartition): #*** Do we need this function? Maybe just call the mount function directly ***
+    def MountUEFIPartition(self): #*** Do we need this function? Maybe just call the mount function directly ***
         """Mount the UEFI partition if needed"""
         #Get the UEFI partition's current mountpoint, if it is mounted.
         logger.debug("CoreStartupTools: Main().MountUEFIPartition(): Preparing to mount UEFI system Partition if needed...")
@@ -92,7 +92,7 @@ class Main():
         UEFISYSPMountPoint = "/boot/efi"
 
         #Mount it using the global mount function.
-        Retval = CoreTools.MountPartition(Partition=UEFISystemPartition, MountPoint=UEFISYSPMountPoint)
+        Retval = CoreTools.MountPartition(Partition=SystemInfo["UEFISystemPartition"], MountPoint=UEFISYSPMountPoint)
 
         if Retval == 0:
             logger.info("CoreStartupTools: Main().MountUEFIPartition(): Successfully Mounted UEFI Partition...")
@@ -166,16 +166,16 @@ class Main():
             logger.debug("CoreStartupTools: Main().DetermineGRUBVersion(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def ManualBootloaderSelect(self, UEFISystemPartition): #*** This will need modification when switching to dictionaries ***
+    def ManualBootloaderSelect(self): #*** This will need modification when switching to dictionaries ***
         """Presents the user with a wx.ChoiceBox to select the bootloader manually"""
         logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): Manually selecting bootloader...")
 
         #Offer different selection based on the current state of the system.
-        if UEFISystemPartition == None and Settings["MainSettings"]["FirmwareType"] == "UEFI":
+        if SystemInfo["UEFISystemPartition"] == None and Settings["MainSettings"]["FirmwareType"] == "UEFI":
             logger.warning("CoreStartupTools: Main().ManualBootloaderSelect(): Only listing BIOS bootloaders, as there is no UEFI partition.")
             Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "LILO"])
 
-        elif UEFISystemPartition != None and Settings["MainSettings"]["FirmwareType"] == "UEFI":
+        elif SystemInfo["UEFISystemPartition"] != None and Settings["MainSettings"]["FirmwareType"] == "UEFI":
             Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "GRUB-UEFI", "LILO", "ELILO"])
 
         else:

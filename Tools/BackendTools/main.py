@@ -339,18 +339,18 @@ class Main():
                 logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing GRUB-UEFI...")
                 #Mount the UEFI partition at MountPoint/boot/efi.
                 #Unmount it first though, in case it's already mounted. *** Alternately, check where it's mounted and leave it if it's okay ***
-                if CoreTools.Unmount(UEFISystemPartition) != 0:
-                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+UEFISystemPartition+"! This probably doesn't matter...")
+                if CoreTools.Unmount(SystemInfo["UEFISystemPartition"]) != 0:
+                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+SystemInfo["UEFISystemPartition"]+"! This probably doesn't matter...")
 
-                if CoreTools.MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
-                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+UEFISystemPartition+"! to "+MountPoint+"/boot/efi! *** TODO: Abort bootloader installation. *** For now, continue anyway...")
+                if CoreTools.MountPartition(Partition=SystemInfo["UEFISystemPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
+                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+SystemInfo["UEFISystemPartition"]+"! to "+MountPoint+"/boot/efi! *** TODO: Abort bootloader installation. *** For now, continue anyway...")
 
                 retval = BootloaderInstallationTools.InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
             elif SystemInfo["BootloaderToInstall"] == "ELILO":
                 logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing ELILO...")
                 #Unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
-                if CoreTools.Unmount(UEFISystemPartition) != 0:
+                if CoreTools.Unmount(SystemInfo["UEFISystemPartition"]) != 0:
                     logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount the EFI partition! If installing ELILO fails this might be the reason. Continuing anyway...") #*** Installation won't work if unmounting failed! ***
 
                 if UseChroot:
@@ -469,11 +469,11 @@ class Main():
                     BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
 
                 #Mount the UEFI partition at MountPoint/boot/efi.
-                if CoreTools.MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't mount EFI partition "+UEFISystemPartition+" to install bootloader! *** TODO: Cancel bootloader operations *** Continuing for now...")
+                if CoreTools.MountPartition(Partition=SystemInfo["UEFISystemPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't mount EFI partition "+SystemInfo["UEFISystemPartition"]+" to install bootloader! *** TODO: Cancel bootloader operations *** Continuing for now...")
 
                 #Now Install GRUB-UEFI to the UEFI Partition. *** Is this necessary when updating it? ***
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to UEFISystemPartition...")
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to "+SystemInfo["UEFISystemPartition"]+"...")
                 BootloaderConfigSettingTools.InstallGRUBUEFIToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=Arch)
 
                 #Update GRUB.
@@ -481,7 +481,7 @@ class Main():
                 BootloaderConfigSettingTools.UpdateGRUB2(PackageManager=PackageManager, MountPoint=MountPoint)
 
                 #Make an entry in fstab for the UEFI Partition, if needed.
-                HelperBackendTools.WriteFSTABEntryForUEFIPartition(MountPoint=MountPoint, UEFISystemPartition=UEFISystemPartition)
+                HelperBackendTools.WriteFSTABEntryForUEFIPartition(MountPoint=MountPoint)
 
                 #Copy and backup EFI files where needed.
                 HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
@@ -516,8 +516,8 @@ class Main():
 
             elif SystemInfo["BootloaderToInstall"] == "ELILO":
                 #Unmount the UEFI Partition now, and update mtab in the chroot.
-                if CoreTools.Unmount(UEFISystemPartition) != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+UEFISystemPartition+"! Continuing anyway...") #*** Installation will fail if this happens! ***
+                if CoreTools.Unmount(SystemInfo["UEFISystemPartition"]) != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+SystemInfo["UEFISystemPartition"]+"! Continuing anyway...") #*** Installation will fail if this happens! ***
 
                 CoreBackendTools.UpdateChrootMtab(MountPoint=MountPoint)
 
@@ -525,10 +525,10 @@ class Main():
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making ELILO's configuration file...")
 
                 if MountPoint == "":
-                    CoreTools.StartProcess("elilo -b "+UEFISystemPartition+" --autoconf", ShowOutput=False)
+                    CoreTools.StartProcess("elilo -b "+SystemInfo["UEFISystemPartition"]+" --autoconf", ShowOutput=False)
 
                 else:
-                    CoreTools.StartProcess("chroot "+MountPoint+" elilo -b "+UEFISystemPartition+" --autoconf", ShowOutput=False)
+                    CoreTools.StartProcess("chroot "+MountPoint+" elilo -b "+SystemInfo["UEFISystemPartition"]+" --autoconf", ShowOutput=False)
 
                 #Check elilo's config file exists. *** What do we do if it doesn't? Check the last command ran successfully ***
                 if os.path.isfile(MountPoint+"/etc/elilo.conf"):
@@ -541,12 +541,12 @@ class Main():
                     BootloaderConfigSettingTools.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
 
                 #Now Install ELILO to the UEFI Partition.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing ELILO to UEFISystemPartition...")
-                BootloaderConfigSettingTools.InstallELILOToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartition=UEFISystemPartition)
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing ELILO to "+SystemInfo["UEFISystemPartition"]+"...")
+                BootloaderConfigSettingTools.InstallELILOToPartition(PackageManager=PackageManager, MountPoint=MountPoint)
 
                 #Mount the UEFI partition at MountPoint/boot/efi.
-                if CoreTools.MountPartition(Partition=UEFISystemPartition, MountPoint=MountPoint+"/boot/efi") != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount EFI partition "+UEFISystemPartition+"! Continuing anyway...")
+                if CoreTools.MountPartition(Partition=SystemInfo["UEFISystemPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount EFI partition "+SystemInfo["UEFISystemPartition"]+"! Continuing anyway...")
 
                 #Copy and backup UEFI files where needed.
                 HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)

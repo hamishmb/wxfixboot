@@ -138,7 +138,7 @@ class Main(): #*** These need refactoring ***
 
             Cmd = "dd if="+SystemInfo["RootDevice"]+" of="+BootSectorBackupFile+" bs=512 count=1"
 
-        elif UEFISystemPartition != None:
+        elif SystemInfo["UEFISystemPartition"] != None:
             #We need to ask where to back it up to. *** Maybe do this in settings window? ***
             BootSectorBackupFile = DialogTools.ShowSaveFileDlg(Title="WxFixBoot - Select Bootsector Backup Target File", Wildcard="IMG Image file (*.img)|*.img|All Files/Devices (*)|*")
 
@@ -146,7 +146,7 @@ class Main(): #*** These need refactoring ***
             if BootSectorBackupFile[-4:] != ".img":
                 BootSectorBackupFile = BootSectorBackupFile+".img"
 
-            Cmd = "dd if="+UEFISystemPartition+" of="+BootSectorBackupFile
+            Cmd = "dd if="+SystemInfo["UEFISystemPartition"]+" of="+BootSectorBackupFile
 
         else:
             logger.error("EssentialBackendTools: Main().BackupBootSector(): Failed to backup UEFI Partition, because there isn't one!") #*** What if we're booting GRUB on gpt? ***
@@ -264,9 +264,9 @@ class Main(): #*** These need refactoring ***
 
         else:
             #Restore the UEFISystemPartition.
-            logger.info("EssentialBackendTools: Main().RestoreBootSector(): Restoring UEFI Partition ("+UEFISystemPartition+") from file: "+BootSectorFile+"...")
+            logger.info("EssentialBackendTools: Main().RestoreBootSector(): Restoring UEFI Partition ("+SystemInfo["UEFISystemPartition"]+") from file: "+BootSectorFile+"...")
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
-            CoreTools.StartProcess("dd if="+BootSectorFile+" of="+UEFISystemPartition, ShowOutput=False)
+            CoreTools.StartProcess("dd if="+BootSectorFile+" of="+SystemInfo["UEFISystemPartition"], ShowOutput=False)
 
         #Unmount the partition containing the file, if there is one. *** Is this necessary? ***
         if MountedFS != "None":

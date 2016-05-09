@@ -505,24 +505,22 @@ class InitThread(threading.Thread):
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
         #Define global variables.
-        global UEFISystemPartition
         global EmptyEFIPartition
 
         #Initialise them.
         EmptyEFIPartition = False
         SystemInfo["PrevBootloaderSetting"] = None
-        UEFISystemPartition = None
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-        UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
+        EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): Bootloader is: "+SystemInfo["Bootloader"])
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        MainStartupTools.FinalCheck(UEFISystemPartition, EmptyEFIPartition)
+        MainStartupTools.FinalCheck(EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -759,7 +757,7 @@ class MainWindow(wx.Frame):
 
         self.SaveMainOpts()
 
-        if UEFISystemPartition == "None":
+        if SystemInfo["UEFISystemPartition"] == None:
             dlg = wx.MessageDialog(self.Panel, "Seeing as you have no UEFI partition, you will be unable to select a UEFI bootloader to install, or as your current bootloader. However, in the bootloader options window, you can select a new UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
@@ -1482,7 +1480,7 @@ class SettingsWindow(wx.Frame):
         else:
             self.LogOutputCheckBox.SetValue(False)
 
-        if UEFISystemPartition == "None":
+        if SystemInfo["UEFISystemPartition"] == None:
             self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['Auto: '+SystemInfo["AutoBootloader"], 'GRUB-LEGACY', 'GRUB2', 'LILO'])
 
         else:
@@ -1657,13 +1655,13 @@ class SettingsWindow(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-        if UEFISystemPartition == "None" and SystemInfo["Bootloader"] in ('GRUB-UEFI', 'ELILO'):
+        if SystemInfo["UEFISystemPartition"] == None and SystemInfo["Bootloader"] in ('GRUB-UEFI', 'ELILO'):
             logger.info("SettingsWindow().LaunchblOpts(): UEFI bootloader, but no UEFI partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.")
             dlg = wx.MessageDialog(self.Panel, "You have a UEFI Bootloader, but no UEFI Partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled. Did you change your selected UEFI Partition?", "WxFixBoot - ERROR", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
 
-        elif UEFISystemPartition == "None":
+        elif SystemInfo["UEFISystemPartition"] == None:
             logger.info("SettingsWindow().LaunchblOpts(): No UEFI partition. Therefore installing UEFI bootloaders will be disabled.")
             dlg = wx.MessageDialog(self.Panel, "You have no UEFI Partition. If you wish to install a UEFI bootloader, you'll need to create one first. WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
@@ -1907,7 +1905,7 @@ class BootloaderOptionsWindow(wx.Frame):
     def CreateChoiceBs(self):
         """Create the choice boxes"""   
         #Disable UEFI bootloaders if there is no UEFI system partition.
-        if UEFISystemPartition == "None":
+        if SystemInfo["UEFISystemPartition"] == None:
             self.BootloaderToInstallChoice = wx.Choice(self.Panel, -1, choices=['Auto', 'GRUB2', 'LILO'])
 
         else:
@@ -1928,7 +1926,7 @@ class BootloaderOptionsWindow(wx.Frame):
                 self.BootloaderToInstallChoice.Disable()
                 self.DoNotChangeBootloaderCheckBox.SetValue(True)
 
-            elif UEFISystemPartition == "None":
+            elif SystemInfo["UEFISystemPartition"] == None:
                 self.AutoDetermineCheckBox.Disable()
                 self.DoNotChangeBootloaderCheckBox.SetValue(True)
 
@@ -2162,16 +2160,14 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
         #Define global variables.
-        global UEFISystemPartition
         global EmptyEFIPartition
 
         #Initialise them.
         EmptyEFIPartition = False
-        PrevBootloaderSetting = None
-        UEFISystemPartition = None
+        SystemInfo["PrevBootloaderSetting"] = None
 
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
-        UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
+        EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+SystemInfo["Bootloader"])
 
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
@@ -2226,7 +2222,7 @@ class BootloaderOptionsWindow(wx.Frame):
                         #Find the BIOS/MBR equivalent to a UEFI bootloader.
                         SystemInfo["BootloaderToInstall"] = BootloaderList[bootloadernum+1]
 
-                    elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and SystemInfo["Bootloader"] not in ('GRUB-UEFI', 'ELILO', 'GRUB-LEGACY') and UEFISystemPartition != "None":
+                    elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and SystemInfo["Bootloader"] not in ('GRUB-UEFI', 'ELILO', 'GRUB-LEGACY') and SystemInfo["UEFISystemPartition"] != None:
                         #Find the EFI/UEFI equivalent to a BIOS bootloader, provided there is a UEFI partition, and it isn't GRUB-LEGACY
                         SystemInfo["BootloaderToInstall"] = BootloaderList[bootloadernum-1]
 
@@ -2245,7 +2241,7 @@ class BootloaderOptionsWindow(wx.Frame):
                         wx.MessageDialog(self.Panel, "You have a combination of UEFI firmware and grub legacy. This is an odd combination, and WxFixBoot doesn't know what to do. If you've imaged your HDD from another system, you probably want to install GRUB-UEFI manually by returning to this window after it closes. If you manually suggested you have grub legacy earlier, please double check that was correct.", "WxFixBoot - Warning!", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
                         SystemInfo["BootloaderToInstall"] = "Unknown"
 
-                    elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and UEFISystemPartition == "None":
+                    elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and SystemInfo["UEFISystemPartition"] == None:
                         #Refuse to install a UEFI bootloader, as there is no UEFI partition.
                         wx.MessageDialog(self.Panel, "Your current bootloader to install requires a UEFI partition, which either doesn't exist or has not been selected. Please create or select a UEFI partition to install a UEFI bootloader or the operation will be cancelled.", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition).ShowModal()
                         SystemInfo["BootloaderToInstall"] = "None"
@@ -3165,12 +3161,11 @@ class ProgressWindow(wx.Frame):
         MainStartupTools.SetDefaults()
 
         global PartScheme
-        global UEFISystemPartition
 
         SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
         Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
         SystemInfo["RootDevice"] = SystemInfo["AutoRootDevice"]
-        UEFISystemPartition = SystemInfo["AutoUEFISystemPartition"]
+        SystemInfo["UEFISystemPartition"] = SystemInfo["AutoUEFISystemPartition"]
 
         #Show MainWindow
         MainFrame = MainWindow()
@@ -3301,7 +3296,6 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.essentials.BootSectorFile = BootSectorFile
             Tools.BackendTools.essentials.BootSectorBackupType = BootSectorBackupType
             Tools.BackendTools.essentials.BootSectorTargetDevice = BootSectorTargetDevice
-            Tools.BackendTools.essentials.UEFISystemPartition = UEFISystemPartition
 
             #*** Main Bootloader Tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
@@ -3315,14 +3309,11 @@ class BackendThread(threading.Thread):
 
             except NameError: pass
 
-            Tools.BackendTools.main.UEFISystemPartition = UEFISystemPartition
-
             #*** Bootloader Config getting tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout = BootloaderTimeout
 
             #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderTimeout = BootloaderTimeout
-            Tools.BackendTools.BootloaderTools.setconfigtools.UEFISystemPartition = UEFISystemPartition
 
             try:
                 Tools.BackendTools.BootloaderTools.setconfigtools.KernelOptions = KernelOptions
@@ -3369,7 +3360,7 @@ class BackendThread(threading.Thread):
         ReportList.write("\n##########Firmware Information##########\n")
         ReportList.write("Detected firmware type: "+SystemInfo["DetectedFirmwareType"]+"\n")
         ReportList.write("Selected Firmware Type: "+Settings["MainSettings"]["FirmwareType"]+"\n")
-        ReportList.write("UEFI System Partition (UEFI Bootloader target): "+UEFISystemPartition+"\n")
+        ReportList.write("UEFI System Partition (UEFI Bootloader target): "+SystemInfo["UEFISystemPartition"]+"\n")
 
         #Do Bootloader information
         ReportList.write("\n##########BootLoader Information##########\n")
