@@ -107,7 +107,6 @@ class Main():
     def SortSomeInfo(self): #*** Put this somewhere else ***
         """TEMPORARY function to hold this stuff before I put it somewhere else"""
         SystemInfo["Devices"] = []
-        SystemInfo["MBRDisks"] = []
 
         Keys = DiskInfo.keys()
         Keys.sort()
@@ -120,18 +119,14 @@ class Main():
             try:
                 Temp = DiskInfo[Disk]["Partitioning"]
 
-                if Temp != "gpt":
-                    SystemInfo["MBRDisks"].append(Temp)
-
             except: pass
 
         #Detect Linux Partitions.
         SystemInfo["LinuxPartitions"] = []
 
         for Disk in Keys:
-            if DiskInfo[Disk]["Type"] == "Partition":
-                if DiskInfo[Disk]["FileSystem"] in ("ext", "ext2", "ext3", "ext4", "btrfs", "xfs", "jfs", "zfs", "minix", "reiserfs"):
-                    SystemInfo["LinuxPartitions"].append(Disk)
+            if DiskInfo[Disk]["FileSystem"] in ("ext", "ext2", "ext3", "ext4", "btrfs", "xfs", "jfs", "zfs", "minix", "reiserfs"):
+                SystemInfo["LinuxPartitions"].append(Disk)
 
     def MountCoreFS(self):
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
@@ -422,7 +417,7 @@ class Main():
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], SystemInfo["AutoRootDevice"], SystemInfo["RootDevice"], SystemInfo["Bootloader"], SystemInfo["Bootloader"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], Settings["MainSettings"]["FirmwareType"], OSInfo.
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], SystemInfo["AutoRootDevice"], SystemInfo["RootDevice"], SystemInfo["Bootloader"], SystemInfo["Bootloader"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], Settings["MainSettings"]["FirmwareType"], OSInfo.
         VarList = ()
         FailedList = []
 
