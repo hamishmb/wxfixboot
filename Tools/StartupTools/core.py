@@ -239,13 +239,13 @@ class Main():
         if Temp != []:
             #Bootloader is GRUB-UEFI.
             GrubEFI = True
-            HelpfulUEFIPartition = True
+            SystemInfo["EmptyEFIPartition"] = False
 
         else:
             GrubEFI = False
-            HelpfulUEFIPartition = False
+            SystemInfo["EmptyEFIPartition"] = True
 
-        return GrubEFI, HelpfulUEFIPartition
+        return GrubEFI
 
     def CheckForELILO(self, UEFISYSPMountPoint):
         """Check for ELILO"""
@@ -255,12 +255,12 @@ class Main():
         if Temp != []:
             #Bootloader is ELILO.
             ELILO = True
-            HelpfulUEFIPartition = True
+            SystemInfo["EmptyEFIPartition"] = False
 
         else:
             ELILO = False
-            HelpfulUEFIPartition = False
+            SystemInfo["EmptyEFIPartition"] = True
 
-        return ELILO, HelpfulUEFIPartition
+        return ELILO
 
 #End main Class.

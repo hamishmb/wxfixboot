@@ -326,7 +326,7 @@ class Main():
             #If there is no UEFI partition, only look for BIOS bootloaders.
             if SystemInfo["UEFISystemPartition"] == None:
                 #There is no UEFI partition.
-                HelpfulUEFIPartition = False
+                SystemInfo["EmptyEFIPartition"] = True
 
                 #Look for BIOS bootloaders here.
                 #Check for GRUB in the MBR
@@ -358,7 +358,7 @@ class Main():
             #Attempt to figure out which bootloader is present.
             #Check for GRUB-UEFI.
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking for GRUB-UEFI in UEFI Partition...")
-            GrubEFI, HelpfulUEFIPartition = CoreStartupTools.CheckForGRUBUEFI(UEFISYSPMountPoint)
+            GrubEFI = CoreStartupTools.CheckForGRUBUEFI(UEFISYSPMountPoint)
 
             if GrubEFI:
                 #We have GRUB-UEFI!
@@ -368,7 +368,7 @@ class Main():
 
             #Check for ELILO
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking for ELILO in UEFI Partition...")
-            ELILO, HelpfulUEFIPartition = CoreStartupTools.CheckForELILO(UEFISYSPMountPoint)
+            ELILO = CoreStartupTools.CheckForELILO(UEFISYSPMountPoint)
 
             if ELILO:
                 #We have ELILO!
@@ -386,8 +386,6 @@ class Main():
 
         #Set the default bootloader value.
         SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
-
-        return HelpfulUEFIPartition
 
     def SetDefaults(self): #*** Modify to use dictionaries later ***
         """Set Default for some variables"""
@@ -426,10 +424,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, HelpfulUEFIPartition):
+    def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], SystemInfo["AutoRootDevice"], SystemInfo["RootDevice"], SystemInfo["Bootloader"], SystemInfo["Bootloader"], SystemInfo["UEFISystemPartition"], Settings["MainSettings"]["FirmwareType"], OSInfo.
-        VarList = ('HelpfulUEFIPartition', 'HelpfulUEFIPartition')
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], SystemInfo["AutoRootDevice"], SystemInfo["RootDevice"], SystemInfo["Bootloader"], SystemInfo["Bootloader"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], Settings["MainSettings"]["FirmwareType"], OSInfo.
+        VarList = ()
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.
@@ -469,7 +467,7 @@ class Main():
             DialogTools.ShowMsgDlg(Kind="warning", Message="You're using a BIOS-enabled bootloader, but you're using an incompatable partition system on at least one device! Most firmware will not support this setup. Ignore this message if you do not boot from this device.")
 
         #Bootloader warnings.
-        if HelpfulUEFIPartition == False and SystemInfo["UEFISystemPartition"] != None:
+        if SystemInfo["EmptyEFIPartition"] == True and SystemInfo["UEFISystemPartition"] != None:
             logger.warning("MainStartupTools: Main().FinalCheck(): Empty UEFI partition!")
             DialogTools.ShowMsgDlg(Kind="warning", Message="Your UEFI system partition is empty or doesn't contain any detected bootloaders. If you just created your UEFI system partition, please ensure it's formatted as fat32 or fat16 (Known as vfat in Linux), and then you may continue to install a UEFI bootloader on it. If WxFixBoot didn't detect your UEFI-enabled bootloader, it's still safe to perform operations on the bootloader.")
 

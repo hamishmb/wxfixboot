@@ -503,24 +503,20 @@ class InitThread(threading.Thread):
         SystemInfo["RootDevice"] = DiskInfo[SystemInfo["RootFS"]]["HostDevice"]
         SystemInfo["AutoRootDevice"] = SystemInfo["RootDevice"]
 
-        #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
-        #Define global variables.
-        global EmptyEFIPartition
-
-        #Initialise them.
-        EmptyEFIPartition = False
+        #Get the Bootloader.
+        #Initialise a setting.
         SystemInfo["PrevBootloaderSetting"] = None
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-        EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
+        MainStartupTools.GetBootloader(SystemInfo)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): Bootloader is: "+SystemInfo["Bootloader"])
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        MainStartupTools.FinalCheck(EmptyEFIPartition)
+        MainStartupTools.FinalCheck()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -762,7 +758,7 @@ class MainWindow(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
 
-        elif EmptyEFIPartition == False:
+        elif SystemInfo["EmptyEFIPartition"] == True:
             dlg = wx.MessageDialog(self.Panel, "No bootloaders were found on your UEFI partition. However, you will still be able to select a UEFI bootloader to install, or as your current bootloader, as UEFI bootloader detection is a little bit sketchy. In the bootloader options window, you can select a different UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
@@ -2158,16 +2154,12 @@ class BootloaderOptionsWindow(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-        #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
-        #Define global variables.
-        global EmptyEFIPartition
-
-        #Initialise them.
-        EmptyEFIPartition = False
+        #Get the Bootloader.
+        #Initialise a setting.
         SystemInfo["PrevBootloaderSetting"] = None
 
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
-        EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
+        MainStartupTools.GetBootloader(SystemInfo)
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+SystemInfo["Bootloader"])
 
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
