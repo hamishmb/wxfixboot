@@ -505,14 +505,13 @@ class InitThread(threading.Thread):
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
         #Define global variables.
-        global PrevBootloaderSetting
         global AutoUEFISystemPartition
         global UEFISystemPartition
         global EmptyEFIPartition
 
         #Initialise them.
         EmptyEFIPartition = False
-        PrevBootloaderSetting = "None"
+        SystemInfo["PrevBootloaderSetting"] = None
         UEFISystemPartition = None
         AutoUEFISystemPartition = None
 
@@ -1751,7 +1750,6 @@ class SettingsWindow(wx.Frame):
         global BackupBootSector
         global BackupPartitionTable
         global MakeSystemSummary
-        global PrevBootloaderSetting
         global BootloaderTimeout
 
         logger.info("SettingsWindow().SaveOptions(): Saving Options...")
@@ -1813,7 +1811,7 @@ class SettingsWindow(wx.Frame):
 
         #ChoiceBoxes
         #Currently Installed Bootloader ChoiceBox
-        PrevBootloaderSetting = SystemInfo["Bootloader"]
+        SystemInfo["PrevBootloaderSetting"] = SystemInfo["Bootloader"]
         if self.InstalledBootloaderChoice.GetSelection() != 0:
             SystemInfo["Bootloader"] = self.InstalledBootloaderChoice.GetStringSelection()
 
@@ -1923,7 +1921,7 @@ class BootloaderOptionsWindow(wx.Frame):
         """Sets up default values for Bootloader Options Window. Call on first launch, and again if the installed bootloader settings has been changed"""    
         logger.debug("BootloaderOptionsWindow().SetDefaults(): Setting up BootloaderOptionsWindow...")
         #Check if the dialog has already been run, or if the bootloader setting has changed (so it must discard the setting to avoid errors).
-        if BLOptsDlgRun == False or SystemInfo["Bootloader"] != PrevBootloaderSetting:
+        if BLOptsDlgRun == False or SystemInfo["Bootloader"] != SystemInfo["PrevBootloaderSetting"]:
             #Use defaults.
             self.BootloaderToInstallChoicelastvalue = "Auto"
             #If bootloader is to be reinstalled, updated, or if a UEFI partition isn't available, or if bootloader is grub-legacy, disable some stuff.
@@ -2166,16 +2164,15 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
         #Define global variables.
-        global PrevBootloaderSetting
         global AutoUEFISystemPartition
         global UEFISystemPartition
         global EmptyEFIPartition
 
         #Initialise them.
         EmptyEFIPartition = False
-        PrevBootloaderSetting = "None"
-        UEFISystemPartition = "None"
-        AutoUEFISystemPartition = "None"
+        PrevBootloaderSetting = None
+        UEFISystemPartition = None
+        AutoUEFISystemPartition = None
 
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
         AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
@@ -2202,8 +2199,6 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def SaveBLOpts(self):
         """Save all selected Operations"""
-        global PrevBootloaderSetting
-
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Saving Options...")
 
         BootloaderList = ('GRUB-LEGACY', 'GRUB-UEFI','GRUB2','ELILO','LILO')
@@ -2287,7 +2282,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.BootloaderToInstallChoice.SetStringSelection(SystemInfo["BootloaderToInstall"])
 
         #Avoid an error situation.
-        PrevBootloaderSetting = SystemInfo["Bootloader"]
+        SystemInfo["PrevBootloaderSetting"] = SystemInfo["Bootloader"]
 
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Value of BootloaderToInstall is: "+SystemInfo["BootloaderToInstall"])
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Finished saving options.")
