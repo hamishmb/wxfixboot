@@ -306,14 +306,14 @@ class Main():
                 SystemInfo["DetectedFirmwareType"] = "UEFI"
                 UEFIVariables = False
 
-    def GetBootloader(self, RootDevice, SystemInfo):
+    def GetBootloader(self, SystemInfo):
         """Determine the current bootloader."""
         #*** Do some of this for each OS *** *** Will need a LOT of modification when I switch to dictionaries ***
         logger.debug("MainStartupTools: Main().GetBootloader(): Trying to determine bootloader...")
 
         #Run some inital scripts
         logger.debug("MainStartupTools: Main().GetBootloader(): Copying MBR bootsector to RAM...")
-        MBR = CoreTools.StartProcess("dd if="+RootDevice+" bs=512 count=1", ReturnOutput=True)[1] #*** We probably need to do this for each and every (MBR) device with a partition containing an OS, as the rootdevice principle falls apart here *** *** Check it worked? ***
+        MBR = CoreTools.StartProcess("dd if="+SystemInfo["RootDevice"]+" bs=512 count=1", ReturnOutput=True)[1] #*** We probably need to do this for each and every (MBR) device with a partition containing an OS, as the rootdevice principle falls apart here *** *** Check it worked? ***
 
         #Wrap this in a loop, so once a Bootloader is found, searching can stop.
         while True:
@@ -426,10 +426,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, AutoRootDevice, RootDevice, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
+    def FinalCheck(self, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], Settings["MainSettings"]["FirmwareType"], OSInfo.
-        VarList = ('AutoRootDevice', 'RootDevice', 'Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], SystemInfo["AutoRootDevice"], SystemInfo["RootDevice"], Settings["MainSettings"]["FirmwareType"], OSInfo.
+        VarList = ('Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.

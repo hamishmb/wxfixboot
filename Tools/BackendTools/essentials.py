@@ -76,7 +76,7 @@ class Main(): #*** These need refactoring ***
         #For GPT disks, backup with sgdisk -b/--backup=<file> <SOURCEDIRVE>.
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
         #We need to find RootDevice's partition scheme.
-        PartScheme = DiskInfo[RootDevice]["Partitioning"]
+        PartScheme = DiskInfo[SystemInfo["RootDevice"]]["Partitioning"]
 
         logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Preparing to backup the partition table...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to backup the Partition Table...")
@@ -91,7 +91,7 @@ class Main(): #*** These need refactoring ***
             if PartitionTableBackupFile[-4:] != ".mbr":
                 PartitionTableBackupFile = PartitionTableBackupFile+".mbr"
 
-            Cmd = "dd if="+RootDevice+" of="+PartitionTableBackupFile+" bs=512 count=1"
+            Cmd = "dd if="+SystemInfo["RootDevice"]+" of="+PartitionTableBackupFile+" bs=512 count=1"
 
         else:
             #Let's backup the GPT, but we need to ask where to back it up first. *** Maybe do this in settings window? ***
@@ -101,14 +101,14 @@ class Main(): #*** These need refactoring ***
             if PartitionTableBackupFile[-4:] != ".gpt":
                 PartitionTableBackupFile = PartitionTableBackupFile+".gpt"
 
-            Cmd = "sgdisk --backup="+PartitionTableBackupFile+" "+RootDevice
+            Cmd = "sgdisk --backup="+PartitionTableBackupFile+" "+SystemInfo["RootDevice"]
 
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Backing up Partition Table...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Backing up the Partition Table...###\n")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
 
         #Backup the partition table.
-        logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Backing up partition table to file: "+PartitionTableBackupFile+", from device: "+RootDevice+"...")
+        logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Backing up partition table to file: "+PartitionTableBackupFile+", from device: "+SystemInfo["RootDevice"]+"...")
         retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
 
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Backing up Partition Table!")
@@ -121,7 +121,7 @@ class Main(): #*** These need refactoring ***
         #For GPT disks, backup UEFI System Partition.
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
         #We need to find RootDevice's partition scheme.
-        PartScheme = DiskInfo[RootDevice]["Partitioning"]
+        PartScheme = DiskInfo[SystemInfo["RootDevice"]]["Partitioning"]
 
         logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Preparing to backup the boot sector...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to backup the Boot Sector...")
@@ -136,7 +136,7 @@ class Main(): #*** These need refactoring ***
             if BootSectorBackupFile[-4:] != ".img":
                 BootSectorBackupFile = BootSectorBackupFile+".img"
 
-            Cmd = "dd if="+RootDevice+" of="+BootSectorBackupFile+" bs=512 count=1"
+            Cmd = "dd if="+SystemInfo["RootDevice"]+" of="+BootSectorBackupFile+" bs=512 count=1"
 
         elif UEFISystemPartition != None:
             #We need to ask where to back it up to. *** Maybe do this in settings window? ***
