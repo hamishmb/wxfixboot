@@ -385,9 +385,9 @@ class Main():
             break
 
         #Set the default bootloader value.
-        Bootloader = AutoBootloader
+        SystemInfo["Bootloader"] = AutoBootloader
 
-        return Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition
+        return AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition
 
     def SetDefaults(self): #*** Modify to use dictionaries later ***
         """Set Default for some variables"""
@@ -426,10 +426,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, Bootloader, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
+    def FinalCheck(self, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], SystemInfo["AutoRootDevice"], SystemInfo["RootDevice"], Settings["MainSettings"]["FirmwareType"], OSInfo.
-        VarList = ('Bootloader', 'AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], SystemInfo["AutoRootDevice"], SystemInfo["RootDevice"], SystemInfo["Bootloader"], Settings["MainSettings"]["FirmwareType"], OSInfo.
+        VarList = ('AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.
@@ -453,7 +453,7 @@ class Main():
 
         #Check and warn about conflicting settings. *** These aren't helpful to people who are new and just want to fix it quick. Maybe try to clarify them/automatically deal with this stuff? Perhaps avoid some of these situations completely by improving startup code *** *** Check we're doing the right things here ***
         #Firmware type warnings.
-        if Settings["MainSettings"]["FirmwareType"] == "BIOS" and Bootloader in ('GRUB-UEFI', 'ELILO'):
+        if Settings["MainSettings"]["FirmwareType"] == "BIOS" and SystemInfo["Bootloader"] in ('GRUB-UEFI', 'ELILO'):
             logger.warning("MainStartupTools: Main().FinalCheck(): Bootloader is UEFI-type, but system firmware is BIOS! Odd, perhaps a migrated drive? Continuing and setting firmware type to UEFI...")
             DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer seems to use BIOS firmware, but you're using a UEFI-enabled bootloader! WxFixBoot reckons your firmware type was misdetected, and will now set it to UEFI. BIOS firmware does not support booting UEFI-enabled bootloaders, so if you think your firmware type actually is BIOS, it is recommended to install a BIOS-enabled bootloader instead, such as GRUB2. You can safely ignore this message if your firmware type is UEFI.")
             SystemInfo["DetectedFirmwareType"] = "UEFI"
@@ -464,7 +464,7 @@ class Main():
             DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses BIOS firmware, but you're using an incompatable partition system on at least one device! BIOS firmware will probably fail to boot your operating system, if it resides on that device, so a repartition may be necessary for that device. You can safely ignore this message if your firmware type has been misdetected, or if you aren't booting from that device.")
 
         #Partition scheme warnings. *** Be more intelligent with these warnings ***
-        if SystemInfo["GPTDisks"] != [] and Bootloader in ('GRUB2', 'LILO', 'GRUB-LEGACY'):
+        if SystemInfo["GPTDisks"] != [] and SystemInfo["Bootloader"] in ('GRUB2', 'LILO', 'GRUB-LEGACY'):
             logger.warning("MainStartupTools: Main().FinalCheck(): GPT Partition table on at least one device with msdos bootloader! Most BIOS firmware cannot read GPT disks. WxFixBoot suggests repartitioning.")
             DialogTools.ShowMsgDlg(Kind="warning", Message="You're using a BIOS-enabled bootloader, but you're using an incompatable partition system on at least one device! Most firmware will not support this setup. Ignore this message if you do not boot from this device.")
 

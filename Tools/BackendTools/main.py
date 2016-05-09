@@ -67,19 +67,19 @@ class Main():
                     continue
 
             #Look for the configuration file, based on which GetConfig() function we're about to run.
-            if Bootloader == "GRUB-LEGACY" and os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
+            if SystemInfo["Bootloader"] == "GRUB-LEGACY" and os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
                 logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found GRUB-LEGACY config file. Getting bootloader's timeout...")
                 timeout = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(filetoopen=MountPoint+"/boot/grub/menu.lst")
                     
-            elif Bootloader in ('GRUB2', 'GRUB-UEFI') and os.path.isfile(MountPoint+"/etc/default/grub"):
+            elif SystemInfo["Bootloader"] in ('GRUB2', 'GRUB-UEFI') and os.path.isfile(MountPoint+"/etc/default/grub"):
                 logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found GRUB2 (BIOS and UEFI) config file. Getting bootloader's timeout and kernel options...")
                 timeout, kopts = BootloaderConfigObtainingTools.GetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
 
-            elif Bootloader == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
+            elif SystemInfo["Bootloader"] == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
                 logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found LILO config file. Getting bootloader's timeout and kernel options...")
                 timeout, kopts = BootloaderConfigObtainingTools.GetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf")
 
-            elif Bootloader == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
+            elif SystemInfo["Bootloader"] == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
                 logger.info("MainBackendTools: Main().GetOldBootloaderConfig(): Found ELILO config file. Getting bootloader's timeout and kernel options...")
                 timeout, kopts = BootloaderConfigObtainingTools.GetLILOConfig(filetoopen=MountPoint+"/etc/elilo.conf")
 
@@ -187,7 +187,7 @@ class Main():
             Partition = OSInfo[OS]["Partition"]
             PackageManager = OSInfo[OS]["PackageManager"]
 
-            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+Bootloader+" from OS: "+OS+"...")
+            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+SystemInfo["Bootloader"]+" from OS: "+OS+"...")
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing the old bootloader from OS: "+OS+"...###\n")
             
             #If we're not on a live disk, and the partition is RootFS, let the remover function know that we aren't using chroot.
@@ -224,23 +224,23 @@ class Main():
                 CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False)
 
             #Remove the bootloader.
-            if Bootloader == "GRUB-LEGACY":
+            if SystemInfo["Bootloader"] == "GRUB-LEGACY":
                 logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
                 retval = BootloaderRemovalTools.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-            elif Bootloader == "GRUB2":
+            elif SystemInfo["Bootloader"] == "GRUB2":
                 logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")
                 retval = BootloaderRemovalTools.RemoveGRUB2(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-            elif Bootloader == "LILO":
+            elif SystemInfo["Bootloader"] == "LILO":
                 logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing LILO...")
                 retval = BootloaderRemovalTools.RemoveLILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-            elif Bootloader == "GRUB-UEFI":
+            elif SystemInfo["Bootloader"] == "GRUB-UEFI":
                 logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-UEFI...")
                 retval = BootloaderRemovalTools.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-            elif Bootloader == "ELILO":
+            elif SystemInfo["Bootloader"] == "ELILO":
                 logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing ELILO...")
                 retval = BootloaderRemovalTools.RemoveELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
@@ -259,8 +259,8 @@ class Main():
 
             if retval != 0:
                 #Something went wrong! Log it and notify the user.
-                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+Bootloader+" from OS: "+OS+"! We'll continue anyway. Warn the user.")
-                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+Bootloader+" from: "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that OS after WxFixBoot finishes its operations.")
+                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+SystemInfo["Bootloader"]+" from OS: "+OS+"! We'll continue anyway. Warn the user.")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+SystemInfo["Bootloader"]+" from: "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that OS after WxFixBoot finishes its operations.")
 
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27+(22//len(SystemInfo["OSsForBootloaderRemoval"])))
 

@@ -59,7 +59,7 @@ class Main(): #*** Refactor all of these ***
                 logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found at least one candidate for installing and removing bootloaders! Continuing...")
 
                 #Also, we need to find which OS(es) installed the bootloader (or have it installed currently), and ask the user which OS to install the bootloader with.
-                HelperBackendTools.FindBootloaderRemovalOSs(Bootloader)
+                HelperBackendTools.FindBootloaderRemovalOSs(SystemInfo["Bootloader"])
                 logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): List of OSs to have the bootloader removed: "+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"...")
 
                 #Update Current Operation Text.
@@ -83,7 +83,7 @@ class Main(): #*** Refactor all of these ***
 
         else:
             #Set BootloaderToInstall as the current bootloader to allow this to work properly.
-            SystemInfo["BootloaderToInstall"] = Bootloader
+            SystemInfo["BootloaderToInstall"] = SystemInfo["Bootloader"]
 
             #Call self.ManageBootloaders to perform the reinstallation safely.
             logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Reinstalling the Bootloader...")
@@ -105,7 +105,7 @@ class Main(): #*** Refactor all of these ***
 
         else:
             #Set BootloaderToInstall as the current bootloader to allow this to work properly.
-            SystemInfo["BootloaderToInstall"] = Bootloader
+            SystemInfo["BootloaderToInstall"] = SystemInfo["Bootloader"]
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Updating the bootloader's config...")
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader's configuration...###\n")
 

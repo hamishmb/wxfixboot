@@ -50,7 +50,7 @@ from wx.animate import Animation
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "2.0~pre1"
+Version = "2.0~pre2"
 ReleaseDate = "9/5/2016"
 
 def usage():
@@ -505,7 +505,6 @@ class InitThread(threading.Thread):
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
         #Define global variables.
-        global Bootloader
         global AutoBootloader
         global PrevBootloaderSetting
         global AutoUEFISystemPartition
@@ -520,14 +519,14 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
+        AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
-        logger.info("InitThread(): Bootloader is: "+Bootloader)
+        logger.info("InitThread(): Bootloader is: "+SystemInfo["Bootloader"])
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        MainStartupTools.FinalCheck(Bootloader, AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        MainStartupTools.FinalCheck(AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -655,7 +654,7 @@ class MainWindow(wx.Frame):
         self.UpdateBootloaderCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Update Bootloader Config")
 
         #If bootloader is grub legacy, disable some options.
-        if Bootloader == "GRUB-LEGACY":
+        if SystemInfo["Bootloader"] == "GRUB-LEGACY":
             self.DisableBLOptsGrubLegacy()
 
     def DisableBLOptsGrubLegacy(self):
@@ -714,12 +713,12 @@ class MainWindow(wx.Frame):
             self.BadSectorCheckCB.Enable()
 
         #Reinstall Bootloader Choicebox
-        if self.ReinstallBootloaderCB.IsChecked() and (Bootloader != "GRUB-LEGACY" or RestorePartitionTable or RestoreBootSector):
+        if self.ReinstallBootloaderCB.IsChecked() and (SystemInfo["Bootloader"] != "GRUB-LEGACY" or RestorePartitionTable or RestoreBootSector):
             self.ReinstallBootloaderCBwaschecked = True
             self.UpdateBootloaderCB.SetValue(0)
             self.UpdateBootloaderCB.Disable()
 
-        elif self.ReinstallBootloaderCB.IsChecked() == False and Bootloader != "GRUB-LEGACY" and RestorePartitionTable == False and RestoreBootSector == False:
+        elif self.ReinstallBootloaderCB.IsChecked() == False and SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestorePartitionTable == False and RestoreBootSector == False:
             self.UpdateBootloaderCB.Enable()
             self.ReinstallBootloaderCBwaschecked = False
 
@@ -728,12 +727,12 @@ class MainWindow(wx.Frame):
             self.ReinstallBootloaderCBwaschecked = False
 
         #Update Bootloader Choicebox
-        if self.UpdateBootloaderCB.IsChecked() and (Bootloader != "GRUB-LEGACY" or RestorePartitionTable or RestoreBootSector):
+        if self.UpdateBootloaderCB.IsChecked() and (SystemInfo["Bootloader"] != "GRUB-LEGACY" or RestorePartitionTable or RestoreBootSector):
             self.UpdateBootloaderCBwaschecked = True
             self.ReinstallBootloaderCB.SetValue(0)
             self.ReinstallBootloaderCB.Disable()
 
-        elif self.UpdateBootloaderCB.IsChecked() == False and Bootloader != "GRUB-LEGACY" and RestorePartitionTable == False and RestoreBootSector == False:
+        elif self.UpdateBootloaderCB.IsChecked() == False and SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestorePartitionTable == False and RestoreBootSector == False:
             self.ReinstallBootloaderCB.Enable()
             self.UpdateBootloaderCBwaschecked = False
 
@@ -818,14 +817,14 @@ class MainWindow(wx.Frame):
         logger.debug("MainWindow().RefreshMainWindow(): Refreshing MainWindow...")
             
         #Bootloader options. Also check if the partition table or boot sector are to be restored
-        if Bootloader == "GRUB-LEGACY" or RestorePartitionTable or RestoreBootSector:
+        if SystemInfo["Bootloader"] == "GRUB-LEGACY" or RestorePartitionTable or RestoreBootSector:
             self.DisableBLOptsGrubLegacy()
 
         else:
             self.EnableBLOptsNoGrubLegacy()
 
         #Set settings up how they were when MainWindow was hidden earlier, if possible.
-        if Bootloader != "GRUB-LEGACY" and RestorePartitionTable == False and RestoreBootSector == False:
+        if SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestorePartitionTable == False and RestoreBootSector == False:
             self.ReinstallBootloaderCB.SetValue(ReinstallBootloader)
             self.UpdateBootloaderCB.SetValue(UpdateBootloader)
 
@@ -929,7 +928,6 @@ class MainWindow(wx.Frame):
         global UpdateBootloader
         global QuickFSCheck
         global BadSectCheck
-        global Bootloader
 
         #Bad Sector Check Choicebox
         if self.BadSectorCheckCB.IsChecked():
@@ -1495,8 +1493,8 @@ class SettingsWindow(wx.Frame):
             self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['Auto: '+AutoBootloader, 'GRUB-LEGACY', 'GRUB2', 'GRUB-UEFI', 'LILO', 'ELILO'])
 
         #Installed Bootloader
-        if Bootloader != AutoBootloader:
-            self.InstalledBootloaderChoice.SetStringSelection(Bootloader)
+        if SystemInfo["Bootloader"] != AutoBootloader:
+            self.InstalledBootloaderChoice.SetStringSelection(SystemInfo["Bootloader"])
 
         else:
             self.InstalledBootloaderChoice.SetSelection(0)
@@ -1663,7 +1661,7 @@ class SettingsWindow(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-        if UEFISystemPartition == "None" and Bootloader in ('GRUB-UEFI', 'ELILO'):
+        if UEFISystemPartition == "None" and SystemInfo["Bootloader"] in ('GRUB-UEFI', 'ELILO'):
             logger.info("SettingsWindow().LaunchblOpts(): UEFI bootloader, but no UEFI partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.")
             dlg = wx.MessageDialog(self.Panel, "You have a UEFI Bootloader, but no UEFI Partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled. Did you change your selected UEFI Partition?", "WxFixBoot - ERROR", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
             dlg.ShowModal()
@@ -1754,7 +1752,6 @@ class SettingsWindow(wx.Frame):
         global BackupBootSector
         global BackupPartitionTable
         global MakeSystemSummary
-        global Bootloader
         global PrevBootloaderSetting
         global BootloaderTimeout
 
@@ -1817,15 +1814,15 @@ class SettingsWindow(wx.Frame):
 
         #ChoiceBoxes
         #Currently Installed Bootloader ChoiceBox
-        PrevBootloaderSetting = Bootloader
+        PrevBootloaderSetting = SystemInfo["Bootloader"]
         if self.InstalledBootloaderChoice.GetSelection() != 0:
-            Bootloader = self.InstalledBootloaderChoice.GetStringSelection()
+            SystemInfo["Bootloader"] = self.InstalledBootloaderChoice.GetStringSelection()
 
         else:
             #Set it to the auto value, using AutoBootloader
-            Bootloader = AutoBootloader
+            SystemInfo["Bootloader"] = AutoBootloader
 
-        logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+Bootloader)
+        logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+SystemInfo["Bootloader"])
 
         #Default OS choicebox.
         SystemInfo["DefaultOS"] = self.DefaultOSChoice.GetStringSelection()
@@ -1927,7 +1924,7 @@ class BootloaderOptionsWindow(wx.Frame):
         """Sets up default values for Bootloader Options Window. Call on first launch, and again if the installed bootloader settings has been changed"""    
         logger.debug("BootloaderOptionsWindow().SetDefaults(): Setting up BootloaderOptionsWindow...")
         #Check if the dialog has already been run, or if the bootloader setting has changed (so it must discard the setting to avoid errors).
-        if BLOptsDlgRun == False or Bootloader != PrevBootloaderSetting:
+        if BLOptsDlgRun == False or SystemInfo["Bootloader"] != PrevBootloaderSetting:
             #Use defaults.
             self.BootloaderToInstallChoicelastvalue = "Auto"
             #If bootloader is to be reinstalled, updated, or if a UEFI partition isn't available, or if bootloader is grub-legacy, disable some stuff.
@@ -1940,7 +1937,7 @@ class BootloaderOptionsWindow(wx.Frame):
                 self.AutoDetermineCheckBox.Disable()
                 self.DoNotChangeBootloaderCheckBox.SetValue(True)
 
-            elif Bootloader == "GRUB-LEGACY":
+            elif SystemInfo["Bootloader"] == "GRUB-LEGACY":
                 self.AutoDetermineCheckBox.Disable()
                 self.AutoDetermineCheckBox.SetValue(False)
                 self.AutoFirmwareTypeRadioButton.SetValue(True)
@@ -2083,11 +2080,11 @@ class BootloaderOptionsWindow(wx.Frame):
         self.BootloaderToInstallChoice.SetStringSelection("Auto")
 
         logger.debug("BootloaderOptionsWindow().ActivateOptsForUEFIFW(): Setting up options as needed...")
-        if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and Bootloader != "GRUB-LEGACY" and UpdateBootloader == False:
+        if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and SystemInfo["Bootloader"] != "GRUB-LEGACY" and UpdateBootloader == False:
             self.AutoDetermineCheckBox.SetValue(False)
             self.AutoDetermineCheckBox.Disable()
 
-        elif Bootloader == "GRUB-LEGACY" and self.DoNotChangeBootloaderCheckBox.IsChecked() == False:
+        elif SystemInfo["Bootloader"] == "GRUB-LEGACY" and self.DoNotChangeBootloaderCheckBox.IsChecked() == False:
             self.AutoDetermineCheckBox.Enable()
             self.AutoDetermineCheckBox.SetValue(True)
 
@@ -2099,11 +2096,11 @@ class BootloaderOptionsWindow(wx.Frame):
         self.BootloaderToInstallChoice.SetStringSelection("Auto")
 
         logger.debug("BootloaderOptionsWindow().ActivateOptsForBIOSFW() has been triggered...")
-        if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and Bootloader != "GRUB-LEGACY" and UpdateBootloader == False:
+        if self.DoNotChangeBootloaderCheckBox.IsChecked() == False and self.BootloaderToInstallChoice.GetSelection() == 0 and ReinstallBootloader == False and SystemInfo["Bootloader"] != "GRUB-LEGACY" and UpdateBootloader == False:
             self.AutoDetermineCheckBox.SetValue(False)
             self.AutoDetermineCheckBox.Disable()
 
-        elif Bootloader == "GRUB-LEGACY" and self.DoNotChangeBootloaderCheckBox.IsChecked() == False:
+        elif SystemInfo["Bootloader"] == "GRUB-LEGACY" and self.DoNotChangeBootloaderCheckBox.IsChecked() == False:
             self.AutoDetermineCheckBox.Enable()
             self.AutoDetermineCheckBox.SetValue(True)
 
@@ -2170,7 +2167,6 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
         #Define global variables.
-        global Bootloader
         global AutoBootloader
         global PrevBootloaderSetting
         global AutoUEFISystemPartition
@@ -2184,8 +2180,8 @@ class BootloaderOptionsWindow(wx.Frame):
         AutoUEFISystemPartition = "None"
 
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
-        Bootloader, AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
-        logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+Bootloader)
+        AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
+        logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+SystemInfo["Bootloader"])
 
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
         #Send a message to OptionsDlg1, so it can show itself again.
@@ -2209,7 +2205,6 @@ class BootloaderOptionsWindow(wx.Frame):
     def SaveBLOpts(self):
         """Save all selected Operations"""
         global PrevBootloaderSetting
-        global Bootloader
 
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Saving Options...")
 
@@ -2236,17 +2231,17 @@ class BootloaderOptionsWindow(wx.Frame):
 
                 if self.AutoDetermineCheckBox.IsChecked():
 
-                    bootloadernum = BootloaderList.index(Bootloader)
+                    bootloadernum = BootloaderList.index(SystemInfo["Bootloader"])
 
-                    if Settings["MainSettings"]["FirmwareType"] == "BIOS" and Bootloader not in ('GRUB2', 'LILO', 'GRUB-LEGACY'):
+                    if Settings["MainSettings"]["FirmwareType"] == "BIOS" and SystemInfo["Bootloader"] not in ('GRUB2', 'LILO', 'GRUB-LEGACY'):
                         #Find the BIOS/MBR equivalent to a UEFI bootloader.
                         SystemInfo["BootloaderToInstall"] = BootloaderList[bootloadernum+1]
 
-                    elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and Bootloader not in ('GRUB-UEFI', 'ELILO', 'GRUB-LEGACY') and UEFISystemPartition != "None":
+                    elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and SystemInfo["Bootloader"] not in ('GRUB-UEFI', 'ELILO', 'GRUB-LEGACY') and UEFISystemPartition != "None":
                         #Find the EFI/UEFI equivalent to a BIOS bootloader, provided there is a UEFI partition, and it isn't GRUB-LEGACY
                         SystemInfo["BootloaderToInstall"] = BootloaderList[bootloadernum-1]
 
-                    elif Settings["MainSettings"]["FirmwareType"] == "BIOS" and Bootloader == "GRUB-LEGACY":
+                    elif Settings["MainSettings"]["FirmwareType"] == "BIOS" and SystemInfo["Bootloader"] == "GRUB-LEGACY":
                         #Recommend GRUB2 for BIOS systems using GRUB-LEGACY
                         dlg = wx.MessageDialog(self.Panel, 'Seeing as your bootloader is grub legacy, and you use BIOS firmware, the recommended bootloader for your hardware is GRUB2. If you want to install a different bootloader, click no and return to this window to manually select your bootloader. Do you want to install GRUB2?', 'WxFixBoot -- Comfirmation', wx.YES_NO | wx.ICON_QUESTION).ShowModal()
                         if dlg == wx.ID_YES:
@@ -2256,7 +2251,7 @@ class BootloaderOptionsWindow(wx.Frame):
                             #Do nothing
                             SystemInfo["BootloaderToInstall"] = "None"
 
-                    elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and Bootloader == "GRUB-LEGACY":
+                    elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and SystemInfo["Bootloader"] == "GRUB-LEGACY":
                         #Suggest GRUB-UEFI for UEFI systems using GRUB-LEGACY
                         wx.MessageDialog(self.Panel, "You have a combination of UEFI firmware and grub legacy. This is an odd combination, and WxFixBoot doesn't know what to do. If you've imaged your HDD from another system, you probably want to install GRUB-UEFI manually by returning to this window after it closes. If you manually suggested you have grub legacy earlier, please double check that was correct.", "WxFixBoot - Warning!", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
                         SystemInfo["BootloaderToInstall"] = "Unknown"
@@ -2281,7 +2276,7 @@ class BootloaderOptionsWindow(wx.Frame):
         else:
             SystemInfo["BootloaderToInstall"] = "None"
 
-        if SystemInfo["BootloaderToInstall"] == Bootloader:
+        if SystemInfo["BootloaderToInstall"] == SystemInfo["Bootloader"]:
             SystemInfo["BootloaderToInstall"] = "None"
             wx.MessageDialog(self.Panel, "Your current bootloader is the same as the one you've selected to install! Please select 'Reinstall Bootloader' in the Main Window instead.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
 
@@ -2294,7 +2289,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.BootloaderToInstallChoice.SetStringSelection(SystemInfo["BootloaderToInstall"])
 
         #Avoid an error situation.
-        PrevBootloaderSetting = Bootloader
+        PrevBootloaderSetting = SystemInfo["Bootloader"]
 
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Value of BootloaderToInstall is: "+SystemInfo["BootloaderToInstall"])
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Finished saving options.")
@@ -2351,7 +2346,7 @@ class NewBootloaderOptionsWindow(wx.Frame):
 
         #Advanced Options.
         self.AdvancedOptionsText = wx.lib.stattext.GenStaticText(self.Panel, -1, "Advanced Options")
-        self.NewBootloaderText = wx.StaticText(self.Panel, -1, "Replace "+Bootloader+" with:")
+        self.NewBootloaderText = wx.StaticText(self.Panel, -1, "Replace "+SystemInfo["Bootloader"]+" with:")
         self.BackupBootloaderText = wx.StaticText(self.Panel, -1, "Backup to:")
         self.RestoreBootloaderText = wx.StaticText(self.Panel, -1, "Restore from:")
 
@@ -2370,13 +2365,13 @@ class NewBootloaderOptionsWindow(wx.Frame):
     def CreateCheckBoxes(self):
         """Create the check boxes"""
         #Basic Options.
-        self.ReinstallBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Fix/Reinstall "+Bootloader)
-        self.UpdateBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Update "+Bootloader+"'s Config")
-        self.KeepBootloaderTimeoutCheckBox = wx.CheckBox(self.Panel, -1, "Keep "+Bootloader+"'s existing menu timeout")
+        self.ReinstallBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Fix/Reinstall "+SystemInfo["Bootloader"])
+        self.UpdateBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Update "+SystemInfo["Bootloader"]+"'s Config")
+        self.KeepBootloaderTimeoutCheckBox = wx.CheckBox(self.Panel, -1, "Keep "+SystemInfo["Bootloader"]+"'s existing menu timeout")
 
         #Advanced Options.
         self.InstallNewBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Install a New Bootloader")
-        self.BackupBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Backup "+Bootloader)
+        self.BackupBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Backup "+SystemInfo["Bootloader"])
         self.RestoreBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Restore this OS's bootloader")
 
     def CreateButtons(self):
@@ -3180,11 +3175,10 @@ class ProgressWindow(wx.Frame):
         #Reset all settings to defaults, except ones like LiveDisk, which won't ever need to change.
         MainStartupTools.SetDefaults()
 
-        global Bootloader
         global PartScheme
         global UEFISystemPartition
 
-        Bootloader = AutoBootloader
+        SystemInfo["Bootloader"] = AutoBootloader
         Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
         SystemInfo["RootDevice"] = SystemInfo["AutoRootDevice"]
         UEFISystemPartition = AutoUEFISystemPartition
@@ -3321,7 +3315,6 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.essentials.UEFISystemPartition = UEFISystemPartition
 
             #*** Main Bootloader Tools (in Backend Tools package) ***
-            Tools.BackendTools.BootloaderTools.main.Bootloader = Bootloader
             Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
             Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
 
@@ -3333,7 +3326,6 @@ class BackendThread(threading.Thread):
 
             except NameError: pass
 
-            Tools.BackendTools.main.Bootloader = Bootloader
             Tools.BackendTools.main.UEFISystemPartition = UEFISystemPartition
 
             #*** Bootloader Config getting tools (in Backend Tools package) ***
@@ -3393,7 +3385,7 @@ class BackendThread(threading.Thread):
         #Do Bootloader information
         ReportList.write("\n##########BootLoader Information##########\n")
         ReportList.write("Detected Bootloader: "+AutoBootloader+"\n")
-        ReportList.write("Selected Bootloader: "+Bootloader+"\n")
+        ReportList.write("Selected Bootloader: "+SystemInfo["Bootloader"]+"\n")
 
         if SystemInfo["BootloaderToInstall"] != "None":
             #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else). *** Use dictionary for DefaultOS *** *** Show what we would do if they weren't disabled too ***
