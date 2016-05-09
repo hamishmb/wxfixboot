@@ -433,7 +433,7 @@ class InitThread(threading.Thread):
         #Unmount all filesystems, to avoid any data corruption.
         logger.info("InitThread(): Unmounting Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Unmounting Filesystems...")
-        MainStartupTools.UnmountAllFS(SystemInfo)
+        MainStartupTools.UnmountAllFS()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "5")
         logger.info("InitThread(): Done Unmounting Filsystems!")
 
@@ -509,7 +509,7 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-        MainStartupTools.GetBootloader(SystemInfo)
+        MainStartupTools.GetBootloader()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): Bootloader is: "+SystemInfo["Bootloader"])
 
@@ -520,7 +520,7 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
-        #Set some other variables to default values, avoiding problems down the line.
+        #Set some other variables to default values, avoiding problems down the line. *** Save these in a dictionary later ***
         #Define globals.
         global ReinstallBootloader
         global UpdateBootloader
@@ -570,6 +570,12 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
         ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
+
+        Keys = SystemInfo.keys()
+        Keys.sort()
+
+        for Key in Keys:
+            print(Key, SystemInfo[Key])
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -2260,8 +2266,8 @@ class BootloaderOptionsWindow(wx.Frame):
         if SystemInfo["BootloaderToInstall"] in ('LILO', 'ELILO'):  
             wx.MessageDialog(self.Panel, "Either, you've selected or WxFixBoot has autodetermined to use LILO or ELILO as the bootloader to install! Both ELILO and LILO can be a complete pain to set up and maintain. Please do not use either unless you know how to set up and maintain them, and you're sure you want them. If WxFixBoot recommended either of them to you, it's a good idea to select the equivalent GRUB version manually instead: GRUB-UEFI for ELILO, GRUB2 for LILO.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
 
-            if SystemInfo["GPTDisks"] != [] and SystemInfo["BootloaderToInstall"] == "LILO":
-                wx.MessageDialog(self.Panel, "LILO is going to be installed, but at least one device connected to this computer uses an incompatble partition system! LILO will not boot from that device, so this may be a bad idea, in case you boot from it. Please consider installing GRUB2 instead as it will boot from that device.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
+            #if SystemInfo["GPTDisks"] != [] and SystemInfo["BootloaderToInstall"] == "LILO": #*** Check if this is correct ***
+            #    wx.MessageDialog(self.Panel, "LILO is going to be installed, but at least one device connected to this computer uses an incompatble partition system! LILO will not boot from that device, so this may be a bad idea, in case you boot from it. Please consider installing GRUB2 instead as it will boot from that device.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
 
         self.BootloaderToInstallChoice.SetStringSelection(SystemInfo["BootloaderToInstall"])
 
