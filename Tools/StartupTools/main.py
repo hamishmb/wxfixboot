@@ -333,21 +333,21 @@ class Main():
                 logger.debug("MainStartupTools: Main().GetBootloader(): Checking for GRUB in bootsector...")
                 if CoreStartupTools.CheckForGRUBBIOS(MBR):
                     #We have GRUB BIOS, now figure out which version we have!
-                    AutoBootloader = CoreStartupTools.DetermineGRUBBIOSVersion(SystemInfo)
+                    SystemInfo["AutoBootloader"] = CoreStartupTools.DetermineGRUBBIOSVersion(SystemInfo)
                     break
 
                 #Check for LILO in MBR
                 logger.debug("MainStartupTools: Main().GetBootloader(): Checking for LILO in bootsector...")
                 if CoreStartupTools.CheckForLILO(MBR):
                     #We have LILO!
-                    AutoBootloader = "LILO"
+                    SystemInfo["AutoBootloader"] = "LILO"
                     logger.info("MainStartupTools: Main().GetBootloader(): Found LILO in MBR (shown as LILO in GUI. Continuing...")
                     break
 
                 #No bootloader was found, so ask the user instead.
                 #Do a manual selection of the bootloader.
                 logger.warning("MainStartupTools: Main().GetBootloader(): Asking user what the bootloader is, as neither GRUB nor LILO was detected in MBR, and no UEFI partition was found...")
-                AutoBootloader = CoreStartupTools.ManualBootloaderSelect(UEFISystemPartition=UEFISystemPartition)
+                SystemInfo["AutoBootloader"] = CoreStartupTools.ManualBootloaderSelect(UEFISystemPartition=UEFISystemPartition)
                 break
 
             #Mount (or skip if mounted) the UEFI partition.
@@ -362,7 +362,7 @@ class Main():
 
             if GrubEFI:
                 #We have GRUB-UEFI!
-                AutoBootloader = "GRUB-UEFI"
+                SystemInfo["AutoBootloader"] = "GRUB-UEFI"
                 logger.info("MainStartupTools: Main().GetBootloader(): Found GRUB-UEFI in UEFI Partition (shown as GRUB-UEFI in GUI). Continuing...")
                 break
 
@@ -372,22 +372,22 @@ class Main():
 
             if ELILO:
                 #We have ELILO!
-                AutoBootloader = "ELILO"
+                SystemInfo["AutoBootloader"] = "ELILO"
                 logger.info("MainStartupTools: Main().GetBootloader(): Found ELILO in UEFI Partition (shown as ELILO in GUI). Continuing...")
                 break
 
             #Obviously, no bootloader has been found.
             #Do a manual selection.
             logger.warning("MainStartupTools: Main().GetBootloader(): Asking user what the bootloader is, as no bootloader was found...")
-            AutoBootloader = CoreStartupTools.ManualBootloaderSelect(UEFISystemPartition=UEFISystemPartition)
+            SystemInfo["AutoBootloader"] = CoreStartupTools.ManualBootloaderSelect(UEFISystemPartition=UEFISystemPartition)
 
             #The program waits until something was chosen, so if it executes this, the bootloader has been set.
             break
 
         #Set the default bootloader value.
-        SystemInfo["Bootloader"] = AutoBootloader
+        SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
 
-        return AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition
+        return AutoUEFISystemPartition, UEFISystemPartition, HelpfulUEFIPartition
 
     def SetDefaults(self): #*** Modify to use dictionaries later ***
         """Set Default for some variables"""
@@ -426,10 +426,10 @@ class Main():
 
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
 
-    def FinalCheck(self, AutoBootloader, UEFISystemPartition, HelpfulUEFIPartition):
+    def FinalCheck(self, UEFISystemPartition, HelpfulUEFIPartition):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], SystemInfo["AutoRootDevice"], SystemInfo["RootDevice"], SystemInfo["Bootloader"], Settings["MainSettings"]["FirmwareType"], OSInfo.
-        VarList = ('AutoBootloader', 'UEFISystemPartition', 'HelpfulUEFIPartition')
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["GPTDisks"], SystemInfo["MBRDisks"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["RootFS"], SystemInfo["AutoRootDevice"], SystemInfo["RootDevice"], SystemInfo["Bootloader"], SystemInfo["Bootloader"], Settings["MainSettings"]["FirmwareType"], OSInfo.
+        VarList = ('UEFISystemPartition', 'HelpfulUEFIPartition')
         FailedList = []
 
         #Check each global variable (visible to this function as local) is set and declared.

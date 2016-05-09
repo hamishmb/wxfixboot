@@ -505,7 +505,6 @@ class InitThread(threading.Thread):
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
         #Define global variables.
-        global AutoBootloader
         global PrevBootloaderSetting
         global AutoUEFISystemPartition
         global UEFISystemPartition
@@ -519,14 +518,14 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
-        AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
+        AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): Bootloader is: "+SystemInfo["Bootloader"])
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        MainStartupTools.FinalCheck(AutoBootloader, UEFISystemPartition, EmptyEFIPartition)
+        MainStartupTools.FinalCheck(UEFISystemPartition, EmptyEFIPartition)
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
@@ -1487,13 +1486,13 @@ class SettingsWindow(wx.Frame):
             self.LogOutputCheckBox.SetValue(False)
 
         if UEFISystemPartition == "None":
-            self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['Auto: '+AutoBootloader, 'GRUB-LEGACY', 'GRUB2', 'LILO'])
+            self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['Auto: '+SystemInfo["AutoBootloader"], 'GRUB-LEGACY', 'GRUB2', 'LILO'])
 
         else:
-            self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['Auto: '+AutoBootloader, 'GRUB-LEGACY', 'GRUB2', 'GRUB-UEFI', 'LILO', 'ELILO'])
+            self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['Auto: '+SystemInfo["AutoBootloader"], 'GRUB-LEGACY', 'GRUB2', 'GRUB-UEFI', 'LILO', 'ELILO'])
 
         #Installed Bootloader
-        if SystemInfo["Bootloader"] != AutoBootloader:
+        if SystemInfo["Bootloader"] != SystemInfo["AutoBootloader"]:
             self.InstalledBootloaderChoice.SetStringSelection(SystemInfo["Bootloader"])
 
         else:
@@ -1820,7 +1819,7 @@ class SettingsWindow(wx.Frame):
 
         else:
             #Set it to the auto value, using AutoBootloader
-            SystemInfo["Bootloader"] = AutoBootloader
+            SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
 
         logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+SystemInfo["Bootloader"])
 
@@ -2167,7 +2166,6 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Get the Bootloader. *** Once I switch to dictonaries, a lot of these variables will be unneeded/irrelevant as we will be able to view info for each device in a heirarchy *** 
         #Define global variables.
-        global AutoBootloader
         global PrevBootloaderSetting
         global AutoUEFISystemPartition
         global UEFISystemPartition
@@ -2180,7 +2178,7 @@ class BootloaderOptionsWindow(wx.Frame):
         AutoUEFISystemPartition = "None"
 
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
-        AutoBootloader, AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
+        AutoUEFISystemPartition, UEFISystemPartition, EmptyEFIPartition = MainStartupTools.GetBootloader(SystemInfo)
         logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+SystemInfo["Bootloader"])
 
         #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
@@ -3178,7 +3176,7 @@ class ProgressWindow(wx.Frame):
         global PartScheme
         global UEFISystemPartition
 
-        SystemInfo["Bootloader"] = AutoBootloader
+        SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
         Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
         SystemInfo["RootDevice"] = SystemInfo["AutoRootDevice"]
         UEFISystemPartition = AutoUEFISystemPartition
@@ -3384,7 +3382,7 @@ class BackendThread(threading.Thread):
 
         #Do Bootloader information
         ReportList.write("\n##########BootLoader Information##########\n")
-        ReportList.write("Detected Bootloader: "+AutoBootloader+"\n")
+        ReportList.write("Detected Bootloader: "+SystemInfo["AutoBootloader"]+"\n")
         ReportList.write("Selected Bootloader: "+SystemInfo["Bootloader"]+"\n")
 
         if SystemInfo["BootloaderToInstall"] != "None":
