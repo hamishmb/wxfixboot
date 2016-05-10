@@ -1276,7 +1276,7 @@ class SystemInfoPage4(wx.Panel):
         logger.debug("SystemInfoPage4().__init__(): Binding events...")
         NoteBookSharedFunctions.BindEvents(self)
 
-        logger.debug("SystemInfoPage4().__init__(): Updating list ctrl with Bootloader Info...")
+        logger.debug("SystemInfoPage4().__init__(): Updating list ctrl with OS Info...")
         NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager"], Dictionary=OSInfo)
 
     def OnSize(self, Event=None):
@@ -1330,7 +1330,7 @@ class SystemInfoPage5(wx.Panel):
         logger.debug("SystemInfoPage5().__init__(): Binding events...")
         NoteBookSharedFunctions.BindEvents(self)
 
-        logger.debug("SystemInfoPage5().__init__(): Updating list ctrl with OS Info...")
+        logger.debug("SystemInfoPage5().__init__(): Updating list ctrl with Bootloader Info...")
         NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["OSName", "Bootloader", "BootDisk", "DefaultOS"], Dictionary=BootloaderInfo)
 
     def OnSize(self, Event=None):
@@ -1366,6 +1366,59 @@ class SystemInfoPage5(wx.Panel):
         self.RefreshButton.Enable()
 
 #End System Info Page 5
+#Begin System Info Page 6.
+class SystemInfoPage6(wx.Panel):
+    def __init__(self, ParentWindow):
+        """Initialise SystemInfoPage6"""
+        wx.Panel.__init__(self, ParentWindow)
+        self.ParentWindow = ParentWindow
+
+        logger.debug("SystemInfoPage6().__init__(): Creating widgets...")
+        NoteBookSharedFunctions.CreateWidgets(self)
+
+        logger.debug("SystemInfoPage6().__init__(): Setting up sizers...")
+        NoteBookSharedFunctions.SetupSizers(self)
+
+        logger.debug("SystemInfoPage6().__init__(): Binding events...")
+        NoteBookSharedFunctions.BindEvents(self)
+
+        logger.debug("SystemInfoPage6().__init__(): Updating list ctrl with Bootloader Info...")
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["OSName", "Timeout", "GlobalKernelOptions", "IsModifyable", "Comments"], Dictionary=BootloaderInfo)
+
+    def OnSize(self, Event=None):
+        """Auto resize the ListCtrl columns"""
+        Width, Height = self.ListCtrl.GetClientSizeTuple()
+
+        self.ListCtrl.SetColumnWidth(0, int(Width * 0.4))
+        self.ListCtrl.SetColumnWidth(1, int(Width * 0.1))
+        self.ListCtrl.SetColumnWidth(2, int(Width * 0.2))
+        self.ListCtrl.SetColumnWidth(3, int(Width * 0.1))
+        self.ListCtrl.SetColumnWidth(3, int(Width * 0.2))
+
+        if Event != None:
+            Event.Skip()
+
+    def GetDiskInfo(self, Event=None):
+        """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
+        logger.info("SystemInfoPage6().UpdateDevInfo(): Generating new Disk info...")
+        self.RefreshButton.Disable()
+        self.Throbber.Play()
+        GetDiskInformation(self)
+
+    def ReceiveDiskInfo(self, Info):
+        """Get Disk data, call self.UpdateListCtrl()"""
+        global DiskInfo
+        DiskInfo = Info
+
+        #Update the list control.
+        logger.debug("SystemInfoPage6().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["OSName", "Timeout", "GlobalKernelOptions", "IsModifyable", "Comments"], Dictionary=BootloaderInfo)
+
+        #Stop the throbber and enable the refresh button.
+        self.Throbber.Stop()
+        self.RefreshButton.Enable()
+
+#End System Info Page 6
 #Begin System Info Window #*** Updating disk info here doesn't work right now ***
 class SystemInfoWindow(wx.Frame):
     def __init__(self, ParentWindow):
@@ -1383,12 +1436,14 @@ class SystemInfoWindow(wx.Frame):
         Page3 = SystemInfoPage3(self.NoteBook)
         Page4 = SystemInfoPage4(self.NoteBook)
         Page5 = SystemInfoPage5(self.NoteBook)
+        Page6 = SystemInfoPage6(self.NoteBook)
 
         self.NoteBook.AddPage(Page1, "Disk Info 1")
         self.NoteBook.AddPage(Page2, "Disk Info 2")
         self.NoteBook.AddPage(Page3, "Disk Info 3")
         self.NoteBook.AddPage(Page4, "OS Info")
         self.NoteBook.AddPage(Page5, "Bootloader Info 1")
+        self.NoteBook.AddPage(Page6, "Bootloader Info 2")
 
         #Set up the sizer.
         MainSizer = wx.BoxSizer()
