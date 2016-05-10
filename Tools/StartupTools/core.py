@@ -23,6 +23,38 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** Optimise/Reorganise this again later ***
 class Main():
+    def LookForBootloadersOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly ***
+        """Look for the currently installed bootloader in the given mount point."""
+        logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")
+
+        #Okay, let's run a command in the chroot that was set up in self.FindBootloaderRemovalOSs(), depending on which package manager this OS uses, and which bootloader is currently installed.
+        if PackageManager == "apt-get":
+            Cmd = "dpkg --get-selections"
+
+        if UsingChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
+
+        #Look for them in a specific order.
+        if PackageManager == "apt-get":
+            BootloaderPackages = ("grub-efi", "elilo", "grub-pc", "lilo", "grub")
+
+        for Package in BootloaderPackages:
+            Found = False
+
+            for Line in Output:
+                if Package in Line and Line.split()[1] == "install":
+                    Found = True
+                    break
+
+            if Found:
+                logger.info("CoreStartupTools: Main().LookForBootloadersOnPartition(): Found "+Package+"...")
+                return Package
+
+        #If we get here, we didn't find anything.
+        return None
+
     def DetermineOSArchitecture(self, Partition, Chroot):
         """Look for OS architecture on given partition, looking for 64-bit first, then 32-bit."""
         logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for OS on "+Partition+"...")

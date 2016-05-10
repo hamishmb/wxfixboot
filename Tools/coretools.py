@@ -270,6 +270,62 @@ class Main():
 
         return FilesFound
 
+    def UpdateChrootMtab(self, MountPoint):
+        """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right.""" #*** Don't copy to /etc/mtab, as this may screw up mounting in target os later. Copy to MountPoint/proc/self/mounts. Actually, /proc is bound to /MountPoint/proc. What's not working with this command?! *** *** Nothing wrong found during testing, what shall I do with this then? ***
+        logger.debug("CoreTools: Main().UpdateChrootMtab(): Updating /etc/mtab for chroot at: "+MountPoint+"...")
+
+        retval = CoreTools.StartProcess("cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab", ShowOutput=False)
+
+        if retval != 0:
+            logger.error("CoreTools: Main().UpdateChrootMtab(): Failed to run command: cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab! Chroot may not set up properly! This *probably* doesn't matter, but in rare situations it could cause problems.")
+
+        logger.debug("CoreTools: Main().UpdateChrootMtab(): Finished updating /etc/mtab for chroot at: "+MountPoint+".")
+
+    def SetUpChroot(self, MountPoint): #*** Return retval ***
+        """Set up a chroot for the given mountpoint."""
+        logger.debug("CoreTools: Main().SetUpChroot(): Setting up chroot for MountPoint: "+MountPoint+"...")
+
+        #Mount /dev, /dev/pts, /proc and /sys for the chroot.
+        #We might also need internet access in chroot, so to do this first backup MountPoint/etc/resolv.conf to MountPoint/etc/resolv.conf.bak (if it's a link, this will also preserve it),
+        #then copy current system's /etc/resolv.conf (the contents, not the link) to MountPoint/etc/resolv.conf, enabling internet access.
+
+        MountList = ("/dev", "/dev/pts", "/proc", "/sys")
+        for FileSystem in MountList:
+            if CoreTools.MountPartition(Partition=FileSystem, MountPoint=MountPoint+FileSystem, Options="--bind") != 0:
+                logger.error("CoreTools: Main().SetUpChroot(): Failed to bind "+FileSystem+" to "+MountPoint+Filesystem+"! Chroot isn't set up properly! Attempting to continue anyway...") #*** What shall we do here? ***
+
+        ExecList = ("mv -vf "+MountPoint+"/etc/resolv.conf "+MountPoint+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+MountPoint+"/etc/resolv.conf")
+        for ExecCmd in ExecList:
+            Result = CoreTools.StartProcess(ExecCmd, ShowOutput=False, ReturnOutput=True)
+            output = Result[1]
+            retval = Result[0]
+
+            if retval != 0:
+                logger.error("CoreTools: Main().SetUpChroot(): Error: Failed to run command: "+', '.join(ExecList)+"! Chroot may not be set up properly!")
+
+        self.UpdateChrootMtab(MountPoint=MountPoint)
+
+        logger.debug("CoreTools: Main().SetUpChroot(): Finished setting up chroot for MountPoint: "+MountPoint+"...")
+
+    def TearDownChroot(self, MountPoint): #*** Return Retval ***
+        """Remove a chroot at the given mountpoint."""
+        logger.debug("CoreTools: Main().TearDownChroot(): Removing chroot at MountPoint: "+MountPoint+"...")
+
+        #Unmount /dev/pts, /dev, /proc and /sys in the chroot.
+        UnmountList = (MountPoint+"/dev/pts", MountPoint+"/dev", MountPoint+"/proc", MountPoint+"/sys")
+
+        for FileSystem in UnmountList:
+            if CoreTools.Unmount(FileSystem) != 0:
+                logger.error("CoreTools: Main().TearDownChroot(): Faied to unmount "+FileSystem+"! Chroot isn't removed properly! Attempting to continue anyway...") #*** What do we do here? ***
+
+        #We'll also need to replace the MountPoint/etc/resolv.conf with the backup file, MountPoint/etc/resolv.conf.bak.
+        Retval = CoreTools.StartProcess("mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf", ShowOutput=False)
+
+        if Retval != 0:
+            logger.error("CoreTools: Main().TearDownChroot(): Failed to run command: 'mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf'! Return value was: "+Retval+". Chroot may not be removed properly!") #*** What do we do here? ***
+
+        logger.debug("CoreTools: Main().TearDownChroot(): Finished removing chroot at MountPoint: "+MountPoint+"...")
+
     def EmergencyExit(self, Message):
         """Handle emergency exits. Warn the user, log, and exit to terminal with the given message"""
         logger.critical("CoreTools: Main().EmergencyExit(): Emergency exit has been triggered! Giving user message dialog and saving the logfile...")

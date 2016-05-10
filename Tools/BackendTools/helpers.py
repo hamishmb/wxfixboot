@@ -51,7 +51,7 @@ class Main():
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
         return FailedList
 
-    def LookForBootloaderOnPartition(self, Bootloader, PackageManager, MountPoint, UsingChroot): #*** Maybe move this to MainStartupTools later, and use it to detect bootloaders ***
+    def LookForBootloaderOnPartition(self, Bootloader, PackageManager, MountPoint, UsingChroot): #*** Get rid of this soon ***
         """Look for the currently installed bootloader in the given mount point."""
         logger.debug("HelperBackendTools: Main().LookForBootloaderOnPartition(): Looking for "+Bootloader+" in "+MountPoint+"...")
 

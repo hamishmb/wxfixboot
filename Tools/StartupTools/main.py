@@ -66,8 +66,13 @@ class Main():
             logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Running on Fedora-based live disk...")
             SystemInfo["IsLiveDisk"] = True
 
-        #Try to detect if we're not running on a live disk.
+        #Try to detect if we're not running on a live disk (on a HDD).
         elif "/dev/sd" in CoreTools.GetPartitionMountedAt("/"):
+            logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Not running on live disk...")
+            SystemInfo["IsLiveDisk"] = False
+
+        #Try to detect if we're not running on a live disk (on LVM).
+        elif "/dev/mapper/" in CoreTools.GetPartitionMountedAt("/"):
             logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Not running on live disk...")
             SystemInfo["IsLiveDisk"] = False
 
@@ -377,6 +382,33 @@ class Main():
 
         #Set the default bootloader value.
         SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
+
+    def GetBootloaders(self):
+        """Find all bootloaders (for each OS), and gather some information about them"""
+        Keys = OSInfo.keys()
+        Keys.sort()
+
+        for OS in Keys:
+            #If this isn't the current OS, do some preparation.
+            if not OSInfo[OS]["IsCurrentOS"]:
+                #Mount the OS's partition.
+                if CoreTools.MountPartition(OSInfo[OS]["Partition"], "/mnt"+OSInfo[OS]["Partition"]) != 0:
+                    logger.error("MainStartupTools: Main().GetBootloaders(): Failed to mount "+OS+"'s partition! Skipping bootloader detection for this OS.")
+
+                #Set up chroot.
+                CoreTools.SetUpChroot("/mnt"+OSInfo[OS]["Partition"])
+
+            #Look for bootloaders.
+            Package = CoreStartupTools.LookForBootloadersOnPartition(OSInfo[OS]["PackageManager"], "/mnt"+OSInfo[OS]["Partition"], not OSInfo[OS]["IsCurrentOS"])
+
+            #Clean up if needed.
+            if not OSInfo[OS]["IsCurrentOS"]:
+                #Unmount the OS's partition.
+                if CoreTools.Unmount("/mnt"+OSInfo[OS]["Partition"]) != 0:
+                    logger.error("MainStartupTools: Main().GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
+
+                #Remove chroot.
+                CoreTools.TearDownChroot("/mnt"+OSInfo[OS]["Partition"])
 
     def SetDefaults(self): #*** Modify to use dictionaries later ***
         """Set Default for some variables"""

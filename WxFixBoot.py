@@ -51,7 +51,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "9/5/2016"
+ReleaseDate = "10/5/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -507,11 +507,18 @@ class InitThread(threading.Thread):
         #Initialise a setting.
         SystemInfo["PrevBootloaderSetting"] = None
 
-        logger.info("InitThread(): Determining The Bootloader...")
-        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining The Bootloader...")
+        logger.info("InitThread(): ***DEPRACTED CODE *** Determining The Bootloader...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "***DEPRACTED CODE *** Determining The Bootloader...")
         MainStartupTools.GetBootloader()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
-        logger.info("InitThread(): Bootloader is: "+SystemInfo["Bootloader"])
+        logger.info("InitThread(): ***DEPRACTED CODE *** Bootloader is: "+SystemInfo["Bootloader"])
+
+        #New bootloader info getting function.
+        logger.info("InitThread(): Finding all Bootloaders and getting their settings...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Bootloaders...")
+        MainStartupTools.GetBootloaders()
+        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
+        logger.info("InitThread(): Done!")
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
@@ -570,12 +577,6 @@ class InitThread(threading.Thread):
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
         ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
-
-        Keys = SystemInfo.keys()
-        Keys.sort()
-
-        for Key in Keys:
-            print(Key, SystemInfo[Key])
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
