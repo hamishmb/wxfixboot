@@ -36,9 +36,10 @@ class Main():
 
         Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
 
-        #Look for them in a specific order.
+        #Look for them in a specific order (grub2 before legacy) to be as fast a possible and to avoid false positives.
         if PackageManager == "apt-get":
             BootloaderPackages = ("grub-efi", "elilo", "grub-pc", "lilo", "grub")
+            PackageDict = {"grub-efi": "GRUB-UEFI", "elilo": "ELILO", "grub-pc": "GRUB2", "lilo": "LILO", "grub": "GRUB-LEGACY"}
 
         for Package in BootloaderPackages:
             Found = False
@@ -49,8 +50,9 @@ class Main():
                     break
 
             if Found:
-                logger.info("CoreStartupTools: Main().LookForBootloadersOnPartition(): Found "+Package+"...")
-                return Package
+                Bootloader = PackageDict[Package]
+                logger.info("CoreStartupTools: Main().LookForBootloadersOnPartition(): Found "+Bootloader+"...")
+                return Bootloader
 
         #If we get here, we didn't find anything.
         return None

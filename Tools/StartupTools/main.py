@@ -398,9 +398,16 @@ class Main():
                 #Set up chroot.
                 CoreTools.SetUpChroot("/mnt"+OSInfo[OS]["Partition"])
 
-            #Look for bootloaders.
+            #Look for bootloaders. *** UNFINISHED ***
             BootloaderInfo[OS] = {}
-            Package = CoreStartupTools.LookForBootloadersOnPartition(OSInfo[OS]["PackageManager"], "/mnt"+OSInfo[OS]["Partition"], not OSInfo[OS]["IsCurrentOS"])
+            BootloaderInfo[OS]["OSName"] = OS
+            BootloaderInfo[OS]["Bootloader"] = CoreStartupTools.LookForBootloadersOnPartition(OSInfo[OS]["PackageManager"], "/mnt"+OSInfo[OS]["Partition"], not OSInfo[OS]["IsCurrentOS"])
+            BootloaderInfo[OS]["BootDisk"] = "Unknown"
+            BootloaderInfo[OS]["DefaultOS"] = "Unknown"
+            BootloaderInfo[OS]["Timeout"] = "Unknown"
+            BootloaderInfo[OS]["GlobalKernelOptions"] = "Unknown"
+            BootloaderInfo[OS]["IsModifyable"] = "Unknown"
+            BootloaderInfo[OS]["Comments"] = "N/A"
 
             #Clean up if needed.
             if not OSInfo[OS]["IsCurrentOS"]:
