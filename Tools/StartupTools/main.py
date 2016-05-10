@@ -392,31 +392,49 @@ class Main():
             #If this isn't the current OS, do some preparation.
             if not OSInfo[OS]["IsCurrentOS"]:
                 #Mount the OS's partition.
-                if CoreTools.MountPartition(OSInfo[OS]["Partition"], "/mnt"+OSInfo[OS]["Partition"]) != 0:
+                MountPoint = "/mnt"+OSInfo[OS]["Partition"]
+
+                if CoreTools.MountPartition(OSInfo[OS]["Partition"], MountPoint) != 0:
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to mount "+OS+"'s partition! Skipping bootloader detection for this OS.")
 
                 #Set up chroot.
-                CoreTools.SetUpChroot("/mnt"+OSInfo[OS]["Partition"])
+                CoreTools.SetUpChroot(MountPoint)
+
+            else:
+                MountPoint = ""
 
             #Look for bootloaders. *** UNFINISHED ***
             BootloaderInfo[OS] = {}
             BootloaderInfo[OS]["OSName"] = OS
-            BootloaderInfo[OS]["Bootloader"] = CoreStartupTools.LookForBootloadersOnPartition(OSInfo[OS]["PackageManager"], "/mnt"+OSInfo[OS]["Partition"], not OSInfo[OS]["IsCurrentOS"])
+            BootloaderInfo[OS]["Bootloader"] = CoreStartupTools.LookForBootloadersOnPartition(OSInfo[OS]["PackageManager"], MountPoint, not OSInfo[OS]["IsCurrentOS"])
             BootloaderInfo[OS]["BootDisk"] = "Unknown"
+
+            BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = ("Unknown", "Unknown")
+            
+            if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub")
+
+            elif BootloaderInfo[OS]["Bootloader"] == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/elilo.conf")
+
+            elif BootloaderInfo[OS]["Bootloader"] == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/elilo.conf")
+
+            elif os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
+                BootloaderInfo[OS]["Timeout"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst")
+
             BootloaderInfo[OS]["DefaultOS"] = "Unknown"
-            BootloaderInfo[OS]["Timeout"] = "Unknown"
-            BootloaderInfo[OS]["GlobalKernelOptions"] = "Unknown"
             BootloaderInfo[OS]["IsModifyable"] = "Unknown"
             BootloaderInfo[OS]["Comments"] = "N/A"
 
             #Clean up if needed.
             if not OSInfo[OS]["IsCurrentOS"]:
-                #Unmount the OS's partition.
-                if CoreTools.Unmount("/mnt"+OSInfo[OS]["Partition"]) != 0:
-                    logger.error("MainStartupTools: Main().GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
-
                 #Remove chroot.
-                CoreTools.TearDownChroot("/mnt"+OSInfo[OS]["Partition"])
+                CoreTools.TearDownChroot(MountPoint)
+
+                #Unmount the OS's partition.
+                if CoreTools.Unmount(MountPoint) != 0:
+                    logger.error("MainStartupTools: Main().GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
 
     def SetDefaults(self): #*** Modify to use dictionaries later ***
         """Set Default for some variables"""

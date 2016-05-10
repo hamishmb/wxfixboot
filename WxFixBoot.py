@@ -115,13 +115,13 @@ from Tools.dialogtools import Main as DialogToolsCallable
 
 from Tools.StartupTools.core import Main as CoreStartupToolsCallable
 from Tools.StartupTools.main import Main as MainStartupToolsCallable
-
+from Tools.StartupTools.getbootloaderconfigtools import Main as BootloaderConfigObtainingToolsCallable
 from Tools.BackendTools.helpers import Main as HelperBackendToolsCallable
 from Tools.BackendTools.essentials import Main as EssentialBackendToolsCallable
 from Tools.BackendTools.main import Main as MainBackendToolsCallable
 
 from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderToolsCallable
-from Tools.BackendTools.BootloaderTools.getconfigtools import Main as BootloaderConfigObtainingToolsCallable
+#from Tools.BackendTools.BootloaderTools.getconfigtools import Main as BootloaderConfigObtainingToolsCallable
 from Tools.BackendTools.BootloaderTools.removaltools import Main as BootloaderRemovalToolsCallable
 from Tools.BackendTools.BootloaderTools.installationtools import Main as BootloaderInstallationToolsCallable
 from Tools.BackendTools.BootloaderTools.setconfigtools import Main as BootloaderConfigSettingToolsCallable
@@ -180,6 +180,7 @@ Tools.StartupTools.main.logger = logger
 Tools.StartupTools.main.os = os
 Tools.StartupTools.main.CoreTools = CoreTools
 Tools.StartupTools.main.CoreStartupTools = CoreStartupTools
+Tools.StartupTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
 Tools.StartupTools.main.DialogTools = DialogTools
 
 #BackendTools Package (Core).
@@ -222,7 +223,7 @@ Tools.BackendTools.BootloaderTools.main.MainBackendTools = MainBackendTools
 Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
 
 #BootloaderTools Package (GetConfigTools)
-Tools.BackendTools.BootloaderTools.getconfigtools.logger = logger
+Tools.StartupTools.getbootloaderconfigtools.logger = logger
 
 #BootloaderTools Package (RemovalTools)
 Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools
