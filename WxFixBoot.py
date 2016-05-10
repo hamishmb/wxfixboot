@@ -116,7 +116,6 @@ from Tools.dialogtools import Main as DialogToolsCallable
 from Tools.StartupTools.core import Main as CoreStartupToolsCallable
 from Tools.StartupTools.main import Main as MainStartupToolsCallable
 
-from Tools.BackendTools.core import Main as CoreBackendToolsCallable
 from Tools.BackendTools.helpers import Main as HelperBackendToolsCallable
 from Tools.BackendTools.essentials import Main as EssentialBackendToolsCallable
 from Tools.BackendTools.main import Main as MainBackendToolsCallable
@@ -139,7 +138,6 @@ DialogTools = DialogToolsCallable()
 CoreStartupTools = CoreStartupToolsCallable()
 MainStartupTools = MainStartupToolsCallable()
 
-CoreBackendTools = CoreBackendToolsCallable()
 HelperBackendTools = HelperBackendToolsCallable()
 EssentialBackendTools = EssentialBackendToolsCallable()
 MainBackendTools = MainBackendToolsCallable()
@@ -192,7 +190,6 @@ Tools.BackendTools.core.CoreTools = CoreTools
 Tools.BackendTools.helpers.logger = logger
 Tools.BackendTools.helpers.os = os
 Tools.BackendTools.helpers.CoreTools = CoreTools
-Tools.BackendTools.helpers.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.helpers.DialogTools = DialogTools
 Tools.BackendTools.helpers.LooseVersion = LooseVersion
 
@@ -208,7 +205,6 @@ Tools.BackendTools.main.wx = wx
 Tools.BackendTools.main.logger = logger
 Tools.BackendTools.main.os = os
 Tools.BackendTools.main.CoreTools = CoreTools
-Tools.BackendTools.main.CoreBackendTools = CoreBackendTools
 Tools.BackendTools.main.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
 Tools.BackendTools.main.BootloaderRemovalTools = BootloaderRemovalTools
@@ -412,6 +408,7 @@ class InitThread(threading.Thread):
         Tools.StartupTools.core.SystemInfo = SystemInfo
         Tools.StartupTools.core.Settings = Settings
         Tools.StartupTools.main.DiskInfo = DiskInfo #*** Temporary cos of MainStartupTools.SortSomeInfo() ***
+        Tools.StartupTools.main.BootloaderInfo = BootloaderInfo
         Tools.StartupTools.main.SystemInfo = SystemInfo
         Tools.StartupTools.main.Settings = Settings
         GetDevInfo.getdevinfo.DiskInfo = DiskInfo

@@ -268,13 +268,13 @@ class Main():
                     continue
 
                 #Set up a chroot.
-                CoreBackendTools.SetUpChroot(MountPoint=MountPoint)
+                CoreTools.SetUpChroot(MountPoint=MountPoint)
                 
             Found = self.LookForBootloaderOnPartition(Bootloader=Bootloader, PackageManager=PackageManager, MountPoint=MountPoint, UsingChroot=UsingChroot)
 
             if UsingChroot:
                 #Tear down the chroot. #*** Check it worked! ***
-                CoreBackendTools.TearDownChroot(MountPoint=MountPoint)
+                CoreTools.TearDownChroot(MountPoint=MountPoint)
 
                 #Unmount the partition.
                 if CoreTools.Unmount(Partition) != 0:

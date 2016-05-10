@@ -218,7 +218,7 @@ class Main():
                         continue
 
                 #Set up chroot.
-                CoreBackendTools.SetUpChroot(MountPoint=MountPoint)
+                CoreTools.SetUpChroot(MountPoint=MountPoint)
 
                 #If there's a seperate /boot partition for this OS, make sure it's mounted. *** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this *** *** this might mount other stuff and interfere too ***
                 CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False)
@@ -246,7 +246,7 @@ class Main():
 
             #Tear down chroot if needed.
             if UseChroot:
-                CoreBackendTools.TearDownChroot(MountPoint=MountPoint)
+                CoreTools.TearDownChroot(MountPoint=MountPoint)
 
             #Unmount partition if needed.
             if UnmountAfter:
@@ -313,7 +313,7 @@ class Main():
                         continue
 
                 #Set up chroot.
-                CoreBackendTools.SetUpChroot(MountPoint=MountPoint)
+                CoreTools.SetUpChroot(MountPoint=MountPoint)
 
                 #If there's a seperate /boot partition for this OS, make sure it's mounted.
                 CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False) #*** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this ***
@@ -354,7 +354,7 @@ class Main():
                     logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount the EFI partition! If installing ELILO fails this might be the reason. Continuing anyway...") #*** Installation won't work if unmounting failed! ***
 
                 if UseChroot:
-                    CoreBackendTools.UpdateChrootMtab(MountPoint=MountPoint)
+                    CoreTools.UpdateChrootMtab(MountPoint=MountPoint)
 
                 retval = BootloaderInstallationTools.InstallELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
@@ -365,7 +365,7 @@ class Main():
             if UseChroot:
                 logger.debug("MainBackendTools: Main().InstallNewBootloader(): Removing chroot...")
                 #Tear down chroot. #*** Check it worked ***
-                CoreBackendTools.TearDownChroot(MountPoint=MountPoint)
+                CoreTools.TearDownChroot(MountPoint=MountPoint)
 
             if UnmountAfter:
                 if CoreTools.Unmount(MountPoint) != 0:
@@ -437,7 +437,7 @@ class Main():
                         continue
 
                 #Set up chroot.
-                CoreBackendTools.SetUpChroot(MountPoint=MountPoint)
+                CoreTools.SetUpChroot(MountPoint=MountPoint)
 
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
 
@@ -519,7 +519,7 @@ class Main():
                 if CoreTools.Unmount(SystemInfo["UEFISystemPartition"]) != 0:
                     logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+SystemInfo["UEFISystemPartition"]+"! Continuing anyway...") #*** Installation will fail if this happens! ***
 
-                CoreBackendTools.UpdateChrootMtab(MountPoint=MountPoint)
+                CoreTools.UpdateChrootMtab(MountPoint=MountPoint)
 
                 #Make ELILO's config file.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making ELILO's configuration file...")
@@ -554,7 +554,7 @@ class Main():
 
             #Tear down chroot if needed.
             if MountPoint != "":
-                CoreBackendTools.TearDownChroot(MountPoint=MountPoint)
+                CoreTools.TearDownChroot(MountPoint=MountPoint)
 
             #Unmount the partition if needed.
             if UnmountPartitionAfter:

@@ -383,7 +383,7 @@ class Main():
         #Set the default bootloader value.
         SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
 
-    def GetBootloaders(self):
+    def GetBootloaders(self): #*** Test this thoroughly ***
         """Find all bootloaders (for each OS), and gather some information about them"""
         Keys = OSInfo.keys()
         Keys.sort()
@@ -399,6 +399,7 @@ class Main():
                 CoreTools.SetUpChroot("/mnt"+OSInfo[OS]["Partition"])
 
             #Look for bootloaders.
+            BootloaderInfo[OS] = {}
             Package = CoreStartupTools.LookForBootloadersOnPartition(OSInfo[OS]["PackageManager"], "/mnt"+OSInfo[OS]["Partition"], not OSInfo[OS]["IsCurrentOS"])
 
             #Clean up if needed.
