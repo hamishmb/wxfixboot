@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 #Begin Main Class. *** Optimise/Reorganise this again later ***
 class Main():
     def LookForBootloadersOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly ***
-        """Look for the currently installed bootloader in the given mount point."""
+        """Look for bootloaders installed in the OS in the given mount point."""
         logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")
 
         #Okay, let's run a command in the chroot that was set up in self.FindBootloaderRemovalOSs(), depending on which package manager this OS uses, and which bootloader is currently installed.
@@ -56,6 +56,76 @@ class Main():
 
         #If we get here, we didn't find anything.
         return None
+
+    def GetFSTabInfo(self, MountPoint, OSName): #*** Test this thoroughly *** *** Refactor ***
+        """Get /etc/fstab info and related info (EFI Partition, /boot partition) for the given OS at the given mountpoint."""
+        logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Getting FSTab info in "+MountPoint+"/etc/fstab for "+OSName+"...")
+
+        #Do some setup.
+        EFIPartition = None
+        BootPartition = None
+
+        #Read the raw contents of the /etc/fstab file.
+        FSTabFile = open(MountPoint+"/etc/fstab", "r")
+        RawFSTABContents = FSTabFile.read().split("\n")
+        FSTabFile.close()
+
+        #Gather some info from it.
+        for Line in RawFSTABContents:
+            #Ignore any comments.
+            if "#" in Line or Line == "":
+                continue
+
+            #Try to find this OS's EFI partition (if there is one).
+            if Line.split()[1] == "/boot/efi":
+                logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Finding partition that automounts at /boot/efi...")
+                Temp = Line.split()[0]
+
+                #If we have a UUID, convert it into a device node.
+                if "UUID=" in Temp:
+                    UUID = Temp.split("=")[1]
+                    logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Found UUID "+UUID+". Trying to find device name...")
+
+                    for Disk in DiskInfo.keys():
+                        if DiskInfo[Disk]["UUID"] == UUID:
+                            Temp = Disk
+                            break
+
+                #In case we had a UUID with no match, check again before adding it to OSInfo, else ignore it.
+                if "/dev/" in Temp:
+                    logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Found EFI Partition "+Temp+"...")
+                    EFIPartition = Temp
+
+                else:
+                    logger.error("CoreStartupTools: Main().GetFSTabInfo(): Couldn't determine device name! Ignoring this device...")
+                    EFIPartition = None
+
+            #Try to find this OS's /boot partition (if there is one).
+            if Line.split()[1] == "/boot":
+                logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Finding partition that automounts at /boot...")
+                Temp = Line.split()[0]
+
+                #If we have a UUID, convert it into a device node.
+                if "UUID=" in Temp:
+                    UUID = Temp.split("=")[1]
+                    logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Found UUID "+UUID+". Trying to find device name...")
+
+                    for Disk in DiskInfo.keys():
+                        if DiskInfo[Disk]["UUID"] == UUID:
+                            Temp = Disk
+                            break
+
+                #In case we had a UUID with no match, check again before adding it to OSInfo, else ignore it.
+                if "/dev/" in Temp:
+                    logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Found Boot Partition "+Temp+"...")
+                    BootPartition = Temp
+
+                else:
+                    logger.error("CoreStartupTools: Main().GetFSTabInfo(): Couldn't determine device name! Ignoring this device...")
+                    BootPartition = None
+
+        #Return stuff.
+        return (RawFSTABContents, EFIPartition, BootPartition)
 
     def DetermineOSArchitecture(self, Partition, Chroot):
         """Look for OS architecture on given partition, looking for 64-bit first, then 32-bit."""

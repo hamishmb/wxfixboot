@@ -159,15 +159,17 @@ class Main():
                 APTCmd = "which apt-get"
                 Chroot = False
                 IsCurrentOS = True
+                MountPoint = ""
 
             else:
                 Cmd = "chroot /mnt"+Partition+" lsb_release -sd"
                 APTCmd = "chroot /mnt"+Partition+" which apt-get"
                 Chroot = True
                 IsCurrentOS = False
+                MountPoint = "/mnt"+Partition
 
                 #Mount the partition and check if anything went wrong.
-                if CoreTools.MountPartition(Partition=Partition, MountPoint="/mnt"+Partition) != 0:
+                if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
                     #Ignore the partition.
                     logger.warning("MainStartupTools: Main().GetLinuxOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
                     continue
@@ -205,6 +207,7 @@ class Main():
                 OSInfo[OSName]["Arch"] = OSArch
                 OSInfo[OSName]["Partition"] = Partition
                 OSInfo[OSName]["PackageManager"] = "apt-get"
+                OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName)
                 SystemInfo["UserFriendlyOSNames"].append(OSName)
                 SystemInfo["OSsWithPackageManagers"].append(OSName) #*** Get rid of this soon ***
 
@@ -213,7 +216,7 @@ class Main():
 
             if Chroot:
                 #Unmount the filesystem.
-                if CoreTools.Unmount("/mnt"+Partition) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
+                if CoreTools.Unmount(MountPoint) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
                     logger.error("MainStartupTools: Main().GetLinuxOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
                     CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
@@ -407,12 +410,11 @@ class Main():
             BootloaderInfo[OS] = {}
             BootloaderInfo[OS]["OSName"] = OS
             BootloaderInfo[OS]["Bootloader"] = CoreStartupTools.LookForBootloadersOnPartition(OSInfo[OS]["PackageManager"], MountPoint, not OSInfo[OS]["IsCurrentOS"])
-            BootloaderInfo[OS]["BootDisk"] = "Unknown"
 
-            BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = ("Unknown", "Unknown")
+            BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"] = ("Unknown", "Unknown", "Unknown")
             
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
-                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub")
 
             elif BootloaderInfo[OS]["Bootloader"] == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/elilo.conf")

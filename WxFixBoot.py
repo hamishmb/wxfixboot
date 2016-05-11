@@ -51,7 +51,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "10/5/2016"
+ReleaseDate = "11/5/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -350,8 +350,8 @@ class InitialWindow(wx.Frame):
         self.Panel.Layout()
 
     def UpdateOutputBox(self, Message): #*** Get rid of this later? ***
-        """Dummy function, accepts a message argument but ignores it. Allow CoreTools.StartProcess to work."""
-        pass
+       """Dummy function, accepts a message argument but ignores it. Allow CoreTools.StartProcess to work."""
+       pass
 
     def FinishedInit(self, Event=None):
         """Starts MainWindow, called when StartupScripts are finished"""
