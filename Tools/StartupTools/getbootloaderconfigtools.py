@@ -53,13 +53,6 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         #Set temporary vars
         Timeout = "Unknown"
         KernelOptions = "Unknown"
-        BootDisk = "Unknown"
-
-        #Make a dictionary to convert grub's disk names to letters.
-        HDLettersDict = {}
-
-        for Number in xrange(0, 26):
-            HDLettersDict[Number] = chr(Number+97)
 
         #Open the file in read mode, so we can save the important bits of config.
         ConfigFile = open(ConfigFilePath, 'r')
@@ -80,24 +73,10 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                 #Found them! Save them.
                 KernelOptions = Line.split("=")[1].replace("\'", "")
 
-            #Look for the boot disk. *** Look in /boot/grub/grub.cfg *** *** Use UUID ***
-            elif "set root=" in Line and "\t" not in Line:
-                #Found it! Save it.
-                BootDisk = "/dev/sd"
-
-                Counter = 1
-                for Char in Line:
-                    if Char.isdigit():
-                        if Counter == 1:
-                            BootDisk += HDLettersDict[Char]
-
-                        else:
-                            BootDisk += Number
-
         #Close the file.
         ConfigFile.close()
 
-        return (Timeout, KernelOptions, BootDisk)
+        return (Timeout, KernelOptions)
 
     def GetLILOConfig(self, ConfigFilePath): #*** Add logging messages ***
         """Get important bits of config from lilo and elilo"""

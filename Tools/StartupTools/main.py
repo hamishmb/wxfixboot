@@ -406,7 +406,7 @@ class Main():
             else:
                 MountPoint = ""
 
-            #Look for bootloaders. *** UNFINISHED ***
+            #Look for bootloaders.
             BootloaderInfo[OS] = {}
             BootloaderInfo[OS]["OSName"] = OS
             BootloaderInfo[OS]["Bootloader"] = CoreStartupTools.LookForBootloadersOnPartition(OSInfo[OS]["PackageManager"], MountPoint, not OSInfo[OS]["IsCurrentOS"])
@@ -414,13 +414,18 @@ class Main():
             BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"] = ("Unknown", "Unknown", "Unknown")
             
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
-                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub")
+
+                #For EFI bootloaders, set the boot disk to the OS's EFI Partition.
+                if BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
+                    BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
             elif BootloaderInfo[OS]["Bootloader"] == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/elilo.conf")
+                BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
             elif BootloaderInfo[OS]["Bootloader"] == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
-                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/elilo.conf")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/lilo.conf")
 
             elif os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
                 BootloaderInfo[OS]["Timeout"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst")
