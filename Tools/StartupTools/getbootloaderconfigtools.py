@@ -48,16 +48,32 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
         return Timeout
 
-    def GetGRUBLEGACYBootDisk(self, MountPoint, Chroot): #*** Add logging messages ***
+    def ConfirmControllingOSOfGRUBLEGACY(self, MountPoint, Chroot): #*** Add logging messages ***
         """Get grub-legacy's boot disk"""
         #Set temporary var.
         BootDisk = "Unknown"
 
-        #Run the command to get the info.
-        Retval, Output = CoreTools.StartProcess("grub --batch --verbose", ReturnOutput=True, StdinLines=["find /boot/grub/stage1", "quit"])
+        Cmd = "grub --batch --verbose"
 
-        #*** FINISH LATER ***
-        return BootDisk
+        if Chroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        #Run the command to get the info. We need to pass commands to GRUB to do this, and confirm that the correct OS is controlling grub.
+        Retval, Output = CoreTools.StartProcess("grub --batch --verbose", StdinLines=["find /boot/grub/stage1", "find /grub/stage1", "quit"], ReturnOutput=True)
+
+        #*** CONVERT GRUB DISKS TO DEVICE NODES ***
+
+        #Return True or false depending on the outcome.
+        return True
+
+    def CheckGRUBVersionIs(self, GRUBVersion):
+        """Check the version of GRUB in the given MBR is the correct one (Legacy/2)"""
+        #Do this by checking if "ZRr=" is in the first line of output given by string when passed the MBR (or do it in python).
+        #If so, we have GRUB2.
+        #If "ZRrI" is is in the first line of output given by string when passed the MBR (or do it in python),
+        #Then we have GRUB-LEGACY.
+        #*** TODO ***
+        pass
 
     def GetGRUB2Config(self, ConfigFilePath): #*** Add logging messages ***
         """Get important bits of config from grub2 (MBR or UEFI)"""
@@ -89,6 +105,10 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
         return (Timeout, KernelOptions)
 
+    def GuessGRUBBootDevice(self, OSName):
+        """Make an educated guess as to where grub is installed to for each OS"""
+        pass
+
     def GetLILOConfig(self, ConfigFilePath): #*** Add logging messages ***
         """Get important bits of config from lilo and elilo"""
         #Set temporary vars
@@ -115,7 +135,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                 #Found them! Save it to GlobalKernelOptions
                 KernelOptions = ' '.join(Line.split("=")[1:]).replace("\"", "")
 
-            #Look for the 'boot' setting.
+            #Look for the 'boot' setting. *** Test this ***
             elif 'boot' in Line and '=' in Line and '#' not in Line and 'map' not in Line:
                 #Found it!
                 Temp = Line.split("=")[1]

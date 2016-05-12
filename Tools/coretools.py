@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def StartProcess(self, ExecCmds, ShowOutput=True, ReturnOutput=False): #*** ShowOutput is ignored currently ***
+    def StartProcess(self, ExecCmds, StdinLines=[], ShowOutput=True, ReturnOutput=False): #*** ShowOutput is ignored currently ***
         """Start a process given a string of commands to execute.
         ShowOutput is boolean and specifies whether to show output in the outputbox (if exists) or not.
         ReturnOutput is boolean and specifies whether to return the output back to the caller or not.
@@ -38,7 +38,15 @@ class Main():
 
         #Run the command(s). *** Silence UnicodeWarning when failing to convert Char to unicode *** *** Not really a problem cos if char can't be converted it isn't = to \n anyway, but annoying ***
         logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds)
-        cmd = subprocess.Popen(ExecCmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        cmd = subprocess.Popen(ExecCmds, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
+        #If we have any lines to write to stdin, do that now.
+        if StdinLines != []:
+            for Line in StdinLines:
+                cmd.stdin.write(Line+"\n")
+
+        #Close stdin (some programs wait for this before they will exit).
+        cmd.stdin.close()
 
         while cmd.poll() == None or Counter < 100:
             Char = cmd.stdout.read(1)
