@@ -204,6 +204,19 @@ class Main():
 
         return ID
 
+    def GetBootRecord(self, Disk): #*** Add logging stuff ***
+        """Get the MBR or PBR of the given Disk."""
+        logger.info("GetDevInfo: Main().GetBootRecord(): Getting MBR/PBR for: "+Disk+"...")
+
+        #*** Check return value ***
+        cmd = subprocess.Popen("dd if="+Disk+" bs=512 count=1", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        BootRecord = cmd.communicate()[0]
+
+        #if Retval != 0:
+        #    BootRecord = "Unknown"
+
+        return BootRecord
+
     def GetDeviceInfo(self, Node): #*** Ignore capacities for all optical drives (will fix low priority bug on pmagic) ***
         """Get Device Information"""
         HostDisk = unicode(Node.logicalname.string)
@@ -221,6 +234,14 @@ class Main():
         DiskInfo[HostDisk]["FileSystem"] = "N/A"
         DiskInfo[HostDisk]["UUID"] = "N/A"
         DiskInfo[HostDisk]["ID"] = self.GetID(HostDisk)
+
+        #Don't try to get Boot Records for optical drives.
+        if "/dev/cdrom" in HostDisk or "/dev/sr" in HostDisk or "/dev/dvd" in HostDisk:
+             DiskInfo[HostDisk]["BootRecord"] = "N/A"
+
+        else:
+            DiskInfo[HostDisk]["BootRecord"] = self.GetBootRecord(HostDisk)
+
         return HostDisk
 
     def GetPartitionInfo(self, SubNode, HostDisk):
@@ -231,8 +252,8 @@ class Main():
         except AttributeError:
             Volume = HostDisk+unicode(SubNode.physid.string)
 
-        #Fix bug on Pmagic, if the volume already exists in DiskInfo, or if it starts with /dev/cdrom, ignore it here.
-        if Volume in DiskInfo or "/dev/cdrom" in Volume:
+        #Fix bug on Pmagic, if the volume already exists in DiskInfo, or if it is an optical drive, ignore it here.
+        if Volume in DiskInfo or "/dev/cdrom" in Volume or "/dev/sr" in Volume or "/dev/dvd" in Volume:
             return Volume
 
         DiskInfo[Volume] = {}
@@ -251,6 +272,7 @@ class Main():
         DiskInfo[Volume]["Partitioning"] = "N/A"
         DiskInfo[Volume]["UUID"] = self.GetUUID(Volume)
         DiskInfo[Volume]["ID"] = self.GetID(Volume)
+        DiskInfo[Volume]["BootRecord"] = self.GetBootRecord(Volume)
         return Volume
 
     def GetInfo(self, Standalone=False):

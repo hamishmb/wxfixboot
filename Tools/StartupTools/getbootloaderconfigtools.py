@@ -61,7 +61,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         #Run the command to get the info. We need to pass commands to GRUB to do this, and confirm that the correct OS is controlling grub.
         Retval, Output = CoreTools.StartProcess("grub --batch --verbose", StdinLines=["find /boot/grub/stage1", "find /grub/stage1", "quit"], ReturnOutput=True)
 
-        #*** CONVERT GRUB DISKS TO DEVICE NODES ***
+        #*** Read /boot/grub/device.map ***
 
         #Return True or false depending on the outcome.
         return True
