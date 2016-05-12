@@ -62,8 +62,8 @@ class Main():
         logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Getting FSTab info in "+MountPoint+"/etc/fstab for "+OSName+"...")
 
         #Do some setup.
-        EFIPartition = None
-        BootPartition = None
+        EFIPartition = "Unknown"
+        BootPartition = "Unknown"
 
         #Read the raw contents of the /etc/fstab file.
         FSTabFile = open(MountPoint+"/etc/fstab", "r")
@@ -98,7 +98,7 @@ class Main():
 
                 else:
                     logger.error("CoreStartupTools: Main().GetFSTabInfo(): Couldn't determine device name! Ignoring this device...")
-                    EFIPartition = None
+                    EFIPartition = "Unknown"
 
             #Try to find this OS's /boot partition (if there is one).
             if Line.split()[1] == "/boot":
@@ -122,7 +122,7 @@ class Main():
 
                 else:
                     logger.error("CoreStartupTools: Main().GetFSTabInfo(): Couldn't determine device name! Ignoring this device...")
-                    BootPartition = None
+                    BootPartition = "Unknown"
 
         #Return stuff.
         return (RawFSTABContents, EFIPartition, BootPartition)

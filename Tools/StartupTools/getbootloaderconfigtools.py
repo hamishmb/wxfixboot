@@ -48,6 +48,17 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
         return Timeout
 
+    def GetGRUBLEGACYBootDisk(self, MountPoint, Chroot): #*** Add logging messages ***
+        """Get grub-legacy's boot disk"""
+        #Set temporary var.
+        BootDisk = "Unknown"
+
+        #Run the command to get the info.
+        Retval, Output = CoreTools.StartProcess("grub --batch --verbose", ReturnOutput=True, StdinLines=["find /boot/grub/stage1", "quit"])
+
+        #*** FINISH LATER ***
+        return BootDisk
+
     def GetGRUB2Config(self, ConfigFilePath): #*** Add logging messages ***
         """Get important bits of config from grub2 (MBR or UEFI)"""
         #Set temporary vars
@@ -83,6 +94,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         #Set temporary vars
         Timeout = "Unknown"
         KernelOptions = "Unknown"
+        BootDisk = "Unknown"
 
         #Open the file in read mode, so we can save the important bits of config.
         ConfigFile = open(ConfigFilePath, 'r')
@@ -103,7 +115,30 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                 #Found them! Save it to GlobalKernelOptions
                 KernelOptions = ' '.join(Line.split("=")[1:]).replace("\"", "")
 
+            #Look for the 'boot' setting.
+            elif 'boot' in Line and '=' in Line and '#' not in Line and 'map' not in Line:
+                #Found it!
+                Temp = Line.split("=")[1]
+
+                #Convert to a device node if we have an ID.
+                if "by-id" in Temp:
+                    ID = Temp.split("/")[-1]
+
+                    for Disk in DiskInfo.keys():
+                        if DiskInfo[Disk]["ID"] == ID:
+                            Temp = Disk
+                            break
+
+                #Check we got the device node in case we had an ID.
+                if "/dev/" in Temp:
+                    BootDisk = Temp
+
         #Close the file.
         ConfigFile.close()
 
-        return (Timeout, KernelOptions)
+        #Ignore ELILO's boot disk setting. *** Change later? ***
+        if "/etc/lilo.conf" in ConfigFilePath:
+            return (Timeout, KernelOptions, BootDisk)
+
+        else:
+            return (Timeout, KernelOptions)

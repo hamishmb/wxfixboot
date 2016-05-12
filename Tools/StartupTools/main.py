@@ -396,6 +396,7 @@ class Main():
             if not OSInfo[OS]["IsCurrentOS"]:
                 #Mount the OS's partition.
                 MountPoint = "/mnt"+OSInfo[OS]["Partition"]
+                Chroot = True
 
                 if CoreTools.MountPartition(OSInfo[OS]["Partition"], MountPoint) != 0:
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to mount "+OS+"'s partition! Skipping bootloader detection for this OS.")
@@ -405,6 +406,7 @@ class Main():
 
             else:
                 MountPoint = ""
+                Chroot = False
 
             #Look for bootloaders.
             BootloaderInfo[OS] = {}
@@ -421,14 +423,16 @@ class Main():
                     BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
             elif BootloaderInfo[OS]["Bootloader"] == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
+                #Ignore ELILO's boot disk set in the config file.
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/elilo.conf")
                 BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
             elif BootloaderInfo[OS]["Bootloader"] == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
-                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/lilo.conf")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootLoadInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/lilo.conf")
 
             elif os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
                 BootloaderInfo[OS]["Timeout"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst")
+                BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.GetGRUBLEGACYBootDisk(MountPoint, Chroot)
 
             BootloaderInfo[OS]["DefaultOS"] = "Unknown"
             BootloaderInfo[OS]["IsModifyable"] = "Unknown"
