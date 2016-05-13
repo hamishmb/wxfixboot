@@ -40,7 +40,7 @@ class Main():
         logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds)
         cmd = subprocess.Popen(ExecCmds, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
-        #If we have any lines to write to stdin, do that now.
+        #If we have any lines to write to stdin, do that now. *** Check this works ***
         if StdinLines != []:
             for Line in StdinLines:
                 cmd.stdin.write(Line+"\n")

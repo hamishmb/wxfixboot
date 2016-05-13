@@ -306,8 +306,8 @@ class Main():
                 UEFIVariables = False
 
     def GetBootloader(self):
-        """Determine the current bootloader."""
-        #*** Do some of this for each OS *** *** Will need a LOT of modification when I switch to dictionaries ***
+        """*** DEPRECATED *** Determine the current bootloader."""
+        #*** Do some of this for each OS *** *** This is DEPRECATED ***
         logger.debug("MainStartupTools: Main().GetBootloader(): Trying to determine bootloader...")
 
         #Run some inital scripts
@@ -386,7 +386,7 @@ class Main():
         #Set the default bootloader value.
         SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
 
-    def GetBootloaders(self): #*** Test this thoroughly ***
+    def GetBootloaders(self): #*** Test this thoroughly *** *** Fedora: Check under /boot/grub2, and also check for subdirs like i386-pc in grubdir ***
         """Find all bootloaders (for each OS), and gather some information about them"""
         Keys = OSInfo.keys()
         Keys.sort()

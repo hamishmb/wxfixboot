@@ -214,8 +214,14 @@ class Main():
 
         #if Retval != 0:
         #    BootRecord = "Unknown"
+        #    return "(Unknown", "Unknown")
 
-        return BootRecord
+        #Get the readable strings in the boot record. *** Check return value ***
+        cmd = subprocess.Popen("strings", stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        cmd.stdin.write(BootRecord)
+        BootRecordStrings = cmd.communicate()[0]
+
+        return (BootRecord, BootRecordStrings)
 
     def GetDeviceInfo(self, Node): #*** Ignore capacities for all optical drives (will fix low priority bug on pmagic) ***
         """Get Device Information"""
@@ -240,7 +246,7 @@ class Main():
              DiskInfo[HostDisk]["BootRecord"] = "N/A"
 
         else:
-            DiskInfo[HostDisk]["BootRecord"] = self.GetBootRecord(HostDisk)
+            DiskInfo[HostDisk]["BootRecord"], DiskInfo[HostDisk]["BootRecordStrings"] = self.GetBootRecord(HostDisk)
 
         return HostDisk
 
@@ -272,7 +278,7 @@ class Main():
         DiskInfo[Volume]["Partitioning"] = "N/A"
         DiskInfo[Volume]["UUID"] = self.GetUUID(Volume)
         DiskInfo[Volume]["ID"] = self.GetID(Volume)
-        DiskInfo[Volume]["BootRecord"] = self.GetBootRecord(Volume)
+        DiskInfo[Volume]["BootRecord"], DiskInfo[Volume]["BootRecordStrings"] = self.GetBootRecord(Volume)
         return Volume
 
     def GetInfo(self, Standalone=False):

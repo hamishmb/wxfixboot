@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+#*** Add dependency on binutils (for strings command) ***
 #*** Where did we want to use CoreTools.GetMountPointOf()? ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
@@ -51,7 +52,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "12/5/2016"
+ReleaseDate = "13/5/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -505,15 +506,15 @@ class InitThread(threading.Thread):
         SystemInfo["RootDevice"] = DiskInfo[SystemInfo["RootFS"]]["HostDevice"]
         SystemInfo["AutoRootDevice"] = SystemInfo["RootDevice"]
 
-        #Get the Bootloader.
+        #Get the Bootloader. *** DEPRECATED ***
         #Initialise a setting.
         SystemInfo["PrevBootloaderSetting"] = None
 
-        logger.info("InitThread(): ***DEPRACTED CODE *** Determining The Bootloader...")
+        logger.info("InitThread(): *** DEPRECATED CODE *** Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "***DEPRACTED CODE *** Determining The Bootloader...")
         MainStartupTools.GetBootloader()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
-        logger.info("InitThread(): ***DEPRACTED CODE *** Bootloader is: "+SystemInfo["Bootloader"])
+        logger.info("InitThread(): *** DEPRECATED CODE *** Bootloader is: "+SystemInfo["Bootloader"])
 
         #New bootloader info getting function.
         logger.info("InitThread(): Finding all Bootloaders and getting their settings...")

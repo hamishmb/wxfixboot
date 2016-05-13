@@ -25,7 +25,11 @@ from __future__ import unicode_literals
 class Main():
     def LookForBootloadersOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly ***
         """Look for bootloaders installed in the OS in the given mount point."""
-        logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")
+        if UsingChroot:
+            logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")
+
+        else:
+            logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in / (Current OS)...")
 
         #Okay, let's run a command in the chroot that was set up in self.FindBootloaderRemovalOSs(), depending on which package manager this OS uses, and which bootloader is currently installed.
         if PackageManager == "apt-get":
