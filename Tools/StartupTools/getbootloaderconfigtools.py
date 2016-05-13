@@ -48,32 +48,43 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
         return Timeout
 
-    def ConfirmControllingOSOfGRUBLEGACY(self, MountPoint, Chroot): #*** Add logging messages ***
-        """Get grub-legacy's boot disk"""
-        #Set temporary var.
-        BootDisk = "Unknown"
+    def FindGRUB(self, OSPartition, GRUBVersion): #*** Add logging messages *** *** Test this thoroughly ***
+        """Find GRUB for the given OS."""
+        #Do some setup.
+        LikelyGRUBInstallDisks = (DiskInfo[OSPartition]["HostDisk"], OSPartition)
+        FoundGRUB = False
+        FoundRightVersion = False
 
-        Cmd = "grub --batch --verbose"
+        #Look for the right string for each boot loader.
+        if GRUBVersion == "GRUB2":
+            LookFor = "ZRr="
 
-        if Chroot:
-            Cmd = "chroot "+MountPoint+" "+Cmd
+        else:
+            LookFor = "ZRrI"
 
-        #Run the command to get the info. We need to pass commands to GRUB to do this, and confirm that the correct OS is controlling grub.
-        Retval, Output = CoreTools.StartProcess("grub --batch --verbose", StdinLines=["find /boot/grub/stage1", "find /grub/stage1", "quit"], ReturnOutput=True)
+        for Disk in LikelyGRUBInstallDisks:
+            for Line in DiskInfo[Disk]["BootRecordStrings"]:
+                #Check that we have the right version of GRUB, and double check that GRUB is present.
+                if LookFor in Line:
+                    FoundRightVersion = True
 
-        #*** Read /boot/grub/device.map ***
+                elif "GRUB" in Line:
+                    FoundGRUB = True
+                    BootDisk = Disk
 
-        #Return True or false depending on the outcome.
-        return True
+                #Break out of the loop if possible to save time.
+                if FoundRightVersion and FoundGRUB:
+                    break
 
-    def CheckGRUBVersionIs(self, GRUBVersion):
-        """Check the version of GRUB in the given MBR is the correct one (Legacy/2)"""
-        #Do this by checking if "ZRr=" is in the first line of output given by string when passed the MBR (or do it in python).
-        #If so, we have GRUB2.
-        #If "ZRrI" is is in the first line of output given by string when passed the MBR (or do it in python),
-        #Then we have GRUB-LEGACY.
-        #*** TODO ***
-        pass
+            #Break out of the loop if possbile to save time.
+            if FoundRightVersion and FoundGRUB:
+                break
+
+        if FoundRightVersion and FoundGRUB:
+            return BootDisk
+
+        else:
+            return "Unknown"
 
     def GetGRUB2Config(self, ConfigFilePath): #*** Add logging messages ***
         """Get important bits of config from grub2 (MBR or UEFI)"""

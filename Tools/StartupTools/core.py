@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** Optimise/Reorganise this again later ***
 class Main():
-    def LookForBootloadersOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly ***
+    def LookForBootloadersOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly *** *** Move to getbootloaderconfigtools? ***
         """Look for bootloaders installed in the OS in the given mount point."""
         if UsingChroot:
             logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")

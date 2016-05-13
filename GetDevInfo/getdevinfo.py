@@ -208,8 +208,8 @@ class Main():
         """Get the MBR or PBR of the given Disk."""
         logger.info("GetDevInfo: Main().GetBootRecord(): Getting MBR/PBR for: "+Disk+"...")
 
-        #*** Check return value ***
-        cmd = subprocess.Popen("dd if="+Disk+" bs=512 count=1", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        #Use status=none to avoid getting status messages from dd in our boot record *** Check return value ***
+        cmd = subprocess.Popen("dd if="+Disk+" bs=512 count=1 status=none", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         BootRecord = cmd.communicate()[0]
 
         #if Retval != 0:
@@ -219,7 +219,7 @@ class Main():
         #Get the readable strings in the boot record. *** Check return value ***
         cmd = subprocess.Popen("strings", stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         cmd.stdin.write(BootRecord)
-        BootRecordStrings = cmd.communicate()[0]
+        BootRecordStrings = cmd.communicate()[0].split("\n")
 
         return (BootRecord, BootRecordStrings)
 
@@ -243,7 +243,7 @@ class Main():
 
         #Don't try to get Boot Records for optical drives.
         if "/dev/cdrom" in HostDisk or "/dev/sr" in HostDisk or "/dev/dvd" in HostDisk:
-             DiskInfo[HostDisk]["BootRecord"] = "N/A"
+             DiskInfo[HostDisk]["BootRecord"], DiskInfo[HostDisk]["BootRecordStrings"] = ("N/A", "N/A")
 
         else:
             DiskInfo[HostDisk]["BootRecord"], DiskInfo[HostDisk]["BootRecordStrings"] = self.GetBootRecord(HostDisk)

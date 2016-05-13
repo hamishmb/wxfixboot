@@ -122,7 +122,6 @@ from Tools.BackendTools.essentials import Main as EssentialBackendToolsCallable
 from Tools.BackendTools.main import Main as MainBackendToolsCallable
 
 from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderToolsCallable
-#from Tools.BackendTools.BootloaderTools.getconfigtools import Main as BootloaderConfigObtainingToolsCallable *** Remove soon ***
 from Tools.BackendTools.BootloaderTools.removaltools import Main as BootloaderRemovalToolsCallable
 from Tools.BackendTools.BootloaderTools.installationtools import Main as BootloaderInstallationToolsCallable
 from Tools.BackendTools.BootloaderTools.setconfigtools import Main as BootloaderConfigSettingToolsCallable
