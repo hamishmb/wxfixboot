@@ -23,11 +23,11 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def CheckDepends(self): #*** Is blockdev (for blocksizes) needed? ***
+    def CheckDepends(self):
         """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
         logger.info("MainStartupTools(): Main().CheckDepends(): Checking dependencies...")
         #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies.
-        CmdList = ("lshw", "mount", "lsb_release", "dmidecode", "chroot", "dd", "gdisk", "blockdev", "blkid", "strings")
+        CmdList = ("lshw", "mount", "lsb_release", "dmidecode", "chroot", "dd", "gdisk", "blkid", "strings")
 
         #Create a list to contain names of failed commands.
         FailedList = []
