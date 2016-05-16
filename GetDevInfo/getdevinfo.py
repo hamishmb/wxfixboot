@@ -41,19 +41,6 @@ class Main():
 
         return Result
 
-    def DeduplicateList(self, ListToDeduplicate): #*** Might not need this ***
-        """Deduplicate the given list."""
-        logger.debug("GetDevInfo: Main().DeduplicateList(): Deduplicating list: "+str(ListToDeduplicate)+"...")
-        ResultsList = []
-
-        for Element in ListToDeduplicate:
-            if Element not in ResultsList:
-                ResultsList.append(Element)
-
-        #Return the results.
-        logger.info("GetDevInfo: Main().DeduplicateList(): Results: "+str(ResultsList)+"...")
-        return ResultsList
-
     def GetVendor(self, Node):
         """Get the vendor"""
         try:
