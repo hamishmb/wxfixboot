@@ -23,24 +23,6 @@ from __future__ import unicode_literals
 
 #Begin Main Class. #*** Refactor ***
 class Main():
-    def FoundExactMatch(self, Item, Text, Log=True):
-        """Check if an exact match of "Item" (arg) can be found in "Text" (arg), seperated by commas or spaces."""
-        if Log == True:
-            logger.debug("GetDevInfo: Main().FoundExactMatch(): Looking for: "+Item+" in: "+Text+"...")
-
-        Result = re.findall('\\'+Item+'\\b', Text)
-
-        if len(Result) > 0:
-            Result = True
-
-        else:
-            Result = False
-
-        if Log == True:
-            logger.info("GetDevInfo: Main().FoundExactMatch(): Result: "+str(Result)+"...")
-
-        return Result
-
     def GetVendor(self, Node):
         """Get the vendor"""
         try:
