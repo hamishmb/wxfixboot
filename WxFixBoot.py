@@ -25,6 +25,7 @@
 #*** Support EFI on 32-bit firmware? ***
 #*** /boot/efi not unmounted after modifying EFI bootloaders on parted magic (possibly also on other platforms), preventing unmounting of chrooted rootfs. Doesn't cause an error or any problems. ***
 #*** Use a variable to say if we're on Parted Magic or not ***
+#*** Make OSInfo accessible to CoreBackendTools? ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -52,7 +53,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "13/5/2016"
+ReleaseDate = "16/5/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")

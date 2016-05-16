@@ -86,13 +86,38 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         else:
             return "Unknown"
 
-    def GetGRUB2Config(self, ConfigFilePath): #*** Add logging messages ***
+    def GetGRUB2Config(self, MenuEntriesFilePath, ConfigFilePath): #*** Add logging messages *** *** Refactor ***
         """Get important bits of config from grub2 (MBR or UEFI)"""
         #Set temporary vars
         Timeout = "Unknown"
         KernelOptions = "Unknown"
 
-        #Open the file in read mode, so we can save the important bits of config.
+        #Open the menutentries file to find and save all the menuentries.
+        MenuEntriesFile = open(MenuEntriesFilePath, "r")
+        MenuEntries = {}
+
+        for Line in MenuEntriesFile:
+            #Look for all menu entries, ignoring recovery mode options.
+            if "menuentry " in Line and "recovery mode" not in Line:
+                MenuEntry = Line.split("\'")[1]
+                Temp = MenuEntry.replace(")", "").split(" (")
+                Name = Temp[0]
+
+                MenuEntries[Name] = {}
+                MenuEntries[Name]["Name"] = Name
+
+                try:
+                    MenuEntries[Name]["Partition"] = Temp[1].split(" ")[-1]
+
+                except IndexError:
+                    MenuEntries[Name]["Partition"] = "Unknown"
+                    
+        #Close the file.
+        MenuEntriesFile.close()
+
+        print(MenuEntries)
+
+        #Open the config file in read mode, so we can save the important bits of config.
         ConfigFile = open(ConfigFilePath, 'r')
 
         #Loop through each line in the file, paying attention only to the important ones.
@@ -111,14 +136,23 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                 #Found them! Save them.
                 KernelOptions = Line.split("=")[1].replace("\'", "")
 
+            #Look for default os setting,
+            elif "GRUB_DEFAULT" in Line and "=" in Line:
+                #If this is an integer or string that isn't "saved", we need to match it to GRUB's grub.cfg menuentries.
+                Temp = Line.split("=")[1].replace("\"", "").replace("\'", "")
+
+                if Temp.isdigit():
+                    #Find the corresponding GRUB menutentry, counting up from 0. *** TODO ***
+                    pass
+
+                elif Temp == "saved":
+                    #Find the corresponding GRUB menutentry, matching by name. *** TODO ***
+                    pass
+
         #Close the file.
         ConfigFile.close()
 
-        return (Timeout, KernelOptions)
-
-    def GuessGRUBBootDevice(self, OSName):
-        """Make an educated guess as to where grub is installed to for each OS"""
-        pass
+        return (Timeout, KernelOptions, MenuEntries)
 
     def GetLILOConfig(self, ConfigFilePath): #*** Add logging messages ***
         """Get important bits of config from lilo and elilo"""

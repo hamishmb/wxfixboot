@@ -386,7 +386,7 @@ class Main():
         #Set the default bootloader value.
         SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
 
-    def GetBootloaders(self): #*** Test this thoroughly *** *** Fedora: Check under /boot/grub2, and also check for subdirs like i386-pc in grubdir ***
+    def GetBootloaders(self): #*** Test this thoroughly *** *** Fedora: Check under /boot/grub2, and also check for subdirs like i386-pc in grubdir *** *** Check for separate /boot partition ***
         """Find all bootloaders (for each OS), and gather some information about them"""
         Keys = OSInfo.keys()
         Keys.sort()
@@ -420,7 +420,7 @@ class Main():
                 BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
-                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/boot/grub/grub.cfg", MountPoint+"/etc/default/grub")
 
                 #Try to find GRUB if this is GRUB2.
                 if BootloaderInfo[OS]["Bootloader"] == "GRUB2":
