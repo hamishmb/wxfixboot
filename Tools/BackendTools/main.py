@@ -218,7 +218,10 @@ class Main():
                         continue
 
                 #Set up chroot.
-                CoreTools.SetUpChroot(MountPoint=MountPoint)
+                Retval = CoreTools.SetUpChroot(MountPoint)
+
+                if Retval != 0:
+                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
                 #If there's a seperate /boot partition for this OS, make sure it's mounted. *** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this *** *** this might mount other stuff and interfere too ***
                 CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False)
@@ -246,7 +249,10 @@ class Main():
 
             #Tear down chroot if needed.
             if UseChroot:
-                CoreTools.TearDownChroot(MountPoint=MountPoint)
+                Retval = CoreTools.TearDownChroot(MountPoint=MountPoint)
+
+                if Retval != 0:
+                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
             #Unmount partition if needed.
             if UnmountAfter:
@@ -313,7 +319,10 @@ class Main():
                         continue
 
                 #Set up chroot.
-                CoreTools.SetUpChroot(MountPoint=MountPoint)
+                Retval = CoreTools.SetUpChroot(MountPoint=MountPoint)
+
+                if Retval != 0:
+                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
                 #If there's a seperate /boot partition for this OS, make sure it's mounted.
                 CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False) #*** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this ***
@@ -364,8 +373,11 @@ class Main():
 
             if UseChroot:
                 logger.debug("MainBackendTools: Main().InstallNewBootloader(): Removing chroot...")
-                #Tear down chroot. #*** Check it worked ***
-                CoreTools.TearDownChroot(MountPoint=MountPoint)
+                #Tear down chroot.
+                Retval = CoreTools.TearDownChroot(MountPoint=MountPoint)
+
+                if Retval != 0:
+                    logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
             if UnmountAfter:
                 if CoreTools.Unmount(MountPoint) != 0:
@@ -437,7 +449,9 @@ class Main():
                         continue
 
                 #Set up chroot.
-                CoreTools.SetUpChroot(MountPoint=MountPoint)
+                Retval = CoreTools.SetUpChroot(MountPoint=MountPoint)
+                if Retval != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
 
@@ -554,7 +568,10 @@ class Main():
 
             #Tear down chroot if needed.
             if MountPoint != "":
-                CoreTools.TearDownChroot(MountPoint=MountPoint)
+                Retval = CoreTools.TearDownChroot(MountPoint=MountPoint)
+
+                if Retval != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
             #Unmount the partition if needed.
             if UnmountPartitionAfter:

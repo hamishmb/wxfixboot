@@ -125,7 +125,7 @@ class Main():
                 logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
                 return False
 
-    def GetPartitionMountedAt(self, MountPoint): #*** What if we get a UUID? ***
+    def GetPartitionMountedAt(self, MountPoint):
         """Returns the partition mounted at the given mountpoint, if any.
         Otherwise, return None"""
         logger.info("CoreTools: Main().GetPartitionMountedAt(): Trying to get partition mounted at "+MountPoint+"...")
@@ -150,7 +150,7 @@ class Main():
     def GetMountPointOf(self, Partition): #*** Check this works ***
         """Returns the mountpoint of the given partition, if any.
         Otherwise, return None"""
-        logger.info("CoreTools: Main().GetMountPointOf(): Trying to mount point of partition "+Partition+"...")
+        logger.info("CoreTools: Main().GetMountPointOf(): Trying to get mount point of partition "+Partition+"...")
 
         MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
         MountPoint = None
@@ -279,7 +279,7 @@ class Main():
         return FilesFound
 
     def UpdateChrootMtab(self, MountPoint):
-        """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right.""" #*** Don't copy to /etc/mtab, as this may screw up mounting in target os later. Copy to MountPoint/proc/self/mounts. Actually, /proc is bound to /MountPoint/proc. What's not working with this command?! *** *** Nothing wrong found during testing, what shall I do with this then? ***
+        """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right."""
         logger.debug("CoreTools: Main().UpdateChrootMtab(): Updating /etc/mtab for chroot at: "+MountPoint+"...")
 
         retval = CoreTools.StartProcess("cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab", ShowOutput=False)
@@ -289,7 +289,7 @@ class Main():
 
         logger.debug("CoreTools: Main().UpdateChrootMtab(): Finished updating /etc/mtab for chroot at: "+MountPoint+".")
 
-    def SetUpChroot(self, MountPoint): #*** Return retval ***
+    def SetUpChroot(self, MountPoint):
         """Set up a chroot for the given mountpoint."""
         logger.debug("CoreTools: Main().SetUpChroot(): Setting up chroot for MountPoint: "+MountPoint+"...")
 
@@ -306,16 +306,17 @@ class Main():
         for ExecCmd in ExecList:
             Result = CoreTools.StartProcess(ExecCmd, ShowOutput=False, ReturnOutput=True)
             output = Result[1]
-            retval = Result[0]
+            Retval = Result[0]
 
-            if retval != 0:
+            if Retval != 0:
                 logger.error("CoreTools: Main().SetUpChroot(): Error: Failed to run command: "+', '.join(ExecList)+"! Chroot may not be set up properly!")
 
         self.UpdateChrootMtab(MountPoint=MountPoint)
 
         logger.debug("CoreTools: Main().SetUpChroot(): Finished setting up chroot for MountPoint: "+MountPoint+"...")
+        return Retval
 
-    def TearDownChroot(self, MountPoint): #*** Return Retval ***
+    def TearDownChroot(self, MountPoint):
         """Remove a chroot at the given mountpoint."""
         logger.debug("CoreTools: Main().TearDownChroot(): Removing chroot at MountPoint: "+MountPoint+"...")
 
@@ -333,6 +334,7 @@ class Main():
             logger.error("CoreTools: Main().TearDownChroot(): Failed to run command: 'mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf'! Return value was: "+Retval+". Chroot may not be removed properly!") #*** What do we do here? ***
 
         logger.debug("CoreTools: Main().TearDownChroot(): Finished removing chroot at MountPoint: "+MountPoint+"...")
+        return Retval
 
     def EmergencyExit(self, Message):
         """Handle emergency exits. Warn the user, log, and exit to terminal with the given message"""

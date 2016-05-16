@@ -402,7 +402,11 @@ class Main():
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to mount "+OS+"'s partition! Skipping bootloader detection for this OS.")
 
                 #Set up chroot.
-                CoreTools.SetUpChroot(MountPoint)
+                Retval = CoreTools.SetUpChroot(MountPoint)
+
+                if Retval != 0:
+                    logger.error("MainStartupTools: Main().GetBootloaders(): Couldn't set up chroot on "+MountPoint+"! Attempting to remove it in case it's partially set up, and then skipping this OS...")
+                    CoreTools.TearDownChroot(MountPoint)
 
             else:
                 MountPoint = ""
@@ -443,8 +447,10 @@ class Main():
             #Clean up if needed.
             if not OSInfo[OS]["IsCurrentOS"]:
                 #Remove chroot.
-                CoreTools.TearDownChroot(MountPoint)
+                Retval = CoreTools.TearDownChroot(MountPoint)
 
+                if Retval != 0:
+                    logger.error("MainStartupTools: Main().GetBootloaders(): Failed to remove chroot from "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
                 #Unmount the OS's partition.
                 if CoreTools.Unmount(MountPoint) != 0:
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")

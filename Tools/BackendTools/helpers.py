@@ -268,13 +268,19 @@ class Main():
                     continue
 
                 #Set up a chroot.
-                CoreTools.SetUpChroot(MountPoint=MountPoint)
-                
+                Retval = CoreTools.SetUpChroot(MountPoint=MountPoint)
+
+                if Retval != 0:
+                    logger.error("HelperBackendTools: Main().FindBootloaderRemoveOSs(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+
             Found = self.LookForBootloaderOnPartition(Bootloader=Bootloader, PackageManager=PackageManager, MountPoint=MountPoint, UsingChroot=UsingChroot)
 
             if UsingChroot:
-                #Tear down the chroot. #*** Check it worked! ***
-                CoreTools.TearDownChroot(MountPoint=MountPoint)
+                #Tear down the chroot.
+                Retval = CoreTools.TearDownChroot(MountPoint=MountPoint)
+
+                if Retval != 0:
+                    logger.error("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
                 #Unmount the partition.
                 if CoreTools.Unmount(Partition) != 0:
