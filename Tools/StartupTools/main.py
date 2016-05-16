@@ -314,16 +314,16 @@ class Main():
 
     def GetBootloader(self):
         """*** DEPRECATED *** Determine the current bootloader."""
-        #*** Do some of this for each OS *** *** This is DEPRECATED ***
+        #*** This is DEPRECATED ***
         logger.debug("MainStartupTools: Main().GetBootloader(): Trying to determine bootloader...")
 
         #Run some inital scripts
         logger.debug("MainStartupTools: Main().GetBootloader(): Copying MBR bootsector to RAM...")
-        MBR = CoreTools.StartProcess("dd if="+SystemInfo["RootDevice"]+" bs=512 count=1", ReturnOutput=True)[1] #*** We probably need to do this for each and every (MBR) device with a partition containing an OS, as the rootdevice principle falls apart here *** *** Check it worked? ***
+        MBR = CoreTools.StartProcess("dd if="+SystemInfo["RootDevice"]+" bs=512 count=1", ReturnOutput=True)[1]
 
         #Wrap this in a loop, so once a Bootloader is found, searching can stop.
         while True:
-            #Check for a UEFI partition. *** Maybe read fstabs in GetLinuxOSs *** *** Only check on EFI systems? ***
+            #Check for a UEFI partition.
             #Check for a UEFI system partition.
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking For a UEFI partition...")
             SystemInfo["AutoUEFISystemPartition"] = CoreStartupTools.CheckForUEFIPartition(SystemInfo)
