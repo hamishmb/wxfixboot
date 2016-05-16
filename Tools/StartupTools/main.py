@@ -55,31 +55,37 @@ class Main():
         if "pmagic" in CoreTools.StartProcess("uname -r", ReturnOutput=True)[1]:
             logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Running on Parted Magic...")
             SystemInfo["IsLiveDisk"] = True
+            SystemInfo["OnPartedMagic"] = True
 
         #Try to detect ubuntu-based livecds.
         elif CoreTools.IsMounted("/cow", "/") and os.path.isfile("/cdrom/casper/filesystem.squashfs"):
             logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Running on Ubuntu-based live disk...")
             SystemInfo["IsLiveDisk"] = True
+            SystemInfo["OnPartedMagic"] = False
 
-        #Try to detect fedora-based livcds.
+        #Try to detect fedora-based livecds.
         elif CoreTools.IsMounted("/dev/mapper/live-rw", "/") and os.path.isfile("/run/initramfs/live/LiveOS/squashfs.img"):
             logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Running on Fedora-based live disk...")
             SystemInfo["IsLiveDisk"] = True
+            SystemInfo["OnPartedMagic"] = False
 
         #Try to detect if we're not running on a live disk (on a HDD).
         elif "/dev/sd" in CoreTools.GetPartitionMountedAt("/"):
             logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Not running on live disk...")
             SystemInfo["IsLiveDisk"] = False
+            SystemInfo["OnPartedMagic"] = False
 
         #Try to detect if we're not running on a live disk (on LVM).
         elif "/dev/mapper/" in CoreTools.GetPartitionMountedAt("/"):
             logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Not running on live disk...")
             SystemInfo["IsLiveDisk"] = False
+            SystemInfo["OnPartedMagic"] = False
 
         #Ask the user if we're running on a live disk.
         else:
             logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Asking the user if we're running on live media...")
             SystemInfo["IsLiveDisk"] = DialogTools.ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", Title="WxFixBoot - Live Media?")
+            SystemInfo["OnPartedMagic"] = False
             logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Result: "+unicode(SystemInfo["IsLiveDisk"]))
 
     def UnmountAllFS(self):
@@ -137,9 +143,10 @@ class Main():
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
 
-        #if CoreTools.StartProcess("mount -avw") != 0: *** Disabled temporarily because always triggered on Parted Magic ***
-        #    logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
-        #    CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
+        #Don't worry about this error when running on Parted Magic.
+        if CoreTools.StartProcess("mount -avw") != 0 and SystemInfo["OnPartedMagic"] == False:
+            logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
+            CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
     def GetLinuxOSs(self):
         """Get the names of all Linux OSs on the HDDs."""
@@ -253,19 +260,19 @@ class Main():
         #Make sure efivars module is loaded. If it doesn't exist, continue anyway.
         CoreTools.StartProcess("modprobe efivars")
 
-        #Look for the UEFI vars in some common directories. *** Just because the dir is there doesn't mean the vars are (I think) *** *** Also look for /proc/efi/vars ***
+        #Look for the UEFI vars in some common directories. *** Just because the dir is there doesn't mean the vars are (I think) ***
         if os.path.isdir("/sys/firmware/efi/vars"):
             UEFIVariables = True
             logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/vars...")
 
-        elif os.path.isdir("/sys/firmware/efi/efivars"): #*** Check under /proc instead of doing this ***
+        elif os.path.isdir("/proc/efi/vars"):
             UEFIVariables = True
             logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/efivars...")
 
         else:
             logger.warning("MainStartupTools: Main().GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars or /sys/firmware/efi/efivars. Attempting manual mount...")
 
-            #Attempt to manually mount the efi vars, as we couldn't find them. *** Disabled for the time being ***
+            #Attempt to manually mount the efi vars, as we couldn't find them. *** Disabled for the time being *** *** Where should they be mounted? ***
             #if not os.path.isdir("/sys/firmware/efi/vars"):
             #    os.mkdir("/sys/firmware/efi/vars")
 

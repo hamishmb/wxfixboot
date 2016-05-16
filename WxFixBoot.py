@@ -25,7 +25,6 @@
 #*** Make sure elilo's script in postinst.d is removed (purge it) ***
 #*** Support EFI on 32-bit firmware? ***
 #*** /boot/efi not unmounted after modifying EFI bootloaders on parted magic (possibly also on other platforms), preventing unmounting of chrooted rootfs. Doesn't cause an error or any problems. ***
-#*** Use a variable to say if we're on Parted Magic or not ***
 #*** Make OSInfo accessible to CoreBackendTools? ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
