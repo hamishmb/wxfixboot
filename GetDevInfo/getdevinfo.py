@@ -180,23 +180,32 @@ class Main():
 
         return ID
 
-    def GetBootRecord(self, Disk): #*** Add logging stuff ***
+    def GetBootRecord(self, Disk):
         """Get the MBR or PBR of the given Disk."""
         logger.info("GetDevInfo: Main().GetBootRecord(): Getting MBR/PBR for: "+Disk+"...")
+        logger.info("GetDevInfo: Main().GetBootRecord(): Reading boot record from "+Disk+"...")
 
-        #Use status=none to avoid getting status messages from dd in our boot record *** Check return value ***
+        #Use status=none to avoid getting status messages from dd in our boot record.
         cmd = subprocess.Popen("dd if="+Disk+" bs=512 count=1 status=none", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         BootRecord = cmd.communicate()[0]
+        Retval = cmd.returncode
 
-        #if Retval != 0:
-        #    BootRecord = "Unknown"
-        #    return "(Unknown", "Unknown")
+        if Retval != 0:
+            logger.error("GetDevInfo: Main().GetBootRecord(): Couldn't read boot record from "+Disk+"! Returning 'Unknown' for all boot record information for this disk...")
+            return ("Unknown", "Unknown")
 
-        #Get the readable strings in the boot record. *** Check return value ***
+        #Get the readable strings in the boot record.
+        logger.info("GetDevInfo: Main().GetBootRecord(): Finding strings in boot record...")
         cmd = subprocess.Popen("strings", stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         cmd.stdin.write(BootRecord)
         BootRecordStrings = cmd.communicate()[0].split("\n")
+        Retval = cmd.returncode
 
+        if Retval != 0:
+            logger.error("GetDevInfo: Main().GetBootRecord(): Couldn't find strings in boot record of "+Disk+"! Returning boot record, but no boot record strings...")
+            return (BootRecord, "Unknown")
+
+        logger.info("GetDevInfo: Main().GetBootRecord(): Done! Returning information...")
         return (BootRecord, BootRecordStrings)
 
     def GetDeviceInfo(self, Node): #*** Ignore capacities for all optical drives (will fix low priority bug on pmagic) ***
