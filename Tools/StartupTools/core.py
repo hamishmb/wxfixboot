@@ -214,7 +214,7 @@ class Main():
             return False
 
     def DetermineGRUBBIOSVersion(self, SystemInfo):
-        """Try to determine which version of GRUB BIOS is installed""" #*** See if we can find a better way of doing this *** *** Test this again with grub-legacy *** *** Try to find even if on live disk ***
+        """Try to determine which version of GRUB BIOS is installed""" #*** DEPRECATED ***
         logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Determining GRUB version...")
         #Check if the system is using grub-legacy or grub2.
         if SystemInfo["IsLiveDisk"] == False:
@@ -281,7 +281,7 @@ class Main():
             logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def CheckForUEFIPartition(self, SystemInfo): #*** We can also use GUIDs on GPT systems, what about MBR systems? *** *** Refactor ***
+    def CheckForUEFIPartition(self, SystemInfo): #*** DEPRECATED ***
         """Find the UEFI system partition and return it"""
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
         AskForUEFIPartition = True
@@ -293,7 +293,7 @@ class Main():
 
         for Disk in Keys:
             if DiskInfo[Disk]["Type"] == "Partition":
-                if DiskInfo[Disk]["FileSystem"] == "vfat" and ("boot" in DiskInfo[Disk]["Flags"] or "bootable" in DiskInfo[Disk]["Flags"]): #*** The boot flag may not be set on some badly set up efi partitions ***
+                if DiskInfo[Disk]["FileSystem"] == "vfat" and ("boot" in DiskInfo[Disk]["Flags"] or "bootable" in DiskInfo[Disk]["Flags"]):
                     FatPartitions.append(Disk)
 
         #If this leaves just one partition, then that's out EFI partition.
@@ -301,7 +301,7 @@ class Main():
             logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Found UEFI Partition at: "+FatPartitions[0])
             return FatPartitions[0]
 
-        #Otherwise check if it's mounted at /boot/efi if we're not on a live disk. *** Do later ***
+        #Otherwise check if it's mounted at /boot/efi if we're not on a live disk.
         if SystemInfo["IsLiveDisk"] == False:
              pass
 
@@ -322,7 +322,7 @@ class Main():
                 logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): No vfat partitions found. No UEFI partition exists. Continuing...")
                 return None
 
-    def CheckForGRUBUEFI(self, UEFISYSPMountPoint):
+    def CheckForGRUBUEFI(self, UEFISYSPMountPoint): #*** DEPRECATED ***
         """Check for GRUB-UEFI"""
         #Look for GRUB's UEFI file.
         Temp = CoreTools.Find(r"(.*)grub(.*).efi", UEFISYSPMountPoint)
@@ -338,7 +338,7 @@ class Main():
 
         return GrubEFI
 
-    def CheckForELILO(self, UEFISYSPMountPoint):
+    def CheckForELILO(self, UEFISYSPMountPoint): #*** DEPRECATED ***
         """Check for ELILO"""
         #Look for LILO's UEFI file.
         Temp = CoreTools.Find(r"(.*)elilo(.*).efi", UEFISYSPMountPoint)

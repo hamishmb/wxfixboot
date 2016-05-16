@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 class Main(): #*** Refactor all of these ***
     def PrepareForBootloaderInstallation(self):
-        """Run checks, gather information, and prepare for bootloader operations.""" #*** Is this still needed? *** 
+        """Run checks, gather information, and prepare for bootloader operations.""" #*** DEPRECATED *** 
         #First, check the Internet connection, and disable bootloader operations if needed.
         EssentialBackendTools.CheckInternetConnection()
 

@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def GetOldBootloaderConfig(self): #*** Looks like this intermittently doesn't work *** *** Move to startup tools later *** *** Test with grub-legacy ***
+    def GetOldBootloaderConfig(self): #*** DEPRECATED ***
         """Get the old bootloader's config before removing it, so we can reuse it (if possible) with the new one."""
         logger.debug("MainBackendTools: Main().GetOldBootloaderConfig(): Preparing to get bootloader config...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to get bootloader config...")
@@ -508,13 +508,17 @@ class Main():
             elif SystemInfo["BootloaderToInstall"] == "LILO":
                 #Make LILO's config file.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making LILO's configuration file...")
+
                 if MountPoint == "":
-                    CoreTools.StartProcess("liloconfig -f", ShowOutput=False)
+                    Retval = CoreTools.StartProcess("liloconfig -f", ShowOutput=False)
 
                 else:
-                    CoreTools.StartProcess("chroot "+MountPoint+" liloconfig -f", ShowOutput=False)
+                    Retval = CoreTools.StartProcess("chroot "+MountPoint+" liloconfig -f", ShowOutput=False)
 
-                #Check the config file exists for lilo. *** What do we do if it doesn't? Check liloconfig ran successfully ***
+                if Retval != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): liloconfig didn't run successfully! Attempting to continue anyway...")
+
+                #Check the config file exists for lilo. *** What do we do if it doesn't? Have a template one to put there? ***
                 if os.path.isfile(MountPoint+"/etc/lilo.conf"):
                     #It does, we'll run the function to set the config now.
                     logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting LILO Configuration...")
@@ -539,12 +543,14 @@ class Main():
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making ELILO's configuration file...")
 
                 if MountPoint == "":
-                    CoreTools.StartProcess("elilo -b "+SystemInfo["UEFISystemPartition"]+" --autoconf", ShowOutput=False)
+                    Retval = CoreTools.StartProcess("elilo -b "+SystemInfo["UEFISystemPartition"]+" --autoconf", ShowOutput=False)
 
                 else:
-                    CoreTools.StartProcess("chroot "+MountPoint+" elilo -b "+SystemInfo["UEFISystemPartition"]+" --autoconf", ShowOutput=False)
+                    Retval = CoreTools.StartProcess("chroot "+MountPoint+" elilo -b "+SystemInfo["UEFISystemPartition"]+" --autoconf", ShowOutput=False)
 
-                #Check elilo's config file exists. *** What do we do if it doesn't? Check the last command ran successfully ***
+                if Retval != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): elilo -b "+SystemInfo["UEFISystemPartition"]+" didn't run successfully! Attempting to continue anyway...")
+                #Check elilo's config file exists. *** What do we do if it doesn't? Have a template to put there? ***
                 if os.path.isfile(MountPoint+"/etc/elilo.conf"):
                     #It does, we'll run the function to set the config now.
                     logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting ELILO Configuration...")

@@ -375,7 +375,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         ConfigFile.close()
         logger.info("BootloaderConfigSettingTools: Main().SetELILOConfig(): Done!")
 
-    def MakeLILOOSEntries(self, filetoopen, PackageManager, MountPoint): #*** Maybe set default OS in a separate function? *** *** FIX THIS LATER, IT DOESN'T WORK! *** *** Actually, it seems to be working now??? ***
+    def MakeLILOOSEntries(self, filetoopen, PackageManager, MountPoint): #*** Maybe set default OS in a separate function? ***
         """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS"""
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make OS entries for "+SystemInfo["BootloaderToInstall"]+"...")
         #Okay, we've saved the kopts, timeout, and the boot device in the list.
