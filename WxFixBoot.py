@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#*** Add dependency on binutils (for strings command) ***
+#*** Add package dependency on binutils (for strings command) ***
 #*** Where did we want to use CoreTools.GetMountPointOf()? ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
@@ -22,6 +22,7 @@
 #*** Figure out what to do in each instance where something might fail ***
 #*** Allow getting device info after startup (run some startup scripts again) ****
 #*** Remove grub.efi files after installing elilo and vice versa ***
+#*** Make sure elilo's script in postinst.d is removed (purge it) ***
 #*** Support EFI on 32-bit firmware? ***
 #*** /boot/efi not unmounted after modifying EFI bootloaders on parted magic (possibly also on other platforms), preventing unmounting of chrooted rootfs. Doesn't cause an error or any problems. ***
 #*** Use a variable to say if we're on Parted Magic or not ***
@@ -354,8 +355,8 @@ class InitialWindow(wx.Frame):
         self.Panel.Layout()
 
     def UpdateOutputBox(self, Message): #*** Get rid of this later? ***
-       """Dummy function, accepts a message argument but ignores it. Allow CoreTools.StartProcess to work."""
-       pass
+        """Dummy function, accepts a message argument but ignores it. Allow CoreTools.StartProcess to work."""
+        pass
 
     def FinishedInit(self, Event=None):
         """Starts MainWindow, called when StartupScripts are finished"""

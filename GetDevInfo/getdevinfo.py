@@ -41,17 +41,6 @@ class Main():
 
         return Result
 
-    def IsPartition(self, Disk, DiskInfo=None): #*** Is this needed any more? ***
-        """Check if the given Disk is a partition"""
-        if Disk[0:7] not in ["/dev/sr", "/dev/fd"] and Disk[-1].isdigit() and Disk[0:8] in DiskInfo:
-            Result = True
-
-        else:
-            Result = False
-
-        logger.info("GetDevInfo: Main().IsPartition(): "+Disk+" is a partition: "+str(Result)+"...")
-        return Result
-
     def DeduplicateList(self, ListToDeduplicate): #*** Might not need this ***
         """Deduplicate the given list."""
         logger.debug("GetDevInfo: Main().DeduplicateList(): Deduplicating list: "+str(ListToDeduplicate)+"...")
