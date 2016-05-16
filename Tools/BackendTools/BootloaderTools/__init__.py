@@ -16,7 +16,6 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import
 from . import main
-from . import getconfigtools
 from . import removaltools
 from . import installationtools
 from . import setconfigtools
