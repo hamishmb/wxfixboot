@@ -330,35 +330,7 @@ class Main():
 
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
 
-    def GetBlockSize(self, Disk): #*** Is this needed in wxfixboot? ***
-        """Find the given Disk's blocksize, and return it"""
-        logger.debug("GetDevInfo: Main().GetBlockSize(): Finding blocksize for Disk: "+Disk+"...")
-
-        #Run /sbin/blockdev to try and get blocksize information.
-        logger.debug("GetDevInfo: Main().GetBlockSize(): Running 'blockdev --getpbsz "+Disk+"'...")
-        runcmd = subprocess.Popen("blockdev --getpbsz "+Disk, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-
-        #Get the output.
-        stdout, stderr = runcmd.communicate()
-
-        Result = stdout.replace('\n', '')
-
-        #Check it worked (it should be convertable to an integer if it did).
-        try:
-            tmp = int(Result)
-
-        except ValueError:
-            #It didn't, this is probably a file, not a Disk.
-            logger.warning("GetDevInfo: Main().GetBlockSize(): Couldn't get blocksize for Disk: "+Disk+"! Returning None...")
-            return None
-
-        else:
-            #It did.
-            logger.info("GetDevInfo: Main().GetBlockSize(): Blocksize for Disk: "+Disk+": "+Result+". Returning it...")
-            return Result
-
 #End Main Class.
-
 if __name__ == "__main__":
     #Import modules.
     import subprocess
@@ -371,10 +343,6 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=logging.DEBUG)
 
     Main().GetInfo(Standalone=True)
-
-    #Get blocksizes.
-    for Disk in DiskInfo:
-        DiskInfo[Disk]["PhysicalBlockSize"] = Main().GetBlockSize(Disk)
 
     #Print the info in a (semi :D) readable way.
     Keys = DiskInfo.keys()
