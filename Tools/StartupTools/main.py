@@ -358,7 +358,16 @@ class Main():
 
             #Mount (or skip if mounted) the UEFI partition.
             logger.info("MainStartupTools: Main().GetBootloader(): Attempting to mount the UEFI partition (if it isn't already)...")
-            UEFISYSPMountPoint = CoreStartupTools.MountUEFIPartition()
+            UEFISYSPMountPoint = "/boot/efi"
+            Retval = CoreTools.MountPartition(Partition=SystemInfo["UEFISystemPartition"], MountPoint=UEFISYSPMountPoint)
+
+            if Retval == 0:
+                logger.info("MainStartupTools: Main().GetBootloader(): Successfully Mounted UEFI Partition...")
+
+            else:
+                #This very rarely happens! *** Is continuing anyway a good idea? ***
+                logger.error("MainStartupTools: Main().GetBootloader(): Failed to mount UEFI Partition! Continuing anyway, with reported mountpoint as /boot/efi...")
+
             logger.info("MainStartupTools: Main().GetBootloader(): UEFI Partition mounted at: "+UEFISYSPMountPoint+". Continuing to look for UEFI bootloaders...")
 
             #Attempt to figure out which bootloader is present.

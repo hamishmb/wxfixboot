@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** Optimise/Reorganise this again later ***
 class Main():
-    def LookForBootloadersOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly *** *** Move to getbootloaderconfigtools? ***
+    def LookForBootloadersOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly ***
         """Look for bootloaders installed in the OS in the given mount point."""
         if UsingChroot:
             logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")
@@ -145,7 +145,11 @@ class Main():
         if Chroot == True:
             cmd = "chroot /mnt"+Partition+" "+cmd
 
-        Output = CoreTools.StartProcess(cmd, ReturnOutput=True)[1] #*** Check it worked! Actually, does it matter if it didn't? ***
+        Retval, Output = CoreTools.StartProcess(cmd, ReturnOutput=True)
+
+        #If the command failed, give up.
+        if Retval != 0:
+            return None
 
         #Use a loop to avoid duplicating code.
         while OSArch == None:
@@ -189,27 +193,6 @@ class Main():
             Result = DialogTools.ShowTextEntryDlg(Message="Please enter the name of the operating system that is on "+Partition+".\nThe name you specify will be used later in the program", Title="WxFixBoot - Enter OS Name")
 
             return Result
-
-    def MountUEFIPartition(self): #*** Do we need this function? Maybe just call the mount function directly ***
-        """Mount the UEFI partition if needed"""
-        #Get the UEFI partition's current mountpoint, if it is mounted.
-        logger.debug("CoreStartupTools: Main().MountUEFIPartition(): Preparing to mount UEFI system Partition if needed...")
-
-        #It isn't mounted, mount it, and also create the directory if needed.
-        logger.debug("CoreStartupTools: Main().MountUEFIPartition(): Mounting UEFI Partition at /boot/efi...")
-        UEFISYSPMountPoint = "/boot/efi"
-
-        #Mount it using the global mount function.
-        Retval = CoreTools.MountPartition(Partition=SystemInfo["UEFISystemPartition"], MountPoint=UEFISYSPMountPoint)
-
-        if Retval == 0:
-            logger.info("CoreStartupTools: Main().MountUEFIPartition(): Successfully Mounted UEFI Partition...")
-
-        else:
-            #This very rarely happens! *** Is continuing anyway a good idea? ***
-            logger.error("CoreStartupTools: Main().MountUEFIPartition(): Failed to mount UEFI Partition! Continuing anyway, with reported mountpoint as /boot/efi...")
-        
-        return UEFISYSPMountPoint
 
     def CheckForGRUBBIOS(self, MBR):
         """Check for the GRUB (v2 and legacy) BIOS bootloader"""
