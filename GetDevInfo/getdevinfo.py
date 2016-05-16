@@ -208,7 +208,7 @@ class Main():
         logger.info("GetDevInfo: Main().GetBootRecord(): Done! Returning information...")
         return (BootRecord, BootRecordStrings)
 
-    def GetDeviceInfo(self, Node): #*** Ignore capacities for all optical drives (will fix low priority bug on pmagic) ***
+    def GetDeviceInfo(self, Node):
         """Get Device Information"""
         HostDisk = unicode(Node.logicalname.string)
         DiskInfo[HostDisk] = {}
@@ -218,7 +218,14 @@ class Main():
         DiskInfo[HostDisk]["Partitions"] = []
         DiskInfo[HostDisk]["Vendor"] = self.GetVendor(Node)
         DiskInfo[HostDisk]["Product"] = self.GetProduct(Node)
-        DiskInfo[HostDisk]["RawCapacity"], DiskInfo[HostDisk]["Capacity"] = self.GetCapacity(Node)
+
+        #Ignore capacities for all optical media.
+        if "/dev/cdrom" in HostDisk or "/dev/sr" in HostDisk or "/dev/dvd" in HostDisk:
+            DiskInfo[HostDisk]["RawCapacity"], DiskInfo[HostDisk]["Capacity"] = ("N/A", "N/A")
+
+        else:
+            DiskInfo[HostDisk]["RawCapacity"], DiskInfo[HostDisk]["Capacity"] = self.GetCapacity(Node)
+
         DiskInfo[HostDisk]["Description"] = unicode(Node.description.string)
         DiskInfo[HostDisk]["Flags"] = self.GetCapabilities(Node)
         DiskInfo[HostDisk]["Partitioning"] = self.GetPartitioning(Node, HostDisk)
