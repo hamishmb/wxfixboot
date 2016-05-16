@@ -458,6 +458,7 @@ class Main():
 
                 if Retval != 0:
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to remove chroot from "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+
                 #Unmount the OS's partition.
                 if CoreTools.Unmount(MountPoint) != 0:
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
