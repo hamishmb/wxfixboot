@@ -22,6 +22,98 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader time out *** *** Sometimes doesn't find kernel options *** *** Both of these things are probably due to not using dictionaries, but check ***
+    def ParseGRUB2MenuEntries(self, MenuEntriesFilePath): #*** Do logging stuff and write more comments in ***
+        """Find and parse GRUB2 (EFI and BIOS) menu entries."""
+        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Finding and parsing menu entries...")
+
+        #Open the menu entries file to find and save all the menu entries.
+        MenuEntriesFile = open(MenuEntriesFilePath, "r")
+        MenuEntriesFileContents = MenuEntriesFile.readlines()
+        MenuEntries = {}
+        Menu = "MainMenu"
+        MenuEntries[Menu] = {}
+        MenuIDs = {}
+        MenuIDs[Menu] = {}
+        MenuIDs[Menu]["ID"] = ""
+        MenuData = {}
+        MenuData[Menu] = {}
+        MenuData[Menu]["EntryCounter"] = 0
+        SkipUntil = 0
+        LineCounter = 0
+        for Line in MenuEntriesFileContents:
+            LineCounter += 1
+
+            if LineCounter < SkipUntil: 
+                continue
+
+            if "menuentry " in Line:
+                MenuEntries, MenuData[Menu]["EntryCounter"] = self.AssembleGRUB2MenuEntry(MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, MenuData[Menu]["EntryCounter"])
+
+            elif "submenu " in Line:
+                SubMenu = ' '.join(Line.split(" ")[1:-1]).replace("\"", "")
+                MenuEntries[SubMenu] = {}
+                MenuIDs[SubMenu] = {}
+                MenuIDs[SubMenu]["ID"] = unicode(MenuData[Menu]["EntryCounter"])+">"
+                MenuData[Menu]["EntryCounter"] += 1
+                Menu = SubMenu
+
+                #Get the entire contents of the submenu.
+                BracketCount = 0
+                MenuData[Menu] = {}
+                MenuData[Menu]["EntryCounter"] = 0
+                MenuData[Menu]["RawMenuData"] = []
+
+                for SubMenuData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
+                    MenuData[Menu]["RawMenuData"].append(SubMenuData)
+
+                    if "{" in SubMenuData:
+                        BracketCount += 1
+
+                    elif "}" in SubMenuData:
+                        BracketCount -= 1
+
+                    if BracketCount == 0:
+                        break
+
+                for SubLine in MenuData[Menu]["RawMenuData"]:
+                    if "menuentry " in SubLine:
+                        MenuEntries, MenuData[Menu]["EntryCounter"] = self.AssembleGRUB2MenuEntry(MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, SubLine, MenuData[Menu]["EntryCounter"])
+
+                SkipUntil = LineCounter+len(MenuData[Menu]["RawMenuData"])
+
+                Menu = "MainMenu"
+
+        #Close the file.
+        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Done!")
+        MenuEntriesFile.close()
+        return MenuEntries, MenuIDs
+
+    def AssembleGRUB2MenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter): #*** Do logging stuff and write more comments in ***
+        """Assemble a menu entry in the dictionary"""
+        MenuEntry = Line.split("\'")[1]
+        Temp = MenuEntry.replace(")", "").split(" (")
+
+        MenuEntries[Menu][MenuEntry] = {}
+        MenuEntries[Menu][MenuEntry]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
+        try:
+            MenuEntries[Menu][MenuEntry]["Partition"] = Temp[1].split(" ")[-1]
+
+        except IndexError:
+            MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
+
+        MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = []
+
+        #Get the full contents of the menuentry (keep adding lines to the list until we find a "}").
+        for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
+            MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
+
+            if MenuEntryData.split()[-1] == "}":
+                break
+
+        EntryCounter += 1
+
+        return MenuEntries, EntryCounter
+
     def GetGRUBLEGACYConfig(self, ConfigFilePath): #*** Can we get kernel options here? ***
         """Get important bits of config from grub-legacy"""
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Getting config at "+ConfigFilePath+"...")
@@ -99,7 +191,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
             logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+"...")
             return "Unknown"
 
-    def GetGRUB2Config(self, MenuEntriesFilePath, ConfigFilePath, GRUBEnvironmentFilePath): #*** Refactor ***
+    def GetGRUB2Config(self, ConfigFilePath, GRUBEnvironmentFilePath, MenuEntries): #*** Refactor ***
         """Get important bits of config from grub2 (MBR or UEFI)"""
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Getting config at "+ConfigFilePath+"...")
 
@@ -107,34 +199,6 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         Timeout = "Unknown"
         KernelOptions = "Unknown"
         DefaultOS = "Unknown"
-
-        #Open the menutentries file to find and save all the menuentries.
-        logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Saving menu entries...")
-        MenuEntriesFile = open(MenuEntriesFilePath, "r")
-        MenuEntries = {}
-        Counter = 0
-
-        for Line in MenuEntriesFile:
-            #Look for all menu entries, ignoring recovery mode options. *** Ignore submenus? ***
-            if "menuentry " in Line and "recovery mode" not in Line:
-                MenuEntry = Line.split("\'")[1]
-                Temp = MenuEntry.replace(")", "").split(" (")
-
-                MenuEntries[MenuEntry] = {}
-                MenuEntries[MenuEntry]["Name"] = MenuEntry
-                MenuEntries[MenuEntry]["Number"] = Counter
-
-                try:
-                    MenuEntries[MenuEntry]["Partition"] = Temp[1].split(" ")[-1]
-
-                except IndexError:
-                    MenuEntries[MenuEntry]["Partition"] = "Unknown"
-
-                Counter += 1
-
-        #Close the file.
-        logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Done!")
-        MenuEntriesFile.close()
 
         #Open the config file in read mode, so we can save the important bits of config.
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Getting config...")
@@ -179,7 +243,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
                     for Var in GRUBEnvironmentFile:
                         if "saved_entry=" in Var:
-                            DefaultOS = Var.split("=")[1] #*** Check that it matches something in the MenuEntries list ***
+                            DefaultOS = Var.split("=")[1] #*** Check that it matches something in the MenuEntries list *** *** Also hadnle this if it's a string ***
 
                 else:
                     DefaultOS = Temp
@@ -190,7 +254,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Done! Returning information...")
         ConfigFile.close()
 
-        return (Timeout, KernelOptions, MenuEntries, DefaultOS)
+        return (Timeout, KernelOptions, DefaultOS)
 
     def GetLILOConfig(self, ConfigFilePath):
         """Get important bits of config from lilo and elilo"""

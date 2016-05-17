@@ -440,7 +440,28 @@ class Main():
                 BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
-                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["DefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/boot/grub/grub.cfg", MountPoint+"/etc/default/grub", MountPoint+"/boot/grub/grubenv")
+                BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuEntries(MountPoint+"/boot/grub/grub.cfg")
+
+                #*****************
+                Keys = BootloaderInfo[OS]["MenuEntries"].keys()
+                Keys.sort()
+
+                for Menu in Keys:
+                    print("\n\n\nMenu Name: "+Menu+"\n\n\n")
+
+                    MenuEntries = BootloaderInfo[OS]["MenuEntries"][Menu].keys()
+                    MenuEntries.sort()
+
+                    for MenuEntry in MenuEntries:
+                        print("\tMenu Entry Name: "+MenuEntry+"\n\n")
+                        print("\t\tID: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["ID"]+"\n\n")
+                        print("\t\tMenu Entry Data:\n\n")
+
+                        for Thing in BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["RawMenuEntryData"]:
+                            print("\t\t\t"+Thing)
+
+                #*****************
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["DefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", MountPoint+"/boot/grub/grubenv", BootloaderInfo[OS]["MenuEntries"])
 
                 #Try to find GRUB if this is GRUB2.
                 if BootloaderInfo[OS]["Bootloader"] == "GRUB2":

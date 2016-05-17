@@ -147,7 +147,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         #Return the return value.
         return Retval
 
-    def SetGRUB2DefaultOS(self, OS, MountPoint): #*** Make this more user-friendly *** *** Use number instead ***
+    def SetGRUB2DefaultOS(self, OS, MountPoint): #*** Make this more user-friendly *** *** Use number instead *** *** Save in /etc/default/grub ***
         """Set GRUB2's (both BIOS and EFI/UEFI) default OS to boot"""
         #I couldn't find a reliable way of doing this automatically, so give the user a choice box instead. *** Do this before release of final v2.0, probably in the 1st or 2nd rc. Maybe use disk names and save grub's name for each one ***
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Setting GRUB2's Default OS...")
