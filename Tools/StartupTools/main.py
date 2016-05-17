@@ -433,14 +433,14 @@ class Main():
             BootloaderInfo[OS]["OSName"] = OS
             BootloaderInfo[OS]["Bootloader"] = CoreStartupTools.LookForBootloadersOnPartition(OSInfo[OS]["PackageManager"], MountPoint, not OSInfo[OS]["IsCurrentOS"])
 
-            BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"] = ("Unknown", "Unknown", "Unknown")
+            BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["DefaultOS"] = ("Unknown", "Unknown", "Unknown", "Unknown")
 
             #For EFI bootloaders, set the boot disk to the OS's EFI Partition.
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "ELILO"):
                 BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
-                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/boot/grub/grub.cfg", MountPoint+"/etc/default/grub")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["DefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/boot/grub/grub.cfg", MountPoint+"/etc/default/grub", MountPoint+"/boot/grub/grubenv")
 
                 #Try to find GRUB if this is GRUB2.
                 if BootloaderInfo[OS]["Bootloader"] == "GRUB2":
@@ -456,7 +456,6 @@ class Main():
                 BootloaderInfo[OS]["Timeout"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst")
                 BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB-LEGACY")
 
-            BootloaderInfo[OS]["DefaultOS"] = "Unknown"
             BootloaderInfo[OS]["IsModifyable"] = "Unknown"
             BootloaderInfo[OS]["Comments"] = "N/A"
 

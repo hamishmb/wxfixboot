@@ -99,35 +99,39 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
             logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+"...")
             return "Unknown"
 
-    def GetGRUB2Config(self, MenuEntriesFilePath, ConfigFilePath): #*** Refactor ***
+    def GetGRUB2Config(self, MenuEntriesFilePath, ConfigFilePath, GRUBEnvironmentFilePath): #*** Refactor ***
         """Get important bits of config from grub2 (MBR or UEFI)"""
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Getting config at "+ConfigFilePath+"...")
 
         #Set temporary vars
         Timeout = "Unknown"
         KernelOptions = "Unknown"
+        DefaultOS = "Unknown"
 
         #Open the menutentries file to find and save all the menuentries.
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Saving menu entries...")
         MenuEntriesFile = open(MenuEntriesFilePath, "r")
         MenuEntries = {}
+        Counter = 0
 
         for Line in MenuEntriesFile:
-            #Look for all menu entries, ignoring recovery mode options.
+            #Look for all menu entries, ignoring recovery mode options. *** Ignore submenus? ***
             if "menuentry " in Line and "recovery mode" not in Line:
                 MenuEntry = Line.split("\'")[1]
                 Temp = MenuEntry.replace(")", "").split(" (")
-                Name = Temp[0]
 
-                MenuEntries[Name] = {}
-                MenuEntries[Name]["Name"] = Name
+                MenuEntries[MenuEntry] = {}
+                MenuEntries[MenuEntry]["Name"] = MenuEntry
+                MenuEntries[MenuEntry]["Number"] = Counter
 
                 try:
-                    MenuEntries[Name]["Partition"] = Temp[1].split(" ")[-1]
+                    MenuEntries[MenuEntry]["Partition"] = Temp[1].split(" ")[-1]
 
                 except IndexError:
-                    MenuEntries[Name]["Partition"] = "Unknown"
-                    
+                    MenuEntries[MenuEntry]["Partition"] = "Unknown"
+
+                Counter += 1
+
         #Close the file.
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Done!")
         MenuEntriesFile.close()
@@ -156,22 +160,37 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
             #Look for default os setting,
             elif "GRUB_DEFAULT" in Line and "=" in Line:
-                #If this is an integer or string that isn't "saved", we need to match it to GRUB's grub.cfg menuentries.
-                Temp = Line.split("=")[1].replace("\"", "").replace("\'", "")
+                #If this is an integer or string that == "saved", we need to match it to GRUB's grub.cfg menuentries.
+                logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Found default OS line....")
+                Temp = Line.split("=")[1].replace("\"", "").replace("\'", "").replace("\n", "")
 
                 if Temp.isdigit():
-                    #Find the corresponding GRUB menutentry, counting up from 0. *** TODO ***
-                    pass
+                    #Find the corresponding GRUB menutentry, counting up from 0.
+                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by index...")
+                    for OS in MenuEntries.keys():
+                        if MenuEntries[OS]["Number"] == int(Temp):
+                            DefaultOS = OS
+                            break
 
                 elif Temp == "saved":
-                    #Find the corresponding GRUB menutentry, matching by name. *** TODO ***
-                    pass
+                    #Find the corresponding GRUB menutentry, matching by name.
+                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by name in GRUB environment file...")
+                    GRUBEnvironmentFile = open(GRUBEnvironmentFilePath, "r")
+
+                    for Var in GRUBEnvironmentFile:
+                        if "saved_entry=" in Var:
+                            DefaultOS = Var.split("=")[1] #*** Check that it matches something in the MenuEntries list ***
+
+                else:
+                    DefaultOS = Temp
+
+                logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Done!")
 
         #Close the file.
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Done! Returning information...")
         ConfigFile.close()
 
-        return (Timeout, KernelOptions, MenuEntries)
+        return (Timeout, KernelOptions, MenuEntries, DefaultOS)
 
     def GetLILOConfig(self, ConfigFilePath):
         """Get important bits of config from lilo and elilo"""
