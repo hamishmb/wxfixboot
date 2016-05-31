@@ -417,16 +417,15 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
             RawMenuEntryData.append(MenuEntryData)
 
             if "label" in MenuEntryData:
-                MenuEntry = Line.split("=")[1]
+                MenuEntry = MenuEntryData.split("=")[1]
 
             if "image" in MenuEntryData.split() and "=" in MenuEntryData.split() and "#" not in MenuEntryData.split():
                 #Remove the last line.
                 RawMenuEntryData.pop()
                 break
 
-        MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = RawMenuEntryData
-
         MenuEntries[Menu][MenuEntry] = {}
+        MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = RawMenuEntryData
         MenuEntries[Menu][MenuEntry]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
         MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
         MenuEntries[Menu][MenuEntry]["KernelOptions"] = ["Unknown"]
