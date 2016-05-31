@@ -95,6 +95,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
         MenuEntries[Menu][MenuEntry] = {}
         MenuEntries[Menu][MenuEntry]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
+
         try:
             MenuEntries[Menu][MenuEntry]["Partition"] = Temp[1].split(" ")[-1]
 
@@ -228,13 +229,17 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                 logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Found default OS line....")
                 Temp = Line.split("=")[1].replace("\"", "").replace("\'", "").replace("\n", "")
 
-                if Temp.isdigit():
-                    #Find the corresponding GRUB menutentry, counting up from 0.
+                if Temp.isdigit() or len(Temp.split(">")) == 2:
+                    #Find the corresponding GRUB menutentry, counting up from 0. *** Rewrite to cope with submenus ***
                     logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by index...")
                     for OS in MenuEntries.keys():
-                        if MenuEntries[OS]["Number"] == int(Temp):
-                            DefaultOS = OS
-                            break
+                        try:
+                            if MenuEntries[OS]["ID"] == int(Temp):
+                                DefaultOS = OS
+                                break
+
+                        except KeyError:
+                            pass
 
                 elif Temp == "saved":
                     #Find the corresponding GRUB menutentry, matching by name.

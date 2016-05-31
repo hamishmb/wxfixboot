@@ -256,19 +256,19 @@ class Main():
         #Return the return value
         return Retval
 
-    def Find(self, RegExp, TopLevelDirectory): #*** Check that this is working on Parted Magic ***
+    def Find(self, RegExp, TopLevelDirectory):
         """Finds the given file, somewhere in or below the given directory, and returns True or False depending on if it was found or not"""
         logger.info("CoreTools: Main().Find(): Looking in "+TopLevelDirectory+" with regular expression "+RegExp+"...")
         FilesFound = []
-        for Root, Directory, File in os.walk(TopLevelDirectory):
-            if unicode(type(File)) == "<type 'list'>":
-                try:
-                    File = File[0]
+        for Root, Directory, Files in os.walk(TopLevelDirectory):
+            #Convert unicode strings in a list with one element.
+            if unicode(type(Files)) == "<type 'unicode'>":
+                Files = [Files]
 
-                except IndexError: continue
-
-            if re.match(RegExp, File, re.M|re.I) is not None:
-                FilesFound.append(os.path.join(Root, File))
+            #Check each file.
+            for File in Files:
+                if re.match(RegExp, File, re.M|re.I) is not None:
+                    FilesFound.append(os.path.join(Root, File))
 
         if FilesFound != []:
             logger.info("CoreTools: Main().Find(): Found files "+' '.join(FilesFound)+"...")
