@@ -408,23 +408,26 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
     def AssembleLILOMenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter):
         """Assemble a menu entry in the dictionary for LILO/ELILO"""
         logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Preparing to get menu entry info...")
-        MenuEntry = ' '.join(Line.split()[1:])
 
-        MenuEntries[Menu][MenuEntry] = {}
-        MenuEntries[Menu][MenuEntry]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
-
-        MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = []
+        RawMenuEntryData = []
 
         #Get the full contents of the menuentry (keep adding lines to the list until we find another menu entry).
         logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Getting menu entry data...")
         for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
-            MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
+            RawMenuEntryData.append(MenuEntryData)
+
+            if "label" in MenuEntryData:
+                MenuEntry = Line.split("=")[1]
 
             if "image" in MenuEntryData.split() and "=" in MenuEntryData.split() and "#" not in MenuEntryData.split():
                 #Remove the last line.
-                MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].pop()
+                RawMenuEntryData.pop()
                 break
 
+        MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = RawMenuEntryData
+
+        MenuEntries[Menu][MenuEntry] = {}
+        MenuEntries[Menu][MenuEntry]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
         MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
         MenuEntries[Menu][MenuEntry]["KernelOptions"] = ["Unknown"]
 
@@ -498,7 +501,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                 #Convert to a device node if we have an ID.
                 if "by-id" in Temp:
                     ID = Temp.split("/")[-1]
-
+                    print(ID)
                     for Disk in DiskInfo.keys():
                         if DiskInfo[Disk]["ID"] == ID:
                             Temp = Disk
