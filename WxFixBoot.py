@@ -187,10 +187,6 @@ Tools.StartupTools.main.DialogTools = DialogTools
 #StartupTools Package (BootloaderConfigObtainingTools).
 Tools.StartupTools.getbootloaderconfigtools.CoreTools = CoreTools
 
-#BackendTools Package (Core).
-Tools.BackendTools.core.logger = logger
-Tools.BackendTools.core.CoreTools = CoreTools
-
 #BackendTools Package (Helpers)
 Tools.BackendTools.helpers.logger = logger
 Tools.BackendTools.helpers.os = os
