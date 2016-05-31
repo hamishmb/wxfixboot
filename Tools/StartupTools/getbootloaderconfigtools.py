@@ -288,8 +288,9 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         MenuEntriesFile.close()
         return MenuEntries, MenuIDs
 
-    def AssembleGRUBLEGACYMenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter): #*** Do logging stuff and write more comments in ***
+    def AssembleGRUBLEGACYMenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter):
         """Assemble a menu entry in the dictionary"""
+        logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Preparing to get menu entry info...")
         MenuEntry = ' '.join(Line.split()[1:])
 
         MenuEntries[Menu][MenuEntry] = {}
@@ -298,6 +299,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = []
 
         #Get the full contents of the menuentry (keep adding lines to the list until we find "title").
+        logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Getting menu entry data...")
         for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
             MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
 
@@ -309,12 +311,14 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
         MenuEntries[Menu][MenuEntry]["KernelOptions"] = ["Unknown"]
 
+        logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Getting menu entry boot partition and kernel options...")
         try:
             for Line in MenuEntries[Menu][MenuEntry]["RawMenuEntryData"]:
                 if "kernel" in Line:
                     #Get the partition.
                     Temp = Line.split()[2]
 
+                    #If we have a UUID, convert it into a device node.
                     if "UUID=" in Temp:
                         UUID = Temp.split("=")[3]
 
@@ -325,6 +329,8 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                     else:
                         MenuEntries[Menu][MenuEntry]["Partition"] = Temp
 
+                    logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Found boot partition...")
+                    logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Found kernel options...")
                     MenuEntries[Menu][MenuEntry]["KernelOptions"] = Line.split()[3:]
 
         except IndexError:
