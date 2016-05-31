@@ -499,9 +499,8 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
                 #Convert to a device node if we have an ID.
                 if "by-id" in Temp:
-                    ID = Temp.split("/")[-1]
+                    ID = Temp.split("/")[-1].replace("\n", "").replace(" ", "")
                     for Disk in DiskInfo.keys():
-                        print("bobert: "+ID)
                         if DiskInfo[Disk]["ID"] == ID:
                             Temp = Disk
                             break
