@@ -289,7 +289,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         return MenuEntries, MenuIDs
 
     def AssembleGRUBLEGACYMenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter):
-        """Assemble a menu entry in the dictionary"""
+        """Assemble a menu entry in the dictionary for GRUB LEGACY"""
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Preparing to get menu entry info...")
         MenuEntry = ' '.join(Line.split()[1:])
 
@@ -340,7 +340,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
         return MenuEntries, EntryCounter
 
-    def GetGRUBLEGACYConfig(self, ConfigFilePath): #*** Can we get global kernel options here? ***
+    def GetGRUBLEGACYConfig(self, ConfigFilePath):
         """Get important bits of config from grub-legacy"""
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Getting config at "+ConfigFilePath+"...")
 
@@ -371,8 +371,8 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
         return Timeout
 
-    def ParseLILOMenuEntries(self, MenuEntriesFilePath): #*** Do logging stuff and write more comments in ***
-        """Find and parse  menu entries."""
+    def ParseLILOMenuEntries(self, MenuEntriesFilePath):
+        """Find and parse LILO and ELILO menu entries."""
         logger.info("BootloaderConfigObtainingTools: Main().ParseLILOMenuEntries(): Finding and parsing menu entries...")
 
         #Open the menu entries file to find and save all the menu entries.
@@ -390,14 +390,18 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         SkipUntil = 0
         LineCounter = 0
 
+        #Read each line.
         for Line in MenuEntriesFileContents:
             LineCounter += 1
 
+            #Process all menu entries.
             if "image" in Line and "#" not in Line:
+                logger.info("BootloaderConfigObtainingTools: Main().ParseLILOMenuEntries(): Found a menu entry. Assembling into a dictionary with self.AssembleLILOMenuEntry()...")
                 MenuEntries, MenuData[Menu]["EntryCounter"] = self.AssembleLILOMenuEntry(MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, MenuData[Menu]["EntryCounter"])
+                logger.info("BootloaderConfigObtainingTools: Main().ParseLILOMenuEntries(): Done!")
 
         #Close the file.
-        logger.info("BootloaderConfigObtainingTools: Main().ParseLILOMenuEntries(): Done!")
+        logger.info("BootloaderConfigObtainingTools: Main().ParseLILOMenuEntries(): Finished!")
         MenuEntriesFile.close()
         return MenuEntries, MenuIDs
 
