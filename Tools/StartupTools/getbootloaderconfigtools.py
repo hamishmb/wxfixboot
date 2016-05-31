@@ -511,7 +511,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                     logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found boot disk "+BootDisk+"...")
 
             #Look for the default OS setting.
-            elif "default" in Line and "=" in Line:
+            elif "default" in Line and "=" in Line and "#" not in Line:
                 #Found it.
                 DefaultOS = Line.split("=")[1]
                 logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found default OS "+DefaultOS+"...")
