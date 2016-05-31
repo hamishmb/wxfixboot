@@ -68,7 +68,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
             logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+"...")
             return "Unknown"
 
-    def ParseGRUB2MenuEntries(self, MenuEntriesFilePath): #*** Do logging stuff and write more comments in ***
+    def ParseGRUB2MenuEntries(self, MenuEntriesFilePath):
         """Find and parse GRUB2 (EFI and BIOS) menu entries."""
         logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Finding and parsing menu entries...")
 
@@ -87,16 +87,24 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         SkipUntil = 0
         LineCounter = 0
 
+        #Read each line.
         for Line in MenuEntriesFileContents:
             LineCounter += 1
 
-            if LineCounter < SkipUntil: 
+            #Skip some lines if needed.
+            if LineCounter < SkipUntil:
                 continue
 
+            #Parse any menu entries we find.
             if "menuentry " in Line:
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Found a menu entry. Assembling into a dictionary with self.AssembleGRUB2MenuEntry()...")
                 MenuEntries, MenuData[Menu]["EntryCounter"] = self.AssembleGRUB2MenuEntry(MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, MenuData[Menu]["EntryCounter"])
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Done!")
 
+            #Handle submenus correctly.
             elif "submenu " in Line:
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Found submenu...")
+                #Get the submenu, create a sub-dictionary for it, save its ID, and change the Value of "Menu" to the submenu's name.
                 SubMenu = ' '.join(Line.split(" ")[1:-1]).replace("\"", "")
                 MenuEntries[SubMenu] = {}
                 MenuIDs[SubMenu] = {}
@@ -105,6 +113,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                 Menu = SubMenu
 
                 #Get the entire contents of the submenu.
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Getting the entire text content of the submenu...")
                 BracketCount = 0
                 MenuData[Menu] = {}
                 MenuData[Menu]["EntryCounter"] = 0
@@ -122,10 +131,15 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                     if BracketCount == 0:
                         break
 
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Done! Processing any menu entries in the submenu...")
+
+                #Process any menu entries in the submenu.
                 for SubLine in MenuData[Menu]["RawMenuData"]:
                     if "menuentry " in SubLine:
                         MenuEntries, MenuData[Menu]["EntryCounter"] = self.AssembleGRUB2MenuEntry(MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, SubLine, MenuData[Menu]["EntryCounter"])
 
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Done! Jumping past the submenu data to avoid duplicating menu entries...")
+                #Skip the submenu data, and set "Menu" back to "MainMenu" again so entries are added correctly.
                 SkipUntil = LineCounter+len(MenuData[Menu]["RawMenuData"])
 
                 Menu = "MainMenu"
