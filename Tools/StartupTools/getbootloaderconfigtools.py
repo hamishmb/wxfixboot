@@ -229,20 +229,23 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                 logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Found default OS line....")
                 Temp = Line.split("=")[1].replace("\"", "").replace("\'", "").replace("\n", "")
 
-                if Temp.isdigit() or len(Temp.split(">")) == 2:
-                    #Find the corresponding GRUB menutentry, counting up from 0. *** Rewrite to cope with submenus ***
+                if Temp.isdigit() or ">" in Temp:
+                    #Find the corresponding GRUB menutentry, counting up from 0.
                     logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by index...")
-                    for OS in MenuEntries.keys():
-                        try:
-                            if MenuEntries[OS]["ID"] == int(Temp):
-                                DefaultOS = OS
-                                break
+                    for Menu in MenuEntries.keys():
+                        for OS in MenuEntries[Menu].keys():
+                            try:
+                                print(MenuEntries[Menu][OS]["ID"], Temp)
 
-                        except KeyError:
-                            pass
+                                if MenuEntries[Menu][OS]["ID"] == Temp:
+                                    DefaultOS = OS
+                                    break
+
+                            except KeyError:
+                                pass
 
                 elif Temp == "saved":
-                    #Find the corresponding GRUB menutentry, matching by name.
+                    #Find the corresponding GRUB menutentry, matching by name. *** What if it's an ID? *** *** Handle that too ***
                     logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by name in GRUB environment file...")
                     GRUBEnvironmentFile = open(GRUBEnvironmentFilePath, "r")
 
@@ -250,7 +253,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                         if "saved_entry=" in Var:
                             DefaultOS = Var.split("=")[1] #*** Check that it matches something in the MenuEntries list *** *** Also hadnle this if it's a string ***
 
-                else:
+                else: #*** Check that it matches something in the MenuEntries list ***
                     DefaultOS = Temp
 
                 logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Done!")
