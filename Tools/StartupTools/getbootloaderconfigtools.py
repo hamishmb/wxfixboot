@@ -22,6 +22,52 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader time out *** *** Sometimes doesn't find kernel options *** *** Both of these things are probably due to not using dictionaries, but check ***
+    def FindGRUB(self, OSPartition, GRUBVersion): #*** Test this thoroughly ***
+        """Find GRUB for the given OS."""
+        logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking for "+GRUBVersion+"...")
+
+        #Do some setup.
+        LikelyGRUBInstallDisks = (DiskInfo[OSPartition]["HostDisk"], OSPartition)
+        FoundGRUB = False
+        FoundRightVersion = False
+
+        logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking in "+' '.join(LikelyGRUBInstallDisks)+"...")
+
+        #Look for the right string for each boot loader.
+        if GRUBVersion == "GRUB2":
+            LookFor = "ZRr="
+
+        else:
+            LookFor = "ZRrI"
+
+        for Disk in LikelyGRUBInstallDisks:
+            for Line in DiskInfo[Disk]["BootRecordStrings"]:
+                #Check that we have the right version of GRUB, and double check that GRUB is present.
+                if LookFor in Line:
+                    FoundRightVersion = True
+                    logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Found "+GRUBVersion+" on "+Disk+"...")
+
+                elif "GRUB" in Line:
+                    FoundGRUB = True
+                    BootDisk = Disk
+                    logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Confirmed "+GRUBVersion+" is present on "+Disk+"...")
+
+                #Break out of the loop if possible to save time.
+                if FoundRightVersion and FoundGRUB:
+                    break
+
+            #Break out of the loop if possbile to save time.
+            if FoundRightVersion and FoundGRUB:
+                break
+
+        if FoundRightVersion and FoundGRUB:
+            logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Done!")
+            return BootDisk
+
+        else:
+            logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+"...")
+            return "Unknown"
+
     def ParseGRUB2MenuEntries(self, MenuEntriesFilePath): #*** Do logging stuff and write more comments in ***
         """Find and parse GRUB2 (EFI and BIOS) menu entries."""
         logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Finding and parsing menu entries...")
@@ -111,86 +157,15 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
             if MenuEntryData.split()[-1] == "}":
                 break
 
+        MenuEntries[Menu][MenuEntry]["KernelOptions"] = ["Unknown"]
+
+        for Line in MenuEntries[Menu][MenuEntry]["RawMenuEntryData"]:
+            if "linux" in Line:
+                MenuEntries[Menu][MenuEntry]["KernelOptions"] = Line.split()[3:]
+
         EntryCounter += 1
 
         return MenuEntries, EntryCounter
-
-    def GetGRUBLEGACYConfig(self, ConfigFilePath): #*** Can we get kernel options here? ***
-        """Get important bits of config from grub-legacy"""
-        logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Getting config at "+ConfigFilePath+"...")
-
-        #In this case, the only useful info is the timeout, so just get this.
-        #Set temporary vars
-        Timeout = "Unknown"
-
-        #Open the file in read mode, so we can save the important bits of config.
-        ConfigFile = open(ConfigFilePath, 'r')
-
-        #Look for the timeout setting.
-        for Line in ConfigFile:
-            if 'timeout' in Line and 'sec' not in Line:
-                #Found it!
-                Timeout = Line.split()[1].replace('\n', '')
-
-                if Timeout.isdigit():
-                    #Great! We got it.
-                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Found bootloader time out...")
-                    Timeout = int(Timeout)
-
-                #Exit the loop to save time.
-                break
-
-        #Close the file.
-        logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Done! Returning Information...")
-        ConfigFile.close()
-
-        return Timeout
-
-    def FindGRUB(self, OSPartition, GRUBVersion): #*** Test this thoroughly ***
-        """Find GRUB for the given OS."""
-        logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking for "+GRUBVersion+"...")
-
-        #Do some setup.
-        LikelyGRUBInstallDisks = (DiskInfo[OSPartition]["HostDisk"], OSPartition)
-        FoundGRUB = False
-        FoundRightVersion = False
-
-        logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking in "+' '.join(LikelyGRUBInstallDisks)+"...")
-
-        #Look for the right string for each boot loader.
-        if GRUBVersion == "GRUB2":
-            LookFor = "ZRr="
-
-        else:
-            LookFor = "ZRrI"
-
-        for Disk in LikelyGRUBInstallDisks:
-            for Line in DiskInfo[Disk]["BootRecordStrings"]:
-                #Check that we have the right version of GRUB, and double check that GRUB is present.
-                if LookFor in Line:
-                    FoundRightVersion = True
-                    logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Found "+GRUBVersion+" on "+Disk+"...")
-
-                elif "GRUB" in Line:
-                    FoundGRUB = True
-                    BootDisk = Disk
-                    logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Confirmed "+GRUBVersion+" is present on "+Disk+"...")
-
-                #Break out of the loop if possible to save time.
-                if FoundRightVersion and FoundGRUB:
-                    break
-
-            #Break out of the loop if possbile to save time.
-            if FoundRightVersion and FoundGRUB:
-                break
-
-        if FoundRightVersion and FoundGRUB:
-            logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Done!")
-            return BootDisk
-
-        else:
-            logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+"...")
-            return "Unknown"
 
     def GetGRUB2Config(self, ConfigFilePath, GRUBEnvironmentFilePath, MenuEntries): #*** Refactor ***
         """Get important bits of config from grub2 (MBR or UEFI)"""
@@ -234,15 +209,9 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                     logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by index...")
                     for Menu in MenuEntries.keys():
                         for OS in MenuEntries[Menu].keys():
-                            try:
-                                print(MenuEntries[Menu][OS]["ID"], Temp)
-
-                                if MenuEntries[Menu][OS]["ID"] == Temp:
-                                    DefaultOS = OS
-                                    break
-
-                            except KeyError:
-                                pass
+                            if MenuEntries[Menu][OS]["ID"] == Temp:
+                                DefaultOS = OS
+                                break
 
                 elif Temp == "saved":
                     #Find the corresponding GRUB menutentry, matching by name. *** What if it's an ID? *** *** Handle that too ***
@@ -263,6 +232,37 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         ConfigFile.close()
 
         return (Timeout, KernelOptions, DefaultOS)
+
+    def GetGRUBLEGACYConfig(self, ConfigFilePath): #*** Can we get kernel options here? ***
+        """Get important bits of config from grub-legacy"""
+        logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Getting config at "+ConfigFilePath+"...")
+
+        #In this case, the only useful info is the timeout, so just get this.
+        #Set temporary vars
+        Timeout = "Unknown"
+
+        #Open the file in read mode, so we can save the important bits of config.
+        ConfigFile = open(ConfigFilePath, 'r')
+
+        #Look for the timeout setting.
+        for Line in ConfigFile:
+            if 'timeout' in Line and 'sec' not in Line:
+                #Found it!
+                Timeout = Line.split()[1].replace('\n', '')
+
+                if Timeout.isdigit():
+                    #Great! We got it.
+                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Found bootloader time out...")
+                    Timeout = int(Timeout)
+
+                #Exit the loop to save time.
+                break
+
+        #Close the file.
+        logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Done! Returning Information...")
+        ConfigFile.close()
+
+        return Timeout
 
     def GetLILOConfig(self, ConfigFilePath):
         """Get important bits of config from lilo and elilo"""

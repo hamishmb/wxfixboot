@@ -463,7 +463,7 @@ class Main():
                 #*****************
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["DefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", MountPoint+"/boot/grub/grubenv", BootloaderInfo[OS]["MenuEntries"])
 
-                #Try to find GRUB if this is GRUB2.
+                #Try to find GRUB's location if this is GRUB2.
                 if BootloaderInfo[OS]["Bootloader"] == "GRUB2":
                     BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB2")
 
