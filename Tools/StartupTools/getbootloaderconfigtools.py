@@ -492,7 +492,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                 KernelOptions = ' '.join(Line.split("=")[1:]).replace("\"", "")
                 logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found global kernel options...")
 
-            #Look for the 'boot' setting. *** Test this ***
+            #Look for the 'boot' setting.
             elif 'boot' in Line and '=' in Line and '#' not in Line and 'map' not in Line:
                 #Found it!
                 Temp = Line.split("=")[1]
@@ -506,9 +506,15 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                             break
 
                 #Check we got the device node in case we had an ID.
-                if "/dev/" in Temp:
+                if "by-id" not in Temp:
                     BootDisk = Temp
                     logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found boot disk "+BootDisk+"...")
+
+            #Look for the default OS setting.
+            elif "default" in Line:
+                #Found it.
+                DefaultOS = Line.split("=")[1]
+                logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found default OS "+DefaultOS+"...")
 
         #Close the file.
         logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Done! Returning information...")
@@ -516,8 +522,8 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
         #Ignore ELILO's boot disk setting. *** Check that it's the same as the detected EFI partition? ***
         if "/etc/lilo.conf" in ConfigFilePath:
-            return (Timeout, KernelOptions, BootDisk)
+            return (Timeout, KernelOptions, BootDisk, DefaultOS)
 
         else:
             logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Ignoring ELILO's book disk setting, instead preferring the detected EFI partition for this OS...")
-            return (Timeout, KernelOptions)
+            return (Timeout, KernelOptions, DefaultOS)
