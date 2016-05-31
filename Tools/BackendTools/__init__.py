@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import
-from . import core
 from . import helpers
 from . import essentials
 from . import main
