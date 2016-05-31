@@ -145,7 +145,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                 Menu = "MainMenu"
 
         #Close the file.
-        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Done!")
+        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Finished!")
         MenuEntriesFile.close()
         return MenuEntries, MenuIDs
 
@@ -254,7 +254,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
         return (Timeout, KernelOptions, DefaultOS)
 
-    def ParseGRUBLEGACYMenuEntries(self, MenuEntriesFilePath): #*** Do logging stuff and write more comments in ***
+    def ParseGRUBLEGACYMenuEntries(self, MenuEntriesFilePath):
         """Find and parse GRUB LEGACY menu entries."""
         logger.info("BootloaderConfigObtainingTools: Main().ParseGRUBLEGACYMenuEntries(): Finding and parsing menu entries...")
 
@@ -273,14 +273,18 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         SkipUntil = 0
         LineCounter = 0
 
+        #Read each line in the file.
         for Line in MenuEntriesFileContents:
             LineCounter += 1
 
+            #Process all menu entries.
             if "title " in Line:
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUBLEGACYMenuEntries(): Found a menu entry. Assembling into a dictionary with self.AssembleGRUBLEGACYMenuEntry()...")
                 MenuEntries, MenuData[Menu]["EntryCounter"] = self.AssembleGRUBLEGACYMenuEntry(MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, MenuData[Menu]["EntryCounter"])
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUBLEGACYMenuEntries(): Done!")
 
         #Close the file.
-        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUBLEGACYMenuEntries(): Done!")
+        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUBLEGACYMenuEntries(): Finished!")
         MenuEntriesFile.close()
         return MenuEntries, MenuIDs
 
