@@ -441,26 +441,6 @@ class Main():
 
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
                 BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuEntries(MountPoint+"/boot/grub/grub.cfg")
-
-                #*****************
-                Keys = BootloaderInfo[OS]["MenuEntries"].keys()
-                Keys.sort()
-
-                for Menu in Keys:
-                    print("\n\n\nMenu Name: "+Menu+"\n\n\n")
-
-                    MenuEntries = BootloaderInfo[OS]["MenuEntries"][Menu].keys()
-                    MenuEntries.sort()
-
-                    for MenuEntry in MenuEntries:
-                        print("\tMenu Entry Name: "+MenuEntry+"\n\n")
-                        print("\t\tID: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["ID"]+"\n\n")
-                        print("\t\tMenu Entry Data:\n\n")
-
-                        for Thing in BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["RawMenuEntryData"]:
-                            print("\t\t\t"+Thing)
-
-                #*****************
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["DefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", MountPoint+"/boot/grub/grubenv", BootloaderInfo[OS]["MenuEntries"])
 
                 #Try to find GRUB's location if this is GRUB2.
@@ -468,15 +448,37 @@ class Main():
                     BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB2")
 
             elif BootloaderInfo[OS]["Bootloader"] == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
+                BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseLILOMenuEntries(MountPoint+"/etc/elilo.conf")
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/elilo.conf")
 
             elif BootloaderInfo[OS]["Bootloader"] == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
+                BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseLILOMenuEntries(MountPoint+"/etc/lilo.conf")
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootLoadInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/lilo.conf")
 
             elif BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY" and os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
                 BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUBLEGACYMenuEntries(MountPoint+"/boot/grub/menu.lst")
                 BootloaderInfo[OS]["Timeout"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst")
                 BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB-LEGACY")
+
+            #*****************
+            Keys = BootloaderInfo[OS]["MenuEntries"].keys()
+            Keys.sort()
+
+            for Menu in Keys:
+                print("\n\n\nMenu Name: "+Menu+"\n\n\n")
+
+                MenuEntries = BootloaderInfo[OS]["MenuEntries"][Menu].keys()
+                MenuEntries.sort()
+
+                for MenuEntry in MenuEntries:
+                    print("\tMenu Entry Name: "+MenuEntry+"\n\n")
+                    print("\t\tID: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["ID"]+"\n\n")
+                    print("\t\tMenu Entry Data:\n\n")
+
+                    for Thing in BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["RawMenuEntryData"]:
+                        print("\t\t\t"+Thing)
+
+            #*****************
 
             BootloaderInfo[OS]["IsModifyable"] = "Unknown"
             BootloaderInfo[OS]["Comments"] = "N/A"

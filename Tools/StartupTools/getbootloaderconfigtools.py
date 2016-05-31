@@ -196,7 +196,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
             #Look for kernel options used globally in all the boot options.
             elif 'GRUB_CMDLINE_LINUX_DEFAULT' in Line and '=' in Line:
                 #Found them! Save them.
-                KernelOptions = Line.split("=")[1].replace("\'", "")
+                KernelOptions = '='.join(Line.split("=")[1:]).replace("\'", "")
                 logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Found global kernel options...")
 
             #Look for default os setting,
@@ -256,14 +256,11 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         for Line in MenuEntriesFileContents:
             LineCounter += 1
 
-            if LineCounter < SkipUntil: 
-                continue
-
             if "title " in Line:
                 MenuEntries, MenuData[Menu]["EntryCounter"] = self.AssembleGRUBLEGACYMenuEntry(MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, MenuData[Menu]["EntryCounter"])
 
         #Close the file.
-        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Done!")
+        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUBLEGACYMenuEntries(): Done!")
         MenuEntriesFile.close()
         return MenuEntries, MenuIDs
 
@@ -280,7 +277,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
             MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
 
-            if MenuEntryData.split()[-1] == "title":
+            if "title" in MenuEntryData:
                 #Remove the last line.
                 MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].pop()
                 break
@@ -288,22 +285,26 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
         MenuEntries[Menu][MenuEntry]["KernelOptions"] = ["Unknown"]
 
-        for Line in MenuEntries[Menu][MenuEntry]["RawMenuEntryData"]:
-            if "kernel" in Line:
-                #Get the partition.
-                Temp = Line.split()[2]
+        try:
+            for Line in MenuEntries[Menu][MenuEntry]["RawMenuEntryData"]:
+                if "kernel" in Line:
+                    #Get the partition.
+                    Temp = Line.split()[2]
 
-                if "UUID=" in Temp:
-                    UUID = Temp.split("=")[3]
+                    if "UUID=" in Temp:
+                        UUID = Temp.split("=")[3]
 
-                    for Disk in DiskInfo.keys():
-                        if DiskInfo[Disk]["UUID"] == Temp:
-                            MenuEntries[Menu][MenuEntry]["Partition"] = DiskInfo[Disk]["UUID"]
+                        for Disk in DiskInfo.keys():
+                            if DiskInfo[Disk]["UUID"] == Temp:
+                                MenuEntries[Menu][MenuEntry]["Partition"] = DiskInfo[Disk]["UUID"]
 
-                else:
-                    MenuEntries[Menu][MenuEntry]["Partition"] = Temp
+                    else:
+                        MenuEntries[Menu][MenuEntry]["Partition"] = Temp
 
-                MenuEntries[Menu][MenuEntry]["KernelOptions"] = Line.split()[3:]
+                    MenuEntries[Menu][MenuEntry]["KernelOptions"] = Line.split()[3:]
+
+        except IndexError:
+            pass
 
         EntryCounter += 1
 
@@ -339,6 +340,83 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         ConfigFile.close()
 
         return Timeout
+
+    def ParseLILOMenuEntries(self, MenuEntriesFilePath): #*** Do logging stuff and write more comments in ***
+        """Find and parse  menu entries."""
+        logger.info("BootloaderConfigObtainingTools: Main().ParseLILOMenuEntries(): Finding and parsing menu entries...")
+
+        #Open the menu entries file to find and save all the menu entries.
+        MenuEntriesFile = open(MenuEntriesFilePath, "r")
+        MenuEntriesFileContents = MenuEntriesFile.readlines()
+        MenuEntries = {}
+        Menu = "MainMenu"
+        MenuEntries[Menu] = {}
+        MenuIDs = {}
+        MenuIDs[Menu] = {}
+        MenuIDs[Menu]["ID"] = ""
+        MenuData = {}
+        MenuData[Menu] = {}
+        MenuData[Menu]["EntryCounter"] = 0
+        SkipUntil = 0
+        LineCounter = 0
+
+        for Line in MenuEntriesFileContents:
+            LineCounter += 1
+
+            if "image" in Line and "#" not in Line:
+                MenuEntries, MenuData[Menu]["EntryCounter"] = self.AssembleLILOMenuEntry(MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, MenuData[Menu]["EntryCounter"])
+
+        #Close the file.
+        logger.info("BootloaderConfigObtainingTools: Main().ParseLILOMenuEntries(): Done!")
+        MenuEntriesFile.close()
+        return MenuEntries, MenuIDs
+
+    def AssembleLILOMenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter): #*** Do logging stuff and write more comments in ***
+        """Assemble a menu entry in the dictionary"""
+        MenuEntry = ' '.join(Line.split()[1:])
+
+        MenuEntries[Menu][MenuEntry] = {}
+        MenuEntries[Menu][MenuEntry]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
+
+        MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = []
+
+        #Get the full contents of the menuentry (keep adding lines to the list until we find another menu entry).
+        for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
+            MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
+
+            if "image" in MenuEntryData.split() and "=" in MenuEntryData.split() and "#" not in MenuEntryData.split():
+                #Remove the last line.
+                MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].pop()
+                break
+
+        MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
+        MenuEntries[Menu][MenuEntry]["KernelOptions"] = ["Unknown"]
+
+        try:
+            for Line in MenuEntries[Menu][MenuEntry]["RawMenuEntryData"]:
+                if "root" in Line:
+                    #Get the partition.
+                    Temp = '='.join(Line.split("=")[1:])
+
+                    if "UUID=" in Temp:
+                        UUID = Temp.split("=")[1].replace("\"", "")
+
+                        for Disk in DiskInfo.keys():
+                            if DiskInfo[Disk]["UUID"] == Temp:
+                                MenuEntries[Menu][MenuEntry]["Partition"] = DiskInfo[Disk]["UUID"]
+
+                    else:
+                        MenuEntries[Menu][MenuEntry]["Partition"] = Temp
+
+                elif "append" in Line:
+                    MenuEntries[Menu][MenuEntry]["KernelOptions"] = Line.split("=")[1].replace("\"", "")
+
+        except IndexError:
+            pass
+
+        EntryCounter += 1
+
+        return MenuEntries, EntryCounter
 
     def GetLILOConfig(self, ConfigFilePath):
         """Get important bits of config from lilo and elilo"""
