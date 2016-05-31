@@ -149,13 +149,16 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         MenuEntriesFile.close()
         return MenuEntries, MenuIDs
 
-    def AssembleGRUB2MenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter): #*** Do logging stuff and write more comments in ***
-        """Assemble a menu entry in the dictionary"""
+    def AssembleGRUB2MenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter):
+        """Assemble a menu entry in the dictionary for GRUB2 (BIOS and UEFI)"""
+        logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Preparing to get menu entry info...")
         MenuEntry = Line.split("\'")[1]
         Temp = MenuEntry.replace(")", "").split(" (")
 
         MenuEntries[Menu][MenuEntry] = {}
         MenuEntries[Menu][MenuEntry]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
+
+        logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry's boot partition...")
 
         try:
             MenuEntries[Menu][MenuEntry]["Partition"] = Temp[1].split(" ")[-1]
@@ -166,12 +169,15 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = []
 
         #Get the full contents of the menuentry (keep adding lines to the list until we find a "}").
+        logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry data...")
+
         for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
             MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
 
             if MenuEntryData.split()[-1] == "}":
                 break
 
+        logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting kernel options...")
         MenuEntries[Menu][MenuEntry]["KernelOptions"] = ["Unknown"]
 
         for Line in MenuEntries[Menu][MenuEntry]["RawMenuEntryData"]:
