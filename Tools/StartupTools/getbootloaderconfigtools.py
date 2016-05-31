@@ -405,8 +405,9 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         MenuEntriesFile.close()
         return MenuEntries, MenuIDs
 
-    def AssembleLILOMenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter): #*** Do logging stuff and write more comments in ***
-        """Assemble a menu entry in the dictionary"""
+    def AssembleLILOMenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter):
+        """Assemble a menu entry in the dictionary for LILO/ELILO"""
+        logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Preparing to get menu entry info...")
         MenuEntry = ' '.join(Line.split()[1:])
 
         MenuEntries[Menu][MenuEntry] = {}
@@ -415,6 +416,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = []
 
         #Get the full contents of the menuentry (keep adding lines to the list until we find another menu entry).
+        logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Getting menu entry data...")
         for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
             MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
 
@@ -432,6 +434,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                     #Get the partition.
                     Temp = '='.join(Line.split("=")[1:])
 
+                    #If we get a UUID, convert it to a device node.
                     if "UUID=" in Temp:
                         UUID = Temp.split("=")[1].replace("\"", "")
 
@@ -442,7 +445,11 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                     else:
                         MenuEntries[Menu][MenuEntry]["Partition"] = Temp
 
+                    logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Found boot partition...")
+
                 elif "append" in Line:
+                    #Get the kernel options.
+                    logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Found kernel options...")
                     MenuEntries[Menu][MenuEntry]["KernelOptions"] = Line.split("=")[1].replace("\"", "")
 
         except IndexError:
