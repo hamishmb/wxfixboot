@@ -3338,7 +3338,6 @@ class BackendThread(threading.Thread):
         """Initialize BackendThread"""
         #Set up the backend tools.
         Tools.dialogtools.ParentWindow = ParentWindow
-        Tools.BackendTools.core.ParentWindow = ParentWindow
         Tools.BackendTools.helpers.ParentWindow = ParentWindow
         Tools.BackendTools.essentials.ParentWindow = ParentWindow
         Tools.BackendTools.main.ParentWindow = ParentWindow
