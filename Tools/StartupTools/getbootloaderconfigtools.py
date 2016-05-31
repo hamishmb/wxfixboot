@@ -501,7 +501,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                 if "by-id" in Temp:
                     ID = Temp.split("/")[-1]
                     for Disk in DiskInfo.keys():
-                        print(ID, DiskInfo[Disk]["ID"])
+                        print("bobert: "+DiskInfo[Disk]["ID"])
                         if DiskInfo[Disk]["ID"] == ID:
                             Temp = Disk
                             break
