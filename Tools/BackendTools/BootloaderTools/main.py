@@ -22,49 +22,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 class Main(): #*** Refactor all of these ***
-    def PrepareForBootloaderInstallation(self):
-        """Run checks, gather information, and prepare for bootloader operations.""" #*** DEPRECATED *** 
-        #First, check the Internet connection, and disable bootloader operations if needed.
-        EssentialBackendTools.CheckInternetConnection()
-
-        if SystemInfo["DisableBootloaderOperations"]:
-            #Disable bootloader operations. *** Set them here, just so they are set? ***
-            SystemInfo["OSsForBootloaderRemoval"] = []
-            SystemInfo["OSsForBootloaderInstallation"] = []
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
-
-        else:
-            #*** This does nothing right now ***
-            wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing for bootloader operations...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
-            wx.CallAfter(ParentWindow.UpdateOutputBox,"\n###Preparing for bootloader operations...###\n")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 70)
-
-            #Check if there are any candidates for bootloader installation/removal. Hopefully there are!
-            if SystemInfo["OSsWithPackageManagers"] == []:
-                #Oh dear... There aren't.
-                logger.error("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Couldn't find an OS with APT! Will have to disable some operations!")
-                DialogTools.ShowMsgDlg(Kind="error", Message="No supported package managers could be found on any of your operating systems! At the moment, APT is supported, which covers most Linux Operating Systems. WxFixBoot will have to skip all operations that require a package manager, such as installing, removing and reinstalling the bootloader. In a later release WxFixBoot will likely support another package manager, such as Slackware's system. If you think you do have an OS with a supported package manager, please report a bug or email me directly via my Launchpad page, so I can try to help. In the meantime, you can probably follow some online instructions for your operating system.")
-
-                #Disable bootloader operations. *** Set them here, just so they are set? ***
-                SystemInfo["OSsForBootloaderRemoval"] = []
-                SystemInfo["OSsForBootloaderInstallation"] = []
-                SystemInfo["DisableBootloaderOperations"] = True
-
-                #Update Current Operation Text.
-                wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-
-            else:
-                #Very good! There is at least one candidate.
-                logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found at least one candidate for installing and removing bootloaders! Continuing...")
-
-                #Update Current Operation Text.
-                wx.CallAfter(ParentWindow.UpdateCurrentProgress, 85)
-                HelperBackendTools.AskUserForBootloaderInstallationOSs(UpdateBootloader, ReinstallBootloader)
-                wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Done!###\n") 
-
     def ReinstallBootloader(self):
         """Reinstall/fix the bootloader."""
         logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Preparing to reinstall the bootloader...")

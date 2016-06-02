@@ -1025,10 +1025,10 @@ class MainWindow(wx.Frame):
         #    Operations.append(BackendThread(self).GenerateSystemReport)
         #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
 
-        #Check if we need to prepare to install a new bootloader, and do so first if needed.
+        #Check if we need to check the internet connection, and do so first if needed.
         if MainBootloaderTools.ManageBootloaders in Operations or MainBootloaderTools.ReinstallBootloader in Operations or MainBootloaderTools.UpdateBootloader in Operations:
-            logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding MainBootloaderTools.PrepareForBootloaderInstallation()...")
-            Operations.insert(0, MainBootloaderTools.PrepareForBootloaderInstallation) #*** Don't insert this before the essential operations *** *** Why not? *** *** Must be before these three though *** *** Get rid of this soon ***
+            logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()()...")
+            Operations.insert(0, EssentialBackendTools.CheckInternetConnection())
 
         NumberOfOperations = len(Operations)
 
