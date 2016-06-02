@@ -24,43 +24,27 @@ from __future__ import unicode_literals
 #Begin Main Functions.
 def BindEvents(self):
     """Bind all events for the caller"""
-    self.Bind(wx.EVT_BUTTON, self.GetDiskInfo, self.RefreshButton)
-    #self.Bind(wx.EVT_BUTTON, self.ParentWindow.OnExit, self.OkayButton) #*** Disabled until I find a way to make this work ***
+    self.Bind(wx.EVT_BUTTON, self.SystemInfoWindow.OnExit, self.OkayButton) #*** Disabled until I find a way to make this work ***
     self.Bind(wx.EVT_SIZE, self.OnSize)
 
 def CreateWidgets(self):
     """Create all widgets for the caller"""
-    self.TitleText = wx.StaticText(self, -1, "Here are all the detected disks on your computer")
+    self.TitleText = wx.StaticText(self, -1, self.Title)
     self.ListCtrl = wx.ListCtrl(self, -1, style=wx.LC_REPORT|wx.LC_VRULES)
     self.OkayButton = wx.Button(self, -1, "Okay")
-    self.RefreshButton = wx.Button(self, -1, "Refresh")
-
-    #Create the animation for the throbber.
-    throb = wx.animate.Animation("/usr/share/wxfixboot/images/Throbber.gif")
-    self.Throbber = wx.animate.AnimationCtrl(self, -1, throb)
-    self.Throbber.SetUseWindowBackgroundColour(True)
-    self.Throbber.SetInactiveBitmap(wx.Bitmap("/usr/share/wxfixboot/images/ThrobberRest.png", wx.BITMAP_TYPE_PNG))
-    self.Throbber.SetClientSize(wx.Size(30,30))
 
 def SetupSizers(self):
     """Set up the sizers for the caller"""
     #Make a button boxsizer.
     BottomSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-    #Add each object to the bottom sizer.
-    BottomSizer.Add(self.RefreshButton, 0, wx.LEFT|wx.RIGHT|wx.ALIGN_LEFT, 10)
-    BottomSizer.Add((20,20), 1)
-    BottomSizer.Add(self.Throbber, 0, wx.ALIGN_CENTER|wx.FIXED_MINSIZE)
-    BottomSizer.Add((20,20), 1)
-    BottomSizer.Add(self.OkayButton, 0, wx.LEFT|wx.RIGHT|wx.ALIGN_RIGHT, 10)
-
     #Make a boxsizer.
     MainSizer = wx.BoxSizer(wx.VERTICAL)
 
     #Add each object to the main sizer.
     MainSizer.Add(self.TitleText, 0, wx.ALL|wx.CENTER, 10)
-    MainSizer.Add(self.ListCtrl, 1, wx.EXPAND|wx.ALL, 10)
-    MainSizer.Add(BottomSizer, 0, wx.EXPAND|wx.ALL ^ wx.TOP, 10)
+    MainSizer.Add(self.ListCtrl, 1, wx.EXPAND|wx.ALL ^ wx.TOP, 10)
+    MainSizer.Add(self.OkayButton, 0, wx.ALIGN_CENTER|wx.ALL ^ wx.TOP, 10)
 
     #Get the sizer set up for the frame.
     self.SetSizer(MainSizer)

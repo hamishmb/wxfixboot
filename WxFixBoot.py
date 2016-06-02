@@ -20,11 +20,11 @@
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Test DialogTools.ShowMultiChoiceDlg() ***
 #*** Figure out what to do in each instance where something might fail ***
-#*** Allow getting device info after startup (run some startup scripts again) ****
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Support EFI on 32-bit firmware? ***
 #*** /boot/efi not unmounted after modifying EFI bootloaders on parted magic (possibly also on other platforms), preventing unmounting of chrooted rootfs. Doesn't cause an error or any problems. ***
 #*** Make OSInfo accessible to CoreBackendTools? ***
+#*** Fix bug where InitWindow background doesn't show on Wx 3 ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -1097,12 +1097,14 @@ class MainWindow(wx.Frame):
 #End Main window
 #Begin System Info Page 1.
 class SystemInfoPage1(wx.Panel):
-    def __init__(self, ParentWindow):
+    def __init__(self, ParentWindow, SystemInfoWindow):
         """Initialise SystemInfoPage1"""
         wx.Panel.__init__(self, ParentWindow)
         self.ParentWindow = ParentWindow
+        self.SystemInfoWindow = SystemInfoWindow
 
         logger.debug("SystemInfoPage1().__init__(): Creating widgets...")
+        self.Title = "Here are all the detected disks on your computer"
         NoteBookSharedFunctions.CreateWidgets(self)
 
         logger.debug("SystemInfoPage1().__init__(): Setting up sizers...")
@@ -1111,10 +1113,8 @@ class SystemInfoPage1(wx.Panel):
         logger.debug("SystemInfoPage1().__init__(): Binding events...")
         NoteBookSharedFunctions.BindEvents(self)
 
-        #Use already-present info for the list ctrl if possible.
-        if 'DiskInfo' in globals():
-            logger.debug("SystemInfoPage1().__init__(): Updating list ctrl with Disk info already present...")
-            NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Vendor", "Product", "Capacity", "Description"], Dictionary=DiskInfo)
+        logger.debug("SystemInfoPage1().__init__(): Updating list ctrl with Disk info...")
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Vendor", "Product", "Capacity", "Description"], Dictionary=DiskInfo)
 
     def OnSize(self, Event=None):
         """Auto resize the ListCtrl columns"""
@@ -1130,35 +1130,17 @@ class SystemInfoPage1(wx.Panel):
         if Event != None:
             Event.Skip()
 
-    def GetDiskInfo(self, Event=None):
-        """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
-        logger.info("SystemInfoPage1().UpdateDevInfo(): Generating new Disk info...")
-        self.RefreshButton.Disable()
-        self.Throbber.Play()
-        GetDiskInformation(self)
-
-    def ReceiveDiskInfo(self, Info):
-        """Get Disk data, call self.UpdateListCtrl()"""
-        global DiskInfo
-        DiskInfo = Info
-
-        #Update the list control.
-        logger.debug("SystemInfoPage1().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
-        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Vendor", "Product", "Capacity", "Description"], Dictionary=DiskInfo)
-
-        #Stop the throbber and enable the refresh button.
-        self.Throbber.Stop()
-        self.RefreshButton.Enable()
-
 #End System Info Page 1
 #Begin System Info Page 2.
 class SystemInfoPage2(wx.Panel):
-    def __init__(self, ParentWindow):
+    def __init__(self, ParentWindow, SystemInfoWindow):
         """Initialise SystemInfoPage2"""
         wx.Panel.__init__(self, ParentWindow)
         self.ParentWindow = ParentWindow
+        self.SystemInfoWindow = SystemInfoWindow
 
         logger.debug("SystemInfoPage2().__init__(): Creating widgets...")
+        self.Title = "Here are all the detected disks on your computer"
         NoteBookSharedFunctions.CreateWidgets(self)
 
         logger.debug("SystemInfoPage2().__init__(): Setting up sizers...")
@@ -1167,10 +1149,8 @@ class SystemInfoPage2(wx.Panel):
         logger.debug("SystemInfoPage2().__init__(): Binding events...")
         NoteBookSharedFunctions.BindEvents(self)
 
-        #Use already-present info for the list ctrl if possible.
-        if 'DiskInfo' in globals():
-            logger.debug("SystemInfoPage2().__init__(): Updating list ctrl with Disk info already present...")
-            NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Partitions", "Flags", "Partitioning", "FileSystem"], Dictionary=DiskInfo)
+        logger.debug("SystemInfoPage2().__init__(): Updating list ctrl with Disk info...")
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Partitions", "Flags", "Partitioning", "FileSystem"], Dictionary=DiskInfo)
 
     def OnSize(self, Event=None):
         """Auto resize the ListCtrl columns"""
@@ -1186,35 +1166,17 @@ class SystemInfoPage2(wx.Panel):
         if Event != None:
             Event.Skip()
 
-    def GetDiskInfo(self, Event=None):
-        """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
-        logger.info("SystemInfoPage2().UpdateDevInfo(): Generating new Disk info...")
-        self.RefreshButton.Disable()
-        self.Throbber.Play()
-        GetDiskInformation(self)
-
-    def ReceiveDiskInfo(self, Info):
-        """Get Disk data, call self.UpdateListCtrl()"""
-        global DiskInfo
-        DiskInfo = Info
-
-        #Update the list control.
-        logger.debug("SystemInfoPage2().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
-        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "Partitions", "Flags", "Partitioning", "FileSystem"], Dictionary=DiskInfo)
-
-        #Stop the throbber and enable the refresh button.
-        self.Throbber.Stop()
-        self.RefreshButton.Enable()
-
 #End System Info Page 2
 #Begin System Info Page 3.
 class SystemInfoPage3(wx.Panel):
-    def __init__(self, ParentWindow):
+    def __init__(self, ParentWindow, SystemInfoWindow):
         """Initialise SystemInfoPage3"""
         wx.Panel.__init__(self, ParentWindow)
         self.ParentWindow = ParentWindow
+        self.SystemInfoWindow = SystemInfoWindow
 
         logger.debug("SystemInfoPage3().__init__(): Creating widgets...")
+        self.Title = "Here are all the detected disks on your computer"
         NoteBookSharedFunctions.CreateWidgets(self)
 
         logger.debug("SystemInfoPage3().__init__(): Setting up sizers...")
@@ -1223,10 +1185,8 @@ class SystemInfoPage3(wx.Panel):
         logger.debug("SystemInfoPage3().__init__(): Binding events...")
         NoteBookSharedFunctions.BindEvents(self)
 
-        #Use already-present info for the list ctrl if possible.
-        if 'DiskInfo' in globals():
-            logger.debug("SystemInfoPage3().__init__(): Updating list ctrl with Disk info already present...")
-            NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "ID", "UUID"], Dictionary=DiskInfo)
+        logger.debug("SystemInfoPage3().__init__(): Updating list ctrl with Disk info...")
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "ID", "UUID"], Dictionary=DiskInfo)
 
     def OnSize(self, Event=None):
         """Auto resize the ListCtrl columns"""
@@ -1240,35 +1200,17 @@ class SystemInfoPage3(wx.Panel):
         if Event != None:
             Event.Skip()
 
-    def GetDiskInfo(self, Event=None):
-        """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
-        logger.info("SystemInfoPage3().UpdateDevInfo(): Generating new Disk info...")
-        self.RefreshButton.Disable()
-        self.Throbber.Play()
-        GetDiskInformation(self)
-
-    def ReceiveDiskInfo(self, Info):
-        """Get Disk data, call self.UpdateListCtrl()"""
-        global DiskInfo
-        DiskInfo = Info
-
-        #Update the list control.
-        logger.debug("SystemInfoPage3().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
-        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "Type", "ID", "UUID"], Dictionary=DiskInfo)
-
-        #Stop the throbber and enable the refresh button.
-        self.Throbber.Stop()
-        self.RefreshButton.Enable()
-
 #End System Info Page 3
 #Begin System Info Page 4.
 class SystemInfoPage4(wx.Panel):
-    def __init__(self, ParentWindow):
+    def __init__(self, ParentWindow, SystemInfoWindow):
         """Initialise SystemInfoPage4"""
         wx.Panel.__init__(self, ParentWindow)
         self.ParentWindow = ParentWindow
+        self.SystemInfoWindow = SystemInfoWindow
 
         logger.debug("SystemInfoPage4().__init__(): Creating widgets...")
+        self.Title = "Here are all the operating systems WxFixBoot detected on your computer"
         NoteBookSharedFunctions.CreateWidgets(self)
 
         logger.debug("SystemInfoPage4().__init__(): Setting up sizers...")
@@ -1289,40 +1231,22 @@ class SystemInfoPage4(wx.Panel):
         self.ListCtrl.SetColumnWidth(2, int(Width * 0.1))
         self.ListCtrl.SetColumnWidth(3, int(Width * 0.2))
         self.ListCtrl.SetColumnWidth(4, int(Width * 0.2))
-        #self.ListCtrl.SetColumnWidth(5, int(Width * 0.35)) *** Add IsModifyable ***
+        self.ListCtrl.SetColumnWidth(5, int(Width * 0.35))
 
         if Event != None:
             Event.Skip()
 
-    def GetDiskInfo(self, Event=None):
-        """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
-        logger.info("SystemInfoPage4().UpdateDevInfo(): Generating new Disk info...")
-        self.RefreshButton.Disable()
-        self.Throbber.Play()
-        GetDiskInformation(self)
-
-    def ReceiveDiskInfo(self, Info):
-        """Get Disk data, call self.UpdateListCtrl()"""
-        global DiskInfo
-        DiskInfo = Info
-
-        #Update the list control.
-        logger.debug("SystemInfoPage4().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
-        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager"], Dictionary=OSInfo)
-
-        #Stop the throbber and enable the refresh button.
-        self.Throbber.Stop()
-        self.RefreshButton.Enable()
-
 #End System Info Page 4
 #Begin System Info Page 5.
 class SystemInfoPage5(wx.Panel):
-    def __init__(self, ParentWindow):
+    def __init__(self, ParentWindow, SystemInfoWindow):
         """Initialise SystemInfoPage5"""
         wx.Panel.__init__(self, ParentWindow)
         self.ParentWindow = ParentWindow
+        self.SystemInfoWindow = SystemInfoWindow
 
         logger.debug("SystemInfoPage5().__init__(): Creating widgets...")
+        self.Title = "Here are all the bootloaders WxFixBoot detected on your computer"
         NoteBookSharedFunctions.CreateWidgets(self)
 
         logger.debug("SystemInfoPage5().__init__(): Setting up sizers...")
@@ -1346,35 +1270,17 @@ class SystemInfoPage5(wx.Panel):
         if Event != None:
             Event.Skip()
 
-    def GetDiskInfo(self, Event=None):
-        """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
-        logger.info("SystemInfoPage5().UpdateDevInfo(): Generating new Disk info...")
-        self.RefreshButton.Disable()
-        self.Throbber.Play()
-        GetDiskInformation(self)
-
-    def ReceiveDiskInfo(self, Info):
-        """Get Disk data, call self.UpdateListCtrl()"""
-        global DiskInfo
-        DiskInfo = Info
-
-        #Update the list control.
-        logger.debug("SystemInfoPage5().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
-        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["OSName", "Bootloader", "BootDisk", "DefaultOS"], Dictionary=BootloaderInfo)
-
-        #Stop the throbber and enable the refresh button.
-        self.Throbber.Stop()
-        self.RefreshButton.Enable()
-
 #End System Info Page 5
 #Begin System Info Page 6.
 class SystemInfoPage6(wx.Panel):
-    def __init__(self, ParentWindow):
+    def __init__(self, ParentWindow, SystemInfoWindow):
         """Initialise SystemInfoPage6"""
         wx.Panel.__init__(self, ParentWindow)
         self.ParentWindow = ParentWindow
+        self.SystemInfoWindow = SystemInfoWindow
 
         logger.debug("SystemInfoPage6().__init__(): Creating widgets...")
+        self.Title = "Here are all the bootloaders WxFixBoot detected on your computer"
         NoteBookSharedFunctions.CreateWidgets(self)
 
         logger.debug("SystemInfoPage6().__init__(): Setting up sizers...")
@@ -1399,28 +1305,8 @@ class SystemInfoPage6(wx.Panel):
         if Event != None:
             Event.Skip()
 
-    def GetDiskInfo(self, Event=None):
-        """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
-        logger.info("SystemInfoPage6().UpdateDevInfo(): Generating new Disk info...")
-        self.RefreshButton.Disable()
-        self.Throbber.Play()
-        GetDiskInformation(self)
-
-    def ReceiveDiskInfo(self, Info):
-        """Get Disk data, call self.UpdateListCtrl()"""
-        global DiskInfo
-        DiskInfo = Info
-
-        #Update the list control.
-        logger.debug("SystemInfoPage6().UpdateDevInfo(): Calling self.UpdateListCtrl()...")
-        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["OSName", "Timeout", "GlobalKernelOptions", "IsModifyable", "Comments"], Dictionary=BootloaderInfo)
-
-        #Stop the throbber and enable the refresh button.
-        self.Throbber.Stop()
-        self.RefreshButton.Enable()
-
 #End System Info Page 6
-#Begin System Info Window #*** Updating disk info here doesn't work right now ***
+#Begin System Info Window
 class SystemInfoWindow(wx.Frame):
     def __init__(self, ParentWindow):
         """Initialize SystemInfoWindow"""
@@ -1432,12 +1318,12 @@ class SystemInfoWindow(wx.Frame):
 
         #Set up the notebook and the pages.
         self.NoteBook = wx.Notebook(self.Panel)
-        Page1 = SystemInfoPage1(self.NoteBook)
-        Page2 = SystemInfoPage2(self.NoteBook)
-        Page3 = SystemInfoPage3(self.NoteBook)
-        Page4 = SystemInfoPage4(self.NoteBook)
-        Page5 = SystemInfoPage5(self.NoteBook)
-        Page6 = SystemInfoPage6(self.NoteBook)
+        Page1 = SystemInfoPage1(self.NoteBook, self)
+        Page2 = SystemInfoPage2(self.NoteBook, self)
+        Page3 = SystemInfoPage3(self.NoteBook, self)
+        Page4 = SystemInfoPage4(self.NoteBook, self)
+        Page5 = SystemInfoPage5(self.NoteBook, self)
+        Page6 = SystemInfoPage6(self.NoteBook, self)
 
         self.NoteBook.AddPage(Page1, "Disk Info 1")
         self.NoteBook.AddPage(Page2, "Disk Info 2")
