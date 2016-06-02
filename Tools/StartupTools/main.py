@@ -336,9 +336,6 @@ class Main():
 
                 #Look for BIOS bootloaders here.
                 #No bootloader was found, so ask the user instead.
-                #Do a manual selection of the bootloader.
-                logger.warning("MainStartupTools: Main().GetBootloader(): Asking user what the bootloader is, as neither GRUB nor LILO was detected in MBR, and no UEFI partition was found...")
-                SystemInfo["AutoBootloader"] = CoreStartupTools.ManualBootloaderSelect()
                 break
 
             #Mount (or skip if mounted) the UEFI partition.
@@ -377,9 +374,6 @@ class Main():
                 break
 
             #Obviously, no bootloader has been found.
-            #Do a manual selection.
-            logger.warning("MainStartupTools: Main().GetBootloader(): Asking user what the bootloader is, as no bootloader was found...")
-            SystemInfo["AutoBootloader"] = CoreStartupTools.ManualBootloaderSelect()
 
             #The program waits until something was chosen, so if it executes this, the bootloader has been set.
             break

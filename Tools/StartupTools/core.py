@@ -238,30 +238,6 @@ class Main():
             logger.debug("CoreStartupTools: Main().DetermineGRUBVersion(): User reported bootloader is: GRUB-LEGACY. Continuing...")
             return "GRUB-LEGACY"
 
-    def ManualBootloaderSelect(self): #*** This will need modification when switching to dictionaries ***
-        """Presents the user with a wx.ChoiceBox to select the bootloader manually"""
-        logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): Manually selecting bootloader...")
-
-        #Offer different selection based on the current state of the system.
-        if SystemInfo["UEFISystemPartition"] == None and Settings["MainSettings"]["FirmwareType"] == "UEFI":
-            logger.warning("CoreStartupTools: Main().ManualBootloaderSelect(): Only listing BIOS bootloaders, as there is no UEFI partition.")
-            Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "LILO"])
-
-        elif SystemInfo["UEFISystemPartition"] != None and Settings["MainSettings"]["FirmwareType"] == "UEFI":
-            Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "GRUB-UEFI", "LILO", "ELILO"])
-
-        else:
-            logger.info("CoreStartupTools: Main().ManualBootloaderSelect(): Only listing BIOS bootloaders, as this is a BIOS system.")
-            Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine your bootloader, so please manually select it here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY/I don't know", "GRUB2", "LILO"])
-
-        if Result != "GRUB-LEGACY/I don't know":
-            logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): User reported bootloader is: "+Result+". Continuing...")
-            return Result
-
-        else:
-            logger.debug("CoreStartupTools: Main().ManualBootloaderSelect(): User reported bootloader is: GRUB-LEGACY. Continuing...")
-            return "GRUB-LEGACY"
-
     def CheckForUEFIPartition(self, SystemInfo): #*** DEPRECATED ***
         """Find the UEFI system partition and return it"""
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
