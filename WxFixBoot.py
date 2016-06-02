@@ -53,7 +53,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "31/5/2016"
+ReleaseDate = "1/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -502,13 +502,24 @@ class InitThread(threading.Thread):
         SystemInfo["RootDevice"] = DiskInfo[SystemInfo["RootFS"]]["HostDevice"]
         SystemInfo["AutoRootDevice"] = SystemInfo["RootDevice"]
 
+        #*** Get rid of this. Just used to sort of keep legacy code working for now ***
+        SystemInfo["Bootloader"] = "GRUB-UEFI"
+        SystemInfo["AutoBootloader"] = "GRUB-UEFI"
+
+        #*** DEPRECATED, no longer needed, remove soon ***
+        SystemInfo["AutoUEFISystemPartition"] = CoreStartupTools.CheckForUEFIPartition(SystemInfo)
+        SystemInfo["UEFISystemPartition"] = SystemInfo["AutoUEFISystemPartition"]
+
+        #*** What to do with this one? ***
+        SystemInfo["EmptyEFIPartition"] = False
+
         #Get the Bootloader. *** DEPRECATED ***
         #Initialise a setting.
         SystemInfo["PrevBootloaderSetting"] = None
 
         logger.info("InitThread(): *** DEPRECATED CODE *** Determining The Bootloader...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "***DEPRACTED CODE *** Determining The Bootloader...")
-        MainStartupTools.GetBootloader()
+        #MainStartupTools.GetBootloader()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): *** DEPRECATED CODE *** Bootloader is: "+SystemInfo["Bootloader"])
 
