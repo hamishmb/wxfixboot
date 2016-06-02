@@ -312,55 +312,6 @@ class Main():
                 SystemInfo["DetectedFirmwareType"] = "UEFI"
                 UEFIVariables = False
 
-    def GetBootloader(self):
-        """*** DEPRECATED *** Determine the current bootloader."""
-        #*** This is DEPRECATED ***
-        logger.debug("MainStartupTools: Main().GetBootloader(): Trying to determine bootloader...")
-
-        #Run some inital scripts
-        logger.debug("MainStartupTools: Main().GetBootloader(): Copying MBR bootsector to RAM...")
-        MBR = CoreTools.StartProcess("dd if="+SystemInfo["RootDevice"]+" bs=512 count=1", ReturnOutput=True)[1]
-
-        #Wrap this in a loop, so once a Bootloader is found, searching can stop.
-        while True:
-            #Check for a UEFI partition.
-            #Check for a UEFI system partition.
-            logger.debug("MainStartupTools: Main().GetBootloader(): Checking For a UEFI partition...")
-            SystemInfo["AutoUEFISystemPartition"] = CoreStartupTools.CheckForUEFIPartition(SystemInfo)
-            SystemInfo["UEFISystemPartition"] = SystemInfo["AutoUEFISystemPartition"]
-
-            #If there is no UEFI partition, only look for BIOS bootloaders.
-            if SystemInfo["UEFISystemPartition"] == None:
-                #There is no UEFI partition.
-                SystemInfo["EmptyEFIPartition"] = True
-
-                #Look for BIOS bootloaders here.
-                #No bootloader was found, so ask the user instead.
-                break
-
-            #Mount (or skip if mounted) the UEFI partition.
-            logger.info("MainStartupTools: Main().GetBootloader(): Attempting to mount the UEFI partition (if it isn't already)...")
-            UEFISYSPMountPoint = "/boot/efi"
-            Retval = CoreTools.MountPartition(Partition=SystemInfo["UEFISystemPartition"], MountPoint=UEFISYSPMountPoint)
-
-            if Retval == 0:
-                logger.info("MainStartupTools: Main().GetBootloader(): Successfully Mounted UEFI Partition...")
-
-            else:
-                #This very rarely happens! *** Is continuing anyway a good idea? ***
-                logger.error("MainStartupTools: Main().GetBootloader(): Failed to mount UEFI Partition! Continuing anyway, with reported mountpoint as /boot/efi...")
-
-            logger.info("MainStartupTools: Main().GetBootloader(): UEFI Partition mounted at: "+UEFISYSPMountPoint+". Continuing to look for UEFI bootloaders...")
-
-            #Attempt to figure out which bootloader is present.
-            #Obviously, no bootloader has been found.
-
-            #The program waits until something was chosen, so if it executes this, the bootloader has been set.
-            break
-
-        #Set the default bootloader value.
-        SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
-
     def GetBootloaders(self): #*** Test this thoroughly *** *** Fedora: Check under /boot/grub2, and also check for subdirs like i386-pc in grubdir *** *** Check for separate /boot partition ***
         """Find all bootloaders (for each OS), and gather some information about them"""
         Keys = OSInfo.keys()
