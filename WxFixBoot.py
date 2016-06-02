@@ -2261,28 +2261,6 @@ class BootloaderOptionsWindow(wx.Frame):
             self.DoNotChangeBootloaderCheckBox.SetValue(False)
             self.DoNotChangeBootloaderCheckBox.Disable()
 
-    def RescanForBootloaders(self, Event=None): #*** Are we keeping this? ***
-        """Handle selection of new UEFI system partition. It's pretty self-explanatory."""
-        logger.debug("BootloaderOptionsWindow().RescanForBootloaders(): Preparing to rescan for bootloaders...")
-        dlg = wx.MessageDialog(self.Panel, "WxFixBoot will now rescan for bootloaders, please wait a few seconds.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-        dlg.ShowModal()
-        dlg.Destroy()
-
-        #Get the Bootloader.
-        #Initialise a setting.
-        SystemInfo["PrevBootloaderSetting"] = None
-
-        logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Determining The Bootloader...")
-        MainStartupTools.GetBootloader(SystemInfo)
-        logger.info("BootloaderOptionsWindow().RescanForBootloaders(): Bootloader is: "+SystemInfo["Bootloader"])
-
-        #Okay, the UEFI partition has been scanned, and the bootloader has been set, either manually or automatically.
-        #Send a message to OptionsDlg1, so it can show itself again.
-        wx.CallAfter(self.ParentWindow.RefreshOptionsDlg1, "Closed.")
-
-        #Exit.
-        self.Destroy()
-
     def CheckOpts(self, Event=None):
         """Refuse to save options if they're invalid, otherwise call self.SaveBLOpts()"""
         logger.info("SettingsWindow().CheckOpts(): Checking options are valid...")
@@ -2502,7 +2480,7 @@ class NewBootloaderOptionsWindow(wx.Frame):
         self.ListCtrl.SetColumnWidth(2, int(Width * 0.1))
         self.ListCtrl.SetColumnWidth(3, int(Width * 0.2))
         self.ListCtrl.SetColumnWidth(4, int(Width * 0.2))
-        #self.ListCtrl.SetColumnWidth(5, int(Width * 0.35)) *** Add IsModifyable ***
+        self.ListCtrl.SetColumnWidth(5, int(Width * 0.35))
 
         if Event != None:
             Event.Skip()
@@ -3149,7 +3127,7 @@ class ProgressWindow(wx.Frame):
     def ShowOutput(self, Event=None):
         """Show and Hide the output box in ProgressWindow()"""
         logger.debug("ProgressWindow().ShowOutput() was Toggled to position: "+unicode(self.ShowOutputButton.GetValue())+", where True = Depressed and vice versa.")
-        if self.ShowOutputButton.GetValue() == True: #*** Including == True for readability ***
+        if self.ShowOutputButton.GetValue():
             #Remove the empty space.
             self.MainSizer.Detach(8)
 
@@ -3349,13 +3327,6 @@ class BackendThread(threading.Thread):
 
     def run(self):
         """Do setup, and call self.StartOperations()"""
-        #*** Temporarily do this until I switch to dictionaries ***
-        #Define global var
-        global KernelOptions
-
-        #Set to default values
-        KernelOptions = "quiet splash nomodeset"
- 
         #Log the BackendThread start event (in debug mode).
         logger.debug("BackendThread().run(): Started. Calling self.StartOperations()...")
 
