@@ -509,15 +509,8 @@ class InitThread(threading.Thread):
         #*** What to do with this one? ***
         SystemInfo["EmptyEFIPartition"] = False
 
-        #Get the Bootloader. *** DEPRECATED ***
         #Initialise a setting.
         SystemInfo["PrevBootloaderSetting"] = None
-
-        logger.info("InitThread(): *** DEPRECATED CODE *** Determining The Bootloader...")
-        wx.CallAfter(self.ParentWindow.UpdateProgressText, "***DEPRACTED CODE *** Determining The Bootloader...")
-        #MainStartupTools.GetBootloader()
-        wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
-        logger.info("InitThread(): *** DEPRECATED CODE *** Bootloader is: "+SystemInfo["Bootloader"])
 
         #New bootloader info getting function.
         logger.info("InitThread(): Finding all Bootloaders and getting their settings...")
