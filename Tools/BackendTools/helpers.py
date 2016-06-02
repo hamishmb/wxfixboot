@@ -51,54 +51,6 @@ class Main():
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
         return FailedList
 
-    def LookForBootloaderOnPartition(self, Bootloader, PackageManager, MountPoint, UsingChroot): #*** DEPRECATED ***
-        """Look for the currently installed bootloader in the given mount point."""
-        logger.debug("HelperBackendTools: Main().LookForBootloaderOnPartition(): Looking for "+Bootloader+" in "+MountPoint+"...")
-
-        #Okay, let's run a command in the chroot that was set up in self.FindBootloaderRemovalOSs(), depending on which package manager this OS uses, and which bootloader is currently installed.
-        if PackageManager == "apt-get":
-            Cmd = "dpkg --get-selections"
-
-        if UsingChroot:
-            Cmd = "chroot "+MountPoint+" "+Cmd
-
-        Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
-        Packages = []
-
-        if Bootloader == "GRUB-LEGACY":
-            for Package in Output:
-                if "grub" in Package and "install" in Package and "grub2" not in Package:
-                    Packages.append(Package.split()[0])
-
-        elif Bootloader == "GRUB2":
-            for Package in Output:
-                if "grub-pc" in Package and "install" in Package:
-                    Packages.append(Package.split()[0])
-
-        elif Bootloader == "LILO":
-            for Package in Output:
-                if "lilo" in Package and "install" in Package:
-                    Packages.append(Package.split()[0])
-
-        elif Bootloader == "GRUB-UEFI":
-            for Package in Output:
-                if "grub-efi" in Package and "install" in Package:
-                    Packages.append(Package.split()[0])
-
-        elif Bootloader == "ELILO":
-            for Package in Output:
-                if "elilo" in Package and "install" in Package:
-                    Packages.append(Package.split()[0])
-
-        #Now we can check the return value. If it's 0, the bootloader is present in this OS. Otherwise, it isn't.
-        if Packages != []:
-            logger.info("HelperBackendTools: Main().LookForBootloaderOnPartition(): Found "+Bootloader+" in "+MountPoint+"...")
-            return True
-
-        else:
-            logger.info("HelperBackendTools: Main().LookForBootloaderOnPartition(): Didn't find "+Bootloader+" in "+MountPoint+"...")
-            return False
-
     def FindCheckableFileSystems(self): #*** Tidy this up later ***
         """Find all checkable filesystems, and then return them to MainBackendTools().BadSectorCheck()/MainBackendTools().QuickFSCheck()"""
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Finding and returning all filesystems/partitions that can be checked...")
