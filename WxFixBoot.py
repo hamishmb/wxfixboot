@@ -3385,15 +3385,17 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.BootloaderTools.setconfigtools.SystemInfo = SystemInfo
         Tools.BackendTools.BootloaderTools.setconfigtools.OSInfo = OSInfo
 
+        #*** Temporarily set some variables to make stuff work for now ***
+        global BootloaderTimeout
+        global KernelOptions
+
+        BootloaderTimeout = 10
+        KernelOptions = "quiet splash nomodeset"
+
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
         for function in Operations:
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
             #*** We temporarily need global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
-            #*** Might need to add logging stuff here temporarily for when it fails for debugging purposes ***
-            #*** Define globals so if they're assigned to here, python won't think they're local. ***
-            global BootloaderTimeout
-            global KernelOptions
-
             #*** Essential backend tools ***
             Tools.BackendTools.essentials.PartitionTableFile = PartitionTableFile
             Tools.BackendTools.essentials.PartitionTableBackupType = PartitionTableBackupType
@@ -3401,10 +3403,6 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.essentials.BootSectorFile = BootSectorFile
             Tools.BackendTools.essentials.BootSectorBackupType = BootSectorBackupType
             Tools.BackendTools.essentials.BootSectorTargetDevice = BootSectorTargetDevice
-
-            #*** Main Bootloader Tools (in Backend Tools package) ***
-            Tools.BackendTools.BootloaderTools.main.UpdateBootloader = UpdateBootloader
-            Tools.BackendTools.BootloaderTools.main.ReinstallBootloader = ReinstallBootloader
 
             #*** Main Backend Tools ***
             Tools.BackendTools.main.BootloaderTimeout = BootloaderTimeout
