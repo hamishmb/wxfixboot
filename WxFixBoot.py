@@ -21,8 +21,7 @@
 #*** Test DialogTools.ShowMultiChoiceDlg() ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** Allow getting device info after startup (run some startup scripts again) ****
-#*** Remove grub.efi files after installing elilo and vice versa ***
-#*** Make sure elilo's script in postinst.d is removed (purge it) ***
+#*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Support EFI on 32-bit firmware? ***
 #*** /boot/efi not unmounted after modifying EFI bootloaders on parted magic (possibly also on other platforms), preventing unmounting of chrooted rootfs. Doesn't cause an error or any problems. ***
 #*** Make OSInfo accessible to CoreBackendTools? ***
@@ -53,7 +52,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "1/6/2016"
+ReleaseDate = "2/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -350,7 +349,7 @@ class InitialWindow(wx.Frame):
         self.Panel.Layout()
 
     def UpdateOutputBox(self, Message): #*** Get rid of this later? ***
-        """Dummy function, accepts a message argument but ignores it. Allow CoreTools.StartProcess to work."""
+        """Dummy function, accepts a message argument but ignores it. Allows CoreTools.StartProcess to work."""
         pass
 
     def FinishedInit(self, Event=None):
