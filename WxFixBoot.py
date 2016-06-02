@@ -3406,11 +3406,7 @@ class BackendThread(threading.Thread):
 
             #*** Main Backend Tools ***
             Tools.BackendTools.main.BootloaderTimeout = BootloaderTimeout
-
-            try:
-                Tools.BackendTools.main.KernelOptions = KernelOptions
-
-            except NameError: pass
+            Tools.BackendTools.main.KernelOptions = KernelOptions
 
             #*** Bootloader Config getting tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout = BootloaderTimeout
@@ -3425,15 +3421,6 @@ class BackendThread(threading.Thread):
 
             #Run the function.
             function()
-
-            #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set the vars global to this file) ***
-            #*** Main Backend Tools ***
-            BootloaderTimeout = Tools.BackendTools.main.BootloaderTimeout
-
-            try:
-                KernelOptions = Tools.BackendTools.main.KernelOptions
-
-            except AttributeError: pass
 
         logger.info("BackendThread().StartOperations(): Finished Operation Running Code.")
 
@@ -3471,43 +3458,42 @@ class BackendThread(threading.Thread):
         ReportList.write("Selected Bootloader: "+SystemInfo["Bootloader"]+"\n")
 
         if SystemInfo["BootloaderToInstall"] != "None":
-            #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else). *** Use dictionary for DefaultOS *** *** Show what we would do if they weren't disabled too ***
+            #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else). *** Show what we would do if they weren't disabled too ***
             ReportList.write("Disabled Bootloader Operations: "+unicode(SystemInfo["DisableBootloaderOperations"])+"\n")
 
             if SystemInfo["DisableBootloaderOperations"] == False:
                 if ReinstallBootloader:
                     ReportList.write("Reinstall/Fix The Current BootLoader: "+unicode(ReinstallBootloader)+"\n")
                     ReportList.write("Selected Bootloader To Reinstall/Fix: "+SystemInfo["BootloaderToInstall"]+"\n")
-                    ReportList.write("Reinstall/Fix bootloader in: "+', '.join(OSsForBootloaderInstallation)+"\n") #*** Use dictionary ***
+                    ReportList.write("Reinstall/Fix bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
-                    ReportList.write("\tDefault OS: "+DefaultOS+"\n")
+                    ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
                     ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
                 elif UpdateBootloader:
                     ReportList.write("Update The Current BootLoader's Config: "+unicode(UpdateBootloader)+"\n")
                     ReportList.write("Selected Bootloader To Update: "+SystemInfo["BootloaderToInstall"]+"\n")
-                    ReportList.write("Update Bootloader in: "+', '.join(OSsForBootloaderInstallation)+"\n")
+                    ReportList.write("Update Bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
-                    ReportList.write("\tDefault OS: "+DefaultOS+"\n")
+                    ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
                     ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
                 else:
                     #We must be installing a new bootloader.
                     ReportList.write("Selected Bootloader To Install: "+SystemInfo["BootloaderToInstall"]+"\n")
-                    ReportList.write("Remove Old Bootloader from: "+', '.join(OSsForBootloaderRemoval)+"\n") #*** Use dictionary ***
-                    ReportList.write("Install New Bootloader to: "+', '.join(OSsForBootloaderInstallation)+"\n")
+                    ReportList.write("Remove Old Bootloader from: "+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"\n")
+                    ReportList.write("Install New Bootloader to: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nNew Bootloader's Configuration:"+"\n")
-                    ReportList.write("\tDefault OS: "+DefaultOS+"\n")
+                    ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
                     ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
-        #Do Disk Information *** Use dictionary ***
+        #Do Disk Information
         ReportList.write("\n##########Disk Information##########\n")
         ReportList.write("Detected Linux Partitions: "+', '.join(SystemInfo["LinuxPartitions"])+"\n")
-        ReportList.write("Detected Root Filesystem (MBR bootloader target): "+AutoRootFS+"\n") #*** Use Dictionary ***
-        ReportList.write("Selected Root Filesystem (MBR bootloader target): "+RootFS+"\n")
+        ReportList.write("Delected Root Filesystem (MBR bootloader target): "+SystemInfo["RootFS"]+"\n")
         ReportList.write("Detected Root Device (MBR Bootloader Target): "+SystemInfo["AutoRootDevice"]+"\n")
         ReportList.write("Selected Root Device (MBR Bootloader Target): "+SystemInfo["RootDevice"]+"\n")
 
@@ -3516,7 +3502,7 @@ class BackendThread(threading.Thread):
         ReportList.write("Backup Boot Sector: "+unicode(BackupBootSector)+"\n")
         if BackupBootSector:
             ReportList.write("\n\tBacked up Boot Sector From: "+SystemInfo["RootDevice"]+"\n")
-            ReportList.write("\tTarget Boot Sector File: (*** Disabled as no way of saving this until switch to dictionaries ***)\n\n") # *** +BootSectorBackupFile+"\n\n")
+            ReportList.write("\tTarget Boot Sector File: (*** Disabled as no way of saving this until switch to dictionaries ***)\n\n") #*** +BootSectorBackupFile+"\n\n")
 
         ReportList.write("Restore Boot Sector: "+unicode(RestoreBootSector)+"\n")
         if RestoreBootSector:
@@ -3529,7 +3515,7 @@ class BackendThread(threading.Thread):
         ReportList.write("Backup Partition Table: "+unicode(BackupPartitionTable)+"\n")
         if BackupPartitionTable:
             ReportList.write("\n\tBacked up Partition Table from: "+SystemInfo["RootDevice"]+"\n")
-            ReportList.write("\tTarget Partition Table File: (*** Disabled as no way of saving this until switch to dictionaries ***)\n\n") # *** +PartitionTableBackupFile+"\n\n")
+            ReportList.write("\tTarget Partition Table File: (*** Disabled as no way of saving this until switch to dictionaries ***)\n\n") #*** +PartitionTableBackupFile+"\n\n")
 
         ReportList.write("Restore Partition Table: "+unicode(RestorePartitionTable)+"\n")
         if RestorePartitionTable:
