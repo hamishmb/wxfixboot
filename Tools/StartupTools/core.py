@@ -279,22 +279,6 @@ class Main():
                 logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): No vfat partitions found. No UEFI partition exists. Continuing...")
                 return None
 
-    def CheckForGRUBUEFI(self, UEFISYSPMountPoint): #*** DEPRECATED ***
-        """Check for GRUB-UEFI"""
-        #Look for GRUB's UEFI file.
-        Temp = CoreTools.Find(r"(.*)grub(.*).efi", UEFISYSPMountPoint)
-
-        if Temp != []:
-            #Bootloader is GRUB-UEFI.
-            GrubEFI = True
-            SystemInfo["EmptyEFIPartition"] = False
-
-        else:
-            GrubEFI = False
-            SystemInfo["EmptyEFIPartition"] = True
-
-        return GrubEFI
-
     def CheckForELILO(self, UEFISYSPMountPoint): #*** DEPRECATED ***
         """Check for ELILO"""
         #Look for LILO's UEFI file.

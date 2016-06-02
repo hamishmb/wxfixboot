@@ -353,16 +353,6 @@ class Main():
             logger.info("MainStartupTools: Main().GetBootloader(): UEFI Partition mounted at: "+UEFISYSPMountPoint+". Continuing to look for UEFI bootloaders...")
 
             #Attempt to figure out which bootloader is present.
-            #Check for GRUB-UEFI.
-            logger.debug("MainStartupTools: Main().GetBootloader(): Checking for GRUB-UEFI in UEFI Partition...")
-            GrubEFI = CoreStartupTools.CheckForGRUBUEFI(UEFISYSPMountPoint)
-
-            if GrubEFI:
-                #We have GRUB-UEFI!
-                SystemInfo["AutoBootloader"] = "GRUB-UEFI"
-                logger.info("MainStartupTools: Main().GetBootloader(): Found GRUB-UEFI in UEFI Partition (shown as GRUB-UEFI in GUI). Continuing...")
-                break
-
             #Check for ELILO
             logger.debug("MainStartupTools: Main().GetBootloader(): Checking for ELILO in UEFI Partition...")
             ELILO = CoreStartupTools.CheckForELILO(UEFISYSPMountPoint)
