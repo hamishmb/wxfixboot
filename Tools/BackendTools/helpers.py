@@ -189,64 +189,6 @@ class Main():
 
         logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Finished selecting OSs! Modifying or Installing the new bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"]))
 
-    def FindBootloaderRemovalOSs(self, Bootloader):
-        """Find the OS(es) that currently have the bootloader installed, so we know where to remove it from."""
-        logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Looking for Operating Systems that currently have the bootloader installed, to add to the removal list...")
-
-        SystemInfo["OSsForBootloaderRemoval"] = []
-
-        for OS in SystemInfo["OSsWithPackageManagers"]:
-            #Grab the Package Manager and the partition the OS resides on.
-            PackageManager = OSInfo[OS]["PackageManager"]
-            Partition = OSInfo[OS]["Partition"]
-
-            #Run some different instructions depending on whether the OS is the current OS or not.
-            if OSInfo[OS]["IsCurrentOS"]:
-                UsingChroot = False
-                MountPoint = "/"
-
-            else:
-                #Do some additional steps if we're using a live disk.
-                MountPoint = "/mnt"+Partition
-                UsingChroot = True
-
-                #Mount the partition.
-                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
-
-                #Check if anything went wrong.
-                if Retval != 0:
-                    #Ignore this partition.
-                    logger.warning("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Failed to mount "+Partition+"! Ignoring this partition...")
-                    continue
-
-                #Set up a chroot.
-                Retval = CoreTools.SetUpChroot(MountPoint=MountPoint)
-
-                if Retval != 0:
-                    logger.error("HelperBackendTools: Main().FindBootloaderRemoveOSs(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
-
-            Found = self.LookForBootloaderOnPartition(Bootloader=Bootloader, PackageManager=PackageManager, MountPoint=MountPoint, UsingChroot=UsingChroot)
-
-            if UsingChroot:
-                #Tear down the chroot.
-                Retval = CoreTools.TearDownChroot(MountPoint=MountPoint)
-
-                if Retval != 0:
-                    logger.error("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
-
-                #Unmount the partition.
-                if CoreTools.Unmount(Partition) != 0:
-                    logger.error("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Failed to unmount "+Partition+"! Continuing anyway...")
-
-            #Check if the bootloader was found on that partition. If it wasn't, don't do anything.
-            if Found:
-                #It was! Add it to the list.
-                SystemInfo["OSsForBootloaderRemoval"].append(OS)
-                logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Found bootloader to remove: "+Bootloader+" On OS: "+OS+". Adding it to the list. Continuing...")
-
-        #Return the list to self.PrepareForBootloaderInstallation()
-        logger.info("HelperBackendTools: Main().FindBootloaderRemovalOSs(): Finished populating SystemInfo['OSsForBootloaderRemoval']. Contents: "+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"...")
-
     def WriteFSTABEntryForUEFIPartition(self, MountPoint):
         """Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one."""
         logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Preparing to write an fstab entry for the UEFI partition ("+SystemInfo["UEFISystemPartition"]+")...")
