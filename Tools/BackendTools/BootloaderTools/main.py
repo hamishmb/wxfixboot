@@ -62,10 +62,6 @@ class Main(): #*** Refactor all of these ***
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Updating the bootloader's config...")
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader's configuration...###\n")
 
-            #Get the bootloader's config.
-            MainBackendTools.GetOldBootloaderConfig()
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
-
             #Set the bootloaders new config.
             MainBackendTools.SetNewBootloaderConfig()
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
@@ -75,20 +71,16 @@ class Main(): #*** Refactor all of these ***
     def ManageBootloaders(self):
         """Manage the installation and removal of bootloaders.""" #*** Check each operation worked with a return value! ***
         #First remove the old bootloader, then install the new one.
-        logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().GetOldBootloaderConfig()...")
-        MainBackendTools.GetOldBootloaderConfig()
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 25)
-
         logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().RemoveOldBootloader()...")
         MainBackendTools.RemoveOldBootloader()
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 33)
 
         logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().InstallNewBootloader()...")
         BootloaderInstallSucceded = MainBackendTools.InstallNewBootloader()
 
         if BootloaderInstallSucceded:
             logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Installing new bootloader succeeded! Calling MainBackendTools().SetNewBootloaderConfig()...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 66)
             MainBackendTools.SetNewBootloaderConfig()
 
         else:
@@ -99,7 +91,7 @@ class Main(): #*** Refactor all of these ***
             if Result:
                 #Continue and configure bootloaders. Otherwise, do nothing.
                 logger.warning("MainBootloaderTools(): Main().ManageBootloaders(): Configuring bootloaders anyway. Calling MainBackendTools().SetNewBootloaderConfig()...")
-                wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
+                wx.CallAfter(ParentWindow.UpdateCurrentProgress, 66)
                 MainBackendTools.SetNewBootloaderConfig()
 
             else:
