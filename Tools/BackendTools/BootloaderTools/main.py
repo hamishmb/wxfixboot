@@ -58,10 +58,6 @@ class Main(): #*** Refactor all of these ***
                 #Very good! There is at least one candidate.
                 logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): Found at least one candidate for installing and removing bootloaders! Continuing...")
 
-                #Also, we need to find which OS(es) installed the bootloader (or have it installed currently), and ask the user which OS to install the bootloader with.
-                HelperBackendTools.FindBootloaderRemovalOSs(SystemInfo["Bootloader"])
-                logger.info("MainBootloaderTools: Main().PrepareForBootloaderInstallation(): List of OSs to have the bootloader removed: "+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"...")
-
                 #Update Current Operation Text.
                 wx.CallAfter(ParentWindow.UpdateCurrentProgress, 85)
                 HelperBackendTools.AskUserForBootloaderInstallationOSs(UpdateBootloader, ReinstallBootloader)

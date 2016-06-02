@@ -153,42 +153,6 @@ class Main():
                 #Seriously? Well, okay, we'll do it anyway... This is probably a very bad idea...
                 logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User ignored the warning and went ahead with bootloader modifications (if any) anyway, even with possible HDD problems/Bad sectors! This is a REALLY bad idea, but we'll do it anyway, as requested...")
 
-    def AskUserForBootloaderInstallationOSs(self, UpdateBootloader, ReinstallBootloader): #*** Maybe move to BootloaderTools package ***
-        """Ask the user where the new bootloader is to be installed."""
-        SystemInfo["OSsForBootloaderInstallation"] = []
-
-        if len(SystemInfo["OSsWithPackageManagers"]) == 1:
-            if UpdateBootloader:
-                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be updated.")
-
-            else:
-                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be removed from the following Operating Systems ("+', '.join(SystemInfo["OSsForBootloaderRemoval"])+").")
-
-            SystemInfo["OSsForBootloaderInstallation"] = SystemInfo["OSsWithPackageManagers"][:]
-            logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Installing the new bootloader in OS(s): "+', '.join(SystemInfo["OSsForBootloaderInstallation"]))
-
-        else:
-            if UpdateBootloader or ReinstallBootloader:
-                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be updated or reinstalled in all Operating Systems it is installed in ("+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"). Click okay to continue.")
-                SystemInfo["OSsForBootloaderInstallation"] = SystemInfo["OSsForBootloaderRemoval"][:]
-
-            else: #*** Check all this works ***
-                logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): There is more than one Operating System with a supported package manager. Asking the user which ones to install the new bootloader in...")
-                DialogTools.ShowMsgDlg(Kind="info", Message="Your bootloader will be removed in all Operating Systems it is installed in ("+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"). You will now be asked which Operating Systems you want your new bootloader to be installed in.")
-
-                #Make a list of candidates to install the bootloader in (only including OSes that will have their bootloaders removed).
-                BootloaderCandidatesList = SystemInfo["OSsWithPackageManagers"][:]
-
-                logger.debug("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Contents of BootloaderCandidatesList: "+', '.join(BootloaderCandidatesList))
-                logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): Asking the user which new OS to install the bootloader to...")
-
-                #Ask the user which candidate(s) to use for bootloader installation.
-                SystemInfo["OSsForBootloaderInstallation"] = DialogTools.ShowMultiChoiceDlg(Message="Please select each OS you'd like to modify or install the bootloader to.\nIdeally, select the ones that you use most frequently.", Title="WxFixBoot - Select Operating Systems For Bootloader Installation", Choices=BootloaderCandidatesList)
-
-                logger.info("HelperBackendTools: Main().AskUserForBootloaderInstallationOSs(): User selected: "+Result+"...")
-
-        logger.info("HelperBackendTools: Main().AskUserForInstallationOSs(): Finished selecting OSs! Modifying or Installing the new bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"]))
-
     def WriteFSTABEntryForUEFIPartition(self, MountPoint):
         """Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one."""
         logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Preparing to write an fstab entry for the UEFI partition ("+SystemInfo["UEFISystemPartition"]+")...")
