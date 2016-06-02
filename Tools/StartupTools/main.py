@@ -335,21 +335,6 @@ class Main():
                 SystemInfo["EmptyEFIPartition"] = True
 
                 #Look for BIOS bootloaders here.
-                #Check for GRUB in the MBR
-                logger.debug("MainStartupTools: Main().GetBootloader(): Checking for GRUB in bootsector...")
-                if CoreStartupTools.CheckForGRUBBIOS(MBR):
-                    #We have GRUB BIOS, now figure out which version we have!
-                    SystemInfo["AutoBootloader"] = CoreStartupTools.DetermineGRUBBIOSVersion(SystemInfo)
-                    break
-
-                #Check for LILO in MBR
-                logger.debug("MainStartupTools: Main().GetBootloader(): Checking for LILO in bootsector...")
-                if CoreStartupTools.CheckForLILO(MBR):
-                    #We have LILO!
-                    SystemInfo["AutoBootloader"] = "LILO"
-                    logger.info("MainStartupTools: Main().GetBootloader(): Found LILO in MBR (shown as LILO in GUI. Continuing...")
-                    break
-
                 #No bootloader was found, so ask the user instead.
                 #Do a manual selection of the bootloader.
                 logger.warning("MainStartupTools: Main().GetBootloader(): Asking user what the bootloader is, as neither GRUB nor LILO was detected in MBR, and no UEFI partition was found...")

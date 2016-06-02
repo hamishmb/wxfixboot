@@ -194,15 +194,6 @@ class Main():
 
             return Result
 
-    def CheckForLILO(self, MBR):
-        """Check for LILO in MBR"""
-        if str("LILO") in MBR: #Avoid UnicodeDecodeError by doing this.
-            #Bootloader is LILO in MBR
-            return True
-
-        else:
-            return False
-
     def DetermineGRUBBIOSVersion(self, SystemInfo):
         """Try to determine which version of GRUB BIOS is installed""" #*** DEPRECATED ***
         logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Determining GRUB version...")
