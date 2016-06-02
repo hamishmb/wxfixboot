@@ -194,45 +194,4 @@ class Main():
 
             return Result
 
-    def CheckForUEFIPartition(self, SystemInfo): #*** DEPRECATED ***
-        """Find the UEFI system partition and return it"""
-        logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
-        AskForUEFIPartition = True
-
-        #Get a list of partitions of type vfat with boot flags, if any.
-        FatPartitions = []
-        Keys = DiskInfo.keys()
-        Keys.sort()
-
-        for Disk in Keys:
-            if DiskInfo[Disk]["Type"] == "Partition":
-                if DiskInfo[Disk]["FileSystem"] == "vfat" and ("boot" in DiskInfo[Disk]["Flags"] or "bootable" in DiskInfo[Disk]["Flags"]):
-                    FatPartitions.append(Disk)
-
-        #If this leaves just one partition, then that's out EFI partition.
-        if len(FatPartitions) == 1:
-            logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Found UEFI Partition at: "+FatPartitions[0])
-            return FatPartitions[0]
-
-        #Otherwise check if it's mounted at /boot/efi if we're not on a live disk.
-        if SystemInfo["IsLiveDisk"] == False:
-             pass
-
-        if SystemInfo["IsLiveDisk"] or AskForUEFIPartition:
-            if FatPartitions != []:
-                logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): Asking user where UEFI Partition is. If you're running from a live disk, ignore this warning.")
-                Result = DialogTools.ShowChoiceDlg(Message="Please select your UEFI partition. You can change this later in the bootloader options window if you change your mind, or if it's wrong.", Title="WxFixBoot - Select UEFI Partition", Choices=["I don't have one"]+FatPartitions)
-
-                if Result == "I don't have one":
-                    logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): User said no UEFI Partition exists. Continuing...")
-                    return None
-
-                else:
-                    logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): User reported UEFI partition at: "+Result+". Continuing...")
-                    return Result
-
-            else:
-                logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): No vfat partitions found. No UEFI partition exists. Continuing...")
-                return None
-
 #End main Class.

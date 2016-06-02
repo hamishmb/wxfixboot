@@ -506,10 +506,6 @@ class InitThread(threading.Thread):
         SystemInfo["Bootloader"] = "GRUB-UEFI"
         SystemInfo["AutoBootloader"] = "GRUB-UEFI"
 
-        #*** DEPRECATED, no longer needed, remove soon ***
-        SystemInfo["AutoUEFISystemPartition"] = CoreStartupTools.CheckForUEFIPartition(SystemInfo)
-        SystemInfo["UEFISystemPartition"] = SystemInfo["AutoUEFISystemPartition"]
-
         #*** What to do with this one? ***
         SystemInfo["EmptyEFIPartition"] = False
 

@@ -349,6 +349,10 @@ class Main():
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "ELILO"):
                 BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
+                #*** Remove this later, makes legacy code work for the mean time ***
+                SystemInfo["AutoUEFISystemPartition"] = OSInfo[OS]["EFIPartition"]
+                SystemInfo["UEFISystemPartition"] = OSInfo[OS]["EFIPartition"]
+
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
                 BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuEntries(MountPoint+"/boot/grub/grub.cfg")
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["DefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", MountPoint+"/boot/grub/grubenv", BootloaderInfo[OS]["MenuEntries"])
