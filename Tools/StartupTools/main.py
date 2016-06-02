@@ -353,16 +353,6 @@ class Main():
             logger.info("MainStartupTools: Main().GetBootloader(): UEFI Partition mounted at: "+UEFISYSPMountPoint+". Continuing to look for UEFI bootloaders...")
 
             #Attempt to figure out which bootloader is present.
-            #Check for ELILO
-            logger.debug("MainStartupTools: Main().GetBootloader(): Checking for ELILO in UEFI Partition...")
-            ELILO = CoreStartupTools.CheckForELILO(UEFISYSPMountPoint)
-
-            if ELILO:
-                #We have ELILO!
-                SystemInfo["AutoBootloader"] = "ELILO"
-                logger.info("MainStartupTools: Main().GetBootloader(): Found ELILO in UEFI Partition (shown as ELILO in GUI). Continuing...")
-                break
-
             #Obviously, no bootloader has been found.
 
             #The program waits until something was chosen, so if it executes this, the bootloader has been set.

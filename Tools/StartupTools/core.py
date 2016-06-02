@@ -279,20 +279,4 @@ class Main():
                 logger.warning("CoreStartupTools: Main().CheckForUEFIPartition(): No vfat partitions found. No UEFI partition exists. Continuing...")
                 return None
 
-    def CheckForELILO(self, UEFISYSPMountPoint): #*** DEPRECATED ***
-        """Check for ELILO"""
-        #Look for LILO's UEFI file.
-        Temp = CoreTools.Find(r"(.*)elilo(.*).efi", UEFISYSPMountPoint)
-
-        if Temp != []:
-            #Bootloader is ELILO.
-            ELILO = True
-            SystemInfo["EmptyEFIPartition"] = False
-
-        else:
-            ELILO = False
-            SystemInfo["EmptyEFIPartition"] = True
-
-        return ELILO
-
 #End main Class.
