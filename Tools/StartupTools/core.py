@@ -194,50 +194,6 @@ class Main():
 
             return Result
 
-    def DetermineGRUBBIOSVersion(self, SystemInfo):
-        """Try to determine which version of GRUB BIOS is installed""" #*** DEPRECATED ***
-        logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Determining GRUB version...")
-        #Check if the system is using grub-legacy or grub2.
-        if SystemInfo["IsLiveDisk"] == False:
-            #Ask the user if this OS installed the bootloader.
-            Result = DialogTools.ShowYesNoDlg(Message="Was the bootloader installed by the current OS ("+SystemInfo["CurrentOS"]["Name"]+")? If this OS is the most recently installed one, it probably installed the bootloader. If you're not sure, click No.")
-        
-            if Result:
-                #Run a command to print grub's version.
-                Output = CoreTools.StartProcess("grub-install --version", ReturnOutput=True)[1]
-
-                GRUBVersion = Output.split()[-1].replace(")", "")
-
-                #Try to grab the first number in the list. If it fails, we've almost certainly got GRUB2.
-                try:
-                    float(GRUBVersion)
-
-                except ValueError:
-                    logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Found GRUB2 in MBR (Shown as GRUB2 in GUI). Continuing...")
-                    return "GRUB2"
-
-                else:
-                    #If a number was found, check if it's lower than or equal to 1.97 (aka it's grub legacy)
-                    if float(GRUBVersion) <= 1.97:
-                        return "GRUB-LEGACY"
-                        logger.warning("CoreStartupTools: Main().DetermineGRUBVersion(): Found GRUB-LEGACY in MBR! Some options will be disabled, as grub legacy isn't fully supported because it is obsolete. Continuing...")
-
-                    else:
-                        logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Found GRUB2 in MBR (Shown as GRUB2 in GUI). Continuing...")
-                        return "GRUB2"
-        
-        #Ask the user (this'll be run if user said no to YesNo dlg above too -- this isn't in an else staement).
-        logger.info("CoreStartupTools: Main().DetermineGRUBVersion(): Only listing GRUB2 and GRUB-LEGACY, as WxFixBoot couldn't tell if bootloader was grub2 or legacy.")
-        Result = DialogTools.ShowChoiceDlg(Message="WxFixBoot was unable to automatically determine if your bootloader was GRUB-LEGACY or GRUB2, so please specify which one it is here.", Title="WxFixBoot - Select Bootloader", Choices=["GRUB-LEGACY or I don't know", "GRUB2"])
-
-        if Result != "GRUB-LEGACY or I don't know":
-            logger.debug("CoreStartupTools: Main().DetermineGRUBVersion(): User reported bootloader is: "+Result+". Continuing...")
-            return Result
-
-        else:
-            logger.debug("CoreStartupTools: Main().DetermineGRUBVersion(): User reported bootloader is: GRUB-LEGACY. Continuing...")
-            return "GRUB-LEGACY"
-
     def CheckForUEFIPartition(self, SystemInfo): #*** DEPRECATED ***
         """Find the UEFI system partition and return it"""
         logger.info("CoreStartupTools: Main().CheckForUEFIPartition(): Finding UEFI partition...")
