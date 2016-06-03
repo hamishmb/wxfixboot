@@ -503,9 +503,6 @@ class InitThread(threading.Thread):
         #*** What to do with this one? ***
         SystemInfo["EmptyEFIPartition"] = False
 
-        #Initialise a setting.
-        SystemInfo["PrevBootloaderSetting"] = None
-
         #New bootloader info getting function.
         logger.info("InitThread(): Finding all Bootloaders and getting their settings...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Bootloaders...")
@@ -519,6 +516,12 @@ class InitThread(threading.Thread):
         MainStartupTools.FinalCheck()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
+
+        Keys = SystemInfo.keys()
+        Keys.sort()
+
+        for Key in Keys:
+            print(Key)
 
         #Set some other variables to default values, avoiding problems down the line. *** Save these in a dictionary later ***
         #Define globals.
@@ -1798,7 +1801,6 @@ class SettingsWindow(wx.Frame):
 
         #ChoiceBoxes
         #Currently Installed Bootloader ChoiceBox
-        SystemInfo["PrevBootloaderSetting"] = SystemInfo["Bootloader"]
         if self.InstalledBootloaderChoice.GetSelection() != 0:
             SystemInfo["Bootloader"] = self.InstalledBootloaderChoice.GetStringSelection()
 
@@ -1869,7 +1871,6 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def CreateButtons(self):
         """Create the buttons"""
-        self.RescanForBootloadersButton = wx.Button(self.Panel, -1, "Rescan For Bootloaders")
         self.CheckButton = wx.Button(self.Panel, -1, "Check Options")
         self.ExitButton = wx.Button(self.Panel, -1, "Close")
 
@@ -1908,7 +1909,7 @@ class BootloaderOptionsWindow(wx.Frame):
         """Sets up default values for Bootloader Options Window. Call on first launch, and again if the installed bootloader settings has been changed"""    
         logger.debug("BootloaderOptionsWindow().SetDefaults(): Setting up BootloaderOptionsWindow...")
         #Check if the dialog has already been run, or if the bootloader setting has changed (so it must discard the setting to avoid errors).
-        if BLOptsDlgRun == False or SystemInfo["Bootloader"] != SystemInfo["PrevBootloaderSetting"]:
+        if BLOptsDlgRun == False:
             #Use defaults.
             self.BootloaderToInstallChoicelastvalue = "Auto"
             #If bootloader is to be reinstalled, updated, or if a UEFI partition isn't available, or if bootloader is grub-legacy, disable some stuff.
@@ -2014,7 +2015,6 @@ class BootloaderOptionsWindow(wx.Frame):
         #Add items to the other options sizer.
         OtherOptionsSizer.Add(self.OptionsText, 0, wx.TOP|wx.BOTTOM, 10)
         OtherOptionsSizer.Add(BootloaderToInstallSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
-        OtherOptionsSizer.Add(self.RescanForBootloadersButton, 1, wx.BOTTOM|wx.EXPAND, 10)
 
         #Add items to the all option sizer.
         AllOptionsSizer.Add(FirmwareOptionsSizer, 1, wx.RIGHT|wx.EXPAND, 5)
@@ -2039,7 +2039,6 @@ class BootloaderOptionsWindow(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.CheckOpts)
         self.Bind(wx.EVT_CHECKBOX, self.ActivateOptsforNoModification, self.DoNotChangeBootloaderCheckBox)
         self.Bind(wx.EVT_CHOICE, self.BlToInstallChoiceChange, self.BootloaderToInstallChoice)
-        self.Bind(wx.EVT_BUTTON, self.RescanForBootloaders, self.RescanForBootloadersButton) 
         self.Bind(wx.EVT_RADIOBUTTON, self.ActivateOptsforAutoFW, self.AutoFirmwareTypeRadioButton)
         self.Bind(wx.EVT_RADIOBUTTON, self.ActivateOptsforUEFIFW, self.UEFIFirmwareTypeRadioButton)
         self.Bind(wx.EVT_RADIOBUTTON, self.ActivateOptsforBIOSFW, self.BIOSFirmwareTypeRadioButton)
@@ -2237,9 +2236,6 @@ class BootloaderOptionsWindow(wx.Frame):
             #    wx.MessageDialog(self.Panel, "LILO is going to be installed, but at least one device connected to this computer uses an incompatble partition system! LILO will not boot from that device, so this may be a bad idea, in case you boot from it. Please consider installing GRUB2 instead as it will boot from that device.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
 
         self.BootloaderToInstallChoice.SetStringSelection(SystemInfo["BootloaderToInstall"])
-
-        #Avoid an error situation.
-        SystemInfo["PrevBootloaderSetting"] = SystemInfo["Bootloader"]
 
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Value of BootloaderToInstall is: "+SystemInfo["BootloaderToInstall"])
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Finished saving options.")
