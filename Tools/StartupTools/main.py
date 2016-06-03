@@ -272,6 +272,7 @@ class Main():
 
         else:
             logger.info("MainStartupTools: Main().GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars or /sys/firmware/efi/efivars. This is normal if running on a BIOS system. Determining firmware type a different way...")
+            UEFIVariables = False
 
         if UEFIVariables:
             #It's UEFI.
@@ -288,7 +289,6 @@ class Main():
                 logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as BIOS...")
                 Settings["MainSettings"]["FirmwareType"] = "BIOS"
                 SystemInfo["DetectedFirmwareType"] = "BIOS"
-                UEFIVariables = False
 
             else:
                 #It's UEFI.
@@ -296,8 +296,6 @@ class Main():
                 Settings["MainSettings"]["FirmwareType"] = "UEFI"
                 SystemInfo["DetectedFirmwareType"] = "UEFI"
                 DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
-                UEFIVariables = False
-
 
     def GetBootloaders(self): #*** Test this thoroughly *** *** Fedora: Check under /boot/grub2, and also check for subdirs like i386-pc in grubdir *** *** Check for separate /boot partition ***
         """Find all bootloaders (for each OS), and gather some information about them"""
