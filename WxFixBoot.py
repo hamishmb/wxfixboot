@@ -24,7 +24,6 @@
 #*** Support EFI on 32-bit firmware? ***
 #*** /boot/efi not unmounted after modifying EFI bootloaders on parted magic (possibly also on other platforms), preventing unmounting of chrooted rootfs. Doesn't cause an error or any problems. ***
 #*** Make OSInfo accessible to CoreBackendTools? ***
-#*** Fix bug where InitWindow background doesn't show on Wx 3 ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -270,16 +269,13 @@ class InitialPanel(wx.Panel):
         wx.Panel.__init__(self, parent=parent)
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.frame = parent
-        self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
+        self.Bind(wx.EVT_PAINT, self.OnEraseBackground)
 
     def OnEraseBackground(self, Event):
         """Redraw the background image when needed"""
-        DC = Event.GetDC()
-
-        if DC == None:
-            DC = wx.ClientDC(self)
-            Rectangle = self.GetUpdateRegion().GetBox()
-            DC.SetClippingRect(Rectangle)
+        DC = wx.ClientDC(self)
+        Rectangle = self.GetUpdateRegion().GetBox()
+        DC.SetClippingRect(Rectangle)
 
         DC.Clear()
         Splash = wx.Bitmap("/usr/share/wxfixboot/images/splash.jpg")
@@ -1231,7 +1227,7 @@ class SystemInfoPage4(wx.Panel):
         self.ListCtrl.SetColumnWidth(2, int(Width * 0.1))
         self.ListCtrl.SetColumnWidth(3, int(Width * 0.1))
         self.ListCtrl.SetColumnWidth(4, int(Width * 0.2))
-        #self.ListCtrl.SetColumnWidth(5, int(Width * 0.2))
+        #self.ListCtrl.SetColumnWidth(5, int(Width * 0.2)) #*** Causes error on Wx 3 ***
 
         if Event != None:
             Event.Skip()
