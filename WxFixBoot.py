@@ -1226,12 +1226,12 @@ class SystemInfoPage4(wx.Panel):
         """Auto resize the ListCtrl columns"""
         Width, Height = self.ListCtrl.GetClientSizeTuple()
 
-        self.ListCtrl.SetColumnWidth(0, int(Width * 0.4))
+        self.ListCtrl.SetColumnWidth(0, int(Width * 0.3))
         self.ListCtrl.SetColumnWidth(1, int(Width * 0.1))
         self.ListCtrl.SetColumnWidth(2, int(Width * 0.1))
-        self.ListCtrl.SetColumnWidth(3, int(Width * 0.2))
+        self.ListCtrl.SetColumnWidth(3, int(Width * 0.1))
         self.ListCtrl.SetColumnWidth(4, int(Width * 0.2))
-        self.ListCtrl.SetColumnWidth(5, int(Width * 0.35))
+        self.ListCtrl.SetColumnWidth(5, int(Width * 0.2))
 
         if Event != None:
             Event.Skip()
