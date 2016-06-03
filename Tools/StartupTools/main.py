@@ -155,7 +155,6 @@ class Main():
         RootFS = CoreTools.GetPartitionMountedAt("/")
         OSInfo = {}
         SystemInfo["UserFriendlyOSNames"] = []
-        SystemInfo["OSsWithPackageManagers"] = []
 
         #Get Linux OSs.
         for Partition in SystemInfo["LinuxPartitions"]:
@@ -217,7 +216,6 @@ class Main():
                 OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName)
                 OSInfo[OSName]["IsModifyable"] = "Unknown"
                 SystemInfo["UserFriendlyOSNames"].append(OSName)
-                SystemInfo["OSsWithPackageManagers"].append(OSName) #*** Get rid of this soon ***
 
                 if Chroot == False:
                     SystemInfo["CurrentOS"] = OSInfo[OSName].copy()
