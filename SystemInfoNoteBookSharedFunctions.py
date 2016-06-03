@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 #Begin Main Functions.
 def BindEvents(self):
     """Bind all events for the caller"""
-    self.Bind(wx.EVT_BUTTON, self.SystemInfoWindow.OnExit, self.OkayButton) #*** Disabled until I find a way to make this work ***
+    self.Bind(wx.EVT_BUTTON, self.SystemInfoWindow.OnExit, self.OkayButton)
     self.Bind(wx.EVT_SIZE, self.OnSize)
 
 def CreateWidgets(self):

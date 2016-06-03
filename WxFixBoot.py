@@ -15,7 +15,6 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Add package dependency on binutils (for strings command) ***
-#*** Where did we want to use CoreTools.GetMountPointOf()? ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Test DialogTools.ShowMultiChoiceDlg() ***
