@@ -1231,7 +1231,7 @@ class SystemInfoPage4(wx.Panel):
         self.ListCtrl.SetColumnWidth(2, int(Width * 0.1))
         self.ListCtrl.SetColumnWidth(3, int(Width * 0.1))
         self.ListCtrl.SetColumnWidth(4, int(Width * 0.2))
-        self.ListCtrl.SetColumnWidth(5, int(Width * 0.2))
+        #self.ListCtrl.SetColumnWidth(5, int(Width * 0.2))
 
         if Event != None:
             Event.Skip()
