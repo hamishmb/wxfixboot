@@ -474,9 +474,4 @@ class Main():
         #    logger.warning("MainStartupTools: Main().FinalCheck(): GPT Partition table on at least one device with msdos bootloader! Most BIOS firmware cannot read GPT disks. WxFixBoot suggests repartitioning.")
         #    DialogTools.ShowMsgDlg(Kind="warning", Message="You're using a BIOS-enabled bootloader, but you're using an incompatable partition system on at least one device! Most firmware will not support this setup. Ignore this message if you do not boot from this device.")
 
-        #Bootloader warnings.
-        if SystemInfo["EmptyEFIPartition"] == True and SystemInfo["UEFISystemPartition"] != None:
-            logger.warning("MainStartupTools: Main().FinalCheck(): Empty UEFI partition!")
-            DialogTools.ShowMsgDlg(Kind="warning", Message="Your UEFI system partition is empty or doesn't contain any detected bootloaders. If you just created your UEFI system partition, please ensure it's formatted as fat32 or fat16 (Known as vfat in Linux), and then you may continue to install a UEFI bootloader on it. If WxFixBoot didn't detect your UEFI-enabled bootloader, it's still safe to perform operations on the bootloader.")
-
 #End main Class.

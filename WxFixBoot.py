@@ -500,9 +500,6 @@ class InitThread(threading.Thread):
         SystemInfo["Bootloader"] = "GRUB-UEFI"
         SystemInfo["AutoBootloader"] = "GRUB-UEFI"
 
-        #*** What to do with this one? ***
-        SystemInfo["EmptyEFIPartition"] = False
-
         #New bootloader info getting function.
         logger.info("InitThread(): Finding all Bootloaders and getting their settings...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Bootloaders...")
@@ -758,11 +755,6 @@ class MainWindow(wx.Frame):
 
         if SystemInfo["UEFISystemPartition"] == None:
             dlg = wx.MessageDialog(self.Panel, "Seeing as you have no UEFI partition, you will be unable to select a UEFI bootloader to install, or as your current bootloader. However, in the bootloader options window, you can select a new UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-            dlg.Destroy()
-
-        elif SystemInfo["EmptyEFIPartition"] == True:
-            dlg = wx.MessageDialog(self.Panel, "No bootloaders were found on your UEFI partition. However, you will still be able to select a UEFI bootloader to install, or as your current bootloader, as UEFI bootloader detection is a little bit sketchy. In the bootloader options window, you can select a different UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
 
