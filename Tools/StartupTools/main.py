@@ -215,6 +215,7 @@ class Main():
                 OSInfo[OSName]["Partition"] = Partition
                 OSInfo[OSName]["PackageManager"] = "apt-get"
                 OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName)
+                OSInfo[OSName]["IsModifyable"] = "Unknown"
                 SystemInfo["UserFriendlyOSNames"].append(OSName)
                 SystemInfo["OSsWithPackageManagers"].append(OSName) #*** Get rid of this soon ***
 
@@ -394,7 +395,7 @@ class Main():
 
             #*****************
 
-            BootloaderInfo[OS]["IsModifyable"] = "Unknown"
+            BootloaderInfo[OS]["IsModifyable"] = OSInfo[OS]["IsModifyable"] #*** Do we need these here as well? ***
             BootloaderInfo[OS]["Comments"] = "N/A"
 
             #Clean up if needed.
