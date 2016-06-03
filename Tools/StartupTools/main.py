@@ -333,12 +333,10 @@ class Main():
                 BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
                 #*** Remove this later, makes legacy code work for the mean time ***
-                SystemInfo["AutoUEFISystemPartition"] = OSInfo[OS]["EFIPartition"]
                 SystemInfo["UEFISystemPartition"] = OSInfo[OS]["EFIPartition"]
 
             else:
                 #*** Remove this later, makes legacy code work for the mean time ***
-                SystemInfo["AutoUEFISystemPartition"] = None
                 SystemInfo["UEFISystemPartition"] = None
 
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):

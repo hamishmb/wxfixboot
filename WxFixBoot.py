@@ -3126,7 +3126,6 @@ class ProgressWindow(wx.Frame):
         SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
         Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
         SystemInfo["RootDevice"] = SystemInfo["AutoRootDevice"]
-        SystemInfo["UEFISystemPartition"] = SystemInfo["AutoUEFISystemPartition"]
 
         #Show MainWindow
         MainFrame = MainWindow()
