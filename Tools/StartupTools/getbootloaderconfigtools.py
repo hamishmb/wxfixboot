@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader time out *** *** Sometimes doesn't find kernel options *** *** Both of these things are probably due to not using dictionaries, but check ***
+class Main(): #*** Refactor all of these ***
     def FindGRUB(self, OSPartition, GRUBVersion): #*** Test this thoroughly ***
         """Find GRUB for the given OS."""
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking for "+GRUBVersion+"...")
@@ -241,7 +241,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
 
                     for Var in GRUBEnvironmentFile:
                         if "saved_entry=" in Var:
-                            DefaultOS = Var.split("=")[1] #*** Check that it matches something in the MenuEntries list *** *** Also hadnle this if it's a string ***
+                            DefaultOS = Var.split("=")[1] #*** Check that it matches something in the MenuEntries list *** *** Also handle this if it's a string ***
 
                 else: #*** Check that it matches something in the MenuEntries list ***
                     DefaultOS = Temp
@@ -486,7 +486,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
                     Timeout = int(Timeout)//10
                     logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found bootloader timeout...")
 
-            #Look for kernel options used globally in all the boot options. *** Doesn't seem to work ***
+            #Look for kernel options used globally in all the boot options.
             elif 'append' in Line and '=' in Line:
                 #Found them! Save it to GlobalKernelOptions
                 KernelOptions = ' '.join(Line.split("=")[1:]).replace("\"", "")
