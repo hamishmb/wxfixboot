@@ -27,8 +27,7 @@ class Main(): #*** Refactor all of these *** *** Doesn't seem to find bootloader
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking for "+GRUBVersion+"...")
 
         #Do some setup.
-        print(DiskInfo[OSPartition], OSPartition)
-        LikelyGRUBInstallDisks = (DiskInfo[OSPartition]["HostDisk"], OSPartition)
+        LikelyGRUBInstallDisks = (DiskInfo[OSPartition]["HostDevice"], OSPartition)
         FoundGRUB = False
         FoundRightVersion = False
 
