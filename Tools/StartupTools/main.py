@@ -409,7 +409,6 @@ class Main():
         FullVerbose = False
         Verify = True
         BackupBootSector = False
-        BackupPartitionTable = False
         MakeSystemSummary = True
         BootloaderTimeout = -1 #Don't change the timeout by default.
 
@@ -422,15 +421,11 @@ class Main():
         BootSectorFile = "None"
         BootSectorTargetDevice = "None"
         BootSectorBackupType = "None"
-        RestorePartitionTable = False
-        PartitionTableFile = "None"
-        PartitionTableTargetDevice = "None"
-        PartitionTableBackupType = "None"
 
         #Other Options
         OptionsDlg1Run = False
 
-        return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run
+        return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""

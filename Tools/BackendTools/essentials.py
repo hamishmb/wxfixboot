@@ -71,51 +71,6 @@ class Main(): #*** These need refactoring ***
                     logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
 
-    def BackupPartitionTable(self): #*** Will need modification when we switch away from the rootdevice model *** *** Can't save partition table backup file variable like this, move to settings window *** *** Handle return values *** *** Reduce duplication with function below ***
-        """Backup the partition table."""
-        #For GPT disks, backup with sgdisk -b/--backup=<file> <SOURCEDIRVE>.
-        #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
-        #We need to find RootDevice's partition scheme.
-        PartScheme = DiskInfo[SystemInfo["RootDevice"]]["Partitioning"]
-
-        logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Preparing to backup the partition table...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to backup the Partition Table...")
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to Backup the Partition Table...###\n")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
-
-        if PartScheme == "mbr":
-            #Let's backup the MBR, but we need to ask where to back it up first. *** Maybe do this in settings window? ***
-            PartitionTableBackupFile = DialogTools.ShowSaveFileDlg(Title="WxFixBoot - Select Partition Table Backup Target File", Wildcard="MBR Backup File (*.mbr)|*.mbr|IMG Image file (*.img)|*.img|All Files/Devices (*)|*")
-
-            #Make sure the backup file always has the correct file extension on it.
-            if PartitionTableBackupFile[-4:] != ".mbr":
-                PartitionTableBackupFile = PartitionTableBackupFile+".mbr"
-
-            Cmd = "dd if="+SystemInfo["RootDevice"]+" of="+PartitionTableBackupFile+" bs=512 count=1"
-
-        else:
-            #Let's backup the GPT, but we need to ask where to back it up first. *** Maybe do this in settings window? ***
-            PartitionTableBackupFile = DialogTools.ShowSaveFileDlg(Title="WxFixBoot - Select Partition Table Backup Target File", Wildcard="GPT Backup File (*.gpt)|*.gpt|IMG Image file (*.img)|*.img|All Files/Devices (*)|*")
-
-            #Make sure the backup file always has the correct file extension on it.
-            if PartitionTableBackupFile[-4:] != ".gpt":
-                PartitionTableBackupFile = PartitionTableBackupFile+".gpt"
-
-            Cmd = "sgdisk --backup="+PartitionTableBackupFile+" "+SystemInfo["RootDevice"]
-
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Backing up Partition Table...")
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Backing up the Partition Table...###\n")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
-
-        #Backup the partition table.
-        logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Backing up partition table to file: "+PartitionTableBackupFile+", from device: "+SystemInfo["RootDevice"]+"...")
-        retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
-
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Backing up Partition Table!")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Backing up the Partition Table!###\n")
-        logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Finished Backing up Partition Table! Exit code: "+unicode(retval))
-
     def BackupBootSector(self): #*** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save boot sector backup file variable like this, move to settings window *** *** Reduce duplication *** *** What if we need to backup a PBR? ***
         """Backup the bootsector."""
         #For GPT disks, backup UEFI System Partition.
@@ -123,7 +78,7 @@ class Main(): #*** These need refactoring ***
         #We need to find RootDevice's partition scheme.
         PartScheme = DiskInfo[SystemInfo["RootDevice"]]["Partitioning"]
 
-        logger.info("EssentialBackendTools: Main().BackupPartitionTable(): Preparing to backup the boot sector...")
+        logger.info("EssentialBackendTools: Main().BackupBootSector(): Preparing to backup the boot sector...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to backup the Boot Sector...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to Backup the Boot Sector...###\n")
@@ -165,63 +120,6 @@ class Main(): #*** These need refactoring ***
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Backing up the Boot Sector!###\n")
         logger.info("EssentialBackendTools: Main().BackupBootSector(): Finished backing up Boot Sector! Exit code: "+unicode(retval))
-
-    def RestorePartitionTable(self):
-        """Restore the partition table.""" #*** Will need lots of modification when switching to dictionaries ***
-        #Use sgdisk for GPT disks, restore with sgdisk -l/--load-backup=<file> <TARGETDEVICE>
-        #Use dd for MBR disks, restore with dd if=<somefile> of=/dev/sdX bs=1 count=64 skip=446 seek=446
-        logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Preparing to restore the Partition Table...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to restore the Partition Table...")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to restore the Partition Table...###\n")
-
-        #We need to check if PartitionTableFile is on a different partition or device, so we can make sure it's available (this is necessary if the user did an FS check) *** Actually I don't think it unmounts anything, just remounts read-only. I will investigate. ***
-        if "/mnt/" in PartitionTableFile:
-            #It is! Determine which partition we need to mount. *** Does looking for '/mnt/' work? ***
-            Temp = PartitionTableFile.split('/')
-            PartitionToMount = "/"+'/'.join(Temp[2:4])
-
-            #Mount it, and set a variable so we can unmount it afterwards. *** With that variable, check if it was mounted before, and if so leave it alone! ***
-            if CoreTools.MountPartition(Partition=PartitionToMount, MountPoint="/mnt"+PartitionToMount) != 0:
-                logger.error("EssentialBackendTools: Main().RestorePartitionTable(): Failed to mount "+PartitionToMount+" at /mnt"+PartitionToMount+"! Continuing anyway...")
-
-            MountedFS = PartitionToMount
-            logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Okay. Mounted the partition: "+MountedFS+" that houses the file. Now let's restore the Partition Table...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 35)
-
-        else:
-            #Nope, it's on this partition.
-            MountedFS = "None"
-            logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Okay. Now let's restore the Partition Table...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 35)
-
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Restoring the Partition Table...")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Restoring the Partition Table...###\n")
-
-        if PartitionTableBackupType == "mbr":
-            #Let's restore the MBR Partition Table.
-            logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Restoring MBR partition table from file: "+PartitionTableFile+" to device: "+PartitionTableTargetDevice+"...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
-            retval = CoreTools.StartProcess("dd if="+PartitionTableFile+" of="+PartitionTableTargetDevice+" bs=1 count=64 skip=446 seek=446", ShowOutput=False)
-
-        else:
-            #Let's restore the GPT.
-            retval = CoreTools.StartProcess("sgdisk --load-backup="+PartitionTableFile+" "+PartitionTableTargetDevice, ShowOutput=False)
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
-            logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Restoring GPT partition table from file: "+PartitionTableFile+" to device: "+PartitionTableTargetDevice+"...")
-
-        #Unmount the partition containing the file, if there is one. *** Is this necessary? ***
-        if MountedFS != "None":
-            logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Unmounting partition: "+MountedFS+"...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 85)
-            if CoreTools.Unmount(MountedFS) != 0: 
-                logger.error("EssentialBackendTools: Main().RestorePartitionTable(): Failed to unmount "+MountedFS+"! Continuing anyway...")
-
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Restoring the Partition Table!")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Restoring the Partition Table!###\n")
-        logger.info("EssentialBackendTools: Main().RestorePartitionTable(): Finished Restoring the Partition Table!")
 
     def RestoreBootSector(self):
         """Restore the bootsector‎."""

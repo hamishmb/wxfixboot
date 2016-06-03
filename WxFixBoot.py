@@ -530,7 +530,6 @@ class InitThread(threading.Thread):
         global FullVerbose
         global Verify
         global BackupBootSector
-        global BackupPartitionTable
         global MakeSystemSummary
         global BootloaderTimeout
         global BLOptsDlgRun
@@ -538,10 +537,6 @@ class InitThread(threading.Thread):
         global BootSectorFile
         global BootSectorTargetDevice
         global BootSectorBackupType
-        global RestorePartitionTable
-        global PartitionTableFile
-        global PartitionTableTargetDevice
-        global PartitionTableBackupType
         global OptionsDlg1Run
 
         #Initialise them.
@@ -553,7 +548,6 @@ class InitThread(threading.Thread):
         FullVerbose = ""
         Verify = ""
         BackupBootSector = ""
-        BackupPartitionTable = ""
         MakeSystemSummary = ""
         BootloaderTimeout = ""
         SystemInfo["BootloaderToInstall"] = ""
@@ -562,14 +556,10 @@ class InitThread(threading.Thread):
         BootSectorFile = ""
         BootSectorTargetDevice = ""
         BootSectorBackupType = ""
-        RestorePartitionTable = ""
-        PartitionTableFile = ""
-        PartitionTableTargetDevice = ""
-        PartitionTableBackupType = ""
         OptionsDlg1Run = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, BackupPartitionTable, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, RestorePartitionTable, PartitionTableFile, PartitionTableTargetDevice, PartitionTableBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
+        ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -703,12 +693,12 @@ class MainWindow(wx.Frame):
             self.BadSectorCheckCB.Enable()
 
         #Reinstall Bootloader Choicebox
-        if self.ReinstallBootloaderCB.IsChecked() and (SystemInfo["Bootloader"] != "GRUB-LEGACY" or RestorePartitionTable or RestoreBootSector):
+        if self.ReinstallBootloaderCB.IsChecked() and (SystemInfo["Bootloader"] != "GRUB-LEGACY" or RestoreBootSector):
             self.ReinstallBootloaderCBwaschecked = True
             self.UpdateBootloaderCB.SetValue(0)
             self.UpdateBootloaderCB.Disable()
 
-        elif self.ReinstallBootloaderCB.IsChecked() == False and SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestorePartitionTable == False and RestoreBootSector == False:
+        elif self.ReinstallBootloaderCB.IsChecked() == False and SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestoreBootSector == False:
             self.UpdateBootloaderCB.Enable()
             self.ReinstallBootloaderCBwaschecked = False
 
@@ -717,12 +707,12 @@ class MainWindow(wx.Frame):
             self.ReinstallBootloaderCBwaschecked = False
 
         #Update Bootloader Choicebox
-        if self.UpdateBootloaderCB.IsChecked() and (SystemInfo["Bootloader"] != "GRUB-LEGACY" or RestorePartitionTable or RestoreBootSector):
+        if self.UpdateBootloaderCB.IsChecked() and (SystemInfo["Bootloader"] != "GRUB-LEGACY" or RestoreBootSector):
             self.UpdateBootloaderCBwaschecked = True
             self.ReinstallBootloaderCB.SetValue(0)
             self.ReinstallBootloaderCB.Disable()
 
-        elif self.UpdateBootloaderCB.IsChecked() == False and SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestorePartitionTable == False and RestoreBootSector == False:
+        elif self.UpdateBootloaderCB.IsChecked() == False and SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestoreBootSector == False:
             self.ReinstallBootloaderCB.Enable()
             self.UpdateBootloaderCBwaschecked = False
 
@@ -739,7 +729,7 @@ class MainWindow(wx.Frame):
         logger.debug("MainWindow().Opts(): Starting Settings Window and hiding MainWindow...")
 
         if self.ReinstallBootloaderCBwaschecked or self.UpdateBootloaderCBwaschecked:
-            dlg = wx.MessageDialog(self.Panel, "Do you want to continue? If you reinstall or update your bootloader, some options, such as installing a different bootloader, and restoring backups of the bootsector and partition table, will be reset and disabled. If you want to change other settings, you can always do it after restarting WxFixBoot.", "WxFixBoot - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
+            dlg = wx.MessageDialog(self.Panel, "Do you want to continue? If you reinstall or update your bootloader, some options, such as installing a different bootloader, and restoring a backup of the bootsector, will be reset and disabled. If you want to change other settings, you can always do it after restarting WxFixBoot.", "WxFixBoot - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
 
             if dlg.ShowModal() == wx.ID_NO:
                 dlg.Destroy()
@@ -763,7 +753,7 @@ class MainWindow(wx.Frame):
             dlg.ShowModal()
 
         else:
-            dlg = wx.MessageDialog(self.Panel, "Make sure you set the Root Device correctly here, because it will be the device that's backed up if you choose to back up the partition table. The boot sector to backup in this case is the UEFI System Partition, if there is one. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg = wx.MessageDialog(self.Panel, "The boot sector to backup in this case is the UEFI System Partition, if there is one. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
 
         dlg.Destroy()
@@ -801,15 +791,15 @@ class MainWindow(wx.Frame):
         """Refresh the main window to reflect changes in the options, or after a restart."""
         logger.debug("MainWindow().RefreshMainWindow(): Refreshing MainWindow...")
             
-        #Bootloader options. Also check if the partition table or boot sector are to be restored
-        if SystemInfo["Bootloader"] == "GRUB-LEGACY" or RestorePartitionTable or RestoreBootSector:
+        #Bootloader options. Also check if the boot sector is to be restored
+        if SystemInfo["Bootloader"] == "GRUB-LEGACY" or RestoreBootSector:
             self.DisableBLOptsGrubLegacy()
 
         else:
             self.EnableBLOptsNoGrubLegacy()
 
         #Set settings up how they were when MainWindow was hidden earlier, if possible.
-        if SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestorePartitionTable == False and RestoreBootSector == False:
+        if SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestoreBootSector == False:
             self.ReinstallBootloaderCB.SetValue(ReinstallBootloader)
             self.UpdateBootloaderCB.SetValue(UpdateBootloader)
 
@@ -907,8 +897,6 @@ class MainWindow(wx.Frame):
         logger.debug("MainWindow().SaveMainOpts(): Saving Options on MainWindow...")
         global BootSectorFile
         global RestoreBootSector
-        global PartitionTableFile
-        global RestorePartitionTable
         global ReinstallBootloader
         global UpdateBootloader
         global QuickFSCheck
@@ -940,8 +928,6 @@ class MainWindow(wx.Frame):
             SystemInfo["BootloaderToInstall"] = "None"
             BootSectorFile = "None"
             RestoreBootSector = False
-            PartitionTableFile = "None"
-            RestorePartitionTable = False
 
         else:
             ReinstallBootloader = False
@@ -954,8 +940,6 @@ class MainWindow(wx.Frame):
             SystemInfo["BootloaderToInstall"] = "None"
             BootSectorFile = "None"
             RestoreBootSector = False
-            PartitionTableFile = "None"
-            RestorePartitionTable = False
 
         else:
             UpdateBootloader = False
@@ -973,17 +957,9 @@ class MainWindow(wx.Frame):
 
         #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
         #Do essential processes first.
-        if BackupPartitionTable:
-            Operations.append(EssentialBackendTools.BackupPartitionTable)            
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BackupPartitionTable to Operations...")
-
         if BackupBootSector:
             Operations.append(EssentialBackendTools.BackupBootSector)
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BackupBootSector to Operations...")
-
-        if RestorePartitionTable:
-            Operations.append(EssentialBackendTools.RestorePartitionTable)
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.RestorePartitionTable to Operations...")
 
         if RestoreBootSector:
             Operations.append(EssentialBackendTools.RestoreBootSector)
@@ -1372,7 +1348,6 @@ class SettingsWindow(wx.Frame):
         self.ExitButton = wx.Button(self.Panel, -1, "Apply these Settings and Close")
         self.BootloaderOptionsButton = wx.Button(self.Panel, -1, "Bootloader Options")
         self.RestoreBootsectorButton = wx.Button(self.Panel, -1, "Restore Boot Sector")
-        self.RestorePartitionTableButton = wx.Button(self.Panel, -1, "Restore Partition Table")
 
     def CreateText(self):
         """Create the text."""
@@ -1396,7 +1371,6 @@ class SettingsWindow(wx.Frame):
         self.MakeSummaryCheckBox = wx.CheckBox(self.Panel, -1, "Save System Report To File")
         self.LogOutputCheckBox = wx.CheckBox(self.Panel, -1, "Save terminal output in Report")
         self.BackupBootsectorCheckBox = wx.CheckBox(self.Panel, -1, "Backup the Bootsector of "+SystemInfo["RootDevice"])
-        self.BackupPartitionTableCheckBox = wx.CheckBox(self.Panel, -1, "Backup the Partition Table of "+SystemInfo["RootDevice"])
 
     def CreateChoiceBs(self):
         """Create the choice boxes"""
@@ -1445,13 +1419,6 @@ class SettingsWindow(wx.Frame):
         else:
             self.BackupBootsectorCheckBox.SetValue(False)
 
-        #Backup Partition Table CheckBox
-        if BackupPartitionTable:
-            self.BackupPartitionTableCheckBox.SetValue(True)
-
-        else:
-            self.BackupPartitionTableCheckBox.SetValue(False)
-
         #System Summary checkBox
         if MakeSystemSummary:
             self.MakeSummaryCheckBox.SetValue(True)
@@ -1489,7 +1456,7 @@ class SettingsWindow(wx.Frame):
         else:
             self.RootDeviceChoice.SetSelection(0)
 
-        if RestoreBootSector or RestorePartitionTable:
+        if RestoreBootSector:
             #Disable/reset some options.
             self.BootloaderOptionsButton.Disable()
             self.InstalledBootloaderChoice.Disable()
@@ -1510,7 +1477,6 @@ class SettingsWindow(wx.Frame):
         if ReinstallBootloader or UpdateBootloader:
             self.BootloaderOptionsButton.Disable()
             self.RestoreBootsectorButton.Disable()
-            self.RestorePartitionTableButton.Disable()
 
         logger.debug("SettingsWindow().SetupOptions(): Finished!")
 
@@ -1576,7 +1542,6 @@ class SettingsWindow(wx.Frame):
         AdvancedSettingsSizer.Add(self.MakeSummaryCheckBox, 1, wx.BOTTOM, 10)
         AdvancedSettingsSizer.Add(self.LogOutputCheckBox, 1, wx.BOTTOM, 10)
         AdvancedSettingsSizer.Add(self.BackupBootsectorCheckBox, 1, wx.BOTTOM, 10)
-        AdvancedSettingsSizer.Add(self.BackupPartitionTableCheckBox, 1, wx.BOTTOM, 10)
 
         #Add items to the all settings sizer.
         AllSettingsSizer.Add(BasicSettingsSizer, 4, wx.RIGHT|wx.EXPAND, 5)
@@ -1591,7 +1556,6 @@ class SettingsWindow(wx.Frame):
         #Add items to the bottom button sizer.
         BottomButtonSizer.Add(self.RestoreBootsectorButton, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
         BottomButtonSizer.Add(self.ExitButton, 3, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        BottomButtonSizer.Add(self.RestorePartitionTableButton, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         #Add items to the main sizer.
         MainSizer.Add(self.WelcomeText, 1, wx.ALL|wx.ALIGN_CENTER, 10)
@@ -1613,7 +1577,6 @@ class SettingsWindow(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.CloseOpts)
         self.Bind(wx.EVT_BUTTON, self.LaunchblOpts, self.BootloaderOptionsButton)
         self.Bind(wx.EVT_BUTTON, self.LaunchBootSectWindow, self.RestoreBootsectorButton)
-        self.Bind(wx.EVT_BUTTON, self.LaunchPartTableWindow, self.RestorePartitionTableButton)
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.MakeSummaryCheckBox)
 
     def LaunchblOpts(self, Event=None):
@@ -1675,22 +1638,13 @@ class SettingsWindow(wx.Frame):
             dlg.Destroy()
 
         self.Hide()
-        RestoreWindow(ParentWindow=self, Type="Boot Sector").Show()
-
-    def LaunchPartTableWindow(self, Event=None):
-        """Launch RestoreWindow in partition table mode"""
-        #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first.
-        self.SaveOptions()
-
-        logger.debug("SettingsWindow().LaunchPartTableWindow(): Starting Restore Partition Table Window...")
-        self.Hide()
-        RestoreWindow(ParentWindow=self, Type="Partition Table").Show()
+        RestoreWindow(ParentWindow=self).Show()
 
     def RefreshOptionsDlg1(self,msg):
         """Refresh the settings in SettingsWindow before re-showing it"""
-        #Check if the partition table or boot sector are to be restored.
+        #Check if the boot sector is to be restored.
         logger.debug("SettingsWindow().RefreshOptionsDlg1(): Refreshing SettingsWindow...")
-        if RestorePartitionTable or RestoreBootSector:
+        if RestoreBootSector:
             #Disable/reset some options.
             self.BootloaderOptionsButton.Disable()
             self.InstalledBootloaderChoice.Disable()
@@ -1730,7 +1684,6 @@ class SettingsWindow(wx.Frame):
         global FullVerbose
         global SaveOutput
         global BackupBootSector
-        global BackupPartitionTable
         global MakeSystemSummary
         global BootloaderTimeout
 
@@ -1772,15 +1725,6 @@ class SettingsWindow(wx.Frame):
             BackupBootSector = False
 
         logger.debug("SettingsWindow().SaveOptions(): Value of BackupBootSector is: "+unicode(BackupBootSector))
-
-        #Backup Partition Table checkbox.
-        if self.BackupPartitionTableCheckBox.IsChecked():
-            BackupPartitionTable = True
-
-        else:
-            BackupPartitionTable = False
-
-        logger.debug("SettingsWindow().SaveOptions(): Value of BackupPartitionTable is: "+unicode(BackupPartitionTable))
 
         #Use chroot in operations checkbox
         if self.MakeSummaryCheckBox.IsChecked():
@@ -2582,18 +2526,17 @@ class NewBootloaderOptionsWindow(wx.Frame):
         self.MainSizer.SetSizeHints(self)
 
 #End New Bootloader Options Window.
-#Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later *** *** May be removed upon integration of the new bootloader options window ***
+#Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later *** *** Will be removed upon integration of the new bootloader options window ***
 class RestoreWindow(wx.Frame):
-    def __init__(self, ParentWindow, Type):
+    def __init__(self, ParentWindow):
         """Initialise RestoreWindow"""
-        logger.debug("RestoreWindow().__init__(): Restore "+Type+" Window Started.")
-        title = "WxFixBoot - Restore the "+Type
+        logger.debug("RestoreWindow().__init__(): Restore BootSector Window Started.")
+        title = "WxFixBoot - Restore the BootSector"
 
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title=title, size=(400,200), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
         self.SetClientSize(wx.Size(400,200))
         self.ParentWindow = ParentWindow
-        self.Type = Type
         wx.Frame.SetIcon(self, AppIcon)
 
         self.CreateText()
@@ -2610,13 +2553,8 @@ class RestoreWindow(wx.Frame):
 
     def CreateText(self):
         """Create the text"""
-        if self.Type == "BootSector":
-            WelcomeText1Text = "What type of Boot Sector backup do you have?"
-            WelcomeText2Text = "Easily restore your bootsector here!"
-
-        else:
-            WelcomeText1Text = "What type of partition table backup do you have?"
-            WelcomeText2Text = "Easily restore your partition table here!"
+        WelcomeText1Text = "What type of Boot Sector backup do you have?"
+        WelcomeText2Text = "Easily restore your bootsector here!"
 
         self.WelcomeText1 = wx.StaticText(self.Panel, -1, WelcomeText1Text)
         self.WelcomeText2 = wx.StaticText(self.Panel, -1, WelcomeText2Text)
@@ -2684,13 +2622,8 @@ class RestoreWindow(wx.Frame):
 
     def SetupOptions(self):
         """Set up the choiceboxes according to the values of the variables."""
-        if self.Type == "Boot Sector":
-            File = BootSectorFile
-            TargetDevice = BootSectorTargetDevice
-
-        else:
-            File = PartitionTableFile
-            TargetDevice = PartitionTableTargetDevice
+        File = BootSectorFile
+        TargetDevice = BootSectorTargetDevice
 
         #Image file choice.
         if File != "None":
@@ -2716,9 +2649,6 @@ class RestoreWindow(wx.Frame):
         global BootSectorFile
         global RestoreBootSector
         global BootSectorBackupType
-        global PartitionTableFile
-        global RestorePartitionTable
-        global PartitionTableBackupType
 
         File = self.BackupFileChoice.GetStringSelection()
 
@@ -2728,7 +2658,7 @@ class RestoreWindow(wx.Frame):
             Restore = False
 
         elif File == "Specify File Path...":
-            Dlg = wx.FileDialog(self.Panel, "Select "+self.Type+" File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|GPT Backup File (*.gpt)|*.gpt|MBR Backup File (*.mbr)|*.mbr|IMG Image file (*.img)|*.img", style=wx.OPEN)
+            Dlg = wx.FileDialog(self.Panel, "Select BootSector File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|GPT Backup File (*.gpt)|*.gpt|MBR Backup File (*.mbr)|*.mbr|IMG Image file (*.img)|*.img", style=wx.OPEN)
 
             if Dlg.ShowModal() == wx.ID_OK:
                 Restore = True
@@ -2780,11 +2710,6 @@ class RestoreWindow(wx.Frame):
                 BackupType = "gpt"
                 self.GPTBackupTypeRadio.SetValue(True)
 
-                if self.Type == "PartTable":
-                    dlg = wx.MessageDialog(self.Panel, "Your backup file type is probably valid, but WxFixBoot isn't sure, as the file size is odd. Please ensure that this is your backup file!", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
-                    dlg.ShowModal()
-                    dlg.Destroy()
-
             dlg = wx.MessageDialog(self.Panel, "Your backup file type was detected as: "+BackupType+". If this is correct, then continuing is safe. If not, ensure you made the backup file with WxFixBoot and that it is the correct backup file, and manually set the right backup type. If you made the backup with another program, please use that program to restore it instead to avoid problems.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
@@ -2793,26 +2718,19 @@ class RestoreWindow(wx.Frame):
             BackupType = "None"
             self.AutoDetectTypeRadio.SetValue(True)
 
-        #Save File, Restoring, and BackupType to the correct global variables, depending on which purpose this class is serving (Boot Sector Restoration Window, or Partition Table Restoration Window).
+        #Save File, Restoring, and BackupType to the correct global variables, depending on which purpose this class is serving (Boot Sector Restoration Window).
         logger.info("RestoreWindow().SelectFile(): Current config: File = "+File+", Restore = "+unicode(Restore)+", BackupType = "+BackupType+"...")
 
-        if self.Type == "Boot Sector":
-            BootSectorFile = File
-            RestoreBootSector = Restore
-            BootSectorBackupType = BackupType
-
-        else:
-            PartitionTableFile = File
-            RestorePartitionTable = Restore
-            PartitionTableBackupType = BackupType
+        BootSectorFile = File
+        RestoreBootSector = Restore
+        BootSectorBackupType = BackupType
 
     def SelectTargetDevice(self, Event=None):
-        """Grab Boot Sector/Partition Table Image path."""
+        """Grab Boot Sector Image path."""
         logger.debug("RestoreWindow().SelectTargetDevice(): Target device selection choice box has changed...")
 
         #Set up global variables.
         global BootSectorTargetDevice
-        global PartitionTableTargetDevice
 
         TargetDevice = self.TargetDeviceChoice.GetStringSelection()
 
@@ -2837,34 +2755,24 @@ class RestoreWindow(wx.Frame):
         else:
             TargetDevice = self.TargetDeviceChoice.GetStringSelection()
 
-        #Save TargetDevice to the correct global variable, depending on which purpose this class is serving (Boot Sector Restoration Window, or Partition Table Restoration Window).
+        #Save TargetDevice to the correct global variable, depending on which purpose this class is serving (Boot Sector Restoration Window).
         logger.info("RestoreWindow().SelectTargetDevice(): Current config: TargetDevice = "+TargetDevice+"...")
 
-        if self.Type == "BootSector":
-            BootSectorTargetDevice = TargetDevice
-
-        else:
-            PartitionTableTargetDevice = TargetDevice
+        BootSectorTargetDevice = TargetDevice
 
     def ExitWindow(self, Event=None):
         """Exits Restore Window, or shows a warning to the user if needed"""
-        if self.Type == "BootSector":
-            File = BootSectorFile
-            Restore = RestoreBootSector
-            TargetDevice = BootSectorTargetDevice
-
-        else:
-            File = PartitionTableFile
-            Restore = RestorePartitionTable
-            TargetDevice = PartitionTableTargetDevice
+        File = BootSectorFile
+        Restore = RestoreBootSector
+        TargetDevice = BootSectorTargetDevice
 
         if File != "None" and Restore and TargetDevice != "None":
             #Show an info message.
-            dlg = wx.MessageDialog(self.Panel, "Do you want to continue? This operation can cause data loss. Only continue if you are certain you've selected the right target device and backup file, and if the backup was created with WxFixBoot. If you restore a partition table or bootsector some options, such as installing a different bootloader and reinstalling or updating your bootloader will be disabled. If you want to change other settings, you can always restart WxFixBoot afterwards and then change them.", "WxFixBoot - Information", style=wx.YES_NO | wx.ICON_EXCLAMATION, pos=wx.DefaultPosition)
+            dlg = wx.MessageDialog(self.Panel, "Do you want to continue? This operation can cause data loss. Only continue if you are certain you've selected the right target device and backup file, and if the backup was created with WxFixBoot. If you restore a bootsector, some options, such as installing a different bootloader and reinstalling or updating your bootloader, will be disabled. If you want to change other settings, you can always restart WxFixBoot afterwards and then change them.", "WxFixBoot - Information", style=wx.YES_NO | wx.ICON_EXCLAMATION, pos=wx.DefaultPosition)
 
             if dlg.ShowModal() == wx.ID_YES:
                 #Send a message to OptionsDlg1, so it can show itself again.
-                logger.debug("RestoreWindow().ExitWindow(): Restore "+self.Type+" Window Closing...")
+                logger.debug("RestoreWindow().ExitWindow(): Restore BootSector Window Closing...")
                 wx.CallAfter(self.ParentWindow.RefreshOptionsDlg1, "Closed.")
 
                 #Exit.
@@ -2879,7 +2787,7 @@ class RestoreWindow(wx.Frame):
             dlg.Destroy()
 
         else:
-            logger.debug("RestoreWindow().ExitWindow(): Restore "+self.Type+" Window Closing...")
+            logger.debug("RestoreWindow().ExitWindow(): Restore BootSector Window Closing...")
             #Send a message to OptionsDlg1, so it can show itself again.
             wx.CallAfter(self.ParentWindow.RefreshOptionsDlg1, "Closed.")
 
@@ -3236,9 +3144,6 @@ class BackendThread(threading.Thread):
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
             #*** We temporarily need global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
             #*** Essential backend tools ***
-            Tools.BackendTools.essentials.PartitionTableFile = PartitionTableFile
-            Tools.BackendTools.essentials.PartitionTableBackupType = PartitionTableBackupType
-            Tools.BackendTools.essentials.PartitionTableTargetDevice = PartitionTableTargetDevice
             Tools.BackendTools.essentials.BootSectorFile = BootSectorFile
             Tools.BackendTools.essentials.BootSectorBackupType = BootSectorBackupType
             Tools.BackendTools.essentials.BootSectorTargetDevice = BootSectorTargetDevice
@@ -3348,19 +3253,6 @@ class BackendThread(threading.Thread):
             ReportList.write("\n\tBoot Sector Backup File: "+BootSectorFile+"\n")
             ReportList.write("\tBoot Sector Target Device: "+BootSectorTargetDevice+"\n")
             ReportList.write("\tBoot Sector Backup Type: "+BootSectorBackupType+"\n") 
-
-        #Do Partition Table Information.
-        ReportList.write("\n##########Partition Table Information##########\n")
-        ReportList.write("Backup Partition Table: "+unicode(BackupPartitionTable)+"\n")
-        if BackupPartitionTable:
-            ReportList.write("\n\tBacked up Partition Table from: "+SystemInfo["RootDevice"]+"\n")
-            ReportList.write("\tTarget Partition Table File: (*** Disabled as no way of saving this until switch to dictionaries ***)\n\n") #*** +PartitionTableBackupFile+"\n\n")
-
-        ReportList.write("Restore Partition Table: "+unicode(RestorePartitionTable)+"\n")
-        if RestorePartitionTable:
-            ReportList.write("\n\tPartition Table Backup File: "+PartitionTableFile+"\n")
-            ReportList.write("\tPartition Table Target Device: "+PartitionTableTargetDevice+"\n")
-            ReportList.write("\tPartition Table Backup Type: "+PartitionTableBackupType+"\n")
 
         #Do WxFixBoot's settings.
         ReportList.write("\n##########Other WxFixBoot Settings##########\n")
