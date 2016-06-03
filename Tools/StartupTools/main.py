@@ -90,7 +90,7 @@ class Main():
 
     def UnmountAllFS(self):
         """Unmount any unnecessary filesystems, to prevent data corruption."""
-        #Warn about removing devices. *** Allow this if possible ***
+        #Warn about removing devices.
         logger.info("MainStartupTools: Main().UnmountAllFS(): Unmounting all Filesystems...")
         DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot is about to gather device information. After this point, you must not remove/add any devices from/to your computer, so do that now if you wish to.")
 
@@ -271,23 +271,7 @@ class Main():
             logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/efivars...")
 
         else:
-            logger.warning("MainStartupTools: Main().GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars or /sys/firmware/efi/efivars. Attempting manual mount...")
-
-            #Attempt to manually mount the efi vars, as we couldn't find them. *** Disabled for the time being *** *** Where should they be mounted? ***
-            #if not os.path.isdir("/sys/firmware/efi/vars"):
-            #    os.mkdir("/sys/firmware/efi/vars")
-
-            #if CoreTools.MountPartition(Partition="efivars", MountPoint="/sys/firmware/efi/vars", Options="-t efivarfs") != 0: #*** Check this works ***
-            #    logger.warning("MainStartupTools: Main().GetFirmwareType(): Failed to mount UEFI vars! Warning user. Ignoring and continuing.")
-
-            #UEFI vars not available or couldn't be mounted. *** This is an incorrect warning on BIOS systems ***
-            DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
-            UEFIVariables = False
-
-            #else:
-            #    #Successfully mounted them.
-            #    UEFIVariables = True
-            #    logger.info("MainStartupTools: Main().GetFirmwareType(): Mounted UEFI Variables at: /sys/firmware/efi/vars. Continuing...")
+            logger.info("MainStartupTools: Main().GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars or /sys/firmware/efi/efivars. This is normal if running on a BIOS system. Determining firmware type a different way...")
 
         if UEFIVariables:
             #It's UEFI.
@@ -308,10 +292,12 @@ class Main():
 
             else:
                 #It's UEFI.
-                logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as UEFI. Looking for UEFI Variables...")
+                logger.warning("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as UEFI, but couldn't find UEFI variables!")
                 Settings["MainSettings"]["FirmwareType"] = "UEFI"
                 SystemInfo["DetectedFirmwareType"] = "UEFI"
+                DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
                 UEFIVariables = False
+
 
     def GetBootloaders(self): #*** Test this thoroughly *** *** Fedora: Check under /boot/grub2, and also check for subdirs like i386-pc in grubdir *** *** Check for separate /boot partition ***
         """Find all bootloaders (for each OS), and gather some information about them"""

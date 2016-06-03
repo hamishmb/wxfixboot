@@ -147,6 +147,28 @@ class Main():
 
         return Partition
 
+    def GetMountPointOf(self, Partition): #*** Check this works ***
+        """Returns the mountpoint of the given partition, if any.
+        Otherwise, return None"""
+        logger.info("CoreTools: Main().GetMountPointOf(): Trying to get mount point of partition "+Partition+"...")
+
+        MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
+        MountPoint = None
+
+        for Line in MountInfo.split("\n"):
+            SplitLine = Line.split()
+
+            if Partition == SplitLine[0]:
+                MountPoint = SplitLine[2]
+
+        if MountPoint != None:
+            logger.info("CoreTools: Main().GetMountPointOf(): Found it! MountPoint is "+MountPoint+"...")
+
+        else:
+            logger.info("CoreTools: Main().GetMountPointOf(): Didn't find it...")
+
+        return MountPoint
+
     def MountPartition(self, Partition, MountPoint, Options=""):
         """Mounts the given partition.
         Partition is the partition to mount.
