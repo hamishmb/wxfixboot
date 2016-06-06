@@ -271,7 +271,7 @@ class Main():
         #Get all the info related to this partition.
         RawLVMInfo = []
 
-        for Line in self.LVMOutput[LineCounter+1:]:
+        for Line in self.LVMOutput[LineCounter:]:
             RawLVMInfo.append(Line)
 
             #When we get to the next volume, stop adding stuff to this entry's data variable.
