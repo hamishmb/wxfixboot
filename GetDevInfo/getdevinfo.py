@@ -261,10 +261,10 @@ class Main():
 
         for Line in self.LVMOutput:
             LineCounter += 1
-
+            print(Line)
             if "--- Logical volume ---" in Line:
+                print("yay!")
                 self.AssembleLVMDiskInfo(LineCounter)
-
 
     def AssembleLVMDiskInfo(self, LineCounter):
         """Assemble LVM disk info into the dictionary"""
@@ -331,7 +331,7 @@ class Main():
         #Parse XML as HTML to support Ubuntu 12.04 LTS. Otherwise output is cut off.
         self.Output = BeautifulSoup(stdout, "html")
 
-        #Support for Ubuntu 12.04 LTS as that lshw outputs XML differently in that release. *** Output html with /html? ***
+        #Support for Ubuntu 12.04 LTS as that lshw outputs XML differently in that release. *** Output html with -html? ***
         if unicode(type(self.Output.list)) == "<type 'NoneType'>":
             ListOfDevices = self.Output.body.children
 
