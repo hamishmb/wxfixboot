@@ -360,7 +360,7 @@ class Main():
         #Find any LVM disks.
         logger.debug("GetDevInfo: Main().GetInfo(): Running 'LC_ALL=C lvdisplay'...")
         cmd = subprocess.Popen("LC_ALL=C lvdisplay", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        self.LVMOutput = cmd.communicate()[0]
+        self.LVMOutput = cmd.communicate()[0].split("\n")
         logger.debug("GetDevInfo: Main().GetInfo(): Done!")
 
         self.ParseLVMOutput()
