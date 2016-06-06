@@ -255,12 +255,59 @@ class Main():
         DiskInfo[Volume]["BootRecord"], DiskInfo[Volume]["BootRecordStrings"] = self.GetBootRecord(Volume)
         return Volume
 
+    def ParseLVMOutput(self):
+        """Get LVM partition information"""
+        LineCounter = 0
+
+        for Line in self.LVMOutput:
+            LineCounter += 1
+
+            if "--- Logical volume ---" in Line:
+                self.AssembleLVMDiskInfo(LineCounter)
+
+
+    def AssembleLVMDiskInfo(self, LineCounter):
+        """Assemble LVM disk info into the dictionary"""
+        #Get all the info related to this partition.
+        RawLVMInfo = []
+
+        for Line in self.LVMOutput[LineCounter+1:]:
+            RawLVMInfo.append(Line)
+
+            #When we get to the next volume, stop adding stuff to this entry's data variable.
+            if "--- Logical volume ---" in Line:
+                RawLVMInfo.pop()
+                break
+
+        #Start assembling the entry.
+        for Line in RawLVMInfo:
+            if "LV Path" in Line:
+                Volume = Line.split()[-1]
+                DiskInfo[Volume] = {}
+                DiskInfo[Volume]["Name"] = Volume
+                DiskInfo[Volume]["Type"] = "LVM"
+                DiskInfo[Volume]["HostDevice"] = "N/A"
+                DiskInfo[Volume]["Partitions"] = []
+                DiskInfo[Volume]["Vendor"] = "N/A"
+                DiskInfo[Volume]["Product"] = "N/A"
+                DiskInfo[Volume]["Description"] = "LVM Partition"
+                DiskInfo[Volume]["Flags"] = [] #*** Add support for this later ***
+                DiskInfo[Volume]["FileSystem"] = "Unknown" #*** Add support for this later ***
+                DiskInfo[Volume]["Partitioning"] = "N/A"
+                DiskInfo[Volume]["BootRecord"], DiskInfo[Volume]["BootRecordStrings"] = self.GetBootRecord(Volume)
+
+            elif "LV UUID" in Line:
+                DiskInfo[Volume]["UUID"] = Line.split()[-1]
+
+            elif "LV Size" in Line:
+                DiskInfo[Volume]["Capacity"] = ' '.join(Line.split()[-2:])
+
     def GetInfo(self, Standalone=False):
         """Get Disk Information."""
         logger.info("GetDevInfo: Main().GetInfo(): Preparing to get Disk info...")
 
         #Run lshw to try and get disk information.
-        logger.debug("GetDevInfo: Main().GetInfo(): Running 'lshw -sanitize -class disk -class volume -xml'...")
+        logger.debug("GetDevInfo: Main().GetInfo(): Running 'LC_ALL=C lshw -sanitize -class disk -class volume -xml'...")
         runcmd = subprocess.Popen("LC_ALL=C lshw -sanitize -class disk -class volume -xml", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
         #Get the output.
@@ -284,7 +331,7 @@ class Main():
         #Parse XML as HTML to support Ubuntu 12.04 LTS. Otherwise output is cut off.
         self.Output = BeautifulSoup(stdout, "html")
 
-        #Support for Ubuntu 12.04 LTS as that lshw outputs XML differently in that release.
+        #Support for Ubuntu 12.04 LTS as that lshw outputs XML differently in that release. *** Output html with /html? ***
         if unicode(type(self.Output.list)) == "<type 'NoneType'>":
             ListOfDevices = self.Output.body.children
 
@@ -309,6 +356,14 @@ class Main():
 
                 #Partitions.
                 Volume = self.GetPartitionInfo(SubNode, HostDisk)
+
+        #Find any LVM disks.
+        logger.debug("GetDevInfo: Main().GetInfo(): Running 'LC_ALL=C lvdisplay'...")
+        cmd = subprocess.Popen("LC_ALL=C lvdisplay", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        self.LVMOutput = cmd.communicate()[0]
+        logger.debug("GetDevInfo: Main().GetInfo(): Done!")
+
+        self.ParseLVMOutput()
 
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
 
