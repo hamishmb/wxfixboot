@@ -27,7 +27,7 @@ class Main():
         """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
         logger.info("MainStartupTools(): Main().CheckDepends(): Checking dependencies...")
         #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies.
-        CmdList = ("lshw", "mount", "lsb_release", "dmidecode", "chroot", "dd", "gdisk", "blkid", "strings")
+        CmdList = ("lshw", "mount", "dmidecode", "chroot", "dd", "gdisk", "blkid", "strings")
 
         #Create a list to contain names of failed commands.
         FailedList = []
@@ -161,14 +161,14 @@ class Main():
             logger.debug("MainStartupTools: Main().GetLinuxOSs(): Looking on "+Partition+"...")
 
             if Partition == RootFS:
-                Cmd = "lsb_release -sd"
+                Cmd = "python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
                 APTCmd = "which apt-get"
                 Chroot = False
                 IsCurrentOS = True
                 MountPoint = ""
 
             else:
-                Cmd = "chroot /mnt"+Partition+" lsb_release -sd"
+                Cmd = "chroot /mnt"+Partition+" python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
                 APTCmd = "chroot /mnt"+Partition+" which apt-get"
                 Chroot = True
                 IsCurrentOS = False

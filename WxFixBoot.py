@@ -15,6 +15,7 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Add package dependency on binutils (for strings command) ***
+#*** Remove package dependancy on lsb_release ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Test DialogTools.ShowMultiChoiceDlg() ***
@@ -50,7 +51,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "3/6/2016"
+ReleaseDate = "6/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")

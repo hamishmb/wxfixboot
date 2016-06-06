@@ -144,7 +144,7 @@ class AuthWindow(wx.Frame):
 
         #Check the password is right.
         Password = self.PasswordField.GetLineText(0)
-        Cmd = subprocess.Popen("sudo -S echo 'Authentication Succeeded'", stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        Cmd = subprocess.Popen("LC_ALL=C sudo -S echo 'Authentication Succeeded'", stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
         #Send the password to sudo through stdin, to avoid showing the user's password in the system/activity monitor.
         Cmd.stdin.write(Password+"\n")
