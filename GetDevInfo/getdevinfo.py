@@ -261,9 +261,7 @@ class Main():
 
         for Line in self.LVMOutput:
             LineCounter += 1
-            print(Line)
             if "--- Logical volume ---" in Line:
-                print("yay!")
                 self.AssembleLVMDiskInfo(LineCounter)
 
     def AssembleLVMDiskInfo(self, LineCounter):
@@ -281,7 +279,6 @@ class Main():
 
         #Start assembling the entry.
         for Line in RawLVMInfo:
-            print(Line)
             if "LV Path" in Line:
                 Volume = Line.split()[-1]
                 DiskInfo[Volume] = {}
@@ -299,6 +296,7 @@ class Main():
 
             elif "LV UUID" in Line:
                 DiskInfo[Volume]["UUID"] = Line.split()[-1]
+                DiskInfo[Volume]["ID"] = "Unknown" #*** Add support for this later ***
 
             elif "LV Size" in Line:
                 DiskInfo[Volume]["Capacity"] = ' '.join(Line.split()[-2:])
