@@ -281,6 +281,7 @@ class Main():
 
         #Start assembling the entry.
         for Line in RawLVMInfo:
+            print(Line)
             if "LV Path" in Line:
                 Volume = Line.split()[-1]
                 DiskInfo[Volume] = {}
