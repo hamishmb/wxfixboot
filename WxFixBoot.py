@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+#*** Add package dependancy on lvm2 ***
 #*** Add package dependency on binutils (for strings command) ***
 #*** Remove package dependancy on lsb_release ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
@@ -24,6 +25,7 @@
 #*** Support EFI on 32-bit firmware? ***
 #*** /boot/efi not unmounted after modifying EFI bootloaders on parted magic (possibly also on other platforms), preventing unmounting of chrooted rootfs. Doesn't cause an error or any problems. ***
 #*** Make OSInfo accessible to CoreBackendTools? ***
+#*** Save bootloader config, instead of bootloader itself? That way WxFixBoot can handle reinstalling/fixing the bootloader as required ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -51,7 +53,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "6/6/2016"
+ReleaseDate = "7/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -2195,7 +2197,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
 #End Bootloader Options Window
 #Begin New Bootloader Options Window.
-class NewBootloaderOptionsWindow(wx.Frame):
+class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
     def __init__(self, ParentWindow):
         """Initialise bootloader options window"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Bootloader Options", size=(400,200), style=wx.DEFAULT_FRAME_STYLE)
@@ -2241,7 +2243,7 @@ class NewBootloaderOptionsWindow(wx.Frame):
         self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["UserFriendlyOSNames"])
 
         #Advanced Options.
-        self.NewBootloaderChoice = wx.Choice(self.Panel, -1, choices=["GRUB-UEFI", "GRUB2", "ELILO", "LILO"]) #*** Disable EFI options on BIOS systems ***
+        self.NewBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "GRUB-UEFI", "GRUB2", "ELILO", "LILO"]) #*** Disable EFI options on BIOS systems ***
         self.BackupBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify"])
         self.RestoreBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify"])
 
@@ -2402,6 +2404,7 @@ class NewBootloaderOptionsWindow(wx.Frame):
 
     def BindEvents(self):
         """Bind all events for BootloaderOptionsWindow"""
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Bind(wx.EVT_SIZE, self.OnSize)
 
         #Text.
@@ -2413,6 +2416,108 @@ class NewBootloaderOptionsWindow(wx.Frame):
         self.Arrow1.Bind(wx.EVT_LEFT_DOWN, self.OnOSInfo)
         self.Arrow2.Bind(wx.EVT_LEFT_DOWN, self.OnBasicOptions)
         self.Arrow3.Bind(wx.EVT_LEFT_DOWN, self.OnAdvancedOptions)
+
+        #Checkboxes.
+        self.Bind(wx.EVT_CHECKBOX, self.OnTimeoutCheckBox, self.KeepBootloaderTimeoutCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnUpdateOrReinstallCheckBox, self.ReinstallBootloaderCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnUpdateOrReinstallCheckBox, self.UpdateBootloaderCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnInstallNewBootloaderCheckBox, self.InstallNewBootloaderCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnBackupBootloaderCheckBox, self.BackupBootloaderCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnRestoreBootloaderCheckBox, self.RestoreBootloaderCheckBox)
+
+        #Buttons.
+        self.Bind(wx.EVT_BUTTON, self.OnClose, self.SaveButton)
+
+    def OnUpdateOrReinstallCheckBox(self, Event=None):
+        """Enable/Disable the bootloader timeout checkbox, based on the value of the update/reinstall checkboxes."""
+        if self.ReinstallBootloaderCheckBox.IsChecked():
+            self.UpdateBootloaderCheckBox.Disable()
+            self.KeepBootloaderTimeoutCheckBox.Enable()
+            self.KeepBootloaderTimeoutCheckBox.SetValue(1)
+            self.DefaultOSChoice.Enable()
+            self.InstallNewBootloaderCheckBox.SetValue(0)
+            self.InstallNewBootloaderCheckBox.Disable()
+            self.NewBootloaderChoice.Disable()
+            self.RestoreBootloaderCheckBox.Disable()
+            self.RestoreBootloaderChoice.Disable()
+
+        elif self.UpdateBootloaderCheckBox.IsChecked():
+            self.ReinstallBootloaderCheckBox.Disable()
+            self.KeepBootloaderTimeoutCheckBox.Enable()
+            self.KeepBootloaderTimeoutCheckBox.SetValue(1)
+            self.DefaultOSChoice.Enable()
+            self.InstallNewBootloaderCheckBox.SetValue(0)
+            self.InstallNewBootloaderCheckBox.Disable()
+            self.NewBootloaderChoice.Disable()
+            self.RestoreBootloaderCheckBox.Disable()
+            self.RestoreBootloaderChoice.Disable()
+
+        else:
+            self.ReinstallBootloaderCheckBox.Enable()
+            self.UpdateBootloaderCheckBox.Enable()
+            self.KeepBootloaderTimeoutCheckBox.SetValue(0)
+            self.KeepBootloaderTimeoutCheckBox.Disable()
+            self.BootloaderTimeoutSpinner.Disable()
+            self.DefaultOSChoice.Disable()
+            self.InstallNewBootloaderCheckBox.Enable()
+            self.NewBootloaderChoice.Enable()
+            self.RestoreBootloaderCheckBox.Enable()
+            self.RestoreBootloaderChoice.Enable()
+
+    def OnTimeoutCheckBox(self, Event=None):
+        """Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox."""
+        if self.KeepBootloaderTimeoutCheckBox.IsChecked():
+            self.BootloaderTimeoutSpinner.Disable()
+
+        else:
+            self.BootloaderTimeoutSpinner.Enable()
+
+    def OnBackupBootloaderCheckBox(self, Event=None):
+        """Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox."""
+        if self.BackupBootloaderCheckBox.IsChecked():
+            self.BackupBootloaderChoice.Enable()
+
+        else:
+            self.BackupBootloaderChoice.Disable()
+
+    def OnRestoreBootloaderCheckBox(self, Event=None):
+        """Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox."""
+        if self.RestoreBootloaderCheckBox.IsChecked():
+            self.RestoreBootloaderChoice.Enable()
+            self.ReinstallBootloaderCheckBox.Disable()
+            self.UpdateBootloaderCheckBox.Disable()
+            self.InstallNewBootloaderCheckBox.Disable()
+            self.NewBootloaderChoice.Disable()
+
+        else:
+            self.RestoreBootloaderChoice.Disable()
+            self.ReinstallBootloaderCheckBox.Enable()
+            self.UpdateBootloaderCheckBox.Enable()
+            self.InstallNewBootloaderCheckBox.Enable()
+            self.NewBootloaderChoice.Enable()
+
+    def OnInstallNewBootloaderCheckBox(self, Event=None):
+        """Enable/Disable the new bootloader choice box, based on the value of the new bootloader checkbox."""
+        if self.InstallNewBootloaderCheckBox.IsChecked():
+            self.NewBootloaderChoice.Enable()
+            self.ReinstallBootloaderCheckBox.Disable()
+            self.UpdateBootloaderCheckBox.Disable()
+            self.KeepBootloaderTimeoutCheckBox.Enable()
+            self.KeepBootloaderTimeoutCheckBox.SetValue(1)
+            self.DefaultOSChoice.Enable()
+            self.RestoreBootloaderCheckBox.Disable()
+            self.RestoreBootloaderChoice.Disable()
+
+        else:
+            self.NewBootloaderChoice.Disable()
+            self.ReinstallBootloaderCheckBox.Enable()
+            self.UpdateBootloaderCheckBox.Enable()
+            self.KeepBootloaderTimeoutCheckBox.SetValue(0)
+            self.KeepBootloaderTimeoutCheckBox.Disable()
+            self.BootloaderTimeoutSpinner.Disable()
+            self.DefaultOSChoice.Disable()
+            self.RestoreBootloaderCheckBox.Enable()
+            self.RestoreBootloaderChoice.Enable()
 
     def OnOSInfo(self, Event=None):
         """Hide/Show the OS info, and rotate the arrow"""
@@ -2437,6 +2542,9 @@ class NewBootloaderOptionsWindow(wx.Frame):
     def OnBasicOptions(self, Event=None):
         """Hide/Show the basic options, and rotate the arrow"""
         if self.ReinstallBootloaderCheckBox.IsShown():
+            if self.InstallNewBootloaderCheckBox.IsShown():
+                return True
+
             self.Arrow2.SetBitmap(self.RightArrowImage)
 
             self.MainSizer.Detach(self.FixAndUpdateBootloaderSizer)
@@ -2494,21 +2602,16 @@ class NewBootloaderOptionsWindow(wx.Frame):
             self.RestoreBootloaderChoice.Hide()
 
         else:
+            if self.ReinstallBootloaderCheckBox.IsShown() == False:
+                self.OnBasicOptions()
+
             self.Arrow3.SetBitmap(self.DownArrowImage)
 
             if self.ListCtrl.IsShown():
-                if self.ReinstallBootloaderCheckBox.IsShown():
-                    FirstNumber = 13
-
-                else:
-                    FirstNumber = 10
+                FirstNumber = 13
 
             else:
-                if self.ReinstallBootloaderCheckBox.IsShown():
-                    FirstNumber = 11
-
-                else:
-                    FirstNumber = 8
+                FirstNumber = 11
 
             self.MainSizer.Insert(FirstNumber, self.InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
             self.MainSizer.Insert(FirstNumber+1, self.BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
@@ -2525,6 +2628,10 @@ class NewBootloaderOptionsWindow(wx.Frame):
             self.RestoreBootloaderChoice.Show()
 
         self.MainSizer.SetSizeHints(self)
+
+    def OnClose(self, Event=None):
+        """Close NewBootloaderOptionsWindow"""
+        self.Destroy()
 
 #End New Bootloader Options Window.
 #Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later *** *** Will be removed upon integration of the new bootloader options window ***
