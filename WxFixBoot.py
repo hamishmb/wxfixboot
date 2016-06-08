@@ -2216,7 +2216,7 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
 
         #Set up the window.
         self.LoadSettings()
-        #self.SetGUIState()
+        self.SetGUIState()
         
         logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Window Started.")
 
@@ -2418,8 +2418,21 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
         self.RestoreBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["RestoreBootloader"])
         self.RestoreBootloaderChoice.SetStringSelection(BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"])
 
-    def LoadGUIState(self, Event=None):
-        """Load all the GUI element's states (enabled/disabled) for this OS"""
+    def SetGUIState(self, Event=None):
+        """Set all the GUI element's states (enabled/disabled) for this OS"""
+        OS = self.OSChoice.GetStringSelection()
+
+        self.ReinstallBootloaderCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["ReinstallCheckBoxState"])
+        self.UpdateBootloaderCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"])
+        self.KeepBootloaderTimeoutCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"])
+        self.BootloaderTimeoutSpinner.Enable(BootloaderInfo[OS]["GUIState"]["NewTimeoutSpinnerState"])
+        self.DefaultOSChoice.Enable(BootloaderInfo[OS]["GUIState"]["DefaultOSChoiceState"])
+        self.InstallNewBootloaderCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["InstallNewBootloaderCheckBoxState"])
+        self.NewBootloaderChoice.Enable(BootloaderInfo[OS]["GUIState"]["NewBootloaderChoiceState"])
+        self.BackupBootloaderCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["BackupBootloaderCheckBoxState"])
+        self.BackupBootloaderChoice.Enable(BootloaderInfo[OS]["GUIState"]["BackupBootloaderChoiceState"])
+        self.RestoreBootloaderCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"])
+        self.RestoreBootloaderChoice.Enable(BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"])
 
     def BindEvents(self):
         """Bind all events for BootloaderOptionsWindow"""
