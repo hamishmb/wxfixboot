@@ -2677,9 +2677,26 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
         BootloaderInfo[OS]["Settings"]["RestoreBootloader"] = self.RestoreBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = self.RestoreBootloaderChoice.GetStringSelection()
 
+    def SaveGUIState(self, Event=None):
+        """Save all the GUI element's states (enabled/disabled) for this OS"""
+        OS = self.OSChoice.GetStringSelection()
+
+        BootloaderInfo[OS]["GUIState"]["ReinstallCheckBoxState"] = self.ReinstallBootloaderCheckBox.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"] = self.UpdateBootloaderCheckBox.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = self.KeepBootloaderTimeoutCheckBox.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["NewTimeoutSpinnerState"] = self.BootloaderTimeoutSpinner.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["DefaultOSChoiceState"] = self.DefaultOSChoice.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["InstallNewBootloaderCheckBoxState"] = self.InstallNewBootloaderCheckBox.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["NewBootloaderChoiceState"] = self.NewBootloaderChoice.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["BackupBootloaderCheckBoxState"] = self.BackupBootloaderCheckBox.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["BackupBootloaderChoiceState"] = self.BackupBootloaderChoice.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"] = self.RestoreBootloaderCheckBox.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = self.RestoreBootloaderChoice.IsEnabled()
+
     def OnClose(self, Event=None):
         """Save settings and GUI state, and then close NewBootloaderOptionsWindow"""
         self.SaveSettings()
+        self.SaveGUIState()
         self.Destroy()
 
 #End New Bootloader Options Window.
