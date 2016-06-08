@@ -2215,7 +2215,8 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
         self.BindEvents()
 
         #Set up the window.
-        #self.SetupOptions()
+        self.LoadSettings()
+        #self.SetGUIState()
         
         logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Window Started.")
 
@@ -2271,7 +2272,6 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
         #Bootloader timeout spinner.
         self.BootloaderTimeoutSpinner = wx.SpinCtrl(self.Panel, -1, "")
         self.BootloaderTimeoutSpinner.SetRange(1,100)
-        self.BootloaderTimeoutSpinner.SetValue(10)
 
         #Arrows.
         img1 = wx.Image("/usr/share/wxfixboot/images/ArrowDown.png", wx.BITMAP_TYPE_PNG)
@@ -2401,6 +2401,25 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
         self.Panel.SetSizer(self.MainSizer)
         #self.MainSizer.SetMinSize(wx.Size(936,360))
         self.MainSizer.SetSizeHints(self)
+
+    def LoadSettings(self, Event=None):
+        """Load all settings for this OS into the checkboxes and choice boxes"""
+        OS = self.OSChoice.GetStringSelection()
+
+        self.ReinstallBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["Reinstall"])
+        self.UpdateBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["Update"])
+        self.KeepBootloaderTimeoutCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"])
+        self.BootloaderTimeoutSpinner.SetValue(BootloaderInfo[OS]["Settings"]["NewTimeout"])
+        self.DefaultOSChoice.SetStringSelection(BootloaderInfo[OS]["Settings"]["DefaultOS"])
+        self.InstallNewBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["InstallNewBootloader"])
+        self.NewBootloaderChoice.SetStringSelection(BootloaderInfo[OS]["Settings"]["NewBootloader"])
+        self.BackupBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["BackupBootloader"])
+        self.BackupBootloaderChoice.SetStringSelection(BootloaderInfo[OS]["Settings"]["BootloaderBackupTarget"])
+        self.RestoreBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["RestoreBootloader"])
+        self.RestoreBootloaderChoice.SetStringSelection(BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"])
+
+    def LoadGUIState(self, Event=None):
+        """Load all the GUI element's states (enabled/disabled) for this OS"""
 
     def BindEvents(self):
         """Bind all events for BootloaderOptionsWindow"""
