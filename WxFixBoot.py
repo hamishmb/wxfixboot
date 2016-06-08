@@ -2661,8 +2661,25 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
 
         self.MainSizer.SetSizeHints(self)
 
+    def SaveSettings(self, Event=None): #*** Save settings and state if the OS choice is changed ***
+        """Save all settings for this OS from the checkboxes and choice boxes"""
+        OS = self.OSChoice.GetStringSelection()
+
+        BootloaderInfo[OS]["Settings"]["Reinstall"] = self.ReinstallBootloaderCheckBox.GetValue()
+        BootloaderInfo[OS]["Settings"]["Update"] = self.UpdateBootloaderCheckBox.GetValue()
+        BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] = self.KeepBootloaderTimeoutCheckBox.GetValue()
+        BootloaderInfo[OS]["Settings"]["NewTimeout"] = self.BootloaderTimeoutSpinner.GetValue()
+        BootloaderInfo[OS]["Settings"]["DefaultOS"] = self.DefaultOSChoice.GetStringSelection()
+        BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] = self.InstallNewBootloaderCheckBox.GetValue()
+        BootloaderInfo[OS]["Settings"]["NewBootloader"] = self.NewBootloaderChoice.GetStringSelection()
+        BootloaderInfo[OS]["Settings"]["BackupBootloader"] = self.BackupBootloaderCheckBox.GetValue()
+        BootloaderInfo[OS]["Settings"]["BootloaderBackupTarget"] = self.BackupBootloaderChoice.GetStringSelection()
+        BootloaderInfo[OS]["Settings"]["RestoreBootloader"] = self.RestoreBootloaderCheckBox.GetValue()
+        BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = self.RestoreBootloaderChoice.GetStringSelection()
+
     def OnClose(self, Event=None):
-        """Close NewBootloaderOptionsWindow"""
+        """Save settings and GUI state, and then close NewBootloaderOptionsWindow"""
+        self.SaveSettings()
         self.Destroy()
 
 #End New Bootloader Options Window.
