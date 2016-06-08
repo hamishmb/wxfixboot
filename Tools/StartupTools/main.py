@@ -453,6 +453,8 @@ class Main():
         #Other Options
         OptionsDlg1Run = False
 
+        SystemInfo["PreviousOSChoice"] = ""
+
         return ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run
 
     def FinalCheck(self):

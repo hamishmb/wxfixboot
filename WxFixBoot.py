@@ -2215,8 +2215,10 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
         self.BindEvents()
 
         #Set up the window.
-        self.LoadSettings()
-        self.SetGUIState()
+        if SystemInfo["PreviousOSChoice"] == "":
+            SystemInfo["PreviousOSChoice"] = SystemInfo["UserFriendlyOSNames"][0]
+
+        self.OnOSChoiceChange(Startup=True)
         
         logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Window Started.")
 
@@ -2232,13 +2234,14 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
 
         #Advanced Options.
         self.AdvancedOptionsText = wx.lib.stattext.GenStaticText(self.Panel, -1, "Advanced Options")
-        self.NewBootloaderText = wx.StaticText(self.Panel, -1, "Replace "+SystemInfo["Bootloader"]+" with:")
+        self.NewBootloaderText = wx.StaticText(self.Panel, -1, "")
         self.BackupBootloaderText = wx.StaticText(self.Panel, -1, "Backup to:")
         self.RestoreBootloaderText = wx.StaticText(self.Panel, -1, "Restore from:")
 
     def CreateChoiceBoxes(self):
         """Create the choice boxes"""
         self.OSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["UserFriendlyOSNames"])
+        self.OSChoice.SetStringSelection(SystemInfo["PreviousOSChoice"])
 
         #Basic Options.
         self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["UserFriendlyOSNames"])
@@ -2251,13 +2254,13 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
     def CreateCheckBoxes(self):
         """Create the check boxes"""
         #Basic Options.
-        self.ReinstallBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Fix/Reinstall "+SystemInfo["Bootloader"])
-        self.UpdateBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Update "+SystemInfo["Bootloader"]+"'s Config")
-        self.KeepBootloaderTimeoutCheckBox = wx.CheckBox(self.Panel, -1, "Keep "+SystemInfo["Bootloader"]+"'s existing menu timeout")
+        self.ReinstallBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "")
+        self.UpdateBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "")
+        self.KeepBootloaderTimeoutCheckBox = wx.CheckBox(self.Panel, -1, "")
 
         #Advanced Options.
         self.InstallNewBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Install a New Bootloader")
-        self.BackupBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Backup "+SystemInfo["Bootloader"])
+        self.BackupBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "")
         self.RestoreBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Restore this OS's bootloader")
 
     def CreateButtons(self):
@@ -2400,7 +2403,6 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
         #Get the sizer set up for the frame.
         self.Panel.SetSizer(self.MainSizer)
         #self.MainSizer.SetMinSize(wx.Size(936,360))
-        self.MainSizer.SetSizeHints(self)
 
     def LoadSettings(self, Event=None):
         """Load all settings for this OS into the checkboxes and choice boxes"""
@@ -2459,6 +2461,32 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
 
         #Buttons.
         self.Bind(wx.EVT_BUTTON, self.OnClose, self.SaveButton)
+
+        #Choiceboxes.
+        self.Bind(wx.EVT_CHOICE, self.OnOSChoiceChange, self.OSChoice)
+
+    def OnOSChoiceChange(self, Event=None, Startup=False):
+        """Save and load new GUI settings and states in accordance with the OS choice change"""
+        if Startup == False:
+            self.SaveSettings(OS=SystemInfo["PreviousOSChoice"])
+            self.SaveGUIState(OS=SystemInfo["PreviousOSChoice"])
+
+        self.LoadSettings()
+        self.SetGUIState()
+        self.SetTextLabels()
+
+        #Make sure the window displays properly.
+        self.MainSizer.SetSizeHints(self)
+
+    def SetTextLabels(self):
+        """Set text labels for GUI elements"""
+        OS = self.OSChoice.GetStringSelection()
+
+        self.InstallNewBootloaderCheckBox.SetLabel("Replace "+BootloaderInfo[OS]["Bootloader"]+" with:")
+        self.ReinstallBootloaderCheckBox.SetLabel("Fix/Reinstall "+BootloaderInfo[OS]["Bootloader"])
+        self.UpdateBootloaderCheckBox.SetLabel("Update "+BootloaderInfo[OS]["Bootloader"]+"'s Config")
+        self.KeepBootloaderTimeoutCheckBox.SetLabel("Keep "+BootloaderInfo[OS]["Bootloader"]+"'s existing menu timeout")
+        self.BackupBootloaderCheckBox.SetLabel("Backup "+BootloaderInfo[OS]["Bootloader"])
 
     def OnUpdateOrReinstallCheckBox(self, Event=None):
         """Enable/Disable the bootloader timeout checkbox, based on the value of the update/reinstall checkboxes."""
@@ -2661,10 +2689,8 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
 
         self.MainSizer.SetSizeHints(self)
 
-    def SaveSettings(self, Event=None): #*** Save settings and state if the OS choice is changed ***
+    def SaveSettings(self, Event=None, OS=None): #*** Save settings and state if the OS choice is changed ***
         """Save all settings for this OS from the checkboxes and choice boxes"""
-        OS = self.OSChoice.GetStringSelection()
-
         BootloaderInfo[OS]["Settings"]["Reinstall"] = self.ReinstallBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["Update"] = self.UpdateBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] = self.KeepBootloaderTimeoutCheckBox.GetValue()
@@ -2677,10 +2703,8 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
         BootloaderInfo[OS]["Settings"]["RestoreBootloader"] = self.RestoreBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = self.RestoreBootloaderChoice.GetStringSelection()
 
-    def SaveGUIState(self, Event=None):
+    def SaveGUIState(self, Event=None, OS=None):
         """Save all the GUI element's states (enabled/disabled) for this OS"""
-        OS = self.OSChoice.GetStringSelection()
-
         BootloaderInfo[OS]["GUIState"]["ReinstallCheckBoxState"] = self.ReinstallBootloaderCheckBox.IsEnabled()
         BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"] = self.UpdateBootloaderCheckBox.IsEnabled()
         BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = self.KeepBootloaderTimeoutCheckBox.IsEnabled()
@@ -2695,8 +2719,8 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
 
     def OnClose(self, Event=None):
         """Save settings and GUI state, and then close NewBootloaderOptionsWindow"""
-        self.SaveSettings()
-        self.SaveGUIState()
+        self.SaveSettings(OS=self.OSChoice.GetStringSelection())
+        self.SaveGUIState(OS=self.OSChoice.GetStringSelection())
         self.Destroy()
 
 #End New Bootloader Options Window.
