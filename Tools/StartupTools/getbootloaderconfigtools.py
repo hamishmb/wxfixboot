@@ -254,7 +254,7 @@ class Main(): #*** Refactor all of these ***
 
         return (Timeout, KernelOptions, DefaultOS)
 
-    def ParseGRUBLEGACYMenuEntries(self, MenuEntriesFilePath):
+    def ParseGRUBLEGACYMenuEntries(self, MenuEntriesFilePath): #*** Test this ***
         """Find and parse GRUB LEGACY menu entries."""
         logger.info("BootloaderConfigObtainingTools: Main().ParseGRUBLEGACYMenuEntries(): Finding and parsing menu entries...")
 

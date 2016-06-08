@@ -383,6 +383,34 @@ class Main():
             BootloaderInfo[OS]["IsModifyable"] = OSInfo[OS]["IsModifyable"] #*** Do we need these here as well? ***
             BootloaderInfo[OS]["Comments"] = "N/A"
 
+            #Initialise some default no-action settings.
+            BootloaderInfo[OS]["Settings"] = {}
+            BootloaderInfo[OS]["Settings"]["Reinstall"] = False
+            BootloaderInfo[OS]["Settings"]["Update"] = False
+            BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] = False
+            BootloaderInfo[OS]["Settings"]["NewTimeout"] = 10
+            BootloaderInfo[OS]["Settings"]["DefaultOS"] = BootloaderInfo[OS]["DefaultOS"]
+            BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] = False
+            BootloaderInfo[OS]["Settings"]["NewBootloader"] = "-- Please Select --"
+            BootloaderInfo[OS]["Settings"]["BackupBootloader"] = False
+            BootloaderInfo[OS]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
+            BootloaderInfo[OS]["Settings"]["RestoreBootloader"] = False
+            BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
+
+            #Initialise GUI state for this OS (True = Enabled, False = Disabled).
+            BootloaderInfo[OS]["GUIState"] = {}
+            BootloaderInfo[OS]["GUIState"]["ReinstallCheckBoxState"] = True
+            BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"] = True
+            BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
+            BootloaderInfo[OS]["GUIState"]["NewTimeoutSpinnerState"] = False
+            BootloaderInfo[OS]["GUIState"]["DefaultOSChoiceState"] = False
+            BootloaderInfo[OS]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
+            BootloaderInfo[OS]["GUIState"]["NewBootloaderChoiceState"] = False
+            BootloaderInfo[OS]["GUIState"]["BackupBootloaderCheckBoxState"] = True
+            BootloaderInfo[OS]["GUIState"]["BackupBootloaderChoiceState"] = False
+            BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
+            BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = False
+
             #Clean up if needed.
             if not OSInfo[OS]["IsCurrentOS"]:
                 #Remove chroot.

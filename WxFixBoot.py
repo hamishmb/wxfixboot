@@ -53,7 +53,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "7/6/2016"
+ReleaseDate = "8/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -2460,9 +2460,9 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
             self.BootloaderTimeoutSpinner.Disable()
             self.DefaultOSChoice.Disable()
             self.InstallNewBootloaderCheckBox.Enable()
-            self.NewBootloaderChoice.Enable()
+            self.NewBootloaderChoice.Disable()
             self.RestoreBootloaderCheckBox.Enable()
-            self.RestoreBootloaderChoice.Enable()
+            self.RestoreBootloaderChoice.Disable()
 
     def OnTimeoutCheckBox(self, Event=None):
         """Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox."""
@@ -2494,7 +2494,7 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
             self.ReinstallBootloaderCheckBox.Enable()
             self.UpdateBootloaderCheckBox.Enable()
             self.InstallNewBootloaderCheckBox.Enable()
-            self.NewBootloaderChoice.Enable()
+            self.NewBootloaderChoice.Disable()
 
     def OnInstallNewBootloaderCheckBox(self, Event=None):
         """Enable/Disable the new bootloader choice box, based on the value of the new bootloader checkbox."""
@@ -2517,7 +2517,7 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
             self.BootloaderTimeoutSpinner.Disable()
             self.DefaultOSChoice.Disable()
             self.RestoreBootloaderCheckBox.Enable()
-            self.RestoreBootloaderChoice.Enable()
+            self.RestoreBootloaderChoice.Disable()
 
     def OnOSInfo(self, Event=None):
         """Hide/Show the OS info, and rotate the arrow"""
