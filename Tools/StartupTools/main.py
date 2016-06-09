@@ -396,6 +396,7 @@ class Main():
             BootloaderInfo[OS]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
             BootloaderInfo[OS]["Settings"]["RestoreBootloader"] = False
             BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
+            BootloaderInfo[OS]["Settings"]["ChangeThisOS"] = False
 
             #Initialise GUI state for this OS (True = Enabled, False = Disabled).
             BootloaderInfo[OS]["GUIState"] = {}

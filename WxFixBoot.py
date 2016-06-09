@@ -53,7 +53,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "8/6/2016"
+ReleaseDate = "9/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -517,12 +517,36 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
+        #**************************
+        print("\n\nSystemInfo:")
         Keys = SystemInfo.keys()
         Keys.sort()
 
         for Key in Keys:
             print(Key)
 
+        print("\n\nOSInfo:")
+        Keys = OSInfo.keys()
+        Keys.sort()
+
+        for Key in Keys:
+            print(Key)
+
+        print("\n\nDiskInfo:")
+        Keys = DiskInfo.keys()
+        Keys.sort()
+
+        for Key in Keys:
+            print(Key)
+
+        print("\n\nBootloaderInfo:")
+        Keys = BootloaderInfo.keys()
+        Keys.sort()
+
+        for Key in Keys:
+            print(Key)
+
+        #***************************
         #Set some other variables to default values, avoiding problems down the line. *** Save these in a dictionary later ***
         #Define globals.
         global ReinstallBootloader
@@ -976,7 +1000,7 @@ class MainWindow(wx.Frame):
             Operations.append(EssentialBackendTools.BadSectorCheck)
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BadSectorCheck to Operations...")
 
-        #Now do other processes
+        #Now do other processes *** deprecated ***
         if SystemInfo["BootloaderToInstall"] != "None":
             Operations.append(MainBootloaderTools.ManageBootloaders)
             logger.info("MainWindow().CountOperations(): Added MainBootloaderTools.ManageBootloaders to Operations...")
@@ -988,6 +1012,12 @@ class MainWindow(wx.Frame):
         if UpdateBootloader:
             Operations.append(MainBootloaderTools.UpdateBootloader)
             logger.info("MainWindow().CountOperations(): Added MainBootloaderTools.UpdateBootloader to Operations...")
+
+        #*** End of deprecated section ***
+        for OS in BootloaderInfo.keys():
+            if BootloaderInfo[OS]["Settings"]["ChangeThisOS"]:
+                Operations.append([MainBootloaderTools.ManageBootloader, OS])
+                logger.info("MainWindow().CountOperations(): Added [MainBootloaderTools.ManageBootloader, "+OS+"] to Operations...")
 
         #*** Disabled temporarily ***
         #if MakeSystemSummary:
@@ -2703,6 +2733,12 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
         BootloaderInfo[OS]["Settings"]["RestoreBootloader"] = self.RestoreBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = self.RestoreBootloaderChoice.GetStringSelection()
 
+        if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["Update"] or BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] or BootloaderInfo[OS]["Settings"]["RestoreBootloader"]:
+            BootloaderInfo[OS]["Settings"]["ChangeThisOS"] = True
+
+        else:
+            BootloaderInfo[OS]["Settings"]["ChangeThisOS"] = False
+
     def SaveGUIState(self, Event=None, OS=None):
         """Save all the GUI element's states (enabled/disabled) for this OS"""
         BootloaderInfo[OS]["GUIState"]["ReinstallCheckBoxState"] = self.ReinstallBootloaderCheckBox.IsEnabled()
@@ -2721,6 +2757,10 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
         """Save settings and GUI state, and then close NewBootloaderOptionsWindow"""
         self.SaveSettings(OS=self.OSChoice.GetStringSelection())
         self.SaveGUIState(OS=self.OSChoice.GetStringSelection())
+
+        #Send a message to mainwindow so it can refresh.
+        wx.CallAfter(self.ParentWindow.RefreshMainWindow, "Closed")
+
         self.Destroy()
 
 #End New Bootloader Options Window.

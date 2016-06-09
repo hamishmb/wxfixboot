@@ -22,6 +22,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 class Main(): #*** Refactor all of these ***
+    def ManageBootloader(self, OS):
+        pass
+
     def ReinstallBootloader(self):
         """Reinstall/fix the bootloader."""
         logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Preparing to reinstall the bootloader...")
