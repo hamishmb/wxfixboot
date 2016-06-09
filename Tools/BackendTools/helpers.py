@@ -235,7 +235,7 @@ class Main():
             logger.error("HelperBackendTools: Main().BackupUEFIFiles(): Failed to backup Windows's UEFI boot files! Warning user and continuing...")
             DialogTools.ShowMsgDlg(Kind="error", Message="Warning: WxFixBoot failed to backup Windows's UEFI boot files! This probably isn't very important. Click okay to continue.")
 
-    def CopyUEFIFiles(self, MountPoint):
+    def CopyUEFIFiles(self, OS, MountPoint):
         """Copy the new UEFI bootloader's files to default places in case of buggy firmware.""" #*** The error messages here aren't very helpful ***
         logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Copying UEFI Files to UEFIBootDir...")
 
@@ -249,7 +249,7 @@ class Main():
             os.mkdir(UEFIBootDir)
 
         #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
-        if SystemInfo["BootloaderToInstall"] == "ELILO":
+        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             #We need to copy both elilo.efi, and elilo.conf to UEFIBootDir.
             logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Copying elilo.efi and elilo.conf to "+UEFIBootDir+"...")
             Retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False)
@@ -264,7 +264,7 @@ class Main():
                 logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilo.conf to "+UEFIBootDir+"/! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="Error: WxFixBoot failed to copy one of the new bootloader's UEFI files to the backup directory! This could potentially be a problem. If your system doesn't start, this could be the reason why it doesn't start. Click okay to continue.")
 
-        elif SystemInfo["BootloaderToInstall"] == "GRUB-UEFI":
+        elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #We need to copy grub*.efi to UEFIBootDir.
             logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Copying grub*.efi to "+UEFIBootDir+"...")
             Retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/grub*.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False)

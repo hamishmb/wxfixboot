@@ -341,7 +341,7 @@ class Main():
 
             #Copy and backup EFI files where needed.
             HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
-            HelperBackendTools.CopyUEFIFiles(MountPoint=MountPoint)
+            HelperBackendTools.CopyUEFIFiles(OS=OS, MountPoint=MountPoint)
 
             #Set the default OS.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
@@ -368,7 +368,7 @@ class Main():
     
                 #Also, set the OS entries.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating LILO OS Entries...")
-                BootloaderConfigSettingTools.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
+                BootloaderConfigSettingTools.MakeLILOOSEntries(OS=OS, filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
 
             #Now Install LILO to the MBR.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing LILO to the MBR...")
@@ -413,7 +413,7 @@ class Main():
 
             #Copy and backup UEFI files where needed.
             HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
-            HelperBackendTools.CopyUEFIFiles(MountPoint=MountPoint)
+            HelperBackendTools.CopyUEFIFiles(OS=OS, MountPoint=MountPoint)
 
         #Tear down chroot if needed.
         if MountPoint != "":

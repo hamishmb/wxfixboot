@@ -442,7 +442,6 @@ class Main():
         BootloaderTimeout = -1 #Don't change the timeout by default.
 
         #Options in Bootloader Options dlg
-        SystemInfo["BootloaderToInstall"] = "None"
         BLOptsDlgRun = False
 
         #Options in Restore dlgs

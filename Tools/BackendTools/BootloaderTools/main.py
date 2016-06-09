@@ -67,9 +67,6 @@ class Main(): #*** Refactor all of these ***
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
 
         else:
-            #Set BootloaderToInstall as the current bootloader to allow this to work properly.
-            SystemInfo["BootloaderToInstall"] = SystemInfo["Bootloader"]
-
             #Call self.ManageBootloaders to perform the reinstallation safely.
             logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Reinstalling the Bootloader...")
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Reinstalling the Bootloader...###\n")
@@ -89,8 +86,6 @@ class Main(): #*** Refactor all of these ***
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
 
         else:
-            #Set BootloaderToInstall as the current bootloader to allow this to work properly.
-            SystemInfo["BootloaderToInstall"] = SystemInfo["Bootloader"]
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Updating the bootloader's config...")
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader's configuration...###\n")
 

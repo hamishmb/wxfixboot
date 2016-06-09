@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor all of these *** *** Add recovery boot options for LILO/ELILO *** *** Check if LILO installs on GPT disks (GRUB2 does) *** *** Set GRUB_DEFAULT to an ID, rather than "saved" ***
+class Main(): #*** Refactor all of these *** *** Add recovery boot options for LILO/ELILO *** *** Check if LILO installs on GPT disks (GRUB2 does) *** *** Set GRUB_DEFAULT to an ID, rather than "saved" *** *** Use the dictionary instead of BootloaderTimeout and KernelOptions ***
     def SetGRUB2Config(self, filetoopen):
         """Set GRUB2 config."""
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Setting GRUB2 Config in "+filetoopen+"...")
@@ -190,7 +190,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         #Now ask the user to select the correct one.
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done! Asking user to choose a default OS...")
-        DefaultOS = DialogTools.ShowChoiceDlg(Message="Please select the OS you want to use as "+SystemInfo["BootloaderToInstall"]+"'s Default OS. You are setting configuration for: "+OS, Title="WxFixBoot - Select Default OS", Choices=GRUBOSNameList)
+        DefaultOS = DialogTools.ShowChoiceDlg(Message="Please select the OS you want to use as "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s Default OS. You are setting configuration for "+OS, Title="WxFixBoot - Select Default OS", Choices=GRUBOSNameList)
 
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): User chose "+DefaultOS+". Setting default OS...")
         #Use the user's selection to set the default OS.
@@ -375,9 +375,9 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         ConfigFile.close()
         logger.info("BootloaderConfigSettingTools: Main().SetELILOConfig(): Done!")
 
-    def MakeLILOOSEntries(self, filetoopen, PackageManager, MountPoint): #*** Maybe set default OS in a separate function? ***
+    def MakeLILOOSEntries(self, OS, filetoopen, PackageManager, MountPoint): #*** Maybe set default OS in a separate function? ***
         """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS"""
-        logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make OS entries for "+SystemInfo["BootloaderToInstall"]+"...")
+        logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make OS entries for "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
         #Okay, we've saved the kopts, timeout, and the boot device in the list.
         #Now we'll set the OS entries, and then the default OS.
         #Open the file, and add each entry to a temporary list, which will be written to the file later.
@@ -404,7 +404,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         #Make the OS entries.
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Making OS Entries...")
 
-        if SystemInfo["BootloaderToInstall"] == "ELILO":
+        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             NewFileContents.append("#################### ELILO per-image section ####################")
 
         #As we make these entries, we'll record which ones were actually made, as the user can cancel them if it looks like it won't work.
@@ -466,7 +466,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
             #Use UUID's here if we can.
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs as a UUID if possible...")
 
-            if SystemInfo["BootloaderToInstall"] == "ELILO": #*** Test this works ***
+            if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO": #*** Test this works ***
                 if DiskInfo[SystemInfo["UEFISystemPartition"]]["UUID"] == "Unknown": #*** Warn user? ***
                     logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+SystemInfo["UEFISystemPartition"]+"! This might not work cos it can change!")
                     NewFileContents.append("\troot="+Partition+"\n")

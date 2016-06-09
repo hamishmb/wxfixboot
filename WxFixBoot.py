@@ -577,7 +577,6 @@ class InitThread(threading.Thread):
         BackupBootSector = ""
         MakeSystemSummary = ""
         BootloaderTimeout = ""
-        SystemInfo["BootloaderToInstall"] = ""
         BLOptsDlgRun = ""
         RestoreBootSector = ""
         BootSectorFile = ""
@@ -952,7 +951,6 @@ class MainWindow(wx.Frame):
             ReinstallBootloader = True
 
             #Disable some stuff
-            SystemInfo["BootloaderToInstall"] = "None"
             BootSectorFile = "None"
             RestoreBootSector = False
 
@@ -964,7 +962,6 @@ class MainWindow(wx.Frame):
             UpdateBootloader = True
 
             #Disable some stuff
-            SystemInfo["BootloaderToInstall"] = "None"
             BootSectorFile = "None"
             RestoreBootSector = False
 
@@ -1001,9 +998,6 @@ class MainWindow(wx.Frame):
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BadSectorCheck to Operations...")
 
         #Now do other processes *** deprecated ***
-        if SystemInfo["BootloaderToInstall"] != "None":
-            Operations.append(MainBootloaderTools.ManageBootloaders)
-            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools.ManageBootloaders to Operations...")
 
         if ReinstallBootloader:
             Operations.append(MainBootloaderTools.ReinstallBootloader)
@@ -1392,7 +1386,7 @@ class SettingsWindow(wx.Frame):
         self.BootloaderTimeoutText2 = wx.StaticText(self.Panel, -1, "(seconds, -1 represents current value)") 
         self.AdvancedSettingsText = wx.StaticText(self.Panel, -1, "Advanced Settings:")
         self.RootDeviceText = wx.StaticText(self.Panel, -1, "Root device:")
-        self.BootloaderToInstallText = wx.StaticText(self.Panel, -1, "Bootloader To Install: "+SystemInfo["BootloaderToInstall"])
+        self.BootloaderToInstallText = wx.StaticText(self.Panel, -1, "Bootloader To Install: *** DISABLED DUE TO DEPRECATION ***")
         self.FirmwareTypeText = wx.StaticText(self.Panel, -1, "Selected Firmware Type: "+Settings["MainSettings"]["FirmwareType"])
 
     def CreateCBs(self):
@@ -1496,9 +1490,6 @@ class SettingsWindow(wx.Frame):
             self.DefaultOSChoice.Disable()
             self.BootloaderTimeoutSpinner.SetValue(-1)
             self.BootloaderTimeoutSpinner.Disable()
-
-            #Reset some settings.
-            SystemInfo["BootloaderToInstall"] = "None"
 
         else:
             #Enable some options.
@@ -1686,7 +1677,6 @@ class SettingsWindow(wx.Frame):
             self.BootloaderTimeoutSpinner.Disable()
 
             #Reset some settings.
-            SystemInfo["BootloaderToInstall"] = "None"
             Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
 
         else:
@@ -1704,8 +1694,7 @@ class SettingsWindow(wx.Frame):
         self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
         self.Panel.Layout()
 
-        #Update the BootloaderToInstall and FirmwareType text.
-        self.BootloaderToInstallText.SetLabel("Bootloader To Install: "+SystemInfo["BootloaderToInstall"])
+        #Update the FirmwareType text.
         self.FirmwareTypeText.SetLabel("Selected Firmware Type: "+Settings["MainSettings"]["FirmwareType"])
 
         #Show OptionsDlg1.
@@ -1925,15 +1914,13 @@ class BootloaderOptionsWindow(wx.Frame):
                 self.AutoFirmwareTypeRadioButton.SetValue(False)
 
             #Bootloader To Install Choice
-            if SystemInfo["BootloaderToInstall"] not in ("None", "Unknown") and ReinstallBootloader == False and UpdateBootloader == False:
+            if ReinstallBootloader == False and UpdateBootloader == False:
                 self.BootloaderToInstallChoice.Enable()
-                self.BootloaderToInstallChoice.SetStringSelection(SystemInfo["BootloaderToInstall"])
-                self.BootloaderToInstallChoicelastvalue = SystemInfo["BootloaderToInstall"]
+
                 #Insure the window gets updated properly.
                 self.BlToInstallChoiceChange()
 
             elif ReinstallBootloader or UpdateBootloader:
-                SystemInfo["BootloaderToInstall"] = "None"
                 self.BootloaderToInstallChoice.SetSelection(0)
                 self.BootloaderToInstallChoicelastvalue = "Auto"
                 #Insure the window gets updated properly.
@@ -2153,60 +2140,56 @@ class BootloaderOptionsWindow(wx.Frame):
 
                     if Settings["MainSettings"]["FirmwareType"] == "BIOS" and SystemInfo["Bootloader"] not in ('GRUB2', 'LILO', 'GRUB-LEGACY'):
                         #Find the BIOS/MBR equivalent to a UEFI bootloader.
-                        SystemInfo["BootloaderToInstall"] = BootloaderList[bootloadernum+1]
+                        pass
 
                     elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and SystemInfo["Bootloader"] not in ('GRUB-UEFI', 'ELILO', 'GRUB-LEGACY') and SystemInfo["UEFISystemPartition"] != None:
                         #Find the EFI/UEFI equivalent to a BIOS bootloader, provided there is a UEFI partition, and it isn't GRUB-LEGACY
-                        SystemInfo["BootloaderToInstall"] = BootloaderList[bootloadernum-1]
+                        pass
 
                     elif Settings["MainSettings"]["FirmwareType"] == "BIOS" and SystemInfo["Bootloader"] == "GRUB-LEGACY":
                         #Recommend GRUB2 for BIOS systems using GRUB-LEGACY
                         dlg = wx.MessageDialog(self.Panel, 'Seeing as your bootloader is grub legacy, and you use BIOS firmware, the recommended bootloader for your hardware is GRUB2. If you want to install a different bootloader, click no and return to this window to manually select your bootloader. Do you want to install GRUB2?', 'WxFixBoot -- Comfirmation', wx.YES_NO | wx.ICON_QUESTION).ShowModal()
                         if dlg == wx.ID_YES:
-                            SystemInfo["BootloaderToInstall"] = "GRUB2"
+                            pass
 
                         else:
                             #Do nothing
-                            SystemInfo["BootloaderToInstall"] = "None"
+                            pass
 
                     elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and SystemInfo["Bootloader"] == "GRUB-LEGACY":
                         #Suggest GRUB-UEFI for UEFI systems using GRUB-LEGACY
                         wx.MessageDialog(self.Panel, "You have a combination of UEFI firmware and grub legacy. This is an odd combination, and WxFixBoot doesn't know what to do. If you've imaged your HDD from another system, you probably want to install GRUB-UEFI manually by returning to this window after it closes. If you manually suggested you have grub legacy earlier, please double check that was correct.", "WxFixBoot - Warning!", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
-                        SystemInfo["BootloaderToInstall"] = "Unknown"
+                        pass
 
                     elif Settings["MainSettings"]["FirmwareType"] == "UEFI" and SystemInfo["UEFISystemPartition"] == None:
                         #Refuse to install a UEFI bootloader, as there is no UEFI partition.
                         wx.MessageDialog(self.Panel, "Your current bootloader to install requires a UEFI partition, which either doesn't exist or has not been selected. Please create or select a UEFI partition to install a UEFI bootloader or the operation will be cancelled.", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition).ShowModal()
-                        SystemInfo["BootloaderToInstall"] = "None"
+                        pass
 
                     else:
                         #Correct bootloader for firmware type.
-                        SystemInfo["BootloaderToInstall"] = "None"
+                        pass
                         wx.MessageDialog(self.Panel, "Your current bootloader already supports your firmware type, so it won't be modified based on your firmware. If you wish to, you can install an alternative bootloader with this window, or reinstall the bootoader using the selection in the main window.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
 
             else:
                 #Do nothing.
-                SystemInfo["BootloaderToInstall"] = "None"
+                pass
 
         elif self.DoNotChangeBootloaderCheckBox.IsChecked() == False and ReinstallBootloader == False and UpdateBootloader == False:
-            SystemInfo["BootloaderToInstall"] = self.BootloaderToInstallChoice.GetStringSelection()
+            pass
 
         else:
-            SystemInfo["BootloaderToInstall"] = "None"
+            pass
 
-        if SystemInfo["BootloaderToInstall"] == SystemInfo["Bootloader"]:
-            SystemInfo["BootloaderToInstall"] = "None"
+        if True:
             wx.MessageDialog(self.Panel, "Your current bootloader is the same as the one you've selected to install! Please select 'Reinstall Bootloader' in the Main Window instead.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition).ShowModal()
 
-        if SystemInfo["BootloaderToInstall"] in ('LILO', 'ELILO'):  
+        if True:  
             wx.MessageDialog(self.Panel, "Either, you've selected or WxFixBoot has autodetermined to use LILO or ELILO as the bootloader to install! Both ELILO and LILO can be a complete pain to set up and maintain. Please do not use either unless you know how to set up and maintain them, and you're sure you want them. If WxFixBoot recommended either of them to you, it's a good idea to select the equivalent GRUB version manually instead: GRUB-UEFI for ELILO, GRUB2 for LILO.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
 
-            #if SystemInfo["GPTDisks"] != [] and SystemInfo["BootloaderToInstall"] == "LILO": #*** Check if this is correct ***
+            #if SystemInfo["GPTDisks"] != []: #*** Check if this is correct ***
             #    wx.MessageDialog(self.Panel, "LILO is going to be installed, but at least one device connected to this computer uses an incompatble partition system! LILO will not boot from that device, so this may be a bad idea, in case you boot from it. Please consider installing GRUB2 instead as it will boot from that device.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition).ShowModal()
 
-        self.BootloaderToInstallChoice.SetStringSelection(SystemInfo["BootloaderToInstall"])
-
-        logger.info("BootloaderOptionsWindow().SaveBLOpts(): Value of BootloaderToInstall is: "+SystemInfo["BootloaderToInstall"])
         logger.info("BootloaderOptionsWindow().SaveBLOpts(): Finished saving options.")
 
         #Enable self.ExitButton.
@@ -3356,6 +3339,7 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.essentials.DiskInfo = DiskInfo
         Tools.BackendTools.essentials.SystemInfo = SystemInfo
 
+        Tools.BackendTools.helpers.BootloaderInfo = BootloaderInfo
         Tools.BackendTools.helpers.DiskInfo = DiskInfo
         Tools.BackendTools.helpers.OSInfo = OSInfo
         Tools.BackendTools.helpers.SystemInfo = SystemInfo
@@ -3368,6 +3352,7 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.BootloaderTools.main.SystemInfo = SystemInfo
         Tools.BackendTools.BootloaderTools.main.OSInfo = OSInfo
 
+        Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderInfo = BootloaderInfo
         Tools.BackendTools.BootloaderTools.setconfigtools.DiskInfo = DiskInfo
         Tools.BackendTools.BootloaderTools.setconfigtools.SystemInfo = SystemInfo
         Tools.BackendTools.BootloaderTools.setconfigtools.OSInfo = OSInfo
@@ -3442,14 +3427,14 @@ class BackendThread(threading.Thread):
         ReportList.write("Detected Bootloader: "+SystemInfo["AutoBootloader"]+"\n")
         ReportList.write("Selected Bootloader: "+SystemInfo["Bootloader"]+"\n")
 
-        if SystemInfo["BootloaderToInstall"] != "None":
+        if True: #*** Needs rewriting for new bootloader options ***
             #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else). *** Show what we would do if they weren't disabled too ***
             ReportList.write("Disabled Bootloader Operations: "+unicode(SystemInfo["DisableBootloaderOperations"])+"\n")
 
             if SystemInfo["DisableBootloaderOperations"] == False:
                 if ReinstallBootloader:
                     ReportList.write("Reinstall/Fix The Current BootLoader: "+unicode(ReinstallBootloader)+"\n")
-                    ReportList.write("Selected Bootloader To Reinstall/Fix: "+SystemInfo["BootloaderToInstall"]+"\n")
+                    #ReportList.write("Selected Bootloader To Reinstall/Fix: "+SystemInfo["BootloaderToInstall"]+"\n")
                     ReportList.write("Reinstall/Fix bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
                     ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
@@ -3458,7 +3443,7 @@ class BackendThread(threading.Thread):
 
                 elif UpdateBootloader:
                     ReportList.write("Update The Current BootLoader's Config: "+unicode(UpdateBootloader)+"\n")
-                    ReportList.write("Selected Bootloader To Update: "+SystemInfo["BootloaderToInstall"]+"\n")
+                    #ReportList.write("Selected Bootloader To Update: "+SystemInfo["BootloaderToInstall"]+"\n")
                     ReportList.write("Update Bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
                     ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
@@ -3467,7 +3452,7 @@ class BackendThread(threading.Thread):
 
                 else:
                     #We must be installing a new bootloader.
-                    ReportList.write("Selected Bootloader To Install: "+SystemInfo["BootloaderToInstall"]+"\n")
+                    #ReportList.write("Selected Bootloader To Install: "+SystemInfo["BootloaderToInstall"]+"\n")
                     ReportList.write("Remove Old Bootloader from: "+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"\n")
                     ReportList.write("Install New Bootloader to: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nNew Bootloader's Configuration:"+"\n")
