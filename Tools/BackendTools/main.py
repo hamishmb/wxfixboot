@@ -240,197 +240,197 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
         return BootloaderInstallSucceded #*** Keep the results for each OS here, and note which one(s) failed! ***
 
-    def SetNewBootloaderConfig(self): #*** Use UseChroot here for readability? ***
+    def SetNewBootloaderConfig(self, OS): #*** Use UseChroot here for readability? ***
         """Manage setting new bootloader config."""
-        logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): Preparing to set bootloader config in OS(s): "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to set the new bootloaders' config...")
+        logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): Preparing to set "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config in "+OS+"...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to set "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 77)
 
-        #Loop through SystemInfo["OSsForBootloaderInstallation"], and provide information to the function that will set the bootloaders' config.
-        for OS in SystemInfo["OSsForBootloaderInstallation"]:
-            #For each OS that needs the new bootloader configured, grab the partition, and the package manager.
-            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting the new bootloader config for OS: "+OS+"...")
+        #For each OS that needs the new bootloader configured, grab the partition, and the package manager.
+        logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config for "+OS+"...")
 
-            #Grab the OS's partition and package manager.
-            Partition = OSInfo[OS]["Partition"]
-            PackageManager = OSInfo[OS]["PackageManager"]
+        #Grab the OS's partition and package manager.
+        Partition = OSInfo[OS]["Partition"]
+        PackageManager = OSInfo[OS]["PackageManager"]
 
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to set the new bootloaders' config for OS: "+OS+"...###\n")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to set "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
 
-            #Grab the architecture.
-            Arch = OSInfo[OS]["Arch"]
+        #Grab the architecture.
+        Arch = OSInfo[OS]["Arch"]
 
-            wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Setting the new bootloader's config...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 79)
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Setting the new bootloader's config for OS: "+OS+"...###\n")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Setting "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" config...")
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 79)
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Setting "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
 
-            #Check if the Partition is RootFS, if we're not on a live disk.
-            if SystemInfo["IsLiveDisk"] == False and Partition == SystemInfo["RootFS"]:
-                logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're modifying the current OS...")
-                #If so, make sure this will work for this OS too, and avoid setting mountpoint, so the config instructions below look in the right place for the config files.
-                MountPoint = ""
+        #If this is the current OS, let the config functions know that we aren't using chroot.
+        if OSInfo[OS]["IsCurrentOS"]:
+            logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're modifying the current OS...")
+            #If so, make sure this will work for this OS too, and avoid setting mountpoint, so the config instructions below look in the right place for the config files.
+            MountPoint = ""
+            UnmountPartitionAfter = False
+
+        else:
+            logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're modifying another OS...")
+            #If not, set mountpoint to the actual mountpoint.
+            MountPoint = "/mnt"+Partition
+
+            #Check if the partition is mounted.
+            if CoreTools.IsMounted(Partition, MountPoint):
                 UnmountPartitionAfter = False
 
             else:
-                logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're modifying another OS...")
-                #If not, set mountpoint to the actual mountpoint.
-                MountPoint = "/mnt"+Partition
+                UnmountPartitionAfter = True
 
-                #Check if the partition is mounted.
-                if CoreTools.IsMounted(Partition, MountPoint):
-                    UnmountPartitionAfter = False
-
-                else:
-                    UnmountPartitionAfter = True
-
-                    #Mount the partition.
-                    Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
-
-                    if Retval != 0:
-                        #Ignore this partition.
-                        logger.warning("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount "+Partition+"! Ignoring this partition...")
-                        continue
-
-                #Set up chroot.
-                Retval = CoreTools.SetUpChroot(MountPoint=MountPoint)
-                if Retval != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
-
-                wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
-
-            #Look for the configuration file, based on which SetConfig() function we're about to run.
-            if SystemInfo["BootloaderToInstall"] == "GRUB2":
-                #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
-                if os.path.isfile(MountPoint+"/etc/default/grub"):
-                    #It does, we'll run the function to set the config now.
-                    logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
-                    BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
-
-                #Now Install GRUB2 to the MBR. *** Is this necessary when updating it? ***
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to MBR...")
-                BootloaderConfigSettingTools.InstallGRUB2ToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
-
-                #Update GRUB.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
-                BootloaderConfigSettingTools.UpdateGRUB2(PackageManager=PackageManager, MountPoint=MountPoint)
-
-                #Set the default OS.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
-                BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, MountPoint=MountPoint)
-
-            elif SystemInfo["BootloaderToInstall"] == "GRUB-UEFI":
-                #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
-                if os.path.isfile(MountPoint+"/etc/default/grub"):
-                    #It does, we'll run the function to set the config now.
-                    logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-UEFI Configuration...")
-                    BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
-
-                #Mount the UEFI partition at MountPoint/boot/efi.
-                if CoreTools.MountPartition(Partition=SystemInfo["UEFISystemPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't mount EFI partition "+SystemInfo["UEFISystemPartition"]+" to install bootloader! *** TODO: Cancel bootloader operations *** Continuing for now...")
-
-                #Now Install GRUB-UEFI to the UEFI Partition. *** Is this necessary when updating it? ***
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to "+SystemInfo["UEFISystemPartition"]+"...")
-                BootloaderConfigSettingTools.InstallGRUBUEFIToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=Arch)
-
-                #Update GRUB.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
-                BootloaderConfigSettingTools.UpdateGRUB2(PackageManager=PackageManager, MountPoint=MountPoint)
-
-                #Make an entry in fstab for the UEFI Partition, if needed.
-                HelperBackendTools.WriteFSTABEntryForUEFIPartition(MountPoint=MountPoint)
-
-                #Copy and backup EFI files where needed.
-                HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
-                HelperBackendTools.CopyUEFIFiles(MountPoint=MountPoint)
-
-                #Set the default OS.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
-                BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, MountPoint=MountPoint)
-
-            elif SystemInfo["BootloaderToInstall"] == "LILO":
-                #Make LILO's config file.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making LILO's configuration file...")
-
-                if MountPoint == "":
-                    Retval = CoreTools.StartProcess("liloconfig -f", ShowOutput=False)
-
-                else:
-                    Retval = CoreTools.StartProcess("chroot "+MountPoint+" liloconfig -f", ShowOutput=False)
+                #Mount the partition.
+                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
 
                 if Retval != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): liloconfig didn't run successfully! Attempting to continue anyway...")
+                    #Ignore this partition.
+                    logger.warning("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount "+Partition+"! Ignoring this partition...")
+                    return False #*** Not handled yet ***
 
-                #Check the config file exists for lilo. *** What do we do if it doesn't? Have a template one to put there? ***
-                if os.path.isfile(MountPoint+"/etc/lilo.conf"):
-                    #It does, we'll run the function to set the config now.
-                    logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting LILO Configuration...")
-                    BootloaderConfigSettingTools.SetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
+            #Set up chroot.
+            Retval = CoreTools.SetUpChroot(MountPoint=MountPoint)
+
+            if Retval != 0:
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
+
+        #Look for the configuration file, based on which SetConfig() function we're about to run.
+        if BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "GRUB2":
+            #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
+            if os.path.isfile(MountPoint+"/etc/default/grub"):
+                #It does, we'll run the function to set the config now.
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
+                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
+
+            #Now Install GRUB2 to the MBR. *** Is this necessary when updating it? ***
+            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to MBR...")
+            BootloaderConfigSettingTools.InstallGRUB2ToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
+
+            #Update GRUB.
+            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
+            BootloaderConfigSettingTools.UpdateGRUB2(PackageManager=PackageManager, MountPoint=MountPoint)
+
+            #Set the default OS.
+            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
+            BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, MountPoint=MountPoint)
+
+        elif BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+            #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
+            if os.path.isfile(MountPoint+"/etc/default/grub"):
+                #It does, we'll run the function to set the config now.
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-UEFI Configuration...")
+                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub")
+
+            #Mount the UEFI partition at MountPoint/boot/efi.
+            if CoreTools.MountPartition(Partition=BootloaderInfo[OS]["BootDisk"], MountPoint=MountPoint+"/boot/efi") != 0:
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't mount EFI partition "+BootloaderInfo[OS]["BootDisk"]+" to install bootloader! *** TODO: Cancel bootloader operations *** Continuing for now...")
+
+            #Now Install GRUB-UEFI to the UEFI Partition. *** Is this necessary when updating it? ***
+            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to "+BootloaderInfo[OS]["BootDisk"]+"...")
+            BootloaderConfigSettingTools.InstallGRUBUEFIToPartition(PackageManager=PackageManager, MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=Arch)
+
+            #Update GRUB.
+            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
+            BootloaderConfigSettingTools.UpdateGRUB2(PackageManager=PackageManager, MountPoint=MountPoint)
+
+            #Make an entry in fstab for the UEFI Partition, if needed.
+            HelperBackendTools.WriteFSTABEntryForUEFIPartition(MountPoint=MountPoint)
+
+            #Copy and backup EFI files where needed.
+            HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
+            HelperBackendTools.CopyUEFIFiles(MountPoint=MountPoint)
+
+            #Set the default OS.
+            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
+            BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, MountPoint=MountPoint)
+
+        elif BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "LILO":
+            #Make LILO's config file.
+            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making LILO's configuration file...")
+
+            if MountPoint == "":
+                Retval = CoreTools.StartProcess("liloconfig -f", ShowOutput=False)
+
+            else:
+                Retval = CoreTools.StartProcess("chroot "+MountPoint+" liloconfig -f", ShowOutput=False)
+
+            if Retval != 0:
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): liloconfig didn't run successfully! Attempting to continue anyway...")
+
+            #Check the config file exists for lilo. *** What do we do if it doesn't? Have a template one to put there? ***
+            if os.path.isfile(MountPoint+"/etc/lilo.conf"):
+                #It does, we'll run the function to set the config now.
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting LILO Configuration...")
+                BootloaderConfigSettingTools.SetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
     
-                    #Also, set the OS entries.
-                    logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating LILO OS Entries...")
-                    BootloaderConfigSettingTools.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
+                #Also, set the OS entries.
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating LILO OS Entries...")
+                BootloaderConfigSettingTools.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
 
-                #Now Install LILO to the MBR.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing LILO to the MBR...")
-                BootloaderConfigSettingTools.InstallLILOToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
+            #Now Install LILO to the MBR.
+            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing LILO to the MBR...")
+            BootloaderConfigSettingTools.InstallLILOToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
 
-            elif SystemInfo["BootloaderToInstall"] == "ELILO":
-                #Unmount the UEFI Partition now, and update mtab in the chroot.
-                if CoreTools.Unmount(SystemInfo["UEFISystemPartition"]) != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+SystemInfo["UEFISystemPartition"]+"! Continuing anyway...") #*** Installation will fail if this happens! ***
+        elif BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "ELILO":
+            #Unmount the UEFI Partition now, and update mtab in the chroot.
+            if CoreTools.Unmount(BootloaderInfo[OS]["BootDisk"]) != 0:
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+BootloaderInfo[OS]["BootDisk"]+"! Continuing anyway...") #*** Installation will fail if this happens! ***
 
-                CoreTools.UpdateChrootMtab(MountPoint=MountPoint)
+            CoreTools.UpdateChrootMtab(MountPoint=MountPoint)
 
-                #Make ELILO's config file.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making ELILO's configuration file...")
+            #Make ELILO's config file.
+            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making ELILO's configuration file...")
 
-                if MountPoint == "":
-                    Retval = CoreTools.StartProcess("elilo -b "+SystemInfo["UEFISystemPartition"]+" --autoconf", ShowOutput=False)
+            if MountPoint == "":
+                Retval = CoreTools.StartProcess("elilo -b "+BootloaderInfo[OS]["BootDisk"]+" --autoconf", ShowOutput=False)
 
-                else:
-                    Retval = CoreTools.StartProcess("chroot "+MountPoint+" elilo -b "+SystemInfo["UEFISystemPartition"]+" --autoconf", ShowOutput=False)
+            else:
+                Retval = CoreTools.StartProcess("chroot "+MountPoint+" elilo -b "+BootloaderInfo[OS]["BootDisk"]+" --autoconf", ShowOutput=False)
 
-                if Retval != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): elilo -b "+SystemInfo["UEFISystemPartition"]+" didn't run successfully! Attempting to continue anyway...")
-                #Check elilo's config file exists. *** What do we do if it doesn't? Have a template to put there? ***
-                if os.path.isfile(MountPoint+"/etc/elilo.conf"):
-                    #It does, we'll run the function to set the config now.
-                    logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting ELILO Configuration...")
-                    BootloaderConfigSettingTools.SetELILOConfig(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
+            if Retval != 0:
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): elilo -b "+BootloaderInfo[OS]["BootDisk"]+" didn't run successfully! Attempting to continue anyway...")
 
-                    #Also, set the OS entries.
-                    logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating ELILO OS Entries...")
-                    BootloaderConfigSettingTools.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
+            #Check elilo's config file exists. *** What do we do if it doesn't? Have a template to put there? ***
+            if os.path.isfile(MountPoint+"/etc/elilo.conf"):
+                #It does, we'll run the function to set the config now.
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting ELILO Configuration...")
+                BootloaderConfigSettingTools.SetELILOConfig(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
 
-                #Now Install ELILO to the UEFI Partition.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing ELILO to "+SystemInfo["UEFISystemPartition"]+"...")
-                BootloaderConfigSettingTools.InstallELILOToPartition(PackageManager=PackageManager, MountPoint=MountPoint)
+                #Also, set the OS entries.
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating ELILO OS Entries...")
+                BootloaderConfigSettingTools.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
 
-                #Mount the UEFI partition at MountPoint/boot/efi.
-                if CoreTools.MountPartition(Partition=SystemInfo["UEFISystemPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount EFI partition "+SystemInfo["UEFISystemPartition"]+"! Continuing anyway...")
+            #Now Install ELILO to the UEFI Partition.
+            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing ELILO to "+BootloaderInfo[OS]["BootDisk"]+"...")
+            BootloaderConfigSettingTools.InstallELILOToPartition(PackageManager=PackageManager, MountPoint=MountPoint)
 
-                #Copy and backup UEFI files where needed.
-                HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
-                HelperBackendTools.CopyUEFIFiles(MountPoint=MountPoint)
+            #Mount the UEFI partition at MountPoint/boot/efi.
+            if CoreTools.MountPartition(Partition=BootloaderInfo[OS]["BootDisk"], MountPoint=MountPoint+"/boot/efi") != 0:
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount EFI partition "+BootloaderInfo[OS]["BootDisk"]+"! Continuing anyway...")
 
-            #Tear down chroot if needed.
-            if MountPoint != "":
-                Retval = CoreTools.TearDownChroot(MountPoint=MountPoint)
+            #Copy and backup UEFI files where needed.
+            HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
+            HelperBackendTools.CopyUEFIFiles(MountPoint=MountPoint)
 
-                if Retval != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+        #Tear down chroot if needed.
+        if MountPoint != "":
+            Retval = CoreTools.TearDownChroot(MountPoint=MountPoint)
 
-            #Unmount the partition if needed.
-            if UnmountPartitionAfter:
-                if CoreTools.Unmount(MountPoint) != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount "+MountPoint+"! Continuing anyway...")
+            if Retval != 0:
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished setting the new bootloader's config for OS: "+OS+"...###\n")
+        #Unmount the partition if needed.
+        if UnmountPartitionAfter:
+            if CoreTools.Unmount(MountPoint) != 0:
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount "+MountPoint+"! Continuing anyway...")
+
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished setting "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
 
         logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): Finished setting bootloader config.")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished setting the new bootloader's config!")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished setting "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
 #End main Class.
