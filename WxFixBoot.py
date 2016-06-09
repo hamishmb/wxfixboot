@@ -399,7 +399,6 @@ class InitThread(threading.Thread):
 
         #*** Put this somewhere else ***
         Settings["MainSettings"] = {}
-        Settings["BootloaderSettings"] = {}
 
         #Make dictionaries available to modules.
         Tools.StartupTools.core.DiskInfo = DiskInfo
@@ -549,7 +548,6 @@ class InitThread(threading.Thread):
         #***************************
         #Set some other variables to default values, avoiding problems down the line. *** Save these in a dictionary later ***
         #Define globals.
-        global UpdateBootloader
         global QuickFSCheck
         global BadSectCheck
         global SaveOutput
@@ -566,7 +564,6 @@ class InitThread(threading.Thread):
         global OptionsDlg1Run
 
         #Initialise them.
-        UpdateBootloader = ""
         QuickFSCheck = ""
         BadSectCheck = ""
         SaveOutput = ""
@@ -583,7 +580,7 @@ class InitThread(threading.Thread):
         OptionsDlg1Run = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
+        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -654,20 +651,6 @@ class MainWindow(wx.Frame):
         """Create the checkboxes"""
         self.BadSectorCheckCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Check All File Systems (thorough)")
         self.CheckFileSystemsCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Check All File Systems (quick)")
-        self.UpdateBootloaderCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Update Bootloader Config")
-
-        #If bootloader is grub legacy, disable some options.
-        if SystemInfo["Bootloader"] == "GRUB-LEGACY":
-            self.DisableBLOptsGrubLegacy()
-
-    def DisableBLOptsGrubLegacy(self):
-        """Called to disable bootloader operations if the bootloader is grub legacy"""
-        self.UpdateBootloaderCB.Disable()
-
-    def EnableBLOptsNoGrubLegacy(self):
-        """Called to re-enable bootloader operations if the bootloader isn't grub legacy"""
-        self.UpdateBootloaderCB.Enable()
-        self.UpdateBootloaderCB.SetValue(False)
 
     def CreateMenus(self):
         """Create the menus"""
@@ -711,25 +694,6 @@ class MainWindow(wx.Frame):
         else:
             self.BadSectorCheckCB.Enable()
 
-        #Reinstall Bootloader Choicebox
-        if SystemInfo["Bootloader"] != "GRUB-LEGACY" or RestoreBootSector:
-            self.UpdateBootloaderCB.SetValue(0)
-            self.UpdateBootloaderCB.Disable()
-
-        elif SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestoreBootSector == False:
-            self.UpdateBootloaderCB.Enable()
-
-        #Update Bootloader Choicebox
-        if self.UpdateBootloaderCB.IsChecked() and (SystemInfo["Bootloader"] != "GRUB-LEGACY" or RestoreBootSector):
-            self.UpdateBootloaderCBwaschecked = True
-
-        elif self.UpdateBootloaderCB.IsChecked() == False and SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestoreBootSector == False:
-            self.UpdateBootloaderCBwaschecked = False
-
-        else:
-            self.UpdateBootloaderCB.SetValue(0)
-            self.UpdateBootloaderCBwaschecked = False
-
         logger.debug("MainWindow().OnCheckBox(): Done. Calling self.SaveMainOpts()...")
         self.SaveMainOpts()
 
@@ -737,19 +701,6 @@ class MainWindow(wx.Frame):
         """Starts Settings Window"""
         global OptionsDlg1Run
         logger.debug("MainWindow().Opts(): Starting Settings Window and hiding MainWindow...")
-
-        if self.UpdateBootloaderCBwaschecked:
-            dlg = wx.MessageDialog(self.Panel, "Do you want to continue? If you reinstall or update your bootloader, some options, such as installing a different bootloader, and restoring a backup of the bootsector, will be reset and disabled. If you want to change other settings, you can always do it after restarting WxFixBoot.", "WxFixBoot - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
-
-            if dlg.ShowModal() == wx.ID_NO:
-                dlg.Destroy()
-
-                dlg = wx.MessageDialog(self.Panel, "You will now be returned to the Main Window.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-                dlg.ShowModal()
-                dlg.Destroy()
-                return
-
-            dlg.Destroy()
 
         self.SaveMainOpts()
 
@@ -779,7 +730,7 @@ class MainWindow(wx.Frame):
 
     def ProgressWindow(self, Event=None):
         """Starts Progress Window"""
-        if OptionsDlg1Run and self.UpdateBootloaderCBwaschecked == False:
+        if OptionsDlg1Run:
             logger.debug("MainWindow().ProgressWindow(): Starting Progress Window...")
             self.SaveMainOpts()
             ProgressFrame = ProgressWindow()
@@ -795,26 +746,12 @@ class MainWindow(wx.Frame):
     def RefreshMainWindow(self,msg):
         """Refresh the main window to reflect changes in the options, or after a restart."""
         logger.debug("MainWindow().RefreshMainWindow(): Refreshing MainWindow...")
-            
-        #Bootloader options. Also check if the boot sector is to be restored
-        if SystemInfo["Bootloader"] == "GRUB-LEGACY" or RestoreBootSector:
-            self.DisableBLOptsGrubLegacy()
-
-        else:
-            self.EnableBLOptsNoGrubLegacy()
-
-        #Set settings up how they were when MainWindow was hidden earlier, if possible.
-        if SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestoreBootSector == False:
-            self.UpdateBootloaderCB.SetValue(UpdateBootloader)
 
         self.CheckFileSystemsCB.SetValue(QuickFSCheck)
         self.BadSectorCheckCB.SetValue(BadSectCheck)
 
         #Enable and Disable Checkboxes as necessary
         self.OnCheckBox()
-
-        #Reset these to avoid errors.
-        self.UpdateBootloaderCBwaschecked = False
 
         #Reveal MainWindow
         self.Show()
@@ -852,7 +789,6 @@ class MainWindow(wx.Frame):
         #Add items to the check box sizer.
         CheckBoxSizer.Add(self.BadSectorCheckCB, 1, wx.BOTTOM, 10)
         CheckBoxSizer.Add(self.CheckFileSystemsCB, 1, wx.BOTTOM, 10)
-        CheckBoxSizer.Add(self.UpdateBootloaderCB, 1, wx.BOTTOM, 10)
 
         #Add items to the check box and logo sizer.
         CheckBoxAndLogoSizer.Add(CheckBoxSizer, 2, wx.RIGHT, 10)
@@ -888,7 +824,6 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.ProgressWindow, self.ApplyOperationsButton)
 
         #Checkboxes on the main window.
-        self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.UpdateBootloaderCB)
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.CheckFileSystemsCB)
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.BadSectorCheckCB)
 
@@ -897,7 +832,6 @@ class MainWindow(wx.Frame):
         logger.debug("MainWindow().SaveMainOpts(): Saving Options on MainWindow...")
         global BootSectorFile
         global RestoreBootSector
-        global UpdateBootloader
         global QuickFSCheck
         global BadSectCheck
 
@@ -918,17 +852,6 @@ class MainWindow(wx.Frame):
         else:
             self.BadSectorCheckCB.Enable()
             QuickFSCheck = False
-
-        #Update Bootloader Choicebox
-        if self.UpdateBootloaderCB.IsChecked():
-            UpdateBootloader = True
-
-            #Disable some stuff
-            BootSectorFile = "None"
-            RestoreBootSector = False
-
-        else:
-            UpdateBootloader = False
 
         logger.debug("MainWindow().SaveMainOpts(): MainWindow options saved! Counting operations to do...")
         self.CountOperations()
@@ -959,12 +882,7 @@ class MainWindow(wx.Frame):
             Operations.append(EssentialBackendTools.BadSectorCheck)
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BadSectorCheck to Operations...")
 
-        #Now do other processes *** deprecated ***
-        if UpdateBootloader:
-            Operations.append(MainBootloaderTools.UpdateBootloader)
-            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools.UpdateBootloader to Operations...")
-
-        #*** End of deprecated section ***
+        #Now do other processes.
         for OS in BootloaderInfo.keys():
             if BootloaderInfo[OS]["Settings"]["ChangeThisOS"]:
                 Operations.append([MainBootloaderTools.ManageBootloader, OS])
@@ -976,7 +894,7 @@ class MainWindow(wx.Frame):
         #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
 
         #Check if we need to check the internet connection, and do so first if needed. *** Will need to change how this is checked *** *** Run from ManageBootloader? ***
-        if MainBootloaderTools.ManageBootloaders in Operations or MainBootloaderTools.UpdateBootloader in Operations:
+        if MainBootloaderTools.ManageBootloaders in Operations:
             logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()...")
             Operations.insert(0, EssentialBackendTools.CheckInternetConnection())
 
@@ -1338,13 +1256,10 @@ class SettingsWindow(wx.Frame):
         self.WelcomeText = wx.StaticText(self.Panel, -1, "Welcome to Settings. Please give everything a once-over.")
         self.BasicSettingsText = wx.StaticText(self.Panel, -1, "Basic Settings:")
         self.InstalledBootloaderText = wx.StaticText(self.Panel, -1, "Installed Bootloader:")
-        self.DefaultOSText = wx.StaticText(self.Panel, -1, "Default OS to boot:")
         self.BootloaderTimeoutText = wx.StaticText(self.Panel, -1, "Bootloader timeout value:")
         self.BootloaderTimeoutText2 = wx.StaticText(self.Panel, -1, "(seconds, -1 represents current value)") 
         self.AdvancedSettingsText = wx.StaticText(self.Panel, -1, "Advanced Settings:")
         self.RootDeviceText = wx.StaticText(self.Panel, -1, "Root device:")
-        self.BootloaderToInstallText = wx.StaticText(self.Panel, -1, "Bootloader To Install: *** DISABLED DUE TO DEPRECATION ***")
-        self.FirmwareTypeText = wx.StaticText(self.Panel, -1, "Selected Firmware Type: "+Settings["MainSettings"]["FirmwareType"])
 
     def CreateCBs(self):
         """Create the checkboxes"""
@@ -1358,9 +1273,6 @@ class SettingsWindow(wx.Frame):
 
     def CreateChoiceBs(self):
         """Create the choice boxes"""
-        #Basic settings
-        self.DefaultOSChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=SystemInfo["UserFriendlyOSNames"])
-
         #Advanced settings
         self.RootDeviceChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=["Auto: "+SystemInfo["AutoRootDevice"]]+SystemInfo["Devices"])
 
@@ -1429,9 +1341,6 @@ class SettingsWindow(wx.Frame):
 
         else:
             self.InstalledBootloaderChoice.SetSelection(0)
-
-        #Default OS
-        self.DefaultOSChoice.SetStringSelection(SystemInfo["DefaultOS"])
         
         #Root Device
         if SystemInfo["RootDevice"] != SystemInfo["AutoRootDevice"]:
@@ -1444,7 +1353,6 @@ class SettingsWindow(wx.Frame):
             #Disable/reset some options.
             self.BootloaderOptionsButton.Disable()
             self.InstalledBootloaderChoice.Disable()
-            self.DefaultOSChoice.Disable()
             self.BootloaderTimeoutSpinner.SetValue(-1)
             self.BootloaderTimeoutSpinner.Disable()
 
@@ -1452,12 +1360,6 @@ class SettingsWindow(wx.Frame):
             #Enable some options.
             self.BootloaderOptionsButton.Enable()
             self.InstalledBootloaderChoice.Enable()
-            self.DefaultOSChoice.Enable()
-
-        #Disable some options if the bootloader is to be updated.
-        if UpdateBootloader:
-            self.BootloaderOptionsButton.Disable()
-            self.RestoreBootsectorButton.Disable()
 
         logger.debug("SettingsWindow().SetupOptions(): Finished!")
 
@@ -1497,10 +1399,6 @@ class SettingsWindow(wx.Frame):
         self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderText, 1, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
         self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
 
-        #Add items to the Default OS Choice Sizer.
-        DefaultOSChoiceSizer.Add(self.DefaultOSText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        DefaultOSChoiceSizer.Add(self.DefaultOSChoice, 1, wx.RIGHT|wx.LEFT|wx.FIXED_MINSIZE|wx.ALIGN_CENTER, 5)
-
         #Add items to the Bootloader timeout Sizer.
         BootloaderTimeoutSizer.Add(self.BootloaderTimeoutText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
         BootloaderTimeoutSizer.Add(self.BootloaderTimeoutSpinner, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
@@ -1512,7 +1410,6 @@ class SettingsWindow(wx.Frame):
         #Add items to the basic settings sizer.
         BasicSettingsSizer.Add(self.BasicSettingsText, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
         BasicSettingsSizer.Add(self.InstalledBootloaderChoiceSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
-        BasicSettingsSizer.Add(DefaultOSChoiceSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
         BasicSettingsSizer.Add(self.FullVerboseCheckBox, 1, wx.BOTTOM, 10)
         BasicSettingsSizer.Add(BootloaderTimeoutSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
         BasicSettingsSizer.Add(self.BootloaderTimeoutText2, 1, wx.BOTTOM, 10)
@@ -1530,9 +1427,7 @@ class SettingsWindow(wx.Frame):
         AllSettingsSizer.Add(AdvancedSettingsSizer, 3, wx.LEFT|wx.EXPAND, 5)
 
         #Add items to the bootloader options sizer.
-        BootloaderOptionsSizer.Add(self.BootloaderToInstallText, 1, wx.RIGHT|wx.EXPAND|wx.ALIGN_CENTER, 5)
         BootloaderOptionsSizer.Add(self.BootloaderOptionsButton, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        BootloaderOptionsSizer.Add(self.FirmwareTypeText, 1, wx.LEFT|wx.EXPAND|wx.ALIGN_CENTER, 5)
 
         #Add items to the bottom button sizer.
         BottomButtonSizer.Add(self.RestoreBootsectorButton, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
@@ -1618,7 +1513,6 @@ class SettingsWindow(wx.Frame):
             #Disable/reset some options.
             self.BootloaderOptionsButton.Disable()
             self.InstalledBootloaderChoice.Disable()
-            self.DefaultOSChoice.Disable()
             self.BootloaderTimeoutSpinner.SetValue(-1)
             self.BootloaderTimeoutSpinner.Disable()
 
@@ -1629,7 +1523,6 @@ class SettingsWindow(wx.Frame):
             #Enable some options.
             self.BootloaderOptionsButton.Enable()
             self.InstalledBootloaderChoice.Enable()
-            self.DefaultOSChoice.Enable()
             self.BootloaderTimeoutSpinner.Enable()
 
         #Setup options again, but destroy a widget first so it isn't duplicated.
@@ -1639,9 +1532,6 @@ class SettingsWindow(wx.Frame):
         #Red add self.InstalledBootloaderChoice into its sizer.
         self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
         self.Panel.Layout()
-
-        #Update the FirmwareType text.
-        self.FirmwareTypeText.SetLabel("Selected Firmware Type: "+Settings["MainSettings"]["FirmwareType"])
 
         #Show OptionsDlg1.
         self.Show()
@@ -1713,11 +1603,6 @@ class SettingsWindow(wx.Frame):
             SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
 
         logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+SystemInfo["Bootloader"])
-
-        #Default OS choicebox.
-        SystemInfo["DefaultOS"] = self.DefaultOSChoice.GetStringSelection()
-
-        logger.debug("SettingsWindow().SaveOptions(): The default OS is: "+SystemInfo["DefaultOS"])
 
         #Root Filesystem.
         SystemInfo["RootFS"] = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
@@ -2245,7 +2130,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
 
         self.MainSizer.SetSizeHints(self)
 
-    def SaveSettings(self, Event=None, OS=None): #*** Save settings and state if the OS choice is changed ***
+    def SaveSettings(self, Event=None, OS=None):
         """Save all settings for this OS from the checkboxes and choice boxes"""
         BootloaderInfo[OS]["Settings"]["Reinstall"] = self.ReinstallBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["Update"] = self.UpdateBootloaderCheckBox.GetValue()

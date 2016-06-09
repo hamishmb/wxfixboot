@@ -427,7 +427,6 @@ class Main():
     def SetDefaults(self): #*** Modify to use dictionaries later ***
         """Set Default for some variables"""
         #Options in MainWindow
-        UpdateBootloader = False 
         QuickFSCheck = False
         BadSectCheck = False
 
@@ -454,7 +453,7 @@ class Main():
 
         SystemInfo["PreviousOSChoice"] = ""
 
-        return UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run
+        return QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""

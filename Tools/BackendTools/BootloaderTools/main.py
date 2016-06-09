@@ -54,28 +54,6 @@ class Main(): #*** Refactor all of these ***
         logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Done!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
-    def UpdateBootloader(self): #*** DEPRECATED ***
-        """Update bootloader menu and config"""
-        logger.info("MainBootloaderTools: Main().UpdateBootloader(): Preparing to update the bootloader...")
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader...###\n")
-
-        if SystemInfo["DisableBootloaderOperations"]:
-            #These operations have been disabled. Notify the user and skip them. *** Note why they were disabled ***
-            logger.info("MainBootloaderTools: Main().UpdateBootloader(): Cancelled because bootloader operations have been disabled, or the required information wasn't found...")
-            DialogTools.ShowMsgDlg(Kind="warning", Message="Bootloader operations have been disabled, or the required information wasn't found! This operation will now be skipped. Click okay to continue.")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Bootloader Operations Disabled.###\n") 
-
-        else:
-            logger.info("MainBootloaderTools: Main().UpdateBootloader(): Updating the bootloader's config...")
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader's configuration...###\n")
-
-            #Set the bootloaders new config.
-            MainBackendTools.SetNewBootloaderConfig()
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-
-            logger.info("MainBootloaderTools: Main().UpdateBootloader(): Done!")
-
     def ManageBootloaders(self): #*** DEPRECATED ***
         """Manage the installation and removal of bootloaders.""" #*** Check each operation worked with a return value! ***
         #First remove the old bootloader, then install the new one.
