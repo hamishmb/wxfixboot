@@ -549,7 +549,6 @@ class InitThread(threading.Thread):
         #***************************
         #Set some other variables to default values, avoiding problems down the line. *** Save these in a dictionary later ***
         #Define globals.
-        global ReinstallBootloader
         global UpdateBootloader
         global QuickFSCheck
         global BadSectCheck
@@ -567,7 +566,6 @@ class InitThread(threading.Thread):
         global OptionsDlg1Run
 
         #Initialise them.
-        ReinstallBootloader = ""
         UpdateBootloader = ""
         QuickFSCheck = ""
         BadSectCheck = ""
@@ -585,7 +583,7 @@ class InitThread(threading.Thread):
         OptionsDlg1Run = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        ReinstallBootloader, UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
+        UpdateBootloader, QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -656,7 +654,6 @@ class MainWindow(wx.Frame):
         """Create the checkboxes"""
         self.BadSectorCheckCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Check All File Systems (thorough)")
         self.CheckFileSystemsCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Check All File Systems (quick)")
-        self.ReinstallBootloaderCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Reinstall/Fix Bootloader")
         self.UpdateBootloaderCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Update Bootloader Config")
 
         #If bootloader is grub legacy, disable some options.
@@ -665,13 +662,10 @@ class MainWindow(wx.Frame):
 
     def DisableBLOptsGrubLegacy(self):
         """Called to disable bootloader operations if the bootloader is grub legacy"""
-        self.ReinstallBootloaderCB.Disable()
         self.UpdateBootloaderCB.Disable()
 
     def EnableBLOptsNoGrubLegacy(self):
         """Called to re-enable bootloader operations if the bootloader isn't grub legacy"""
-        self.ReinstallBootloaderCB.Enable()
-        self.ReinstallBootloaderCB.SetValue(False)
         self.UpdateBootloaderCB.Enable()
         self.UpdateBootloaderCB.SetValue(False)
 
@@ -718,27 +712,18 @@ class MainWindow(wx.Frame):
             self.BadSectorCheckCB.Enable()
 
         #Reinstall Bootloader Choicebox
-        if self.ReinstallBootloaderCB.IsChecked() and (SystemInfo["Bootloader"] != "GRUB-LEGACY" or RestoreBootSector):
-            self.ReinstallBootloaderCBwaschecked = True
+        if SystemInfo["Bootloader"] != "GRUB-LEGACY" or RestoreBootSector:
             self.UpdateBootloaderCB.SetValue(0)
             self.UpdateBootloaderCB.Disable()
 
-        elif self.ReinstallBootloaderCB.IsChecked() == False and SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestoreBootSector == False:
+        elif SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestoreBootSector == False:
             self.UpdateBootloaderCB.Enable()
-            self.ReinstallBootloaderCBwaschecked = False
-
-        else:
-            self.ReinstallBootloaderCB.SetValue(0)
-            self.ReinstallBootloaderCBwaschecked = False
 
         #Update Bootloader Choicebox
         if self.UpdateBootloaderCB.IsChecked() and (SystemInfo["Bootloader"] != "GRUB-LEGACY" or RestoreBootSector):
             self.UpdateBootloaderCBwaschecked = True
-            self.ReinstallBootloaderCB.SetValue(0)
-            self.ReinstallBootloaderCB.Disable()
 
         elif self.UpdateBootloaderCB.IsChecked() == False and SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestoreBootSector == False:
-            self.ReinstallBootloaderCB.Enable()
             self.UpdateBootloaderCBwaschecked = False
 
         else:
@@ -753,7 +738,7 @@ class MainWindow(wx.Frame):
         global OptionsDlg1Run
         logger.debug("MainWindow().Opts(): Starting Settings Window and hiding MainWindow...")
 
-        if self.ReinstallBootloaderCBwaschecked or self.UpdateBootloaderCBwaschecked:
+        if self.UpdateBootloaderCBwaschecked:
             dlg = wx.MessageDialog(self.Panel, "Do you want to continue? If you reinstall or update your bootloader, some options, such as installing a different bootloader, and restoring a backup of the bootsector, will be reset and disabled. If you want to change other settings, you can always do it after restarting WxFixBoot.", "WxFixBoot - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
 
             if dlg.ShowModal() == wx.ID_NO:
@@ -794,7 +779,7 @@ class MainWindow(wx.Frame):
 
     def ProgressWindow(self, Event=None):
         """Starts Progress Window"""
-        if OptionsDlg1Run and self.ReinstallBootloaderCBwaschecked == False and self.UpdateBootloaderCBwaschecked == False:
+        if OptionsDlg1Run and self.UpdateBootloaderCBwaschecked == False:
             logger.debug("MainWindow().ProgressWindow(): Starting Progress Window...")
             self.SaveMainOpts()
             ProgressFrame = ProgressWindow()
@@ -820,7 +805,6 @@ class MainWindow(wx.Frame):
 
         #Set settings up how they were when MainWindow was hidden earlier, if possible.
         if SystemInfo["Bootloader"] != "GRUB-LEGACY" and RestoreBootSector == False:
-            self.ReinstallBootloaderCB.SetValue(ReinstallBootloader)
             self.UpdateBootloaderCB.SetValue(UpdateBootloader)
 
         self.CheckFileSystemsCB.SetValue(QuickFSCheck)
@@ -830,7 +814,6 @@ class MainWindow(wx.Frame):
         self.OnCheckBox()
 
         #Reset these to avoid errors.
-        self.ReinstallBootloaderCBwaschecked = False
         self.UpdateBootloaderCBwaschecked = False
 
         #Reveal MainWindow
@@ -869,7 +852,6 @@ class MainWindow(wx.Frame):
         #Add items to the check box sizer.
         CheckBoxSizer.Add(self.BadSectorCheckCB, 1, wx.BOTTOM, 10)
         CheckBoxSizer.Add(self.CheckFileSystemsCB, 1, wx.BOTTOM, 10)
-        CheckBoxSizer.Add(self.ReinstallBootloaderCB, 1, wx.BOTTOM, 10)
         CheckBoxSizer.Add(self.UpdateBootloaderCB, 1, wx.BOTTOM, 10)
 
         #Add items to the check box and logo sizer.
@@ -906,7 +888,6 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.ProgressWindow, self.ApplyOperationsButton)
 
         #Checkboxes on the main window.
-        self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.ReinstallBootloaderCB)
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.UpdateBootloaderCB)
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.CheckFileSystemsCB)
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.BadSectorCheckCB)
@@ -916,7 +897,6 @@ class MainWindow(wx.Frame):
         logger.debug("MainWindow().SaveMainOpts(): Saving Options on MainWindow...")
         global BootSectorFile
         global RestoreBootSector
-        global ReinstallBootloader
         global UpdateBootloader
         global QuickFSCheck
         global BadSectCheck
@@ -938,17 +918,6 @@ class MainWindow(wx.Frame):
         else:
             self.BadSectorCheckCB.Enable()
             QuickFSCheck = False
-
-        #Reinstall Bootloader Choicebox
-        if self.ReinstallBootloaderCB.IsChecked():
-            ReinstallBootloader = True
-
-            #Disable some stuff
-            BootSectorFile = "None"
-            RestoreBootSector = False
-
-        else:
-            ReinstallBootloader = False
 
         #Update Bootloader Choicebox
         if self.UpdateBootloaderCB.IsChecked():
@@ -991,11 +960,6 @@ class MainWindow(wx.Frame):
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BadSectorCheck to Operations...")
 
         #Now do other processes *** deprecated ***
-
-        if ReinstallBootloader:
-            Operations.append(MainBootloaderTools.ReinstallBootloader)
-            logger.info("MainWindow().CountOperations(): Added MainBootloaderTools.ReinstallBootloader to Operations...")
-
         if UpdateBootloader:
             Operations.append(MainBootloaderTools.UpdateBootloader)
             logger.info("MainWindow().CountOperations(): Added MainBootloaderTools.UpdateBootloader to Operations...")
@@ -1011,9 +975,9 @@ class MainWindow(wx.Frame):
         #    Operations.append(BackendThread(self).GenerateSystemReport)
         #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
 
-        #Check if we need to check the internet connection, and do so first if needed.
-        if MainBootloaderTools.ManageBootloaders in Operations or MainBootloaderTools.ReinstallBootloader in Operations or MainBootloaderTools.UpdateBootloader in Operations:
-            logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()()...")
+        #Check if we need to check the internet connection, and do so first if needed. *** Will need to change how this is checked *** *** Run from ManageBootloader? ***
+        if MainBootloaderTools.ManageBootloaders in Operations or MainBootloaderTools.UpdateBootloader in Operations:
+            logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()...")
             Operations.insert(0, EssentialBackendTools.CheckInternetConnection())
 
         NumberOfOperations = len(Operations)
@@ -1490,8 +1454,8 @@ class SettingsWindow(wx.Frame):
             self.InstalledBootloaderChoice.Enable()
             self.DefaultOSChoice.Enable()
 
-        #Disable some options if the bootloader is to be reinstalled or updated.
-        if ReinstallBootloader or UpdateBootloader:
+        #Disable some options if the bootloader is to be updated.
+        if UpdateBootloader:
             self.BootloaderOptionsButton.Disable()
             self.RestoreBootsectorButton.Disable()
 
@@ -1603,13 +1567,6 @@ class SettingsWindow(wx.Frame):
         self.SaveOptions()
 
         #Give some warnings here if needed. *** Change or remove these ***
-        #Tell the user some options will be disabled if the bootloader is to be reinstalled or updated.
-        if ReinstallBootloader or UpdateBootloader:
-            logger.info("SettingsWindow().LaunchblOpts(): Bootloader will be reinstalled or updated, almost all options relating to bootloaders will be disabled.")
-            dlg = wx.MessageDialog(self.Panel, "Your current bootloader is to be reinstalled or updated, therefore almost all bootloader-related options here will be disabled. If you want to install a different bootloader, please uncheck the reinstall or update bootloader option in the main window.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-            dlg.Destroy()
-
         #Recommend a MBR bootloader on BIOS systems.
         if Settings["MainSettings"]["FirmwareType"] == "BIOS":
             dlg = wx.MessageDialog(self.Panel, "Your firmware type is BIOS. Unless you're sure WxFixBoot has misdetected this, and it's actually UEFI, it's recommended that you install an BIOS bootloader, if you are installing a bootloader, such as GRUB2 or LILO, or your system might not boot correctly.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
@@ -3017,7 +2974,7 @@ class BackendThread(threading.Thread):
             #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else). *** Show what we would do if they weren't disabled too ***
             ReportList.write("Disabled Bootloader Operations: "+unicode(SystemInfo["DisableBootloaderOperations"])+"\n")
 
-            if SystemInfo["DisableBootloaderOperations"] == False:
+            if SystemInfo["DisableBootloaderOperations"] == False: #*** Adapt to using dictionary-based system ***
                 if ReinstallBootloader:
                     ReportList.write("Reinstall/Fix The Current BootLoader: "+unicode(ReinstallBootloader)+"\n")
                     #ReportList.write("Selected Bootloader To Reinstall/Fix: "+SystemInfo["BootloaderToInstall"]+"\n")
