@@ -24,10 +24,10 @@ from __future__ import unicode_literals
 class Main(): #*** Refactor all of these ***
     def ManageBootloader(self, OS):
         """Manage the installation and removal of each bootloader.""" #*** Check each operation worked with a return value! ***
-        if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["InstallNewBootloader"]:
-            if BootloaderInfo[OS]["Settings"]["Reinstall"]:
-                BootloaderInfo[OS]["Settings"]["NewBootloader"] = BootloaderInfo[OS]["Bootloader"]
+        if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["Update"]:
+            BootloaderInfo[OS]["Settings"]["NewBootloader"] = BootloaderInfo[OS]["Bootloader"]
 
+        if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["InstallNewBootloader"]:
             #First remove the old bootloader, then install the new one.
             logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().RemoveOldBootloader()...")
             MainBackendTools.RemoveOldBootloader(OS)

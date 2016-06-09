@@ -3362,7 +3362,9 @@ class BackendThread(threading.Thread):
 
         Tools.BackendTools.main.OSInfo = OSInfo
         Tools.BackendTools.main.SystemInfo = SystemInfo
+        Tools.BackendTools.main.BootloaderInfo = BootloaderInfo
 
+        Tools.BackendTools.BootloaderTools.main.BootloaderInfo = BootloaderInfo
         Tools.BackendTools.BootloaderTools.main.SystemInfo = SystemInfo
         Tools.BackendTools.BootloaderTools.main.OSInfo = OSInfo
 
@@ -3390,9 +3392,6 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.main.BootloaderTimeout = BootloaderTimeout
             Tools.BackendTools.main.KernelOptions = KernelOptions
 
-            #*** Bootloader Config getting tools (in Backend Tools package) ***
-            Tools.BackendTools.BootloaderTools.getconfigtools.BootloaderTimeout = BootloaderTimeout
-
             #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
             Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderTimeout = BootloaderTimeout
 
@@ -3402,7 +3401,11 @@ class BackendThread(threading.Thread):
             except NameError: pass
 
             #Run the function.
-            function()
+            if type(function) != type([]):
+                function()
+
+            else:
+                function[0](function[1])
 
         logger.info("BackendThread().StartOperations(): Finished Operation Running Code.")
 

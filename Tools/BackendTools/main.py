@@ -34,8 +34,8 @@ class Main():
         Partition = OSInfo[OS]["Partition"]
         PackageManager = OSInfo[OS]["PackageManager"]
 
-        logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+BootloaderInfo["OS"]["Bootloader"]+" from OS: "+OS+"...")
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing "+BootloaderInfo["OS"]["Bootloader"]+" from OS: "+OS+"...###\n")
+        logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+BootloaderInfo[OS]["Bootloader"]+" from OS: "+OS+"...")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing "+BootloaderInfo[OS]["Bootloader"]+" from OS: "+OS+"...###\n")
             
         #If this is the current OS, let the remover function know that we aren't using chroot.
         if OSInfo[OS]["IsCurrentOS"]:
@@ -74,23 +74,23 @@ class Main():
             CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False)
 
         #Remove the bootloader.
-        if BootloaderInfo["OS"]["Bootloader"] == "GRUB-LEGACY":
+        if BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
             retval = BootloaderRemovalTools.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-        elif BootloaderInfo["OS"]["Bootloader"] == "GRUB2":
+        elif BootloaderInfo[OS]["Bootloader"] == "GRUB2":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")
             retval = BootloaderRemovalTools.RemoveGRUB2(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-        elif BootloaderInfo["OS"]["Bootloader"] == "LILO":
+        elif BootloaderInfo[OS]["Bootloader"] == "LILO":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing LILO...")
             retval = BootloaderRemovalTools.RemoveLILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-        elif BootloaderInfo["OS"]["Bootloader"] == "GRUB-UEFI":
+        elif BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-UEFI...")
             retval = BootloaderRemovalTools.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-        elif BootloaderInfo["OS"]["Bootloader"] == "ELILO":
+        elif BootloaderInfo[OS]["Bootloader"] == "ELILO":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing ELILO...")
             retval = BootloaderRemovalTools.RemoveELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
@@ -108,18 +108,18 @@ class Main():
             if UnmountRetval != 0:
                 logger.error("MainBackendTools: Main().RemoveOldBootloader(): Couldn't unmount "+MountPoint+"! Continuing anyway...")
 
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished removing "+BootloaderInfo["OS"]["Bootloader"]+" from "+OS+"...###\n")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished removing "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"...###\n")
 
         if retval != 0:
             #Something went wrong! Log it and notify the user.
-            logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+BootloaderInfo["OS"]["Bootloader"]+" from "+OS+"! We'll continue anyway. Warn the user.")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo["OS"]["Bootloader"]+" from "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that "+OS+" after WxFixBoot finishes its operations.")
+            logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! We'll continue anyway. Warn the user.")
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that "+OS+" after WxFixBoot finishes its operations.")
 
         #Log and notify the user that we're finished removing bootloaders.
-        logger.info("MainBackendTools: Main().RemoveOldBootloader(): Finished removing "+BootloaderInfo["OS"]["Bootloader"]+"...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished removing "+BootloaderInfo["OS"]["Bootloader"]+"...")
+        logger.info("MainBackendTools: Main().RemoveOldBootloader(): Finished removing "+BootloaderInfo[OS]["Bootloader"]+"...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished removing "+BootloaderInfo[OS]["Bootloader"]+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
-        DialogTools.ShowMsgDlg(Kind="info", Message="Finished removing "+BootloaderInfo["OS"]["Bootloader"]+"! WxFixBoot will now install "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" to "+OS+".")
+        DialogTools.ShowMsgDlg(Kind="info", Message="Finished removing "+BootloaderInfo[OS]["Bootloader"]+"! WxFixBoot will now install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" to "+OS+".")
 
     def InstallNewBootloader(self, OS): #*** Give more info to user ***
         """Install a new bootloader."""
@@ -130,9 +130,9 @@ class Main():
         Partition = OSInfo[OS]["Partition"]
         PackageManager = OSInfo[OS]["PackageManager"]
 
-        logger.info("MainBackendTools: Main().InstallNewBootloader(): Preparing to install "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" in "+OS+"...")
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to install "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" in "+OS+"...###\n")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to install "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" in "+OS+"...")
+        logger.info("MainBackendTools: Main().InstallNewBootloader(): Preparing to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...###\n")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...")
 
         #If this is the current OS, let the installer functions know that we aren't using chroot.
         if OSInfo[OS]["IsCurrentOS"]:
@@ -174,20 +174,20 @@ class Main():
         if BootloaderInstallationTools.UpdatePackageLists(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint) != 0:
             logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to Update the Package Information! Continuing anyway...") #*** Stop here? Check Internet Connection Again? ***
     
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Installing "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" in "+OS+"...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)       
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Installing "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" in "+OS+"...###\n")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...###\n")
 
         #Install the bootloader.
-        if BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "GRUB2":
+        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing GRUB2...")
             retval = BootloaderInstallationTools.InstallGRUB2(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-        elif BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "LILO":
+        elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing LILO...")
             retval = BootloaderInstallationTools.InstallLILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-        elif BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+        elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing GRUB-UEFI...")
             #Mount the UEFI partition at MountPoint/boot/efi.
             #Unmount it first though, in case it's already mounted. *** Alternately, check where it's mounted and leave it if it's okay ***
@@ -199,7 +199,7 @@ class Main():
 
             retval = BootloaderInstallationTools.InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-        elif BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "ELILO":
+        elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing ELILO...")
             #Unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
             if CoreTools.Unmount(BootloaderInfo[OS]["BootDisk"]) != 0:
@@ -229,38 +229,38 @@ class Main():
         if retval != 0:
             #Something went wrong! Log it and notify the user.
             BootloaderInstallSucceded = False
-            logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to install "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" in "+OS+"! This may mean the system (or this OS) is now unbootable! We'll continue anyway. Warn the user.")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" in "+OS+"! This may leave this OS, or your system, in an unbootable state. It is recommended to do a Bad Sector check, unplug any non-essential devices, and then try again.") #*** Maybe ask to try again right now ***
+            logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"! This may mean the system (or this OS) is now unbootable! We'll continue anyway. Warn the user.")
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"! This may leave this OS, or your system, in an unbootable state. It is recommended to do a Bad Sector check, unplug any non-essential devices, and then try again.") #*** Maybe ask to try again right now ***
 
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished installing "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" in "+OS+"...###\n")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...###\n")
 
         #Log and notify the user that we're finished installing the bootloader.
-        logger.info("MainBackendTools: Main().InstallNewBootloader(): Finished installing "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished installing "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"...")
+        logger.info("MainBackendTools: Main().InstallNewBootloader(): Finished installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
         return BootloaderInstallSucceded #*** Keep the results for each OS here, and note which one(s) failed! ***
 
     def SetNewBootloaderConfig(self, OS): #*** Use UseChroot here for readability? ***
         """Manage setting new bootloader config."""
-        logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): Preparing to set "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config in "+OS+"...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to set "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config...")
+        logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): Preparing to set "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config in "+OS+"...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to set "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 77)
 
         #For each OS that needs the new bootloader configured, grab the partition, and the package manager.
-        logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config for "+OS+"...")
+        logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config for "+OS+"...")
 
         #Grab the OS's partition and package manager.
         Partition = OSInfo[OS]["Partition"]
         PackageManager = OSInfo[OS]["PackageManager"]
 
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to set "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to set "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
 
         #Grab the architecture.
         Arch = OSInfo[OS]["Arch"]
 
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Setting "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" config...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" config...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 79)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Setting "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
 
         #If this is the current OS, let the config functions know that we aren't using chroot.
         if OSInfo[OS]["IsCurrentOS"]:
@@ -298,7 +298,7 @@ class Main():
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
 
         #Look for the configuration file, based on which SetConfig() function we're about to run.
-        if BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "GRUB2":
+        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
             #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
@@ -317,7 +317,7 @@ class Main():
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
             BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, MountPoint=MountPoint)
 
-        elif BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+        elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
@@ -347,7 +347,7 @@ class Main():
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
             BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, MountPoint=MountPoint)
 
-        elif BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "LILO":
+        elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO":
             #Make LILO's config file.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making LILO's configuration file...")
 
@@ -374,7 +374,7 @@ class Main():
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing LILO to the MBR...")
             BootloaderConfigSettingTools.InstallLILOToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
 
-        elif BootloaderInfo["OS"]["Settings"]["NewBootloader"] == "ELILO":
+        elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             #Unmount the UEFI Partition now, and update mtab in the chroot.
             if CoreTools.Unmount(BootloaderInfo[OS]["BootDisk"]) != 0:
                 logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+BootloaderInfo[OS]["BootDisk"]+"! Continuing anyway...") #*** Installation will fail if this happens! ***
@@ -427,10 +427,10 @@ class Main():
             if CoreTools.Unmount(MountPoint) != 0:
                 logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount "+MountPoint+"! Continuing anyway...")
 
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished setting "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
 
         logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): Finished setting bootloader config.")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished setting "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+"'s config!")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
 #End main Class.
