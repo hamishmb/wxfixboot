@@ -686,7 +686,6 @@ class MainWindow(wx.Frame):
         self.menuAbout = helpmenu.Append(wx.ID_ABOUT, "&About", "Information about this program")
         self.menuExit = filemenu.Append(wx.ID_EXIT,"&Exit", "Terminate this program")
         self.menuSystemInfo = viewmenu.Append(wx.ID_ANY,"&System Information", "Information about all detected disks, OSs, and Bootloaders")
-        self.menuNewBootloaderOptions = viewmenu.Append(wx.ID_ANY,"&New Bootloader Options Window", "Have a look at what the new bootloader options window will look like!")
         self.menuOpts = editmenu.Append(wx.ID_PREFERENCES, "&Options", "General settings used to modify your system")
 
         #Creating the menubar.
@@ -792,11 +791,6 @@ class MainWindow(wx.Frame):
         """Start SystemInfoWindow"""
         logger.debug("MainWindow().SystemInfo(): Starting System Info Window...")
         SystemInfoWindow(self).Show()
-
-    def ShowNewBLWindow(self, Event=None):
-        """Start NewBootloaderOptionsWindow"""
-        logger.debug("MainWindow().ShowNewBLWindow(): Starting New Bootloader Options Window...")
-        NewBootloaderOptionsWindow(self).Show()
 
     def ProgressWindow(self, Event=None):
         """Starts Progress Window"""
@@ -907,7 +901,6 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnAbout, self.AboutButton)
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.ExitButton)
         self.Bind(wx.EVT_MENU, self.SystemInfo, self.menuSystemInfo)
-        self.Bind(wx.EVT_MENU, self.ShowNewBLWindow, self.menuNewBootloaderOptions)
         self.Bind(wx.EVT_MENU, self.Opts, self.menuOpts)
         self.Bind(wx.EVT_BUTTON, self.Opts, self.OptionsButton)
         self.Bind(wx.EVT_BUTTON, self.ProgressWindow, self.ApplyOperationsButton)
@@ -1609,7 +1602,7 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().LaunchblOpts(): Calling self.SaveOptions()...")
         self.SaveOptions()
 
-        #Give some warnings here if needed.
+        #Give some warnings here if needed. *** Change or remove these ***
         #Tell the user some options will be disabled if the bootloader is to be reinstalled or updated.
         if ReinstallBootloader or UpdateBootloader:
             logger.info("SettingsWindow().LaunchblOpts(): Bootloader will be reinstalled or updated, almost all options relating to bootloaders will be disabled.")
@@ -1639,10 +1632,6 @@ class SettingsWindow(wx.Frame):
             dlg = wx.MessageDialog(self.Panel, "You have no UEFI Partition. If you wish to install a UEFI bootloader, you'll need to create one first. WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
-
-        dlg = wx.MessageDialog(self.Panel, "Most of the settings in the following dialog do not need to be and shouldn't be touched, with the exception of autodetermining the bootloader, or manually selecting one. The firmware type and partition schemes should not normally be changed. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-        dlg.ShowModal()
-        dlg.Destroy()
 
         #Open the Firmware Options window
         logger.debug("SettingsWindow().LaunchblOpts(): Starting Bootloader Settings Window...")
@@ -1806,8 +1795,8 @@ class SettingsWindow(wx.Frame):
         self.Destroy()
 
 #End Settings Window
-#Begin New Bootloader Options Window.
-class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
+#Begin Bootloader Options Window.
+class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
     def __init__(self, ParentWindow):
         """Initialise bootloader options window"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Bootloader Options", size=(400,200), style=wx.DEFAULT_FRAME_STYLE)
@@ -2334,12 +2323,12 @@ class NewBootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff 
         BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = self.RestoreBootloaderChoice.IsEnabled()
 
     def OnClose(self, Event=None):
-        """Save settings and GUI state, and then close NewBootloaderOptionsWindow"""
+        """Save settings and GUI state, and then close BootloaderOptionsWindow"""
         self.SaveSettings(OS=self.OSChoice.GetStringSelection())
         self.SaveGUIState(OS=self.OSChoice.GetStringSelection())
 
-        #Send a message to mainwindow so it can refresh.
-        wx.CallAfter(self.ParentWindow.RefreshMainWindow, "Closed")
+        #Send a message to SettingsWindow so it can refresh.
+        wx.CallAfter(self.ParentWindow.RefreshOptionsDlg1, "Closed")
 
         self.Destroy()
 
