@@ -23,9 +23,38 @@ from __future__ import unicode_literals
 
 class Main(): #*** Refactor all of these ***
     def ManageBootloader(self, OS):
-        pass
+        """Manage the installation and removal of each bootloader.""" #*** Check each operation worked with a return value! ***
+        if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["InstallNewBootloader"]:
+            if BootloaderInfo[OS]["Settings"]["Reinstall"]:
+                BootloaderInfo[OS]["Settings"]["NewBootloader"] = BootloaderInfo[OS]["Bootloader"]
 
-    def ReinstallBootloader(self):
+            #First remove the old bootloader, then install the new one.
+            logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().RemoveOldBootloader()...")
+            MainBackendTools.RemoveOldBootloader(OS)
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 33)
+
+            logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().InstallNewBootloader()...")
+            BootloaderInstallSucceded = MainBackendTools.InstallNewBootloader(OS)
+
+            if BootloaderInstallSucceded == False:
+                #Bootloader installation failed for at least one OS! *** Clarify this message with better info ***
+                logger.error("MainBootloaderTools(): Main().ManageBootloaders(): Failed to install new bootloader in at least one OS! Asking user whether to continue with configuration or not...")
+                Result = DialogTools.ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Please tell WxFixBoot what to do now. Click Yes to configure bootloaders anyway, and no to skip configuration.", Title="WxFixBoot - Configure Bootloader?", Buttons=("Configure Bootloaders Anyway", "Skip Bootloader Configuration"))
+
+                if Result == False:
+                    logger.warning("MainBootloaderTools(): Main().ManageBootloaders(): Configuring bootloaders anyway. Calling MainBackendTools().SetNewBootloaderConfig()...")
+
+                else:
+                    logger.warning("MainBootloaderTools(): Main().ManageBootloaders(): Not configuring bootloaders...")
+                    return True
+
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 66)
+        MainBackendTools.SetNewBootloaderConfig(OS)
+
+        logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Done!")
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+
+    def ReinstallBootloader(self): #*** DEPRECATED ***
         """Reinstall/fix the bootloader."""
         logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Preparing to reinstall the bootloader...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to reinstall the bootloader...###\n")
@@ -47,7 +76,7 @@ class Main(): #*** Refactor all of these ***
             self.ManageBootloaders() 
             logger.info("MainBootloaderTools: Main().ReinstallBootloader(): Done!")
 
-    def UpdateBootloader(self):
+    def UpdateBootloader(self): #*** DEPRECATED ***
         """Update bootloader menu and config"""
         logger.info("MainBootloaderTools: Main().UpdateBootloader(): Preparing to update the bootloader...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to update the bootloader...###\n")
@@ -71,7 +100,7 @@ class Main(): #*** Refactor all of these ***
 
             logger.info("MainBootloaderTools: Main().UpdateBootloader(): Done!")
 
-    def ManageBootloaders(self):
+    def ManageBootloaders(self): #*** DEPRECATED ***
         """Manage the installation and removal of bootloaders.""" #*** Check each operation worked with a return value! ***
         #First remove the old bootloader, then install the new one.
         logger.info("MainBootloaderTools(): Main().ManageBootloaders(): Calling MainBackendTools().RemoveOldBootloader()...")

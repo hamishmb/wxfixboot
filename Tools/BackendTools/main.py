@@ -23,107 +23,103 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** Make these use BootloaderInfo dictionary to get config for each bootloader ***
 class Main():
-    def RemoveOldBootloader(self): #*** Handle return values better, and return them ***
+    def RemoveOldBootloader(self, OS): #*** Handle return values better, and return them *** *** Give more information to user ***
         """Remove the currently installed bootloader."""
-        logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Preparing to remove old bootloaders...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Removing old bootloaders...")
+        logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Preparing to remove old bootloader ...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Removing old bootloader...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing old bootloaders...###\n")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing old bootloader...###\n")
 
-        #Loop through each OS in SystemInfo["OSsForBootloaderRemoval"], and provide information to the function that will remove the bootloader.
-        for OS in SystemInfo["OSsForBootloaderRemoval"]:
-            #For each OS that needs the bootloader removed, grab the partition, and the package manager.
-            Partition = OSInfo[OS]["Partition"]
-            PackageManager = OSInfo[OS]["PackageManager"]
+        #Get the partition, and the package manager.
+        Partition = OSInfo[OS]["Partition"]
+        PackageManager = OSInfo[OS]["PackageManager"]
 
-            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+SystemInfo["Bootloader"]+" from OS: "+OS+"...")
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing the old bootloader from OS: "+OS+"...###\n")
+        logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+BootloaderInfo["OS"]["Bootloader"]+" from OS: "+OS+"...")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing "+BootloaderInfo["OS"]["Bootloader"]+" from OS: "+OS+"...###\n")
             
-            #If we're not on a live disk, and the partition is RootFS, let the remover function know that we aren't using chroot.
-            if SystemInfo["IsLiveDisk"] == False and Partition == SystemInfo["RootFS"]:
-                logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Modifying current OS so not using chroot...")
-                UseChroot = False
+        #If this is the current OS, let the remover function know that we aren't using chroot.
+        if OSInfo[OS]["IsCurrentOS"]:
+            logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Modifying current OS so not using chroot...")
+            UseChroot = False
+            UnmountAfter = False
+            MountPoint = None
+
+        else:
+            logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Using chroot to modify another OS...")
+            UseChroot = True
+            MountPoint = "/mnt"+Partition
+
+            #Check if the partition is mounted.
+            if CoreTools.IsMounted(Partition, MountPoint):
                 UnmountAfter = False
-                MountPoint = None
 
             else:
-                logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Using chroot to modify another OS...")
-                UseChroot = True
-                MountPoint = "/mnt"+Partition
+                UnmountAfter = True
 
-                #Check if the partition is mounted.
-                if CoreTools.IsMounted(Partition, MountPoint):
-                    UnmountAfter = False
-
-                else:
-                    UnmountAfter = True
-
-                    #Mount the partition using the global mount function.
-                    Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
-
-                    if Retval != 0:
-                        logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+Partition+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
-                        DialogTools.ShowMsgDlg(Kind="error", Message="WxixBoot failed to mount the partition containing: "+OS+"! This OS will now be skipped.")
-                        continue
-
-                #Set up chroot.
-                Retval = CoreTools.SetUpChroot(MountPoint)
+                #Mount the partition using the global mount function.
+                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
 
                 if Retval != 0:
-                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+Partition+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
+                    DialogTools.ShowMsgDlg(Kind="error", Message="WxixBoot failed to mount the partition containing: "+OS+"! This OS will now be skipped.")
+                    return False #*** Not handled at the moment ***
 
-                #If there's a seperate /boot partition for this OS, make sure it's mounted. *** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this *** *** this might mount other stuff and interfere too ***
-                CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False)
+            #Set up chroot.
+            Retval = CoreTools.SetUpChroot(MountPoint)
 
-            #Remove the bootloader.
-            if SystemInfo["Bootloader"] == "GRUB-LEGACY":
-                logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
-                retval = BootloaderRemovalTools.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+            if Retval != 0:
+                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
-            elif SystemInfo["Bootloader"] == "GRUB2":
-                logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")
-                retval = BootloaderRemovalTools.RemoveGRUB2(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+            #If there's a seperate /boot partition for this OS, make sure it's mounted. *** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this *** *** this might mount other stuff and interfere too ***
+            CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False)
 
-            elif SystemInfo["Bootloader"] == "LILO":
-                logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing LILO...")
-                retval = BootloaderRemovalTools.RemoveLILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+        #Remove the bootloader.
+        if BootloaderInfo["OS"]["Bootloader"] == "GRUB-LEGACY":
+            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
+            retval = BootloaderRemovalTools.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-            elif SystemInfo["Bootloader"] == "GRUB-UEFI":
-                logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-UEFI...")
-                retval = BootloaderRemovalTools.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+        elif BootloaderInfo["OS"]["Bootloader"] == "GRUB2":
+            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")
+            retval = BootloaderRemovalTools.RemoveGRUB2(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-            elif SystemInfo["Bootloader"] == "ELILO":
-                logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing ELILO...")
-                retval = BootloaderRemovalTools.RemoveELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+        elif BootloaderInfo["OS"]["Bootloader"] == "LILO":
+            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing LILO...")
+            retval = BootloaderRemovalTools.RemoveLILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-            #Tear down chroot if needed.
-            if UseChroot:
-                Retval = CoreTools.TearDownChroot(MountPoint=MountPoint)
+        elif BootloaderInfo["OS"]["Bootloader"] == "GRUB-UEFI":
+            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-UEFI...")
+            retval = BootloaderRemovalTools.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-                if Retval != 0:
-                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+        elif BootloaderInfo["OS"]["Bootloader"] == "ELILO":
+            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing ELILO...")
+            retval = BootloaderRemovalTools.RemoveELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
 
-            #Unmount partition if needed.
-            if UnmountAfter:
-                UnmountRetval = CoreTools.Unmount(MountPoint)
+        #Tear down chroot if needed.
+        if UseChroot:
+            Retval = CoreTools.TearDownChroot(MountPoint=MountPoint)
 
-                if UnmountRetval != 0:
-                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Couldn't unmount "+MountPoint+"! Continuing anyway...")
+            if Retval != 0:
+                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished removing the old bootloader from OS: "+OS+"...###\n")
+        #Unmount partition if needed.
+        if UnmountAfter:
+            UnmountRetval = CoreTools.Unmount(MountPoint)
 
-            if retval != 0:
-                #Something went wrong! Log it and notify the user.
-                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+SystemInfo["Bootloader"]+" from OS: "+OS+"! We'll continue anyway. Warn the user.")
-                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+SystemInfo["Bootloader"]+" from: "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that OS after WxFixBoot finishes its operations.")
+            if UnmountRetval != 0:
+                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Couldn't unmount "+MountPoint+"! Continuing anyway...")
 
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27+(22//len(SystemInfo["OSsForBootloaderRemoval"])))
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished removing "+BootloaderInfo["OS"]["Bootloader"]+" from "+OS+"...###\n")
+
+        if retval != 0:
+            #Something went wrong! Log it and notify the user.
+            logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+BootloaderInfo["OS"]["Bootloader"]+" from "+OS+"! We'll continue anyway. Warn the user.")
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo["OS"]["Bootloader"]+" from "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that "+OS+" after WxFixBoot finishes its operations.")
 
         #Log and notify the user that we're finished removing bootloaders.
-        logger.info("MainBackendTools: Main().RemoveOldBootloader(): Finished removing bootloaders...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished removing old bootloaders...")
+        logger.info("MainBackendTools: Main().RemoveOldBootloader(): Finished removing "+BootloaderInfo["OS"]["Bootloader"]+"...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished removing "+BootloaderInfo["OS"]["Bootloader"]+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
-        DialogTools.ShowMsgDlg(Kind="info", Message="Finished removing old bootloaders! WxFixBoot will now install your new bootloader to: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+".")
+        DialogTools.ShowMsgDlg(Kind="info", Message="Finished removing "+BootloaderInfo["OS"]["Bootloader"]+"! WxFixBoot will now install "+BootloaderInfo["OS"]["Settings"]["NewBootloader"]+" to "+OS+".")
 
     def InstallNewBootloader(self):
         """Install a new bootloader."""
