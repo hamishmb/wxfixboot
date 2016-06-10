@@ -71,7 +71,7 @@ class Main(): #*** These need refactoring ***
                     logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
 
-    def BackupBootSector(self): #*** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save boot sector backup file variable like this, move to settings window *** *** Reduce duplication *** *** What if we need to backup a PBR? ***
+    def BackupBootSector(self): #*** DEPRECATED *** *** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save boot sector backup file variable like this, move to settings window *** *** Reduce duplication *** *** What if we need to backup a PBR? ***
         """Backup the bootsector."""
         #For GPT disks, backup UEFI System Partition.
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.

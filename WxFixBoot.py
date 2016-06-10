@@ -496,7 +496,6 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): *** ABSTRACTION CODE *** Setting RootDev...")
 
         SystemInfo["RootDevice"] = DiskInfo[SystemInfo["RootFS"]]["HostDevice"]
-        SystemInfo["AutoRootDevice"] = SystemInfo["RootDevice"]
 
         #*** Get rid of this. Just used to sort of keep legacy code working for now ***
         SystemInfo["Bootloader"] = "GRUB-UEFI"
@@ -1275,7 +1274,7 @@ class SettingsWindow(wx.Frame):
     def CreateChoiceBs(self):
         """Create the choice boxes"""
         #Advanced settings
-        self.RootDeviceChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=["Auto: "+SystemInfo["AutoRootDevice"]]+SystemInfo["Devices"])
+        self.RootDeviceChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=SystemInfo["Devices"])
 
     def OnCheckBox(self, Event=None):
         """Manage the checkboxes' states"""
@@ -1330,11 +1329,7 @@ class SettingsWindow(wx.Frame):
         self.InstalledBootloaderChoice.SetStringSelection(SystemInfo["Bootloader"])
         
         #Root Device
-        if SystemInfo["RootDevice"] != SystemInfo["AutoRootDevice"]:
-            self.RootDeviceChoice.SetStringSelection(SystemInfo["RootDevice"])
-
-        else:
-            self.RootDeviceChoice.SetSelection(0)
+        self.RootDeviceChoice.SetStringSelection(SystemInfo["RootDevice"])
 
         if RestoreBootSector:
             #Disable/reset some options.
@@ -1472,11 +1467,6 @@ class SettingsWindow(wx.Frame):
         self.SaveOptions()
 
         logger.debug("SettingsWindow().LaunchBootSectWindow(): Starting Restore Bootsector Window...")
-        #Show helpful info if the root device uses gpt.
-        if DiskInfo[SystemInfo["RootDevice"]]["Partitioning"] == "gpt": #*** This is silly ***
-            dlg = wx.MessageDialog(self.Panel, "Because the selected root device uses gpt, the Target Device selection in the following dialog will be ignored, though you must still set it, and the backup will always be restored to the UEFI Partition. Please keep this in mind and be sure that the UEFI Partition chosen is correct. You can check and change this in the Bootloader Options.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-            dlg.Destroy()
 
         self.Hide()
         RestoreWindow(ParentWindow=self).Show()
@@ -1576,12 +1566,7 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().SaveOptions(): Value of SystemInfo['RootFS'] is: "+SystemInfo["RootFS"])
 
         #Root device ChoiceBox
-        if self.RootDeviceChoice.GetSelection() != 0:
-            SystemInfo["RootDevice"] = self.RootDeviceChoice.GetStringSelection()
-
-        else:
-            #Set it to the auto value, in case this has already been changed.
-            SystemInfo["RootDevice"] = SystemInfo["AutoRootDevice"]
+        SystemInfo["RootDevice"] = self.RootDeviceChoice.GetStringSelection()
 
         logger.debug("SettingsWindow().SaveOptions(): Value of RootDevice is: "+SystemInfo["RootDevice"])
         logger.info("SettingsWindow().SaveOptions(): Saved options.")
@@ -2184,7 +2169,7 @@ class RestoreWindow(wx.Frame):
     def CreateChoiceBs(self):
         """Create Choice Boxes"""
         self.BackupFileChoice = wx.Choice(self.Panel, -1, size=(150,30), choices=['-- Please Select --', 'Specify File Path...'])
-        self.TargetDeviceChoice = wx.Choice(self.Panel, -1, size=(150,30), choices=['-- Please Select --', 'Auto: '+SystemInfo["AutoRootDevice"]]+SystemInfo["Devices"]+['Specify Path...'])
+        self.TargetDeviceChoice = wx.Choice(self.Panel, -1, size=(150,30), choices=['-- Please Select --']+SystemInfo["Devices"]+['Specify Path...'])
 
     def CreateButtons(self):
         """Create Buttons"""
@@ -2637,7 +2622,6 @@ class ProgressWindow(wx.Frame):
         global PartScheme
 
         Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
-        SystemInfo["RootDevice"] = SystemInfo["AutoRootDevice"]
 
         #Show MainWindow
         MainFrame = MainWindow()
@@ -2848,9 +2832,8 @@ class BackendThread(threading.Thread):
         #Do Disk Information
         ReportList.write("\n##########Disk Information##########\n")
         ReportList.write("Detected Linux Partitions: "+', '.join(SystemInfo["LinuxPartitions"])+"\n")
-        ReportList.write("Delected Root Filesystem (MBR bootloader target): "+SystemInfo["RootFS"]+"\n")
-        ReportList.write("Detected Root Device (MBR Bootloader Target): "+SystemInfo["AutoRootDevice"]+"\n")
-        ReportList.write("Selected Root Device (MBR Bootloader Target): "+SystemInfo["RootDevice"]+"\n")
+        ReportList.write("Detected Root Filesystem (MBR bootloader target): "+SystemInfo["RootFS"]+"\n")
+        ReportList.write("Detected Root Device (MBR Bootloader Target): "+SystemInfo["RootDevice"]+"\n")
 
         #Do Boot Sector Information.
         ReportList.write("\n##########Boot Sector Information##########\n")
