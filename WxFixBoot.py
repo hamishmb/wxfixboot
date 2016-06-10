@@ -1236,7 +1236,6 @@ class SettingsWindow(wx.Frame):
         self.CreateButtons()
         self.CreateText()
         self.CreateCBs()
-        self.CreateChoiceBs()
         self.SetupOptions()
         self.SetupSizers()
         self.BindEvents()
@@ -1255,7 +1254,6 @@ class SettingsWindow(wx.Frame):
         self.BasicSettingsText = wx.StaticText(self.Panel, -1, "Basic Settings:")
         self.InstalledBootloaderText = wx.StaticText(self.Panel, -1, "Installed Bootloader:")
         self.AdvancedSettingsText = wx.StaticText(self.Panel, -1, "Advanced Settings:")
-        self.RootDeviceText = wx.StaticText(self.Panel, -1, "Root device:")
 
     def CreateCBs(self):
         """Create the checkboxes"""
@@ -1266,11 +1264,6 @@ class SettingsWindow(wx.Frame):
         self.MakeSummaryCheckBox = wx.CheckBox(self.Panel, -1, "Save System Report To File")
         self.LogOutputCheckBox = wx.CheckBox(self.Panel, -1, "Save terminal output in Report")
         self.BackupBootsectorCheckBox = wx.CheckBox(self.Panel, -1, "Backup the Bootsector of *** DISABLED ***")
-
-    def CreateChoiceBs(self):
-        """Create the choice boxes"""
-        #Advanced settings
-        self.RootDeviceChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=SystemInfo["Devices"])
 
     def OnCheckBox(self, Event=None):
         """Manage the checkboxes' states"""
@@ -1356,9 +1349,6 @@ class SettingsWindow(wx.Frame):
         #Create the sizer that holds the default OS choice and text.
         DefaultOSChoiceSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        #Create the sizer that holds the root device choice and text.
-        RootDeviceChoiceSizer = wx.BoxSizer(wx.HORIZONTAL)
-
         #Create the sizer that holds the bootloader options button and text.
         BootloaderOptionsSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -1369,10 +1359,6 @@ class SettingsWindow(wx.Frame):
         self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderText, 1, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
         self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
 
-        #Add items to the Root Device Choice Sizer.
-        RootDeviceChoiceSizer.Add(self.RootDeviceText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        RootDeviceChoiceSizer.Add(self.RootDeviceChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-
         #Add items to the basic settings sizer.
         BasicSettingsSizer.Add(self.BasicSettingsText, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
         BasicSettingsSizer.Add(self.InstalledBootloaderChoiceSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
@@ -1380,7 +1366,6 @@ class SettingsWindow(wx.Frame):
 
         #Add items to the advanced settings sizer.
         AdvancedSettingsSizer.Add(self.AdvancedSettingsText, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
-        AdvancedSettingsSizer.Add(RootDeviceChoiceSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
         AdvancedSettingsSizer.Add(self.MakeSummaryCheckBox, 1, wx.BOTTOM, 10)
         AdvancedSettingsSizer.Add(self.LogOutputCheckBox, 1, wx.BOTTOM, 10)
         AdvancedSettingsSizer.Add(self.BackupBootsectorCheckBox, 1, wx.BOTTOM, 10)
