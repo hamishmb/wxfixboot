@@ -326,7 +326,7 @@ class Main():
             BootloaderInfo[OS]["OSName"] = OS
             BootloaderInfo[OS]["Bootloader"] = CoreStartupTools.LookForBootloadersOnPartition(OSInfo[OS]["PackageManager"], MountPoint, not OSInfo[OS]["IsCurrentOS"])
 
-            BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["DefaultOS"] = ("Unknown", "Unknown", "Unknown", "Unknown")
+            BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["DefaultOS"] = (10, "Unknown", "Unknown", "Unknown")
 
             #For EFI bootloaders, set the boot disk to the OS's EFI Partition.
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "ELILO"):
@@ -388,7 +388,7 @@ class Main():
             BootloaderInfo[OS]["Settings"]["Reinstall"] = False
             BootloaderInfo[OS]["Settings"]["Update"] = False
             BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] = False
-            BootloaderInfo[OS]["Settings"]["NewTimeout"] = 10
+            BootloaderInfo[OS]["Settings"]["NewTimeout"] = BootloaderInfo[OS]["Timeout"]
             BootloaderInfo[OS]["Settings"]["DefaultOS"] = BootloaderInfo[OS]["DefaultOS"]
             BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] = False
             BootloaderInfo[OS]["Settings"]["NewBootloader"] = "-- Please Select --"

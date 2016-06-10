@@ -206,7 +206,7 @@ class Main(): #*** Refactor all of these ***
             #Look for the timeout setting.
             if 'GRUB_TIMEOUT' in Line and '=' in Line:
                 #Found it! Save it, carefully avoiding errors.
-                Timeout = Line.split("=")[1]
+                Timeout = Line.split("=")[1].replace("\n", "")
 
                 if Timeout.isdigit():
                     #Great! We got it.

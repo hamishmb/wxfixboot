@@ -544,6 +544,13 @@ class InitThread(threading.Thread):
         for Key in Keys:
             print(Key)
 
+        print("\n\nGlobals:")
+        Vars = globals().keys()
+        Vars.sort()
+
+        for Var in Vars:
+            print(Var)
+
         #***************************
         #Set some other variables to default values, avoiding problems down the line. *** Save these in a dictionary later ***
         #Define globals.
@@ -1235,7 +1242,6 @@ class SettingsWindow(wx.Frame):
         self.CreateText()
         self.CreateCBs()
         self.CreateChoiceBs()
-        self.CreateSpinners()
         self.SetupOptions()
         self.SetupSizers()
         self.BindEvents()
@@ -1253,8 +1259,6 @@ class SettingsWindow(wx.Frame):
         self.WelcomeText = wx.StaticText(self.Panel, -1, "Welcome to Settings. Please give everything a once-over.")
         self.BasicSettingsText = wx.StaticText(self.Panel, -1, "Basic Settings:")
         self.InstalledBootloaderText = wx.StaticText(self.Panel, -1, "Installed Bootloader:")
-        self.BootloaderTimeoutText = wx.StaticText(self.Panel, -1, "Bootloader timeout value:")
-        self.BootloaderTimeoutText2 = wx.StaticText(self.Panel, -1, "(seconds, -1 represents current value)") 
         self.AdvancedSettingsText = wx.StaticText(self.Panel, -1, "Advanced Settings:")
         self.RootDeviceText = wx.StaticText(self.Panel, -1, "Root device:")
 
@@ -1272,13 +1276,6 @@ class SettingsWindow(wx.Frame):
         """Create the choice boxes"""
         #Advanced settings
         self.RootDeviceChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=["Auto: "+SystemInfo["AutoRootDevice"]]+SystemInfo["Devices"])
-
-    def CreateSpinners(self):
-        """Create the bootloader time out spinner"""
-        #Basic setting.
-        self.BootloaderTimeoutSpinner = wx.SpinCtrl(self.Panel, -1, "")
-        self.BootloaderTimeoutSpinner.SetRange(-1,100)
-        self.BootloaderTimeoutSpinner.SetValue(-1)
 
     def OnCheckBox(self, Event=None):
         """Manage the checkboxes' states"""
@@ -1343,8 +1340,6 @@ class SettingsWindow(wx.Frame):
             #Disable/reset some options.
             self.BootloaderOptionsButton.Disable()
             self.InstalledBootloaderChoice.Disable()
-            self.BootloaderTimeoutSpinner.SetValue(-1)
-            self.BootloaderTimeoutSpinner.Disable()
 
         else:
             #Enable some options.
@@ -1373,9 +1368,6 @@ class SettingsWindow(wx.Frame):
         #Create the sizer that holds the default OS choice and text.
         DefaultOSChoiceSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        #Create the sizer that holds the bootloader timeout choice and text.
-        BootloaderTimeoutSizer = wx.BoxSizer(wx.HORIZONTAL)
-
         #Create the sizer that holds the root device choice and text.
         RootDeviceChoiceSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -1389,10 +1381,6 @@ class SettingsWindow(wx.Frame):
         self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderText, 1, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
         self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
 
-        #Add items to the Bootloader timeout Sizer.
-        BootloaderTimeoutSizer.Add(self.BootloaderTimeoutText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        BootloaderTimeoutSizer.Add(self.BootloaderTimeoutSpinner, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-
         #Add items to the Root Device Choice Sizer.
         RootDeviceChoiceSizer.Add(self.RootDeviceText, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
         RootDeviceChoiceSizer.Add(self.RootDeviceChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
@@ -1401,8 +1389,6 @@ class SettingsWindow(wx.Frame):
         BasicSettingsSizer.Add(self.BasicSettingsText, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
         BasicSettingsSizer.Add(self.InstalledBootloaderChoiceSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
         BasicSettingsSizer.Add(self.FullVerboseCheckBox, 1, wx.BOTTOM, 10)
-        BasicSettingsSizer.Add(BootloaderTimeoutSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
-        BasicSettingsSizer.Add(self.BootloaderTimeoutText2, 1, wx.BOTTOM, 10)
 
         #Add items to the advanced settings sizer.
         AdvancedSettingsSizer.Add(self.AdvancedSettingsText, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
@@ -1503,8 +1489,6 @@ class SettingsWindow(wx.Frame):
             #Disable/reset some options.
             self.BootloaderOptionsButton.Disable()
             self.InstalledBootloaderChoice.Disable()
-            self.BootloaderTimeoutSpinner.SetValue(-1)
-            self.BootloaderTimeoutSpinner.Disable()
 
             #Reset some settings.
             Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
@@ -1513,7 +1497,6 @@ class SettingsWindow(wx.Frame):
             #Enable some options.
             self.BootloaderOptionsButton.Enable()
             self.InstalledBootloaderChoice.Enable()
-            self.BootloaderTimeoutSpinner.Enable()
 
         #Setup options again, but destroy a widget first so it isn't duplicated.
         self.InstalledBootloaderChoice.Destroy()
@@ -1839,6 +1822,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         self.BackupBootloaderChoice.SetStringSelection(BootloaderInfo[OS]["Settings"]["BootloaderBackupTarget"])
         self.RestoreBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["RestoreBootloader"])
         self.RestoreBootloaderChoice.SetStringSelection(BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"])
+        self.OnTimeoutCheckBox()
 
     def SetGUIState(self, Event=None):
         """Set all the GUI element's states (enabled/disabled) for this OS"""
@@ -1947,6 +1931,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
     def OnTimeoutCheckBox(self, Event=None):
         """Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox."""
         if self.KeepBootloaderTimeoutCheckBox.IsChecked():
+            self.BootloaderTimeoutSpinner.SetValue(BootloaderInfo[self.OSChoice.GetStringSelection()]["Timeout"])
             self.BootloaderTimeoutSpinner.Disable()
 
         else:
