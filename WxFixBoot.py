@@ -483,10 +483,6 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "70")
         logger.info("InitThread(): Determined Firmware Type as: "+Settings["MainSettings"]["FirmwareType"])
 
-        #*** Temporary abstraction code ***
-        #*** Get rid of this. Just used to sort of keep legacy code working for now ***
-        SystemInfo["Bootloader"] = "GRUB-UEFI"
-
         #New bootloader info getting function.
         logger.info("InitThread(): Finding all Bootloaders and getting their settings...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Bootloaders...")
@@ -1306,7 +1302,7 @@ class SettingsWindow(wx.Frame):
             self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['GRUB-LEGACY', 'GRUB2', 'GRUB-UEFI', 'LILO', 'ELILO'])
 
         #Installed Bootloader
-        self.InstalledBootloaderChoice.SetStringSelection(SystemInfo["Bootloader"])
+        self.InstalledBootloaderChoice.SetStringSelection("GRUB-UEFI")
 
         if RestoreBootSector:
             #Disable/reset some options.
@@ -1413,13 +1409,13 @@ class SettingsWindow(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-        if SystemInfo["UEFISystemPartition"] == None and SystemInfo["Bootloader"] in ('GRUB-UEFI', 'ELILO'):
-            logger.info("SettingsWindow().LaunchblOpts(): UEFI bootloader, but no UEFI partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.")
-            dlg = wx.MessageDialog(self.Panel, "You have a UEFI Bootloader, but no UEFI Partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled. Did you change your selected UEFI Partition?", "WxFixBoot - ERROR", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-            dlg.Destroy()
+        #if SystemInfo["UEFISystemPartition"] == None and SystemInfo["Bootloader"] in ('GRUB-UEFI', 'ELILO'):
+        #    logger.info("SettingsWindow().LaunchblOpts(): UEFI bootloader, but no UEFI partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.")
+        #    dlg = wx.MessageDialog(self.Panel, "You have a UEFI Bootloader, but no UEFI Partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled. Did you change your selected UEFI Partition?", "WxFixBoot - ERROR", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+        #    dlg.ShowModal()
+        #    dlg.Destroy()
 
-        elif SystemInfo["UEFISystemPartition"] == None:
+        if SystemInfo["UEFISystemPartition"] == None:
             logger.info("SettingsWindow().LaunchblOpts(): No UEFI partition. Therefore installing UEFI bootloaders will be disabled.")
             dlg = wx.MessageDialog(self.Panel, "You have no UEFI Partition. If you wish to install a UEFI bootloader, you'll need to create one first. WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
@@ -1523,12 +1519,6 @@ class SettingsWindow(wx.Frame):
             MakeSystemSummary = False
 
         logger.debug("SettingsWindow().SaveOptions(): Value of MakeSystemSummary is: "+unicode(MakeSystemSummary))
-
-        #ChoiceBoxes
-        #Currently Installed Bootloader ChoiceBox
-        SystemInfo["Bootloader"] = self.InstalledBootloaderChoice.GetStringSelection()
-
-        logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+SystemInfo["Bootloader"])
         logger.info("SettingsWindow().SaveOptions(): Saved options.")
 
     def CloseOpts(self, Event=None):
@@ -2751,8 +2741,6 @@ class BackendThread(threading.Thread):
 
         #Do Bootloader information
         ReportList.write("\n##########BootLoader Information##########\n")
-        ReportList.write("Detected Bootloader: "+SystemInfo["Bootloader"]+"\n")
-
         if True: #*** Needs rewriting for new bootloader options ***
             #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else). *** Show what we would do if they weren't disabled too ***
             ReportList.write("Disabled Bootloader Operations: "+unicode(SystemInfo["DisableBootloaderOperations"])+"\n")
