@@ -893,9 +893,9 @@ class MainWindow(wx.Frame):
         #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
 
         #Check if we need to check the internet connection, and do so first if needed. *** Will need to change how this is checked *** *** Run from ManageBootloader? ***
-        if MainBootloaderTools.ManageBootloaders in Operations:
-            logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()...")
-            Operations.insert(0, EssentialBackendTools.CheckInternetConnection())
+        #if True:
+        #    logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()...")
+        #    Operations.insert(0, EssentialBackendTools.CheckInternetConnection())
 
         NumberOfOperations = len(Operations)
 
@@ -2097,7 +2097,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         self.Destroy()
 
 #End New Bootloader Options Window.
-#Begin Restore Window *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later *** *** Will be removed upon integration of the new bootloader options window ***
+#Begin Restore Window *** DEPRECATED *** *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later *** *** Will be removed upon integration of the new bootloader options window ***
 class RestoreWindow(wx.Frame):
     def __init__(self, ParentWindow):
         """Initialise RestoreWindow"""
