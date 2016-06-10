@@ -74,11 +74,11 @@ class Main():
 
                 #Check if the required fsck module is present, and that the partition isn't RootFS
                 if "fsck."+FSType not in MissingFSCKModules and FSType not in ("Unknown", "N/A"):
-                    #If we're not running on a live disk, skip the filesystem if it's the same as RootFS (in which case checking it may corrupt data)
-                    if SystemInfo["IsLiveDisk"] == False and Disk == SystemInfo["RootFS"]:
-                        CheckTheFS = False
-                        RemountPartitionAfter = False
-                        continue
+                    #If we're not running on a live disk, skip the filesystem if it's the same as RootFS (in which case checking it may corrupt data) *** Not sure this is needed, but an alternative would speed this up a little ***
+                    #if SystemInfo["IsLiveDisk"] == False and Disk == SystemInfo["RootFS"]:
+                    #    CheckTheFS = False
+                    #    RemountPartitionAfter = False
+                    #    continue
 
                     #Check if the partition is mounted.
                     PartitionIsMounted = CoreTools.IsMounted(Disk)

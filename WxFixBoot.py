@@ -478,12 +478,7 @@ class InitThread(threading.Thread):
         MainStartupTools.SetDefaultOS() #*** Get rid of this; soon to be selected on a per-bootloader basis in Bootloader Options Window ***
         logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
 
-        #Set rootfs. *** Find mountpoint of / if not on livedisk *** *** Can't do this yet cos other code doesn't expect that ***
-        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting SystemInfo['RootFS']...")
-
-        SystemInfo["RootFS"] = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
-
-        logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
+        #*** Find mountpoint of / if not on livedisk ***
 
         #Get the firmware type.
         logger.info("InitThread(): Determining Firmware Type...")
@@ -1538,10 +1533,6 @@ class SettingsWindow(wx.Frame):
         SystemInfo["Bootloader"] = self.InstalledBootloaderChoice.GetStringSelection()
 
         logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+SystemInfo["Bootloader"])
-
-        #Root Filesystem.
-        SystemInfo["RootFS"] = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
-        logger.debug("SettingsWindow().SaveOptions(): Value of SystemInfo['RootFS'] is: "+SystemInfo["RootFS"])
         logger.info("SettingsWindow().SaveOptions(): Saved options.")
 
     def CloseOpts(self, Event=None):
@@ -2802,7 +2793,6 @@ class BackendThread(threading.Thread):
         #Do Disk Information
         ReportList.write("\n##########Disk Information##########\n")
         ReportList.write("Detected Linux Partitions: "+', '.join(SystemInfo["LinuxPartitions"])+"\n")
-        ReportList.write("Detected Root Filesystem (MBR bootloader target): "+SystemInfo["RootFS"]+"\n")
 
         #Do Boot Sector Information.
         ReportList.write("\n##########Boot Sector Information##########\n")
