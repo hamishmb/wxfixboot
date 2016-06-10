@@ -53,7 +53,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "9/6/2016"
+ReleaseDate = "10/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -500,7 +500,6 @@ class InitThread(threading.Thread):
 
         #*** Get rid of this. Just used to sort of keep legacy code working for now ***
         SystemInfo["Bootloader"] = "GRUB-UEFI"
-        SystemInfo["AutoBootloader"] = "GRUB-UEFI"
 
         #New bootloader info getting function.
         logger.info("InitThread(): Finding all Bootloaders and getting their settings...")
@@ -555,7 +554,6 @@ class InitThread(threading.Thread):
         global Verify
         global BackupBootSector
         global MakeSystemSummary
-        global BootloaderTimeout
         global BLOptsDlgRun
         global RestoreBootSector
         global BootSectorFile
@@ -571,7 +569,6 @@ class InitThread(threading.Thread):
         Verify = ""
         BackupBootSector = ""
         MakeSystemSummary = ""
-        BootloaderTimeout = ""
         BLOptsDlgRun = ""
         RestoreBootSector = ""
         BootSectorFile = ""
@@ -580,7 +577,7 @@ class InitThread(threading.Thread):
         OptionsDlg1Run = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
+        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -1297,9 +1294,6 @@ class SettingsWindow(wx.Frame):
         """Load all Options here, and create self.InstalledBootloaderChoice"""
         logger.debug("SettingsWindow().SetupOptions(): Setting up options...")
 
-        #Boot Loader Time Out
-        self.BootloaderTimeoutSpinner.SetValue(BootloaderTimeout)
-
         #Checkboxes
         #Diagnostic output checkbox.
         if FullVerbose:
@@ -1330,17 +1324,13 @@ class SettingsWindow(wx.Frame):
             self.LogOutputCheckBox.SetValue(False)
 
         if SystemInfo["UEFISystemPartition"] == None:
-            self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['Auto: '+SystemInfo["AutoBootloader"], 'GRUB-LEGACY', 'GRUB2', 'LILO'])
+            self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['GRUB-LEGACY', 'GRUB2', 'LILO'])
 
         else:
-            self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['Auto: '+SystemInfo["AutoBootloader"], 'GRUB-LEGACY', 'GRUB2', 'GRUB-UEFI', 'LILO', 'ELILO'])
+            self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['GRUB-LEGACY', 'GRUB2', 'GRUB-UEFI', 'LILO', 'ELILO'])
 
         #Installed Bootloader
-        if SystemInfo["Bootloader"] != SystemInfo["AutoBootloader"]:
-            self.InstalledBootloaderChoice.SetStringSelection(SystemInfo["Bootloader"])
-
-        else:
-            self.InstalledBootloaderChoice.SetSelection(0)
+        self.InstalledBootloaderChoice.SetStringSelection(SystemInfo["Bootloader"])
         
         #Root Device
         if SystemInfo["RootDevice"] != SystemInfo["AutoRootDevice"]:
@@ -1543,7 +1533,6 @@ class SettingsWindow(wx.Frame):
         global SaveOutput
         global BackupBootSector
         global MakeSystemSummary
-        global BootloaderTimeout
 
         logger.info("SettingsWindow().SaveOptions(): Saving Options...")
         
@@ -1595,12 +1584,7 @@ class SettingsWindow(wx.Frame):
 
         #ChoiceBoxes
         #Currently Installed Bootloader ChoiceBox
-        if self.InstalledBootloaderChoice.GetSelection() != 0:
-            SystemInfo["Bootloader"] = self.InstalledBootloaderChoice.GetStringSelection()
-
-        else:
-            #Set it to the auto value, using AutoBootloader
-            SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
+        SystemInfo["Bootloader"] = self.InstalledBootloaderChoice.GetStringSelection()
 
         logger.debug("SettingsWindow().SaveOptions(): Value of Bootloader is: "+SystemInfo["Bootloader"])
 
@@ -1617,11 +1601,6 @@ class SettingsWindow(wx.Frame):
             SystemInfo["RootDevice"] = SystemInfo["AutoRootDevice"]
 
         logger.debug("SettingsWindow().SaveOptions(): Value of RootDevice is: "+SystemInfo["RootDevice"])
-
-        #Spinner
-        BootloaderTimeout = int(self.BootloaderTimeoutSpinner.GetValue())
-        logger.debug("SettingsWindow().SaveOptions(): Value of BootloaderTimeout is: "+unicode(BootloaderTimeout))
-
         logger.info("SettingsWindow().SaveOptions(): Saved options.")
 
     def CloseOpts(self, Event=None):
@@ -2672,7 +2651,6 @@ class ProgressWindow(wx.Frame):
 
         global PartScheme
 
-        SystemInfo["Bootloader"] = SystemInfo["AutoBootloader"]
         Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
         SystemInfo["RootDevice"] = SystemInfo["AutoRootDevice"]
 
@@ -2786,10 +2764,8 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.BootloaderTools.setconfigtools.OSInfo = OSInfo
 
         #*** Temporarily set some variables to make stuff work for now ***
-        global BootloaderTimeout
         global KernelOptions
 
-        BootloaderTimeout = 10
         KernelOptions = "quiet splash nomodeset"
 
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
@@ -2802,12 +2778,9 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.essentials.BootSectorTargetDevice = BootSectorTargetDevice
 
             #*** Main Backend Tools ***
-            Tools.BackendTools.main.BootloaderTimeout = BootloaderTimeout
             Tools.BackendTools.main.KernelOptions = KernelOptions
 
             #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
-            Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderTimeout = BootloaderTimeout
-
             try:
                 Tools.BackendTools.BootloaderTools.setconfigtools.KernelOptions = KernelOptions
 
@@ -2852,8 +2825,7 @@ class BackendThread(threading.Thread):
 
         #Do Bootloader information
         ReportList.write("\n##########BootLoader Information##########\n")
-        ReportList.write("Detected Bootloader: "+SystemInfo["AutoBootloader"]+"\n")
-        ReportList.write("Selected Bootloader: "+SystemInfo["Bootloader"]+"\n")
+        ReportList.write("Detected Bootloader: "+SystemInfo["Bootloader"]+"\n")
 
         if True: #*** Needs rewriting for new bootloader options ***
             #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else). *** Show what we would do if they weren't disabled too ***
@@ -2866,7 +2838,7 @@ class BackendThread(threading.Thread):
                     ReportList.write("Reinstall/Fix bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
                     ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
-                    ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
+                    #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
                     ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
                 elif UpdateBootloader:
@@ -2875,7 +2847,7 @@ class BackendThread(threading.Thread):
                     ReportList.write("Update Bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
                     ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
-                    ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
+                    #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
                     ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
                 else:
@@ -2885,7 +2857,7 @@ class BackendThread(threading.Thread):
                     ReportList.write("Install New Bootloader to: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nNew Bootloader's Configuration:"+"\n")
                     ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
-                    ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
+                    #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
                     ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
         #Do Disk Information

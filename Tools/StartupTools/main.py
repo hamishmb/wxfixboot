@@ -437,7 +437,6 @@ class Main():
         Verify = True
         BackupBootSector = False
         MakeSystemSummary = True
-        BootloaderTimeout = -1 #Don't change the timeout by default.
 
         #Options in Bootloader Options dlg
         BLOptsDlgRun = False
@@ -453,7 +452,7 @@ class Main():
 
         SystemInfo["PreviousOSChoice"] = ""
 
-        return QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BootloaderTimeout, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run
+        return QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""

@@ -21,8 +21,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor all of these *** *** Add recovery boot options for LILO/ELILO *** *** Check if LILO installs on GPT disks (GRUB2 does) *** *** Set GRUB_DEFAULT to an ID, rather than "saved" *** *** Use the dictionary instead of BootloaderTimeout and KernelOptions ***
-    def SetGRUB2Config(self, filetoopen):
+class Main(): #*** Refactor all of these *** *** Add recovery boot options for LILO/ELILO *** *** Check if LILO installs on GPT disks (GRUB2 does) *** *** Set GRUB_DEFAULT to an ID, rather than "saved" *** *** Use the dictionary instead of KernelOptions ***
+    def SetGRUB2Config(self, filetoopen, BootloaderTimeout):
         """Set GRUB2 config."""
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Setting GRUB2 Config in "+filetoopen+"...")
         SetTimeout = False
@@ -206,7 +206,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done!")
         return Retval
 
-    def SetLILOConfig(self, filetoopen, PackageManager, MountPoint):
+    def SetLILOConfig(self, filetoopen, PackageManager, MountPoint, BootloaderTimeout):
         """Set LILO's config."""
         logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting LILO config in "+filetoopen+"...")
         SetTimeout = False
@@ -288,7 +288,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Done!")
 
-    def SetELILOConfig(self, filetoopen, PackageManager, MountPoint):
+    def SetELILOConfig(self, filetoopen, PackageManager, MountPoint, BootloaderTimeout):
         """Set ELILO config."""
         logger.info("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting ELILO config in "+filetoopen+"...")
         SetTimeout = False
