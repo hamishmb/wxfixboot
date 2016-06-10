@@ -76,7 +76,8 @@ class Main(): #*** These need refactoring ***
         #For GPT disks, backup UEFI System Partition.
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
         #We need to find RootDevice's partition scheme.
-        PartScheme = DiskInfo[SystemInfo["RootDevice"]]["Partitioning"]
+        #PartScheme = DiskInfo[SystemInfo["RootDevice"]]["Partitioning"] *** DISABLED ***
+        PartScheme = "gpt"
 
         logger.info("EssentialBackendTools: Main().BackupBootSector(): Preparing to backup the boot sector...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to backup the Boot Sector...")
@@ -91,7 +92,7 @@ class Main(): #*** These need refactoring ***
             if BootSectorBackupFile[-4:] != ".img":
                 BootSectorBackupFile = BootSectorBackupFile+".img"
 
-            Cmd = "dd if="+SystemInfo["RootDevice"]+" of="+BootSectorBackupFile+" bs=512 count=1"
+            Cmd = "dd if=/dev/sda of="+BootSectorBackupFile+" bs=512 count=1"
 
         elif SystemInfo["UEFISystemPartition"] != None:
             #We need to ask where to back it up to. *** Maybe do this in settings window? ***

@@ -303,11 +303,11 @@ class Main():
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
-                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"]) #*** Won't use exisiting timeout like this! ***
+                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"])
 
             #Now Install GRUB2 to the MBR. *** Is this necessary when updating it? ***
-            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to MBR...")
-            BootloaderConfigSettingTools.InstallGRUB2ToMBR(PackageManager=PackageManager, MountPoint=MountPoint)
+            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to "+DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]+"...")
+            BootloaderConfigSettingTools.InstallGRUB2ToMBR(PackageManager=PackageManager, MountPoint=MountPoint, Device=DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"])
 
             #Update GRUB.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
@@ -322,7 +322,7 @@ class Main():
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-UEFI Configuration...")
-                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"]) #*** Won't use exisiting timeout like this! ***)
+                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"])
 
             #Mount the UEFI partition at MountPoint/boot/efi.
             if CoreTools.MountPartition(Partition=BootloaderInfo[OS]["BootDisk"], MountPoint=MountPoint+"/boot/efi") != 0:
@@ -364,7 +364,7 @@ class Main():
             if os.path.isfile(MountPoint+"/etc/lilo.conf"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting LILO Configuration...")
-                BootloaderConfigSettingTools.SetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint, BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"]) #*** Won't use exisiting timeout like this! ***
+                BootloaderConfigSettingTools.SetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint, BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], BootDevice=DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"])
     
                 #Also, set the OS entries.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating LILO OS Entries...")
@@ -397,7 +397,7 @@ class Main():
             if os.path.isfile(MountPoint+"/etc/elilo.conf"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting ELILO Configuration...")
-                BootloaderConfigSettingTools.SetELILOConfig(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint, BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"]) #*** Won't use exisiting timeout like this! ***
+                BootloaderConfigSettingTools.SetELILOConfig(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint, BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"])
 
                 #Also, set the OS entries.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating ELILO OS Entries...")

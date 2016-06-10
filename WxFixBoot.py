@@ -493,10 +493,6 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Determined Firmware Type as: "+Settings["MainSettings"]["FirmwareType"])
 
         #*** Temporary abstraction code ***
-        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting RootDev...")
-
-        SystemInfo["RootDevice"] = DiskInfo[SystemInfo["RootFS"]]["HostDevice"]
-
         #*** Get rid of this. Just used to sort of keep legacy code working for now ***
         SystemInfo["Bootloader"] = "GRUB-UEFI"
 
@@ -1269,7 +1265,7 @@ class SettingsWindow(wx.Frame):
         #Advanced settings
         self.MakeSummaryCheckBox = wx.CheckBox(self.Panel, -1, "Save System Report To File")
         self.LogOutputCheckBox = wx.CheckBox(self.Panel, -1, "Save terminal output in Report")
-        self.BackupBootsectorCheckBox = wx.CheckBox(self.Panel, -1, "Backup the Bootsector of "+SystemInfo["RootDevice"])
+        self.BackupBootsectorCheckBox = wx.CheckBox(self.Panel, -1, "Backup the Bootsector of *** DISABLED ***")
 
     def CreateChoiceBs(self):
         """Create the choice boxes"""
@@ -1327,9 +1323,6 @@ class SettingsWindow(wx.Frame):
 
         #Installed Bootloader
         self.InstalledBootloaderChoice.SetStringSelection(SystemInfo["Bootloader"])
-        
-        #Root Device
-        self.RootDeviceChoice.SetStringSelection(SystemInfo["RootDevice"])
 
         if RestoreBootSector:
             #Disable/reset some options.
@@ -1564,11 +1557,6 @@ class SettingsWindow(wx.Frame):
         #Root Filesystem.
         SystemInfo["RootFS"] = OSInfo[SystemInfo["DefaultOS"]]["Partition"]
         logger.debug("SettingsWindow().SaveOptions(): Value of SystemInfo['RootFS'] is: "+SystemInfo["RootFS"])
-
-        #Root device ChoiceBox
-        SystemInfo["RootDevice"] = self.RootDeviceChoice.GetStringSelection()
-
-        logger.debug("SettingsWindow().SaveOptions(): Value of RootDevice is: "+SystemInfo["RootDevice"])
         logger.info("SettingsWindow().SaveOptions(): Saved options.")
 
     def CloseOpts(self, Event=None):
@@ -2336,9 +2324,6 @@ class RestoreWindow(wx.Frame):
         if TargetDevice == "-- Please Select --":
             TargetDevice = "None"
 
-        elif TargetDevice[0:4] == "Auto":
-            TargetDevice = SystemInfo["RootDevice"]
-
         elif TargetDevice == "Specify File Path...":
             Dlg = wx.FileDialog(self.Panel, "Select Target Device...", wildcard="All Files/Devices (*)|*", defaultDir='/dev', style=wx.OPEN)
             if Dlg.ShowModal() == wx.ID_OK:
@@ -2833,13 +2818,13 @@ class BackendThread(threading.Thread):
         ReportList.write("\n##########Disk Information##########\n")
         ReportList.write("Detected Linux Partitions: "+', '.join(SystemInfo["LinuxPartitions"])+"\n")
         ReportList.write("Detected Root Filesystem (MBR bootloader target): "+SystemInfo["RootFS"]+"\n")
-        ReportList.write("Detected Root Device (MBR Bootloader Target): "+SystemInfo["RootDevice"]+"\n")
 
         #Do Boot Sector Information.
         ReportList.write("\n##########Boot Sector Information##########\n")
         ReportList.write("Backup Boot Sector: "+unicode(BackupBootSector)+"\n")
+
         if BackupBootSector:
-            ReportList.write("\n\tBacked up Boot Sector From: "+SystemInfo["RootDevice"]+"\n")
+            #ReportList.write("\n\tBacked up Boot Sector From: "+SystemInfo["RootDevice"]+"\n")
             ReportList.write("\tTarget Boot Sector File: (*** Disabled as no way of saving this until switch to dictionaries ***)\n\n") #*** +BootSectorBackupFile+"\n\n")
 
         ReportList.write("Restore Boot Sector: "+unicode(RestoreBootSector)+"\n")

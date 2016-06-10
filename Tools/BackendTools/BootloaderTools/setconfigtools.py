@@ -98,12 +98,12 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Done!")
 
-    def InstallGRUB2ToMBR(self, PackageManager, MountPoint): #*** Will need changing when we get rid of the Root Device concept ***
+    def InstallGRUB2ToMBR(self, PackageManager, MountPoint, Device): #*** Will need changing when we get rid of the Root Device concept ***
         """Install GRUB2 (BIOS version) into the MBR of the hard drive"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the MBR.
         #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition. *** Do we want to do that? ***
         if PackageManager == "apt-get":
-            Cmd = "grub-install --force "+SystemInfo["RootDevice"]
+            Cmd = "grub-install --force "+Device
 
         if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
@@ -206,7 +206,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done!")
         return Retval
 
-    def SetLILOConfig(self, filetoopen, PackageManager, MountPoint, BootloaderTimeout):
+    def SetLILOConfig(self, filetoopen, PackageManager, MountPoint, BootloaderTimeout, BootDevice):
         """Set LILO's config."""
         logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting LILO config in "+filetoopen+"...")
         SetTimeout = False
@@ -235,21 +235,21 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
             #Look for the 'boot' setting.
             elif 'boot' in line and '=' in line and '#' not in line and 'map' not in line: 
                 #Found it, seperate the line.
-                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found boot setting, setting it to "+SystemInfo["RootDevice"]+"'s ID if possible, else just "+SystemInfo["RootDevice"]+"...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found boot setting, setting it to "+BootDevice+"'s ID if possible, else just "+BootDevice+"...")
                 SetBootDevice = True
                 head, sep, Temp = line.partition('=')
 
-                if DiskInfo[SystemInfo["RootDevice"]]["ID"] != "Unknown":
+                if DiskInfo[BootDevice]["ID"] != "Unknown":
                     #Good, we've got the ID.
-                    logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[SystemInfo["RootDevice"]]["ID"]+"...")
+                    logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[BootDevice]["ID"]+"...")
 
                     #Set it to RootDevice's ID.                    
-                    Temp = "/dev/disk/by-id/"+DiskInfo[SystemInfo["RootDevice"]]["ID"]
+                    Temp = "/dev/disk/by-id/"+DiskInfo[BootDevice]["ID"]
 
                 else:
                     #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
-                    logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): We don't have the ID! Setting boot to "+SystemInfo["RootDevice"]+". This may cause problems if the device name changes!")
-                    Temp = SystemInfo["RootDevice"]
+                    logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): We don't have the ID! Setting boot to "+BootDevice+". This may cause problems if the device name changes!")
+                    Temp = BootDevice
 
                 #Reassemble the line.
                 line = head+sep+Temp+"\n"
@@ -263,19 +263,19 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         if SetBootDevice == False:
             #Now let's find the ID of RootDevice.
-            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+SystemInfo["RootDevice"]+"'s ID if possible, else just "+SystemInfo["RootDevice"]+"...")
+            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+BootDevice+"'s ID if possible, else just "+BootDevice+"...")
 
-            if DiskInfo[SystemInfo["RootDevice"]]["ID"] != "Unknown":
+            if DiskInfo[BootDevice]["ID"] != "Unknown":
                 #Good, we've got the ID.
-                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[SystemInfo["RootDevice"]]["ID"]+"...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[BootDevice]["ID"]+"...")
 
                 #Set it to RootDevice's ID.                    
-                Temp = "/dev/disk/by-id/"+DiskInfo[SystemInfo["RootDevice"]]["ID"]
+                Temp = "/dev/disk/by-id/"+DiskInfo[BootDevice]["ID"]
 
             else:
                 #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
-                logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to "+SystemInfo["RootDevice"]+"! This may cause problems if the device name changes!")
-                Temp = SystemInfo["RootDevice"]
+                logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to "+BootDevice+"! This may cause problems if the device name changes!")
+                Temp = BootDevice
 
             NewFileContents.append("boot="+Temp+"\n")
 
