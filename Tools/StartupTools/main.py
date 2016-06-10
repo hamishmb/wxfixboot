@@ -238,20 +238,6 @@ class Main():
             logger.critical("MainStartupTools: Main().GetLinuxOSs(): Couldn't find any linux operating systems! Linux partitions were detected, but don't appear to contain any OSs! WxFixBoot will now exit, and warn the user...")
             CoreTools.EmergencyExit("Linux partitions were found on your computer, but no Linux operating systems were found! Perhaps you need to recover data from your hard drive, or restore an image first? If you're using Parted Magic, you'll have access to tools that can do that for you now. Otherwise, you may need to install them.")
 
-    def SetDefaultOS(self):
-        """*** ABSTRACTION CODE *** Set the default OS"""
-        Keys = OSInfo.keys()
-        Keys.sort()
-
-        if len(Keys) == 0:
-            CoreTools.EmergencyExit("No Linux Operating systems were found on your system, even though Linux partitions were found! This is very likely a bug in WxFixBoot.")
-
-        elif len(Keys) == 1:
-            SystemInfo["DefaultOS"] = Keys[0]
-
-        else:
-            SystemInfo["DefaultOS"] = DialogTools.ShowChoiceDlg(Message="Please select the Linux Operating System you normally boot.", Title="WxFixBoot - Select Operating System", Choices=Keys)
-
     def GetFirmwareType(self):
         """Get the firmware type"""
         #Check if the firmware type is UEFI.

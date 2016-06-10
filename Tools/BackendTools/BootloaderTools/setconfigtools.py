@@ -515,7 +515,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         NewFileContents = []
 
         #Remove all of the spaces, truncating the OS name if necessary.
-        DefaultOSName = SystemInfo["DefaultOS"].replace(' ','')
+        DefaultOSName = BootloaderInfo[OS]["DefaultOS"].replace(' ','')
 
         #Check that the name is no longer than 15 characters.
         if len(DefaultOSName) > 15:

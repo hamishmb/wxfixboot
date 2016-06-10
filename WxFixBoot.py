@@ -474,10 +474,6 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
         logger.info("InitThread(): Done...")
 
-        logger.info("InitThread(): *** ABSTRACTION CODE *** Setting default OS...")
-        MainStartupTools.SetDefaultOS() #*** Get rid of this; soon to be selected on a per-bootloader basis in Bootloader Options Window ***
-        logger.info("InitThread(): *** ABSTRACTION CODE *** Done...")
-
         #*** Find mountpoint of / if not on livedisk ***
 
         #Get the firmware type.
@@ -2767,7 +2763,7 @@ class BackendThread(threading.Thread):
                     #ReportList.write("Selected Bootloader To Reinstall/Fix: "+SystemInfo["BootloaderToInstall"]+"\n")
                     ReportList.write("Reinstall/Fix bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
-                    ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
+                    #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
                     ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
@@ -2776,7 +2772,7 @@ class BackendThread(threading.Thread):
                     #ReportList.write("Selected Bootloader To Update: "+SystemInfo["BootloaderToInstall"]+"\n")
                     ReportList.write("Update Bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
-                    ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
+                    #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
                     ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
@@ -2786,7 +2782,7 @@ class BackendThread(threading.Thread):
                     ReportList.write("Remove Old Bootloader from: "+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"\n")
                     ReportList.write("Install New Bootloader to: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nNew Bootloader's Configuration:"+"\n")
-                    ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
+                    #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
                     ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
