@@ -64,7 +64,7 @@ def UpdateListCtrl(self, Event=None, Headings=[], Dictionary={}):
         Column += 1
 
     #Add info from the custom module.
-    logger.debug("SystemInfoNoteBookSharedFunctions().UpdateListCtrl(): Adding Disk info to list ctrl...")
+    logger.debug("SystemInfoNoteBookSharedFunctions().UpdateListCtrl(): Adding info to list ctrl...")
 
     Keys = Dictionary.keys()
     Keys.sort()
@@ -79,10 +79,10 @@ def UpdateListCtrl(self, Event=None, Headings=[], Dictionary={}):
         for Heading in Headings:
             Data = Info[Heading]
 
-            if unicode(type(Data)) == "<type 'list'>":
+            if unicode(type(Data)) == type([]):
                 Data = ', '.join(Data)
 
-            elif unicode(type(Data)) != "<type 'str'>" or unicode(type(Data)) != "<type 'unicode'>":
+            elif unicode(type(Data)) != type(str("")) or unicode(type(Data)) != type(""): #*** Why is the string check here? ***
                 Data = unicode(Data)
 
             if Column == 0:

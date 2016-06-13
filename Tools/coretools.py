@@ -21,6 +21,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+#Filter warnings as errors.
+import warnings
+warnings.filterwarnings("error")
+
 #Begin Main Class.
 class Main():
     def StartProcess(self, ExecCmds, StdinLines=[], ShowOutput=True, ReturnOutput=False): #*** ShowOutput is ignored currently ***
@@ -36,7 +40,7 @@ class Main():
         Line = str("")
         LineList = []
 
-        #Run the command(s). *** Silence UnicodeWarning when failing to convert Char to unicode *** *** Not really a problem cos if char can't be converted it isn't = to \n anyway, but annoying ***
+        #Run the command(s).
         logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds)
         cmd = subprocess.Popen(ExecCmds, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
@@ -57,16 +61,20 @@ class Main():
 
             Line += Char
 
-            if Char in ("\n", "\r"):
-                #Convert to unicode if needed and remove "NULL" characters.
-                if unicode(type(Line)) != "<type 'unicode'>":
-                    Line = unicode(Line, errors="replace").replace("\x00", "")
+            try:
+                if Char in ("\n", "\r"):
+                    #Convert to unicode if needed and remove "NULL" characters.
+                    if unicode(type(Line)) != type(""):
+                        Line = unicode(Line, errors="replace").replace("\x00", "")
 
-                wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
-                LineList.append(Line.replace("\n", "").replace("\r", ""))
+                    wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
+                    LineList.append(Line.replace("\n", "").replace("\r", ""))
 
-                #Reset Line.
-                Line = str("")
+                    #Reset Line.
+                    Line = str("")
+
+            except UnicodeWarning:
+                pass
 
         #Save runcmd.returncode, as it tends to reset fairly quickly.
         Retval = int(cmd.returncode)
@@ -82,16 +90,15 @@ class Main():
             #Return the return code, as well as the output.
             return (Retval, '\n'.join(LineList))
 
-    def IsMounted(self, Partition, MountPoint=None): #*** Reduce duplication maybe ***
+    def IsMounted(self, Partition, MountPoint=None):
         """Checks if the given partition is mounted.
         Partition is the given partition to check.
         If MountPoint is specified, check if the partition is mounted there, rather than just if it's mounted.
         Return boolean True/False.
         """
-        MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
-
         if MountPoint == None:
             logger.debug("CoreTools: Main().IsMounted(): Checking if "+Partition+" is mounted...")
+            MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
 
             Mounted = False
 
@@ -99,31 +106,22 @@ class Main():
                 if Line.split()[0] == Partition:
                     Mounted = True
 
-            if Mounted:
-                logger.debug("CoreTools: Main().IsMounted(): It is. Returning True...")
-                return True
-
-            else:
-                logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
-                return False
-
         else:
-            #Check where it's mounted too.
+            #Check where it's mounted to.
             logger.debug("CoreTools: Main().IsMounted(): Checking if "+Partition+" is mounted at "+MountPoint+"...")
 
             Mounted = False
 
-            for Line in MountInfo.split("\n"):
-                if Line.split()[0] == Partition and Line.split()[2] == MountPoint:
-                    Mounted = True
+            if self.GetMountPointOf(Partition) == MountPoint:
+                Mounted = True
 
-            if Mounted:
-                logger.debug("CoreTools: Main().IsMounted(): It is. Returning True...")
-                return True
+        if Mounted:
+            logger.debug("CoreTools: Main().IsMounted(): It is. Returning True...")
+            return True
 
-            else:
-                logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
-                return False
+        else:
+            logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
+            return False
 
     def GetPartitionMountedAt(self, MountPoint):
         """Returns the partition mounted at the given mountpoint, if any.
