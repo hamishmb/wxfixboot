@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Essential Backend Tools in the BackendTools Package for WxFixBoot Version 2.0~pre1
+# Essential Backend Tools in the BackendTools Package for WxFixBoot Version 2.0~pre2
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -71,7 +71,7 @@ class Main(): #*** These need refactoring ***
                     logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
 
-    def BackupBootSector(self): #*** DEPRECATED *** *** Will need lots of modification when we switch away from the rootdevice model *** *** Can't save boot sector backup file variable like this, move to settings window *** *** Reduce duplication *** *** What if we need to backup a PBR? ***
+    def BackupBootSector(self): #*** DEPRECATED *** *** Can't save boot sector backup file variable like this, move to settings window *** *** Reduce duplication *** *** What if we need to backup a PBR? ***
         """Backup the bootsector."""
         #For GPT disks, backup UEFI System Partition.
         #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
@@ -122,7 +122,7 @@ class Main(): #*** These need refactoring ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Backing up the Boot Sector!###\n")
         logger.info("EssentialBackendTools: Main().BackupBootSector(): Finished backing up Boot Sector! Exit code: "+unicode(retval))
 
-    def RestoreBootSector(self):
+    def RestoreBootSector(self): #*** DEPRECATED ***
         """Restore the bootsector‎."""
         #For GPT disks, restore with dd.
         #For MBR disks, restore with dd if=<somefile> of=/dev/sdX bs=446 count=1

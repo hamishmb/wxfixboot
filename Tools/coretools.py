@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Core Tools in the Tools Package for WxFixBoot Version 2.0~pre1
+# Core Tools in the Tools Package for WxFixBoot Version 2.0~pre2
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -147,7 +147,7 @@ class Main():
 
         return Partition
 
-    def GetMountPointOf(self, Partition): #*** Check this works ***
+    def GetMountPointOf(self, Partition):
         """Returns the mountpoint of the given partition, if any.
         Otherwise, return None"""
         logger.info("CoreTools: Main().GetMountPointOf(): Trying to get mount point of partition "+Partition+"...")

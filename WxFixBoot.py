@@ -497,7 +497,7 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
-        #**************************
+        #***************************
         print("\n\nSystemInfo:")
         Keys = SystemInfo.keys()
         Keys.sort()
@@ -697,10 +697,10 @@ class MainWindow(wx.Frame):
 
         self.SaveMainOpts()
 
-        if SystemInfo["UEFISystemPartition"] == None:
-            dlg = wx.MessageDialog(self.Panel, "Seeing as you have no UEFI partition, you will be unable to select a UEFI bootloader to install, or as your current bootloader. However, in the bootloader options window, you can select a new UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-            dlg.Destroy()
+        #if SystemInfo["UEFISystemPartition"] == None: *** How to do this warning? ***
+        #    dlg = wx.MessageDialog(self.Panel, "Seeing as you have no UEFI partition, you will be unable to select a UEFI bootloader to install, or as your current bootloader. However, in the bootloader options window, you can select a new UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+        #    dlg.ShowModal()
+        #    dlg.Destroy()
 
         if Settings["MainSettings"]["FirmwareType"] == "BIOS":
             dlg = wx.MessageDialog(self.Panel, "Make sure you set the Root Device correctly here! Chances are, you won't need to change it, but it always needs to be set to the device your system boots off (usually the first hard drive in the system). You can see this information in the default OS selection in the following window. For example if your OS boots off /dev/sdc3, the root device should be set to /dev/sdc. The root device here will also be the device that's backed up if either backup option is selected. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)

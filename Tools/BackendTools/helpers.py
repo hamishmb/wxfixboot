@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Helper Backend Tools in the BackendTools Package for WxFixBoot Version 2.0~pre1
+# Helper Backend Tools in the BackendTools Package for WxFixBoot Version 2.0~pre2
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -178,6 +178,7 @@ class Main():
         if WriteEntry == False:
             #We don't!
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): fstab entry already present! Skipping...")
+            fstab.close()
 
         else:
             #We do. If we can use the UUID, then we will, but otherwise we'll use the standard device name.

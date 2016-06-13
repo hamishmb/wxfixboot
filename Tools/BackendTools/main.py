@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Main Backend Tools in the BackendTools Package for WxFixBoot Version 2.0~pre1
+# Main Backend Tools in the BackendTools Package for WxFixBoot Version 2.0~pre2
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. *** Make these use BootloaderInfo dictionary to get config for each bootloader ***
+#Begin Main Class.
 class Main():
     def RemoveOldBootloader(self, OS): #*** Handle return values better, and return them *** *** Give more information to user ***
         """Remove the currently installed bootloader."""
