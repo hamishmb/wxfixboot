@@ -303,7 +303,7 @@ class Main():
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
-                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"])
+                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[OS]["GlobalKernelOptions"])
 
             #Now Install GRUB2 to the MBR. *** Is this necessary when updating it? ***
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to "+DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]+"...")
@@ -322,7 +322,7 @@ class Main():
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-UEFI Configuration...")
-                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"])
+                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[OS]["GlobalKernelOptions"])
 
             #Mount the UEFI partition at MountPoint/boot/efi.
             if CoreTools.MountPartition(Partition=BootloaderInfo[OS]["BootDisk"], MountPoint=MountPoint+"/boot/efi") != 0:
@@ -368,7 +368,7 @@ class Main():
     
                 #Also, set the OS entries.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating LILO OS Entries...")
-                BootloaderConfigSettingTools.MakeLILOOSEntries(OS=OS, filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
+                BootloaderConfigSettingTools.MakeLILOOSEntries(OS=OS, filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint, KernelOptions=BootloaderInfo[OS]["GlobalKernelOptions"])
 
             #Now Install LILO to the MBR.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing LILO to the MBR...")
@@ -401,7 +401,7 @@ class Main():
 
                 #Also, set the OS entries.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating ELILO OS Entries...")
-                BootloaderConfigSettingTools.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint)
+                BootloaderConfigSettingTools.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint, KernelOptions=BootloaderInfo[OS]["GlobalKernelOptions"])
 
             #Now Install ELILO to the UEFI Partition.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing ELILO to "+BootloaderInfo[OS]["BootDisk"]+"...")

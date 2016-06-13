@@ -345,6 +345,7 @@ class Main():
                 BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUBLEGACYMenuEntries(MountPoint+"/boot/grub/menu.lst")
                 BootloaderInfo[OS]["Timeout"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst")
                 BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB-LEGACY")
+                BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset" #*** Enable options to set this in BootloaderOptionsWindow ***
 
             #*****************
             Keys = BootloaderInfo[OS]["MenuEntries"].keys()

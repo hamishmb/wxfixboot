@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# WxFixBoot Version 2.0~pre1
+# WxFixBoot Version 2.0~pre2
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
@@ -53,7 +53,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "10/6/2016"
+ReleaseDate = "11/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -521,6 +521,13 @@ class InitThread(threading.Thread):
 
         print("\n\nBootloaderInfo:")
         Keys = BootloaderInfo.keys()
+        Keys.sort()
+
+        for Key in Keys:
+            print(Key)
+
+        print("\n\nSettings:")
+        Keys = Settings.keys()
         Keys.sort()
 
         for Key in Keys:
@@ -1239,7 +1246,6 @@ class SettingsWindow(wx.Frame):
         """Create the text."""
         self.WelcomeText = wx.StaticText(self.Panel, -1, "Welcome to Settings. Please give everything a once-over.")
         self.BasicSettingsText = wx.StaticText(self.Panel, -1, "Basic Settings:")
-        self.InstalledBootloaderText = wx.StaticText(self.Panel, -1, "Installed Bootloader:")
         self.AdvancedSettingsText = wx.StaticText(self.Panel, -1, "Advanced Settings:")
 
     def CreateCBs(self):
@@ -1263,7 +1269,7 @@ class SettingsWindow(wx.Frame):
             self.LogOutputCheckBox.Disable()
 
     def SetupOptions(self):
-        """Load all Options here, and create self.InstalledBootloaderChoice"""
+        """Load all Options here."""
         logger.debug("SettingsWindow().SetupOptions(): Setting up options...")
 
         #Checkboxes
@@ -1295,24 +1301,13 @@ class SettingsWindow(wx.Frame):
         else:
             self.LogOutputCheckBox.SetValue(False)
 
-        if SystemInfo["UEFISystemPartition"] == None:
-            self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['GRUB-LEGACY', 'GRUB2', 'LILO'])
-
-        else:
-            self.InstalledBootloaderChoice = wx.Choice(self.Panel, -1, size=(140,30), choices=['GRUB-LEGACY', 'GRUB2', 'GRUB-UEFI', 'LILO', 'ELILO'])
-
-        #Installed Bootloader
-        self.InstalledBootloaderChoice.SetStringSelection("GRUB-UEFI")
-
         if RestoreBootSector:
             #Disable/reset some options.
             self.BootloaderOptionsButton.Disable()
-            self.InstalledBootloaderChoice.Disable()
 
         else:
             #Enable some options.
             self.BootloaderOptionsButton.Enable()
-            self.InstalledBootloaderChoice.Enable()
 
         logger.debug("SettingsWindow().SetupOptions(): Finished!")
 
@@ -1330,9 +1325,6 @@ class SettingsWindow(wx.Frame):
         #Create the sizer that holds the advanced settings.
         AdvancedSettingsSizer = wx.BoxSizer(wx.VERTICAL)
 
-        #Create the sizer that holds the intalled bootloader choice and text.
-        self.InstalledBootloaderChoiceSizer = wx.BoxSizer(wx.HORIZONTAL)
-
         #Create the sizer that holds the default OS choice and text.
         DefaultOSChoiceSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -1342,13 +1334,9 @@ class SettingsWindow(wx.Frame):
         #Create the sizer that holds the buttons at the bottom of the window.
         BottomButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        #Add items to the Installed Bootloader Choice Sizer.
-        self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderText, 1, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
-        self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
 
         #Add items to the basic settings sizer.
         BasicSettingsSizer.Add(self.BasicSettingsText, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
-        BasicSettingsSizer.Add(self.InstalledBootloaderChoiceSizer, 1, wx.BOTTOM|wx.EXPAND, 10)
         BasicSettingsSizer.Add(self.FullVerboseCheckBox, 1, wx.BOTTOM, 10)
 
         #Add items to the advanced settings sizer.
@@ -1397,29 +1385,12 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().LaunchblOpts(): Calling self.SaveOptions()...")
         self.SaveOptions()
 
-        #Give some warnings here if needed. *** Change or remove these ***
-        #Recommend a MBR bootloader on BIOS systems.
-        if Settings["MainSettings"]["FirmwareType"] == "BIOS":
-            dlg = wx.MessageDialog(self.Panel, "Your firmware type is BIOS. Unless you're sure WxFixBoot has misdetected this, and it's actually UEFI, it's recommended that you install an BIOS bootloader, if you are installing a bootloader, such as GRUB2 or LILO, or your system might not boot correctly.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-
-        #Recommend a UEFI boot loader on UEFI systems, if needed.
-        else:
-            dlg = wx.MessageDialog(self.Panel, "Your firmware type is UEFI. Unless you're sure WxFixBoot has misdetected this, and it's actually BIOS, it's recommended that you install a UEFI bootloader, if you are installing a bootloader, such as GRUB-UEFI or ELILO, or your system might not boot correctly.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-
-        dlg.ShowModal()
-        dlg.Destroy()
-
-        #if SystemInfo["UEFISystemPartition"] == None and SystemInfo["Bootloader"] in ('GRUB-UEFI', 'ELILO'):
-        #    logger.info("SettingsWindow().LaunchblOpts(): UEFI bootloader, but no UEFI partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.")
-        #    dlg = wx.MessageDialog(self.Panel, "You have a UEFI Bootloader, but no UEFI Partition! Something has gone wrong here! WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled. Did you change your selected UEFI Partition?", "WxFixBoot - ERROR", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+        #Give some warnings here if needed. *** How to detect and prevent this ***
+        #if SystemInfo["UEFISystemPartition"] == None:
+        #    logger.info("SettingsWindow().LaunchblOpts(): No UEFI partition. Therefore installing UEFI bootloaders will be disabled.")
+        #    dlg = wx.MessageDialog(self.Panel, "You have no UEFI Partition. If you wish to install a UEFI bootloader, you'll need to create one first. WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
         #    dlg.ShowModal()
         #    dlg.Destroy()
-
-        if SystemInfo["UEFISystemPartition"] == None:
-            logger.info("SettingsWindow().LaunchblOpts(): No UEFI partition. Therefore installing UEFI bootloaders will be disabled.")
-            dlg = wx.MessageDialog(self.Panel, "You have no UEFI Partition. If you wish to install a UEFI bootloader, you'll need to create one first. WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-            dlg.Destroy()
 
         #Open the Firmware Options window
         logger.debug("SettingsWindow().LaunchblOpts(): Starting Bootloader Settings Window...")
@@ -1443,7 +1414,6 @@ class SettingsWindow(wx.Frame):
         if RestoreBootSector:
             #Disable/reset some options.
             self.BootloaderOptionsButton.Disable()
-            self.InstalledBootloaderChoice.Disable()
 
             #Reset some settings.
             Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
@@ -1451,14 +1421,9 @@ class SettingsWindow(wx.Frame):
         else:
             #Enable some options.
             self.BootloaderOptionsButton.Enable()
-            self.InstalledBootloaderChoice.Enable()
 
-        #Setup options again, but destroy a widget first so it isn't duplicated.
-        self.InstalledBootloaderChoice.Destroy()
+        #Setup options again.
         self.SetupOptions()
-
-        #Red add self.InstalledBootloaderChoice into its sizer.
-        self.InstalledBootloaderChoiceSizer.Add(self.InstalledBootloaderChoice, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT, 5)
         self.Panel.Layout()
 
         #Show OptionsDlg1.
@@ -2679,11 +2644,6 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.BootloaderTools.setconfigtools.SystemInfo = SystemInfo
         Tools.BackendTools.BootloaderTools.setconfigtools.OSInfo = OSInfo
 
-        #*** Temporarily set some variables to make stuff work for now ***
-        global KernelOptions
-
-        KernelOptions = "quiet splash nomodeset"
-
         #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
         for function in Operations:
             #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
@@ -2692,15 +2652,6 @@ class BackendThread(threading.Thread):
             Tools.BackendTools.essentials.BootSectorFile = BootSectorFile
             Tools.BackendTools.essentials.BootSectorBackupType = BootSectorBackupType
             Tools.BackendTools.essentials.BootSectorTargetDevice = BootSectorTargetDevice
-
-            #*** Main Backend Tools ***
-            Tools.BackendTools.main.KernelOptions = KernelOptions
-
-            #*** Bootloader Configuration Setting Tools (in Backend Tools package) ***
-            try:
-                Tools.BackendTools.BootloaderTools.setconfigtools.KernelOptions = KernelOptions
-
-            except NameError: pass
 
             #Run the function.
             if type(function) != type([]):
@@ -2753,7 +2704,7 @@ class BackendThread(threading.Thread):
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
                     #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
-                    ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
+                    #ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
                 elif UpdateBootloader:
                     ReportList.write("Update The Current BootLoader's Config: "+unicode(UpdateBootloader)+"\n")
@@ -2762,7 +2713,7 @@ class BackendThread(threading.Thread):
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
                     #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
-                    ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
+                    #ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
                 else:
                     #We must be installing a new bootloader.
@@ -2772,7 +2723,7 @@ class BackendThread(threading.Thread):
                     ReportList.write("\nNew Bootloader's Configuration:"+"\n")
                     #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
-                    ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
+                    #ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
         #Do Disk Information
         ReportList.write("\n##########Disk Information##########\n")
