@@ -401,6 +401,7 @@ class InitThread(threading.Thread):
         Settings["MainSettings"] = {}
 
         #Make dictionaries available to modules.
+        Tools.coretools.DiskInfo = DiskInfo
         Tools.StartupTools.core.DiskInfo = DiskInfo
         Tools.StartupTools.core.SystemInfo = SystemInfo
         Tools.StartupTools.core.Settings = Settings

@@ -260,7 +260,7 @@ class Main():
         FilesFound = []
         for Root, Directory, Files in os.walk(TopLevelDirectory):
             #Convert unicode strings in a list with one element.
-            if unicode(type(Files)) == "<type 'unicode'>":
+            if unicode(type(Files)) == type(""):
                 Files = [Files]
 
             #Check each file.

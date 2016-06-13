@@ -94,11 +94,9 @@ class Main():
         logger.info("MainStartupTools: Main().UnmountAllFS(): Unmounting all Filesystems...")
         DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot is about to gather device information. After this point, you must not remove/add any devices from/to your computer, so do that now if you wish to.")
 
-        #Attempt unmount of all filesystems. *** Check which filesystems can be unmounted first, and use the global mount function ***
+        #Attempt unmount of all filesystems.
         logger.debug("MainStartupTools: Main().UnmountAllFS(): Running 'unmount -ad'...")
-
-        if CoreTools.StartProcess("umount -ad") != 0:
-            logger.error("MainStartupTools: Main().UnmountAllFS(): Failed to unmount all filesystems! For the time being, this is normal cos we try to unmount all filesystems...")
+        CoreTools.StartProcess("umount -ad")
 
         #Make sure that we still have rw access on live disks.
         if SystemInfo["IsLiveDisk"]:
@@ -180,7 +178,7 @@ class Main():
             OSName = Temp.replace('\n', '')
 
             #Run the function to get the architechure.
-            OSArch = CoreStartupTools.DetermineOSArchitecture(Partition=Partition, Chroot=Chroot)
+            OSArch = CoreStartupTools.DetermineOSArchitecture(Partition=Partition, Chroot=Chroot) #*** No need to use chroot to do this ***
 
             #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name. *** For current OS, quit if not named ***
             if Retval != 0 and OSArch != None:

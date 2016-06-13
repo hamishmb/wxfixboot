@@ -61,7 +61,7 @@ class Main():
         #If we get here, we didn't find anything.
         return None
 
-    def GetFSTabInfo(self, MountPoint, OSName): #*** Test this thoroughly *** *** Refactor ***
+    def GetFSTabInfo(self, MountPoint, OSName): #*** Test this thoroughly *** *** Refactor *** *** Write CoreTools.UUIDToPartition() ***
         """Get /etc/fstab info and related info (EFI Partition, /boot partition) for the given OS at the given mountpoint."""
         logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Getting FSTab info in "+MountPoint+"/etc/fstab for "+OSName+"...")
 

@@ -29,7 +29,6 @@ class Main(): #*** Refactor all of these ***
         #Do some setup.
         LikelyGRUBInstallDisks = (DiskInfo[OSPartition]["HostDevice"], OSPartition)
         FoundGRUB = False
-        FoundRightVersion = False
 
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking in "+' '.join(LikelyGRUBInstallDisks)+"...")
 
@@ -43,24 +42,13 @@ class Main(): #*** Refactor all of these ***
         for Disk in LikelyGRUBInstallDisks:
             for Line in DiskInfo[Disk]["BootRecordStrings"]:
                 #Check that we have the right version of GRUB, and double check that GRUB is present.
-                if LookFor in Line:
-                    FoundRightVersion = True
-                    logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Found "+GRUBVersion+" on "+Disk+"...")
-
-                elif "GRUB" in Line:
+                if LookFor in Line and "GRUB" in Line:
                     FoundGRUB = True
                     BootDisk = Disk
-                    logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Confirmed "+GRUBVersion+" is present on "+Disk+"...")
-
-                #Break out of the loop if possible to save time.
-                if FoundRightVersion and FoundGRUB:
+                    logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Found "+GRUBVersion+" on "+BootDisk+"...")
                     break
 
-            #Break out of the loop if possbile to save time.
-            if FoundRightVersion and FoundGRUB:
-                break
-
-        if FoundRightVersion and FoundGRUB:
+        if FoundGRUB:
             logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Done!")
             return BootDisk
 
