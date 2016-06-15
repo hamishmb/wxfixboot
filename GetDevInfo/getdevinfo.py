@@ -196,7 +196,7 @@ class Main():
         Output = cmd.communicate()[0]
         Retval = cmd.returncode
 
-        return Output.split("=")[-1].replace("\"", "")
+        return Output.split("=")[-1].replace("\"", "").replace("\n", "")
 
     def GetDeviceInfo(self, Node):
         """Get Device Information"""
