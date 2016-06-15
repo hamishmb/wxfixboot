@@ -35,6 +35,9 @@ class Main():
         if PackageManager == "apt-get":
             Cmd = "dpkg --get-selections"
 
+        else:
+            Cmd = "yum list installed" #*** Works on DNF, does it work on YUM? ***
+
         if UsingChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
@@ -44,6 +47,10 @@ class Main():
         if PackageManager == "apt-get":
             BootloaderPackages = ("grub-efi", "elilo", "grub-pc", "lilo", "grub")
             PackageDict = {"grub-efi": "GRUB-UEFI", "elilo": "ELILO", "grub-pc": "GRUB2", "lilo": "LILO", "grub": "GRUB-LEGACY"}
+
+        else:
+            BootloaderPackages = ("grub2-efi", "elilo", "grub2", "lilo", "grub") #*** Check these ***
+            PackageDict = {"grub2-efi": "GRUB-UEFI", "elilo": "ELILO", "grub2": "GRUB2", "lilo": "LILO", "grub": "GRUB-LEGACY"}
 
         for Package in BootloaderPackages:
             Found = False
