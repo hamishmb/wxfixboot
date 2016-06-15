@@ -292,7 +292,7 @@ class Main():
                 DiskInfo[Volume] = {}
                 DiskInfo[Volume]["Name"] = Volume
                 DiskInfo[Volume]["LVName"] = Volume.split("/")[-1]
-                DiskInfo[Volume]["VGName"] = Volume.split("/")[1]
+                DiskInfo[Volume]["VGName"] = Volume.split("/")[2]
                 DiskInfo[Volume]["Type"] = "LVM"
                 DiskInfo[Volume]["HostDevice"] = "N/A"
                 DiskInfo[Volume]["Partitions"] = []
