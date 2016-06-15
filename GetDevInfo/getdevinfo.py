@@ -190,6 +190,14 @@ class Main():
         logger.info("GetDevInfo: Main().GetBootRecord(): Done! Returning information...")
         return (BootRecord, BootRecordStrings)
 
+    def GetLVFilesystem(self, Disk):
+        """Get the filesystem type of a logical volume."""
+        cmd = subprocess.Popen("LC_ALL=C blkid "+Disk, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        Output = cmd.communicate()[0]
+        Retval = cmd.returncode
+
+        return Output.split("=")[-1].replace("\"", "")
+
     def GetDeviceInfo(self, Node):
         """Get Device Information"""
         HostDisk = unicode(Node.logicalname.string)
@@ -283,20 +291,22 @@ class Main():
                 Volume = Line.split()[-1]
                 DiskInfo[Volume] = {}
                 DiskInfo[Volume]["Name"] = Volume
+                DiskInfo[Volume]["LVName"] = Volume.split("/")[-1]
+                DiskInfo[Volume]["VGName"] = Volume.split("/")[1]
                 DiskInfo[Volume]["Type"] = "LVM"
                 DiskInfo[Volume]["HostDevice"] = "N/A"
                 DiskInfo[Volume]["Partitions"] = []
-                DiskInfo[Volume]["Vendor"] = "N/A"
-                DiskInfo[Volume]["Product"] = "N/A"
-                DiskInfo[Volume]["Description"] = "LVM Partition"
+                DiskInfo[Volume]["Vendor"] = "Linux"
+                DiskInfo[Volume]["Product"] = "LVM Partition"
+                DiskInfo[Volume]["Description"] = "LVM partition "+DiskInfo[Volume]["LVName"]+" in volume group "+DiskInfo[Volume]["VGName"]
                 DiskInfo[Volume]["Flags"] = [] #*** Add support for this later ***
-                DiskInfo[Volume]["FileSystem"] = "Unknown" #*** Add support for this later ***
+                DiskInfo[Volume]["FileSystem"] = self.GetLVFileSystem(Volume)
                 DiskInfo[Volume]["Partitioning"] = "N/A"
                 DiskInfo[Volume]["BootRecord"], DiskInfo[Volume]["BootRecordStrings"] = self.GetBootRecord(Volume)
+                DiskInfo[Volume]["ID"] = "dm-name-"+DiskInfo[Volume]["VGName"]+"-"+DiskInfo[Volume]["LVName"]
 
             elif "LV UUID" in Line:
                 DiskInfo[Volume]["UUID"] = Line.split()[-1]
-                DiskInfo[Volume]["ID"] = "Unknown" #*** Add support for this later ***
 
             elif "LV Size" in Line:
                 DiskInfo[Volume]["Capacity"] = ' '.join(Line.split()[-2:])
@@ -356,7 +366,7 @@ class Main():
                 #Partitions.
                 Volume = self.GetPartitionInfo(SubNode, HostDisk)
 
-        #Find any LVM disks.
+        #Find any LVM disks. Don't use -c because it doesn't give us enough information.
         logger.debug("GetDevInfo: Main().GetInfo(): Running 'LC_ALL=C lvdisplay'...")
         cmd = subprocess.Popen("LC_ALL=C lvdisplay", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.LVMOutput = cmd.communicate()[0].split("\n")
