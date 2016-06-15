@@ -21,10 +21,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Filter warnings as errors.
-import warnings
-warnings.filterwarnings("error")
-
 #Begin Main Class.
 class Main():
     def StartProcess(self, ExecCmds, StdinLines=[], ShowOutput=True, ReturnOutput=False): #*** ShowOutput is ignored currently ***
@@ -61,20 +57,16 @@ class Main():
 
             Line += Char
 
-            try:
-                if Char in ("\n", "\r"):
-                    #Convert to unicode if needed and remove "NULL" characters.
-                    if unicode(type(Line)) != type(""):
-                        Line = unicode(Line, errors="replace").replace("\x00", "")
+            if Char in ("\n", "\r"):
+                #Convert to unicode if needed and remove "NULL" characters.
+                if unicode(type(Line)) != type(""):
+                    Line = unicode(Line, errors="replace").replace("\x00", "")
 
-                    wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
-                    LineList.append(Line.replace("\n", "").replace("\r", ""))
+                wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
+                LineList.append(Line.replace("\n", "").replace("\r", ""))
 
-                    #Reset Line.
-                    Line = str("")
-
-            except UnicodeWarning:
-                pass
+                #Reset Line.
+                Line = str("")
 
         #Save runcmd.returncode, as it tends to reset fairly quickly.
         Retval = int(cmd.returncode)
