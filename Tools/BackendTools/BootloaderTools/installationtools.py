@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main():
+class Main(): #*** Can we move these to MainBackendTools? ***
     def UpdatePackageLists(self, PackageManager, UseChroot, MountPoint=None):
         """Update the package lists so the required packages can always be found."""
         if PackageManager == "apt-get":

@@ -21,27 +21,29 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main():
+class Main(): #*** Can we move these to MainBackendTools? ***
     def RemoveGRUBLEGACY(self, PackageManager, UseChroot, MountPoint=None): #*** Test this ***
         """Remove GRUB-LEGACY."""
         if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreTools.StartProcess("apt-get purge -y grub grub-legacy-doc grub-common", ShowOutput=False)
+            Cmd = "apt-get purge -y grub grub-legacy-doc grub-common"
 
-            else:
-                retval = CoreTools.StartProcess("chroot "+MountPoint+" apt-get purge -y grub grub-legacy-doc grub-common", ShowOutput=False)
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreTools.StartProcess(Cmd)
         
         #Return the return value.
-        return retval
+        return Retval
 
     def RemoveGRUB2(self, PackageManager, UseChroot, MountPoint=None):
         """Remove GRUB2."""
         if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreTools.StartProcess("apt-get purge -y grub-pc grub-pc-bin grub-common", ShowOutput=False)
+            Cmd = "apt-get purge -y grub-pc grub-pc-bin grub-common"
 
-            else:
-                retval = CoreTools.StartProcess("chroot "+MountPoint+" apt-get purge -y grub-pc grub-pc-bin grub-common", ShowOutput=False)
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreTools.StartProcess(Cmd)
         
         #Return the return value.
         return retval
@@ -49,36 +51,38 @@ class Main():
     def RemoveLILO(self, PackageManager, UseChroot, MountPoint=None):
         """Remove lilo."""
         if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreTools.StartProcess("apt-get purge -y lilo", ShowOutput=False)
+            Cmd = "apt-get purge -y lilo"
 
-            else:
-                retval = CoreTools.StartProcess("chroot "+MountPoint+" apt-get purge -y lilo", ShowOutput=False)
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreTools.StartProcess(Cmd)
         
         #Return the return value.
-        return retval
+        return Retval
 
     def RemoveGRUBUEFI(self, PackageManager, UseChroot, MountPoint=None):
         """Remove GRUB-UEFI."""
         if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreTools.StartProcess("apt-get purge -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common", ShowOutput=False)
+            Cmd = "apt-get purge -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common"
 
-            else:
-                retval = CoreTools.StartProcess("chroot "+MountPoint+" apt-get purge -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common", ShowOutput=False)
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreTools.StartProcess(Cmd)
         
         #Return the return value.
-        return retval
+        return Retval
 
     def RemoveELILO(self, PackageManager, UseChroot, MountPoint=None):
         """Remove ELILO."""
         if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreTools.StartProcess("apt-get purge -y elilo", ShowOutput=False)
+            Cmd = "apt-get purge -y elilo"
 
-            else:
-                retval = CoreTools.StartProcess("chroot "+MountPoint+" apt-get purge -y elilo", ShowOutput=False)
-        
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreTools.StartProcess(Cmd)
+
         #Return the return value.
-        return retval
-
+        return Retval
