@@ -129,6 +129,7 @@ class Main():
         SystemInfo["LinuxPartitions"] = []
 
         for Disk in Keys:
+            print(DiskInfo[Disk]["FileSystem"], Disk)
             if DiskInfo[Disk]["FileSystem"] in ("ext", "ext2", "ext3", "ext4", "btrfs", "xfs", "jfs", "zfs", "minix", "reiserfs"):
                 SystemInfo["LinuxPartitions"].append(Disk)
 
