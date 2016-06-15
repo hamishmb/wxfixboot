@@ -25,60 +25,64 @@ class Main():
     def UpdatePackageLists(self, PackageManager, UseChroot, MountPoint=None):
         """Update the package lists so the required packages can always be found."""
         if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreTools.StartProcess("DEBIAN_FRONTEND=noninteractive apt-get update")
+            Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'"
 
-            else:
-                retval = CoreTools.StartProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'")
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreTools.StartProcess(Cmd)
         
         #Return the return value.
-        return retval
+        return Retval
 
     def InstallGRUB2(self, PackageManager, UseChroot, MountPoint=None):
         """Install GRUB2."""
         if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreTools.StartProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober")
+            Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'"
 
-            else:
-                retval = CoreTools.StartProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'")
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreTools.StartProcess(Cmd)
         
         #Return the return value.
-        return retval
+        return Retval
 
     def InstallLILO(self, PackageManager, UseChroot, MountPoint=None):
         """Install LILO."""
         if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreTools.StartProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y lilo")
+            Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y lilo'"
 
-            else:
-                retval = CoreTools.StartProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y lilo'")
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreTools.StartProcess(Cmd)
         
         #Return the return value.
-        return retval
+        return Retval
 
     def InstallGRUBUEFI(self, PackageManager, UseChroot, MountPoint=None):
         """Install GRUB-UEFI."""
         if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreTools.StartProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober")
+            Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
 
-            else:
-                retval = CoreTools.StartProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'")
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreTools.StartProcess(Cmd)
         
         #Return the return value.
-        return retval
+        return Retval
 
     def InstallELILO(self, PackageManager, UseChroot, MountPoint=None):
         """Install ELILO."""
         if PackageManager == "apt-get":
-            if UseChroot == False:
-                retval = CoreTools.StartProcess("DEBIAN_FRONTEND=noninteractive apt-get install -y elilo")
+            Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'"
 
-            else:
-                retval = CoreTools.StartProcess("chroot "+MountPoint+" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'")
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreTools.StartProcess(Cmd)
         
         #Return the return value.
-        return retval
-
+        return Retval
