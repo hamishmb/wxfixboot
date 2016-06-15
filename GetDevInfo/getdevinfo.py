@@ -190,7 +190,7 @@ class Main():
         logger.info("GetDevInfo: Main().GetBootRecord(): Done! Returning information...")
         return (BootRecord, BootRecordStrings)
 
-    def GetLVFilesystem(self, Disk):
+    def GetLVFileSystem(self, Disk):
         """Get the filesystem type of a logical volume."""
         cmd = subprocess.Popen("LC_ALL=C blkid "+Disk, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         Output = cmd.communicate()[0]
