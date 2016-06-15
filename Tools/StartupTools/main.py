@@ -159,6 +159,7 @@ class Main():
             if Partition == RootFS:
                 Cmd = "python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
                 APTCmd = "which apt-get"
+                YUMCmd = "which yum"
                 Chroot = False
                 IsCurrentOS = True
                 MountPoint = ""
@@ -166,6 +167,7 @@ class Main():
             else:
                 Cmd = "chroot /mnt"+Partition+" python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
                 APTCmd = "chroot /mnt"+Partition+" which apt-get"
+                YUMCmd = "chroot /mnt"+Partition+" which yum"
                 Chroot = True
                 IsCurrentOS = False
                 MountPoint = "/mnt"+Partition
@@ -187,7 +189,7 @@ class Main():
             if Retval != 0 and OSArch != None:
                 OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch)
 
-            #Look for APT.
+            #Look for APT. *** Maybe put this block somewhere else ***
             Retval = CoreTools.StartProcess(APTCmd, ShowOutput=False)
 
             if Retval != 0:
@@ -195,20 +197,39 @@ class Main():
                 logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Didn't find apt...")
                 APT = False
 
+                #Look for YUM.
+                Retval = CoreTools.StartProcess(YUMCmd, ShowOutput=False)
+
+                if Retval != 0:
+                    logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Didn't find yum...")
+                    YUM = False
+
+                else:
+                    #Found YUM!
+                    logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Found yum...")
+                    YUM = True
+
             else:
                 #Found APT!
                 logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Found apt...")
                 APT = True
+                YUM = False
 
             #Also check if CoreStartupTools.AskForOSName was used to determine the name. If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
-            if OSName != None and OSArch != None and APT:
+            if OSName != None and OSArch != None and (APT or YUM):
                 #Add this information to OSInfo.
                 OSInfo[OSName] = {}
                 OSInfo[OSName]["Name"] = OSName
                 OSInfo[OSName]["IsCurrentOS"] = IsCurrentOS
                 OSInfo[OSName]["Arch"] = OSArch
                 OSInfo[OSName]["Partition"] = Partition
-                OSInfo[OSName]["PackageManager"] = "apt-get"
+
+                if APT:
+                    OSInfo[OSName]["PackageManager"] = "apt-get"
+
+                else:
+                    OSInfo[OSName]["PackageManager"] = "yum"
+
                 OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName)
                 OSInfo[OSName]["IsModifyable"] = "Unknown"
                 SystemInfo["UserFriendlyOSNames"].append(OSName)
