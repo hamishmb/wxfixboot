@@ -272,7 +272,7 @@ class Main():
         """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right."""
         logger.debug("CoreTools: Main().UpdateChrootMtab(): Updating /etc/mtab for chroot at: "+MountPoint+"...")
 
-        retval = CoreTools.StartProcess("cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab", ShowOutput=False)
+        retval = self.StartProcess("cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab", ShowOutput=False)
 
         if retval != 0:
             logger.error("CoreTools: Main().UpdateChrootMtab(): Failed to run command: cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab! Chroot may not set up properly! This *probably* doesn't matter, but in rare situations it could cause problems.")
@@ -289,12 +289,12 @@ class Main():
 
         MountList = ("/dev", "/dev/pts", "/proc", "/sys")
         for FileSystem in MountList:
-            if CoreTools.MountPartition(Partition=FileSystem, MountPoint=MountPoint+FileSystem, Options="--bind") != 0:
+            if self.MountPartition(Partition=FileSystem, MountPoint=MountPoint+FileSystem, Options="--bind") != 0:
                 logger.error("CoreTools: Main().SetUpChroot(): Failed to bind "+FileSystem+" to "+MountPoint+Filesystem+"! Chroot isn't set up properly! Attempting to continue anyway...") #*** What shall we do here? ***
 
         ExecList = ("mv -vf "+MountPoint+"/etc/resolv.conf "+MountPoint+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+MountPoint+"/etc/resolv.conf")
         for ExecCmd in ExecList:
-            Result = CoreTools.StartProcess(ExecCmd, ShowOutput=False, ReturnOutput=True)
+            Result = self.StartProcess(ExecCmd, ShowOutput=False, ReturnOutput=True)
             output = Result[1]
             Retval = Result[0]
 
@@ -314,11 +314,11 @@ class Main():
         UnmountList = (MountPoint+"/dev/pts", MountPoint+"/dev", MountPoint+"/proc", MountPoint+"/sys")
 
         for FileSystem in UnmountList:
-            if CoreTools.Unmount(FileSystem) != 0:
+            if self.Unmount(FileSystem) != 0:
                 logger.error("CoreTools: Main().TearDownChroot(): Faied to unmount "+FileSystem+"! Chroot isn't removed properly! Attempting to continue anyway...") #*** What do we do here? ***
 
         #We'll also need to replace the MountPoint/etc/resolv.conf with the backup file, MountPoint/etc/resolv.conf.bak.
-        Retval = CoreTools.StartProcess("mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf", ShowOutput=False)
+        Retval = self.StartProcess("mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf", ShowOutput=False)
 
         if Retval != 0:
             logger.error("CoreTools: Main().TearDownChroot(): Failed to run command: 'mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf'! Return value was: "+Retval+". Chroot may not be removed properly!") #*** What do we do here? ***
