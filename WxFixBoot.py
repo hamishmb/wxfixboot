@@ -541,7 +541,6 @@ class InitThread(threading.Thread):
         global SaveOutput
         global FullVerbose
         global Verify
-        global BackupBootSector
         global MakeSystemSummary
         global BLOptsDlgRun
         global RestoreBootSector
@@ -556,7 +555,6 @@ class InitThread(threading.Thread):
         SaveOutput = ""
         FullVerbose = ""
         Verify = ""
-        BackupBootSector = ""
         MakeSystemSummary = ""
         BLOptsDlgRun = ""
         RestoreBootSector = ""
@@ -566,7 +564,7 @@ class InitThread(threading.Thread):
         OptionsDlg1Run = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
+        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -847,9 +845,9 @@ class MainWindow(wx.Frame):
 
         #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
         #Do essential processes first.
-        if BackupBootSector:
-            Operations.append(EssentialBackendTools.BackupBootSector)
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BackupBootSector to Operations...")
+        #if BackupBootSector: *** DEPRECATED, needs to be replaced ***
+        #    Operations.append(EssentialBackendTools.BackupBootSector)
+        #    logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BackupBootSector to Operations...")
 
         if RestoreBootSector:
             Operations.append(EssentialBackendTools.RestoreBootSector)
@@ -1246,7 +1244,6 @@ class SettingsWindow(wx.Frame):
         #Advanced settings
         self.MakeSummaryCheckBox = wx.CheckBox(self.Panel, -1, "Save System Report To File")
         self.LogOutputCheckBox = wx.CheckBox(self.Panel, -1, "Save terminal output in Report")
-        self.BackupBootsectorCheckBox = wx.CheckBox(self.Panel, -1, "Backup the Bootsector of *** DISABLED ***")
 
     def OnCheckBox(self, Event=None):
         """Manage the checkboxes' states"""
@@ -1269,13 +1266,6 @@ class SettingsWindow(wx.Frame):
 
         else:
             self.FullVerboseCheckBox.SetValue(False)
-
-        #Backup Boot Sector CheckBox
-        if BackupBootSector:
-            self.BackupBootsectorCheckBox.SetValue(True)
-
-        else:
-            self.BackupBootsectorCheckBox.SetValue(False)
 
         #System Summary checkBox
         if MakeSystemSummary:
@@ -1324,7 +1314,6 @@ class SettingsWindow(wx.Frame):
         #Create the sizer that holds the buttons at the bottom of the window.
         BottomButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-
         #Add items to the basic settings sizer.
         BasicSettingsSizer.Add(self.BasicSettingsText, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
         BasicSettingsSizer.Add(self.FullVerboseCheckBox, 1, wx.BOTTOM, 10)
@@ -1333,7 +1322,6 @@ class SettingsWindow(wx.Frame):
         AdvancedSettingsSizer.Add(self.AdvancedSettingsText, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
         AdvancedSettingsSizer.Add(self.MakeSummaryCheckBox, 1, wx.BOTTOM, 10)
         AdvancedSettingsSizer.Add(self.LogOutputCheckBox, 1, wx.BOTTOM, 10)
-        AdvancedSettingsSizer.Add(self.BackupBootsectorCheckBox, 1, wx.BOTTOM, 10)
 
         #Add items to the all settings sizer.
         AllSettingsSizer.Add(BasicSettingsSizer, 4, wx.RIGHT|wx.EXPAND, 5)
@@ -1422,7 +1410,6 @@ class SettingsWindow(wx.Frame):
         global SaveOutput
         global FullVerbose
         global SaveOutput
-        global BackupBootSector
         global MakeSystemSummary
 
         logger.info("SettingsWindow().SaveOptions(): Saving Options...")
@@ -1454,15 +1441,6 @@ class SettingsWindow(wx.Frame):
             SaveOutput = False
 
         logger.debug("SettingsWindow().SaveOptions(): Value of SaveOutput is: "+unicode(SaveOutput))
-
-        #Backup BootSector checkbox.
-        if self.BackupBootsectorCheckBox.IsChecked():
-            BackupBootSector = True
-
-        else:
-            BackupBootSector = False
-
-        logger.debug("SettingsWindow().SaveOptions(): Value of BackupBootSector is: "+unicode(BackupBootSector))
 
         #Use chroot in operations checkbox
         if self.MakeSummaryCheckBox.IsChecked():
@@ -2791,11 +2769,11 @@ class BackendThread(threading.Thread):
 
         #Do Boot Sector Information.
         ReportList.write("\n##########Boot Sector Information##########\n")
-        ReportList.write("Backup Boot Sector: "+unicode(BackupBootSector)+"\n")
+        #ReportList.write("Backup Boot Sector: "+unicode(BackupBootSector)+"\n")
 
-        if BackupBootSector:
+        #if BackupBootSector: *** global var not used any more ***
             #ReportList.write("\n\tBacked up Boot Sector From: "+SystemInfo["RootDevice"]+"\n")
-            ReportList.write("\tTarget Boot Sector File: (*** Disabled as no way of saving this until switch to dictionaries ***)\n\n") #*** +BootSectorBackupFile+"\n\n")
+        #    ReportList.write("\tTarget Boot Sector File: (*** Disabled as no way of saving this until switch to dictionaries ***)\n\n") #*** +BootSectorBackupFile+"\n\n")
 
         ReportList.write("Restore Boot Sector: "+unicode(RestoreBootSector)+"\n")
         if RestoreBootSector:

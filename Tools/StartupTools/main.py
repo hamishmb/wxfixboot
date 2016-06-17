@@ -441,7 +441,6 @@ class Main():
         SaveOutput = True
         FullVerbose = False
         Verify = True
-        BackupBootSector = False
         MakeSystemSummary = True
 
         #Options in Bootloader Options dlg
@@ -458,7 +457,7 @@ class Main():
 
         SystemInfo["PreviousOSChoice"] = ""
 
-        return QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, BackupBootSector, MakeSystemSummary, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run
+        return QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""
