@@ -163,7 +163,7 @@ class Main():
         if os.path.isdir(MountPoint+"/boot/efi") == False:
             os.makedirs(MountPoint+"/boot/efi")
 
-        #Open the MountPoint/etc/fstab file for reading. If we aren't using chroot, this'll just be /etc/fstab, otherwise, /mnt/dev/sdxy/etc/fstab. Also, save its contents in a variable.
+        #Open the MountPoint/etc/fstab file for reading. If we aren't using chroot, this'll just be /etc/fstab, otherwise, /tmp/wxfixboot/mountpoints/dev/sdxy/etc/fstab. Also, save its contents in a variable.
         fstab = open(MountPoint+"/etc/fstab", "r")
         NewFileContents = []
 

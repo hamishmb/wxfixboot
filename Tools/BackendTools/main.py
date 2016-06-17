@@ -47,7 +47,7 @@ class Main():
         else:
             logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Using chroot to modify another OS...")
             UseChroot = True
-            MountPoint = "/mnt"+Partition
+            MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
 
             #Check if the partition is mounted.
             if CoreTools.IsMounted(Partition, MountPoint):
@@ -145,7 +145,7 @@ class Main():
         else:
             logger.debug("MainBackendTools: Main().InstallNewBootloader(): Using chroot to modify another OS...")
             UseChroot = True
-            MountPoint = "/mnt"+Partition
+            MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
 
             #Check if the partition is mounted.
             if CoreTools.IsMounted(Partition, MountPoint):
@@ -240,7 +240,7 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
         return BootloaderInstallSucceded #*** Keep the results for each OS here, and note which one(s) failed! ***
 
-    def SetNewBootloaderConfig(self, OS): #*** Use UseChroot here for readability? ***
+    def SetNewBootloaderConfig(self, OS): #*** Use UseChroot here for readability? *** *** Only set e.g. Timeout and Kernel Options if they are being changed ***
         """Manage setting new bootloader config."""
         logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): Preparing to set "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config in "+OS+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to set "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config...")
@@ -272,7 +272,7 @@ class Main():
         else:
             logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): We're modifying another OS...")
             #If not, set mountpoint to the actual mountpoint.
-            MountPoint = "/mnt"+Partition
+            MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
 
             #Check if the partition is mounted.
             if CoreTools.IsMounted(Partition, MountPoint):
@@ -303,7 +303,7 @@ class Main():
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
-                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[OS]["GlobalKernelOptions"])
+                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
 
             #Now Install GRUB2 to the MBR. *** Is this necessary when updating it? ***
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to "+DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]+"...")
@@ -322,7 +322,7 @@ class Main():
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-UEFI Configuration...")
-                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[OS]["GlobalKernelOptions"])
+                BootloaderConfigSettingTools.SetGRUB2Config(filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
 
             #Mount the UEFI partition at MountPoint/boot/efi.
             if CoreTools.MountPartition(Partition=BootloaderInfo[OS]["BootDisk"], MountPoint=MountPoint+"/boot/efi") != 0:
@@ -368,7 +368,7 @@ class Main():
     
                 #Also, set the OS entries.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating LILO OS Entries...")
-                BootloaderConfigSettingTools.MakeLILOOSEntries(OS=OS, filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint, KernelOptions=BootloaderInfo[OS]["GlobalKernelOptions"])
+                BootloaderConfigSettingTools.MakeLILOOSEntries(OS=OS, filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=PackageManager, MountPoint=MountPoint, KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
 
             #Now Install LILO to the MBR.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing LILO to the MBR...")
@@ -401,7 +401,7 @@ class Main():
 
                 #Also, set the OS entries.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating ELILO OS Entries...")
-                BootloaderConfigSettingTools.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint, KernelOptions=BootloaderInfo[OS]["GlobalKernelOptions"])
+                BootloaderConfigSettingTools.MakeLILOOSEntries(filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=PackageManager, MountPoint=MountPoint, KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
 
             #Now Install ELILO to the UEFI Partition.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing ELILO to "+BootloaderInfo[OS]["BootDisk"]+"...")

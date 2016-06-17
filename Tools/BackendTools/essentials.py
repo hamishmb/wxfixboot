@@ -132,14 +132,14 @@ class Main(): #*** These need refactoring ***
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to restore the Boot Sector...###\n")
 
         #We need to check if BootSectorFile is on a different partition or device, so we can make sure it's available. (this is necessary if the user did an FS check). *** Actually I don't think it unmounts anything, just remounts read-only. I will investigate. ***
-        if "/mnt/" in BootSectorFile: #*** Does looking for '/mnt/' work? ***
+        if "/tmp/wxfixboot/mountpoints/" in BootSectorFile: #*** Does looking for '/tmp/wxfixboot/mountpoints/' work? ***
             #It is! Determine which partition we need to mount.
             Temp = BootSectorFile.split('/')
             PartitionToMount = "/"+'/'.join(Temp[2:4])
 
             #Mount it, and set a variable so we can unmount it afterwards. *** With that variable, check if it was mounted before, and if so leave it alone! ***
-            if CoreTools.MountPartition(Partition=PartitionToMount, MountPoint="/mnt"+PartitionToMount) != 0:
-                logger.error("EssentialBackendTools: Main().RestoreBootSector(): Failed to mount "+PartitionToMount+" to /mnt"+PartitionToMount+"! Continuing anyway...")
+            if CoreTools.MountPartition(Partition=PartitionToMount, MountPoint="/tmp/wxfixboot/mountpoints"+PartitionToMount) != 0:
+                logger.error("EssentialBackendTools: Main().RestoreBootSector(): Failed to mount "+PartitionToMount+" to /tmp/wxfixboot/mountpoints"+PartitionToMount+"! Continuing anyway...")
 
             MountedFS = PartitionToMount
             logger.info("EssentialBackendTools: Main().RestoreBootSector(): Okay. Mounted the partition: "+MountedFS+" that houses the file. Now let's restore the Boot Sector...")
@@ -248,7 +248,7 @@ class Main(): #*** These need refactoring ***
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Remounting Partition: "+Partition+" Read-Write...")
-                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint="/mnt"+Partition)
+                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint="/tmp/wxfixboot/mountpoints"+Partition)
 
                 if Retval != 0:
                     logger.warning("EssentialBackendTools: Main().QuickFileSystemCheck(): Failed to remount partition: "+Partition+" after check. We probably need to reboot first. Never mind...")
@@ -331,7 +331,7 @@ class Main(): #*** These need refactoring ***
 
             if RemountPartitionAfter == "True":
                 logger.debug("EssentialBackendTools: Main().BadSectorCheck(): Remounting Partition: "+Partition+" Read-Write...")
-                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint="/mnt"+Partition)
+                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint="/tmp/wxfixboot/mountpoints"+Partition)
 
                 if Retval != 0:
                     logger.warning("EssentialBackendTools: Main().BadSectorCheck(): Failed to remount partition: "+Partition+" after check. We probably need to reboot first. Never mind...")

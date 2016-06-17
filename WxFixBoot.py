@@ -18,14 +18,13 @@
 #*** Add package dependency on binutils (for strings command) ***
 #*** Remove package dependancy on lsb_release ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
-#*** Mount filesystems inside a temporary directory instead of in /mnt, perhaps /tmp/wxfixbootmountpoints/, to keep them out of the way of interference ***
 #*** Test DialogTools.ShowMultiChoiceDlg() ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Support EFI on 32-bit firmware? ***
 #*** /boot/efi not unmounted after modifying EFI bootloaders on parted magic (possibly also on other platforms), preventing unmounting of chrooted rootfs. Doesn't cause an error or any problems. ***
 #*** Make OSInfo accessible to CoreBackendTools? ***
-#*** Save bootloader config, instead of bootloader itself? That way WxFixBoot can handle reinstalling/fixing the bootloader as required ***
+#*** When backing up, save bootloader config, instead of bootloader itself? That way WxFixBoot can handle reinstalling/fixing the bootloader as required ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -370,7 +369,11 @@ class InitialWindow(wx.Frame):
 #Begin Initaization Thread.
 class InitThread(threading.Thread):
     def __init__(self, ParentWindow):
-        """Make a temporary directory for mountpoints used by this program *** TODO ***. If it already exists, delete it and recreate it."""
+        """Make a temporary directory for mountpoints used by this program. If it already exists, delete it and recreate it. Then start the thread."""
+        if os.path.isdir("/tmp/wxfixboot/mountpoints"):
+            os.rmdir("/tmp/wxfixboot/mountpoints")
+
+        os.makedirs("/tmp/wxfixboot/mountpoints")
 
         #Set up dialog tools.
         Tools.dialogtools.ParentWindow = ParentWindow

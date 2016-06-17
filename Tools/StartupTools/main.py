@@ -165,12 +165,12 @@ class Main():
                 MountPoint = ""
 
             else:
-                Cmd = "chroot /mnt"+Partition+" python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
-                APTCmd = "chroot /mnt"+Partition+" which apt-get"
-                YUMCmd = "chroot /mnt"+Partition+" which yum"
+                MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
+                Cmd = "chroot "+MountPoint+" python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
+                APTCmd = "chroot "+MountPoint+" which apt-get"
+                YUMCmd = "chroot "+MountPoint+" which yum"
                 Chroot = True
                 IsCurrentOS = False
-                MountPoint = "/mnt"+Partition
 
                 #Mount the partition and check if anything went wrong.
                 if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
@@ -244,7 +244,7 @@ class Main():
                     CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
                 #Remove the temporary mountpoint
-                os.rmdir("/mnt"+Partition)
+                os.rmdir(MountPoint)
 
         #Check that at least one Linux OS was detected.
         if len(OSInfo) >= 1:
@@ -307,7 +307,7 @@ class Main():
             #If this isn't the current OS, do some preparation.
             if not OSInfo[OS]["IsCurrentOS"]:
                 #Mount the OS's partition.
-                MountPoint = "/mnt"+OSInfo[OS]["Partition"]
+                MountPoint = "/tmp/wxfixboot/mountpoints"+OSInfo[OS]["Partition"]
                 Chroot = True
 
                 if CoreTools.MountPartition(OSInfo[OS]["Partition"], MountPoint) != 0:
