@@ -75,24 +75,40 @@ class Main():
 
         #Remove the bootloader.
         if BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY":
-            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
-            retval = BootloaderRemovalTools.RemoveGRUBLEGACY(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...") #*** Test this ***
+
+            if PackageManager == "apt-get":
+                Cmd = "apt-get purge -y grub grub-legacy-doc grub-common"
 
         elif BootloaderInfo[OS]["Bootloader"] == "GRUB2":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")
-            retval = BootloaderRemovalTools.RemoveGRUB2(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+
+            if PackageManager == "apt-get":
+                Cmd = "apt-get purge -y grub-pc grub-pc-bin grub-common"
 
         elif BootloaderInfo[OS]["Bootloader"] == "LILO":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing LILO...")
-            retval = BootloaderRemovalTools.RemoveLILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+
+            if PackageManager == "apt-get":
+                Cmd = "apt-get purge -y lilo"
 
         elif BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-UEFI...")
-            retval = BootloaderRemovalTools.RemoveGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+
+            if PackageManager == "apt-get":
+                Cmd = "apt-get purge -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common"
 
         elif BootloaderInfo[OS]["Bootloader"] == "ELILO":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing ELILO...")
-            retval = BootloaderRemovalTools.RemoveELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+
+            if PackageManager == "apt-get":
+                Cmd = "apt-get purge -y elilo"
+
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        if CoreTools.StartProcess(Cmd) != 0:
+            logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove old bootloader! Warning user... ***TODO***") #*** Warn user ***
 
         #Tear down chroot if needed.
         if UseChroot:
