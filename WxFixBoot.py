@@ -120,7 +120,6 @@ from Tools.BackendTools.essentials import Main as EssentialBackendToolsCallable
 from Tools.BackendTools.main import Main as MainBackendToolsCallable
 
 from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderToolsCallable
-from Tools.BackendTools.BootloaderTools.installationtools import Main as BootloaderInstallationToolsCallable
 from Tools.BackendTools.BootloaderTools.setconfigtools import Main as BootloaderConfigSettingToolsCallable
 
 import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
@@ -141,7 +140,6 @@ MainBackendTools = MainBackendToolsCallable()
 
 MainBootloaderTools = MainBootloaderToolsCallable()
 BootloaderConfigObtainingTools = BootloaderConfigObtainingToolsCallable()
-BootloaderInstallationTools = BootloaderInstallationToolsCallable()
 BootloaderConfigSettingTools = BootloaderConfigSettingToolsCallable()
 
 #Setup custom-made modules (make global variables accessible inside the packages). *** Continue to change stuff as needed ***
@@ -203,7 +201,6 @@ Tools.BackendTools.main.os = os
 Tools.BackendTools.main.CoreTools = CoreTools
 Tools.BackendTools.main.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
-Tools.BackendTools.main.BootloaderInstallationTools = BootloaderInstallationTools
 Tools.BackendTools.main.BootloaderConfigSettingTools = BootloaderConfigSettingTools
 Tools.BackendTools.main.DialogTools = DialogTools
 
@@ -218,9 +215,6 @@ Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
 
 #BootloaderTools Package (GetConfigTools)
 Tools.StartupTools.getbootloaderconfigtools.logger = logger
-
-#BootloaderTools Package (InstallationTools)
-Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools
 
 #BootloaderTools Package (SetConfigTools)
 Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
