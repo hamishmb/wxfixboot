@@ -120,7 +120,6 @@ from Tools.BackendTools.essentials import Main as EssentialBackendToolsCallable
 from Tools.BackendTools.main import Main as MainBackendToolsCallable
 
 from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderToolsCallable
-from Tools.BackendTools.BootloaderTools.removaltools import Main as BootloaderRemovalToolsCallable
 from Tools.BackendTools.BootloaderTools.installationtools import Main as BootloaderInstallationToolsCallable
 from Tools.BackendTools.BootloaderTools.setconfigtools import Main as BootloaderConfigSettingToolsCallable
 
@@ -142,7 +141,6 @@ MainBackendTools = MainBackendToolsCallable()
 
 MainBootloaderTools = MainBootloaderToolsCallable()
 BootloaderConfigObtainingTools = BootloaderConfigObtainingToolsCallable()
-BootloaderRemovalTools = BootloaderRemovalToolsCallable()
 BootloaderInstallationTools = BootloaderInstallationToolsCallable()
 BootloaderConfigSettingTools = BootloaderConfigSettingToolsCallable()
 
@@ -205,7 +203,6 @@ Tools.BackendTools.main.os = os
 Tools.BackendTools.main.CoreTools = CoreTools
 Tools.BackendTools.main.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
-Tools.BackendTools.main.BootloaderRemovalTools = BootloaderRemovalTools
 Tools.BackendTools.main.BootloaderInstallationTools = BootloaderInstallationTools
 Tools.BackendTools.main.BootloaderConfigSettingTools = BootloaderConfigSettingTools
 Tools.BackendTools.main.DialogTools = DialogTools
@@ -221,9 +218,6 @@ Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
 
 #BootloaderTools Package (GetConfigTools)
 Tools.StartupTools.getbootloaderconfigtools.logger = logger
-
-#BootloaderTools Package (RemovalTools)
-Tools.BackendTools.BootloaderTools.removaltools.CoreTools = CoreTools
 
 #BootloaderTools Package (InstallationTools)
 Tools.BackendTools.BootloaderTools.installationtools.CoreTools = CoreTools
@@ -368,8 +362,14 @@ class InitialWindow(wx.Frame):
 class InitThread(threading.Thread):
     def __init__(self, ParentWindow):
         """Make a temporary directory for mountpoints used by this program. If it already exists, delete it and recreate it. Then start the thread."""
+        #Remove the temporary directory if it exists.
         if os.path.isdir("/tmp/wxfixboot/mountpoints"):
-            os.rmdir("/tmp/wxfixboot/mountpoints")
+            #Check nothing is using it.
+            if "/tmp/wxfixboot/mountpoints" in CoreTools.StartProcess("mount", ReturnOutput=True)[1]: #*** GUI freezes if this happens, investigate why ***
+                CoreTools.EmergencyExit("There are mounted filesystems in /tmp/wxfixboot/mountpoints, WxFixBoot's temporary mountpoints directory! Please unmount any filesystems there and try again.")
+                sys.exit("There are mounted filesystems in /tmp/wxfixboot/mountpoints, WxFixBoot's temporary mountpoints directory! Please unmount any filesystems there and try again.")
+
+            shutil.rmtree("/tmp/wxfixboot/mountpoints")
 
         os.makedirs("/tmp/wxfixboot/mountpoints")
 

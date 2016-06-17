@@ -73,7 +73,7 @@ class Main():
             #If there's a seperate /boot partition for this OS, make sure it's mounted. *** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this *** *** this might mount other stuff and interfere too ***
             CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False)
 
-        #Remove the bootloader.
+        #Remove the bootloader. *** Test all these ***
         if BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...") #*** Test this ***
 
@@ -187,7 +187,15 @@ class Main():
             CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False) #*** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this ***
 
         #Update the package lists.
-        if BootloaderInstallationTools.UpdatePackageLists(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint) != 0:
+        if PackageManager == "apt-get":
+            Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'"
+
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval = CoreTools.StartProcess(Cmd)
+
+        if Retval != 0:
             logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to Update the Package Information! Continuing anyway...") #*** Stop here? Check Internet Connection Again? ***
     
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...")
@@ -197,11 +205,15 @@ class Main():
         #Install the bootloader.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing GRUB2...")
-            retval = BootloaderInstallationTools.InstallGRUB2(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+
+            if PackageManager == "apt-get":
+                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'"
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing LILO...")
-            retval = BootloaderInstallationTools.InstallLILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+
+            if PackageManager == "apt-get":
+                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y lilo'"
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing GRUB-UEFI...")
@@ -213,7 +225,8 @@ class Main():
             if CoreTools.MountPartition(Partition=BootloaderInfo[OS]["BootDisk"], MountPoint=MountPoint+"/boot/efi") != 0:
                 logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+BootloaderInfo[OS]["BootDisk"]+"! to "+MountPoint+"/boot/efi! *** TODO: Abort bootloader installation. *** For now, continue anyway...")
 
-            retval = BootloaderInstallationTools.InstallGRUBUEFI(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+            if PackageManager == "apt-get":
+                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing ELILO...")
@@ -224,7 +237,14 @@ class Main():
             if UseChroot:
                 CoreTools.UpdateChrootMtab(MountPoint=MountPoint)
 
-            retval = BootloaderInstallationTools.InstallELILO(PackageManager=PackageManager, UseChroot=UseChroot, MountPoint=MountPoint)
+            if PackageManager == "apt-get":
+                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'"
+
+        if UseChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        if CoreTools.StartProcess(Cmd) != 0: #*** Warn User ***
+            logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to uninstall old bootloader. Warn user ***TODO***...")
 
         #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot.
         if CoreTools.Unmount(MountPoint+"/boot") != 0:
