@@ -347,6 +347,10 @@ class Main():
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
             BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, MountPoint=MountPoint)
 
+            #Unmount the EFI partition.
+            if CoreTools.Unmount(BootloaderInfo[OS]["BootDisk"]) != 0: #*** Warn user? ***
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
+
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO":
             #Make LILO's config file.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making LILO's configuration file...")
@@ -414,6 +418,10 @@ class Main():
             #Copy and backup UEFI files where needed.
             HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
             HelperBackendTools.CopyUEFIFiles(OS=OS, MountPoint=MountPoint)
+
+            #Unmount the EFI partition.
+            if CoreTools.Unmount(BootloaderInfo[OS]["BootDisk"]) != 0: #*** Warn user? ***
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
 
         #Tear down chroot if needed.
         if MountPoint != "":

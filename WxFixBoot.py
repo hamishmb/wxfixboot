@@ -22,7 +22,6 @@
 #*** Figure out what to do in each instance where something might fail ***
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Support EFI on 32-bit firmware? ***
-#*** /boot/efi not unmounted after modifying EFI bootloaders on parted magic (possibly also on other platforms), preventing unmounting of chrooted rootfs. Doesn't cause an error or any problems. ***
 #*** Make OSInfo accessible to CoreBackendTools? ***
 #*** When backing up, save bootloader config, instead of bootloader itself? That way WxFixBoot can handle reinstalling/fixing the bootloader as required ***
 
