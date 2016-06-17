@@ -204,7 +204,7 @@ class Main(): #*** Refactor all of these ***
             #Look for kernel options used globally in all the boot options.
             elif 'GRUB_CMDLINE_LINUX_DEFAULT' in Line and '=' in Line:
                 #Found them! Save them.
-                KernelOptions = '='.join(Line.split("=")[1:]).replace("\'", "")
+                KernelOptions = '='.join(Line.split("=")[1:]).replace("\'", "").replace("\n", "")
                 logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Found global kernel options...")
 
             #Look for default os setting,

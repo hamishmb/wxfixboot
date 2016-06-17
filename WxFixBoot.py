@@ -53,7 +53,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "11/6/2016"
+ReleaseDate = "17/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1538,7 +1538,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
 
         #Advanced Options.
         self.AdvancedOptionsText = wx.lib.stattext.GenStaticText(self.Panel, -1, "Advanced Options")
-        self.NewBootloaderText = wx.StaticText(self.Panel, -1, "")
+        self.NewKernelOptionsText = wx.StaticText(self.Panel, -1, "New kernel options:")
+        self.NewBootloaderText = wx.StaticText(self.Panel, -1, "") #*** Is this used? ***
         self.BackupBootloaderText = wx.StaticText(self.Panel, -1, "Backup to:")
         self.RestoreBootloaderText = wx.StaticText(self.Panel, -1, "Restore from:")
 
@@ -1551,7 +1552,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["UserFriendlyOSNames"])
 
         #Advanced Options.
-        self.NewBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "GRUB-UEFI", "GRUB2", "ELILO", "LILO"]) #*** Disable EFI options on BIOS systems ***
+        self.NewBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "GRUB-UEFI", "GRUB2", "ELILO", "LILO"]) #*** Disable EFI options on BIOS systems, check which options to enable on Fedora and derivatives, and so on ***
         self.BackupBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify"])
         self.RestoreBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify"])
 
@@ -1563,6 +1564,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         self.KeepBootloaderTimeoutCheckBox = wx.CheckBox(self.Panel, -1, "")
 
         #Advanced Options.
+        self.KeepKernelOptionsCheckBox = wx.CheckBox(self.Panel, -1, "")
         self.InstallNewBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Install a New Bootloader")
         self.BackupBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "")
         self.RestoreBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Restore this OS's bootloader")
@@ -1593,6 +1595,9 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         #List Ctrl.
         self.ListCtrl = wx.ListCtrl(self.Panel, -1, style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_VRULES)
         NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager", "IsModifyable"], Dictionary=OSInfo)
+
+        #Text ctrl.
+        self.NewKernelOptionsTextCtrl = wx.TextCtrl(self.Panel, -1, "")
 
     def OnSize(self, Event=None):
         """Auto resize the ListCtrl columns"""
@@ -1656,12 +1661,19 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         AdvancedOptionsSizer.Add(self.Arrow3, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
         AdvancedOptionsSizer.Add((5,5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
+        self.KernelOptionsSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add items to KernelOptionsSizer.
+        self.KernelOptionsSizer.Add(self.KeepKernelOptionsCheckBox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        self.KernelOptionsSizer.Add(self.NewKernelOptionsText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.KernelOptionsSizer.Add(self.NewKernelOptionsTextCtrl, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
+
         self.InstallNewBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to InstallNewBootloaderSizer.
-        self.InstallNewBootloaderSizer.Add(self.InstallNewBootloaderCheckBox, 2, wx.RIGHT, 5)
-        self.InstallNewBootloaderSizer.Add(self.NewBootloaderText, 1, wx.RIGHT|wx.LEFT, 5)
-        self.InstallNewBootloaderSizer.Add(self.NewBootloaderChoice, 2, wx.LEFT, 5)
+        self.InstallNewBootloaderSizer.Add(self.InstallNewBootloaderCheckBox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        self.InstallNewBootloaderSizer.Add(self.NewBootloaderText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.InstallNewBootloaderSizer.Add(self.NewBootloaderChoice, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         self.BackupBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -1698,6 +1710,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         self.MainSizer.Add(self.DefaultOSSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.ALL|wx.EXPAND, 10)
         self.MainSizer.Add(AdvancedOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.MainSizer.Add(self.KernelOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.MainSizer.Add(self.InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.MainSizer.Add(self.BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.MainSizer.Add(self.RestoreBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
@@ -1716,6 +1729,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         self.UpdateBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["Update"])
         self.KeepBootloaderTimeoutCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"])
         self.BootloaderTimeoutSpinner.SetValue(BootloaderInfo[OS]["Settings"]["NewTimeout"])
+        self.KeepKernelOptionsCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"])
+        self.NewKernelOptionsTextCtrl.SetValue(BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
         self.DefaultOSChoice.SetStringSelection(BootloaderInfo[OS]["Settings"]["DefaultOS"])
         self.InstallNewBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["InstallNewBootloader"])
         self.NewBootloaderChoice.SetStringSelection(BootloaderInfo[OS]["Settings"]["NewBootloader"])
@@ -1733,6 +1748,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         self.UpdateBootloaderCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"])
         self.KeepBootloaderTimeoutCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"])
         self.BootloaderTimeoutSpinner.Enable(BootloaderInfo[OS]["GUIState"]["NewTimeoutSpinnerState"])
+        self.KeepKernelOptionsCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"])
+        self.NewKernelOptionsTextCtrl.Enable(BootloaderInfo[OS]["GUIState"]["NewKernelOptionsTextCtrlState"])
         self.DefaultOSChoice.Enable(BootloaderInfo[OS]["GUIState"]["DefaultOSChoiceState"])
         self.InstallNewBootloaderCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["InstallNewBootloaderCheckBoxState"])
         self.NewBootloaderChoice.Enable(BootloaderInfo[OS]["GUIState"]["NewBootloaderChoiceState"])
@@ -1763,6 +1780,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         self.Bind(wx.EVT_CHECKBOX, self.OnInstallNewBootloaderCheckBox, self.InstallNewBootloaderCheckBox)
         self.Bind(wx.EVT_CHECKBOX, self.OnBackupBootloaderCheckBox, self.BackupBootloaderCheckBox)
         self.Bind(wx.EVT_CHECKBOX, self.OnRestoreBootloaderCheckBox, self.RestoreBootloaderCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnKernelOptionsCheckBox, self.KeepKernelOptionsCheckBox)
 
         #Buttons.
         self.Bind(wx.EVT_BUTTON, self.OnClose, self.SaveButton)
@@ -1787,6 +1805,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         """Set text labels for GUI elements"""
         OS = self.OSChoice.GetStringSelection()
 
+        self.KeepKernelOptionsCheckBox.SetLabel("Keep "+BootloaderInfo[OS]["Bootloader"]+"'s existing kernel options")
         self.InstallNewBootloaderCheckBox.SetLabel("Replace "+BootloaderInfo[OS]["Bootloader"]+" with:")
         self.ReinstallBootloaderCheckBox.SetLabel("Fix/Reinstall "+BootloaderInfo[OS]["Bootloader"])
         self.UpdateBootloaderCheckBox.SetLabel("Update "+BootloaderInfo[OS]["Bootloader"]+"'s Config")
@@ -1799,6 +1818,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.UpdateBootloaderCheckBox.Disable()
             self.KeepBootloaderTimeoutCheckBox.Enable()
             self.KeepBootloaderTimeoutCheckBox.SetValue(1)
+            self.KeepKernelOptionsCheckBox.Enable()
+            self.KeepKernelOptionsCheckBox.SetValue(1)
             self.DefaultOSChoice.Enable()
             self.InstallNewBootloaderCheckBox.SetValue(0)
             self.InstallNewBootloaderCheckBox.Disable()
@@ -1810,6 +1831,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.ReinstallBootloaderCheckBox.Disable()
             self.KeepBootloaderTimeoutCheckBox.Enable()
             self.KeepBootloaderTimeoutCheckBox.SetValue(1)
+            self.KeepKernelOptionsCheckBox.Enable()
+            self.KeepKernelOptionsCheckBox.SetValue(1)
             self.DefaultOSChoice.Enable()
             self.InstallNewBootloaderCheckBox.SetValue(0)
             self.InstallNewBootloaderCheckBox.Disable()
@@ -1822,17 +1845,29 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.UpdateBootloaderCheckBox.Enable()
             self.KeepBootloaderTimeoutCheckBox.SetValue(0)
             self.KeepBootloaderTimeoutCheckBox.Disable()
+            self.KeepKernelOptionsCheckBox.SetValue(0)
+            self.KeepKernelOptionsCheckBox.Disable()
             self.BootloaderTimeoutSpinner.Disable()
+            self.NewKernelOptionsTextCtrl.Disable()
             self.DefaultOSChoice.Disable()
             self.InstallNewBootloaderCheckBox.Enable()
             self.NewBootloaderChoice.Disable()
             self.RestoreBootloaderCheckBox.Enable()
             self.RestoreBootloaderChoice.Disable()
 
+    def OnKernelOptionsCheckBox(self, Event=None):
+        """Enable/Disable the kernel options text ctrl, based on the value of the kernel options checkbox."""
+        if self.KeepKernelOptionsCheckBox.IsChecked():
+            self.NewKernelOptionsTextCtrl.SetValue(BootloaderInfo[self.OSChoice.GetStringSelection()]["Settings"]["NewKernelOptions"])
+            self.NewKernelOptionsTextCtrl.Disable()
+
+        else:
+            self.NewKernelOptionsTextCtrl.Enable()
+
     def OnTimeoutCheckBox(self, Event=None):
         """Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox."""
         if self.KeepBootloaderTimeoutCheckBox.IsChecked():
-            self.BootloaderTimeoutSpinner.SetValue(BootloaderInfo[self.OSChoice.GetStringSelection()]["Timeout"])
+            self.BootloaderTimeoutSpinner.SetValue(BootloaderInfo[self.OSChoice.GetStringSelection()]["Settings"]["NewTimeout"])
             self.BootloaderTimeoutSpinner.Disable()
 
         else:
@@ -1870,6 +1905,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.UpdateBootloaderCheckBox.Disable()
             self.KeepBootloaderTimeoutCheckBox.Enable()
             self.KeepBootloaderTimeoutCheckBox.SetValue(1)
+            self.KeepKernelOptionsCheckBox.Enable()
+            self.KeepKernelOptionsCheckBox.SetValue(1)
             self.DefaultOSChoice.Enable()
             self.RestoreBootloaderCheckBox.Disable()
             self.RestoreBootloaderChoice.Disable()
@@ -1880,7 +1917,10 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.UpdateBootloaderCheckBox.Enable()
             self.KeepBootloaderTimeoutCheckBox.SetValue(0)
             self.KeepBootloaderTimeoutCheckBox.Disable()
+            self.KeepKernelOptionsCheckBox.SetValue(0)
+            self.KeepKernelOptionsCheckBox.Disable()
             self.BootloaderTimeoutSpinner.Disable()
+            self.NewKernelOptionsTextCtrl.Disable()
             self.DefaultOSChoice.Disable()
             self.RestoreBootloaderCheckBox.Enable()
             self.RestoreBootloaderChoice.Disable()
@@ -1953,10 +1993,14 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         if self.InstallNewBootloaderCheckBox.IsShown():
             self.Arrow3.SetBitmap(self.RightArrowImage)
 
+            self.MainSizer.Detach(self.KernelOptionsSizer)
             self.MainSizer.Detach(self.InstallNewBootloaderSizer)
             self.MainSizer.Detach(self.BackupBootloaderSizer)
             self.MainSizer.Detach(self.RestoreBootloaderSizer)
 
+            self.KeepKernelOptionsCheckBox.Hide()
+            self.NewKernelOptionsText.Hide()
+            self.NewKernelOptionsTextCtrl.Hide()
             self.InstallNewBootloaderCheckBox.Hide()
             self.NewBootloaderText.Hide()
             self.NewBootloaderChoice.Hide()
@@ -1979,10 +2023,14 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             else:
                 FirstNumber = 11
 
-            self.MainSizer.Insert(FirstNumber, self.InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.MainSizer.Insert(FirstNumber+1, self.BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.MainSizer.Insert(FirstNumber+2, self.RestoreBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber, self.KernelOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+1, self.InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+2, self.BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+3, self.RestoreBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
 
+            self.KeepKernelOptionsCheckBox.Show()
+            self.NewKernelOptionsText.Show()
+            self.NewKernelOptionsTextCtrl.Show()
             self.InstallNewBootloaderCheckBox.Show()
             self.NewBootloaderText.Show()
             self.NewBootloaderChoice.Show()
@@ -2001,6 +2049,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         BootloaderInfo[OS]["Settings"]["Update"] = self.UpdateBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] = self.KeepBootloaderTimeoutCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["NewTimeout"] = self.BootloaderTimeoutSpinner.GetValue()
+        BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"] = self.KeepKernelOptionsCheckBox.GetValue()
+        BootloaderInfo[OS]["Settings"]["NewKernelOptions"] = self.NewKernelOptionsTextCtrl.GetValue()
         BootloaderInfo[OS]["Settings"]["DefaultOS"] = self.DefaultOSChoice.GetStringSelection()
         BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] = self.InstallNewBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["NewBootloader"] = self.NewBootloaderChoice.GetStringSelection()
@@ -2021,6 +2071,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"] = self.UpdateBootloaderCheckBox.IsEnabled()
         BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = self.KeepBootloaderTimeoutCheckBox.IsEnabled()
         BootloaderInfo[OS]["GUIState"]["NewTimeoutSpinnerState"] = self.BootloaderTimeoutSpinner.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = self.KeepKernelOptionsCheckBox.IsEnabled()
+        BootloaderInfo[OS]["GUIState"]["NewKernelOptionsTextCtrlState"] = self.NewKernelOptionsTextCtrl.IsEnabled()
         BootloaderInfo[OS]["GUIState"]["DefaultOSChoiceState"] = self.DefaultOSChoice.IsEnabled()
         BootloaderInfo[OS]["GUIState"]["InstallNewBootloaderCheckBoxState"] = self.InstallNewBootloaderCheckBox.IsEnabled()
         BootloaderInfo[OS]["GUIState"]["NewBootloaderChoiceState"] = self.NewBootloaderChoice.IsEnabled()

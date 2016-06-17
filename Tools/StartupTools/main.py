@@ -362,7 +362,7 @@ class Main():
                 BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUBLEGACYMenuEntries(MountPoint+"/boot/grub/menu.lst")
                 BootloaderInfo[OS]["Timeout"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst")
                 BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB-LEGACY")
-                BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset" #*** Enable options to set this in BootloaderOptionsWindow ***
+                BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset" #*** Guess this from menu entries ***
 
             #*****************
             Keys = BootloaderInfo[OS]["MenuEntries"].keys()
@@ -392,6 +392,8 @@ class Main():
             BootloaderInfo[OS]["Settings"]["Reinstall"] = False
             BootloaderInfo[OS]["Settings"]["Update"] = False
             BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] = False
+            BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"] = False
+            BootloaderInfo[OS]["Settings"]["NewKernelOptions"] = BootloaderInfo[OS]["GlobalKernelOptions"]
             BootloaderInfo[OS]["Settings"]["NewTimeout"] = BootloaderInfo[OS]["Timeout"]
             BootloaderInfo[OS]["Settings"]["DefaultOS"] = BootloaderInfo[OS]["DefaultOS"]
             BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] = False
@@ -408,6 +410,8 @@ class Main():
             BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"] = True
             BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
             BootloaderInfo[OS]["GUIState"]["NewTimeoutSpinnerState"] = False
+            BootloaderInfo[OS]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
+            BootloaderInfo[OS]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
             BootloaderInfo[OS]["GUIState"]["DefaultOSChoiceState"] = False
             BootloaderInfo[OS]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
             BootloaderInfo[OS]["GUIState"]["NewBootloaderChoiceState"] = False
