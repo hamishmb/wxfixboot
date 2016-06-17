@@ -150,7 +150,7 @@ class Main():
 
         #If we're using chroot, add that to the command.
         if Chroot == True:
-            cmd = "chroot /tmp/wxfixboot/mountpoints"+Partition+" "+cmd
+            cmd = "chroot /mnt"+Partition+" "+cmd
 
         Retval, Output = CoreTools.StartProcess(cmd, ReturnOutput=True)
 

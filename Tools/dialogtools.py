@@ -52,7 +52,6 @@ class Main():
         Message is whatever you want the dialog to say.
         """
         self.DlgClosed = None
-
         wx.CallAfter(self.ShowThreadMsgDlg, kind=Kind, msg=Message)
 
         #Trap the thread until the user responds.

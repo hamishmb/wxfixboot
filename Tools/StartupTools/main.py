@@ -133,8 +133,6 @@ class Main():
             if DiskInfo[Disk]["FileSystem"] in ("ext", "ext2", "ext3", "ext4", "btrfs", "xfs", "jfs", "zfs", "minix", "reiserfs"):
                 SystemInfo["LinuxPartitions"].append(Disk)
 
-        print(SystemInfo["LinuxPartitions"])
-
     def MountCoreFS(self):
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
@@ -278,7 +276,7 @@ class Main():
         if UEFIVariables:
             #It's UEFI.
             logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as UEFI.")
-            Settings["MainSettings"]["FirmwareType"] = "UEFI"
+            Settings["FirmwareType"] = "UEFI" #*** Get rid of this ***
             SystemInfo["DetectedFirmwareType"] = "UEFI"
 
         else:
@@ -288,13 +286,13 @@ class Main():
             if "UEFI" not in Output:
                 #It's BIOS.
                 logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as BIOS...")
-                Settings["MainSettings"]["FirmwareType"] = "BIOS"
+                Settings["FirmwareType"] = "BIOS"
                 SystemInfo["DetectedFirmwareType"] = "BIOS"
 
             else:
                 #It's UEFI.
                 logger.warning("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as UEFI, but couldn't find UEFI variables!")
-                Settings["MainSettings"]["FirmwareType"] = "UEFI"
+                Settings["FirmwareType"] = "UEFI"
                 SystemInfo["DetectedFirmwareType"] = "UEFI"
                 DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
 
@@ -464,7 +462,7 @@ class Main():
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], Settings["MainSettings"]["FirmwareType"], OSInfo.
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], Settings["FirmwareType"], OSInfo.
         VarList = ()
         FailedList = []
 
@@ -489,13 +487,13 @@ class Main():
 
         #Check and warn about conflicting settings. *** These aren't helpful to people who are new and just want to fix it quick. Maybe try to clarify them/automatically deal with this stuff? Perhaps avoid some of these situations completely by improving startup code *** *** Check we're doing the right things here ***
         #Firmware type warnings.
-        #if Settings["MainSettings"]["FirmwareType"] == "BIOS" and SystemInfo["Bootloader"] in ('GRUB-UEFI', 'ELILO'):
+        #if Settings["FirmwareType"] == "BIOS" and SystemInfo["Bootloader"] in ('GRUB-UEFI', 'ELILO'):
         #    logger.warning("MainStartupTools: Main().FinalCheck(): Bootloader is UEFI-type, but system firmware is BIOS! Odd, perhaps a migrated drive? Continuing and setting firmware type to UEFI...")
         #    DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer seems to use BIOS firmware, but you're using a UEFI-enabled bootloader! WxFixBoot reckons your firmware type was misdetected, and will now set it to UEFI. BIOS firmware does not support booting UEFI-enabled bootloaders, so if you think your firmware type actually is BIOS, it is recommended to install a BIOS-enabled bootloader instead, such as GRUB2. You can safely ignore this message if your firmware type is UEFI.")
         #    SystemInfo["DetectedFirmwareType"] = "UEFI"
-        #    Settings["MainSettings"]["FirmwareType"] = "UEFI"
+        #    Settings["FirmwareType"] = "UEFI"
 
-        #if Settings["MainSettings"]["FirmwareType"] == "BIOS" and SystemInfo["GPTDisks"] != []: *** Check if we're booting from said device ***
+        #if Settings["FirmwareType"] == "BIOS" and SystemInfo["GPTDisks"] != []: *** Check if we're booting from said device ***
         #    logger.warning("MainStartupTools: Main().FinalCheck(): Firmware is BIOS, but at least one device on the system is using a gpt partition table! This device probably won't be bootable. WxFixBoot suggests repartitioning, if you intend to boot from that device.")
         #    DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses BIOS firmware, but you're using an incompatable partition system on at least one device! BIOS firmware will probably fail to boot your operating system, if it resides on that device, so a repartition may be necessary for that device. You can safely ignore this message if your firmware type has been misdetected, or if you aren't booting from that device.")
 

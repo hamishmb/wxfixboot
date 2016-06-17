@@ -276,6 +276,7 @@ class InitialWindow(wx.Frame):
         wx.Frame.__init__(self, parent=None, title="WxFixBoot", size=(600,420), style=wx.SIMPLE_BORDER)
         self.Panel = InitialPanel(self)
         self.SetClientSize(wx.Size(600,420))
+
         Tools.coretools.ParentWindow = self
 
         print("WxFixBoot Version "+Version+" Starting...")
@@ -323,7 +324,7 @@ class InitialWindow(wx.Frame):
         """Update the progress bar with the given value"""
         self.ProgressBar.SetValue(int(Value))
 
-        if self.ProgressBar.GetValue() == 100:
+        if int(Value) == 100:
             self.FinishedInit()
 
     def UpdateProgressText(self, Message):
@@ -331,7 +332,7 @@ class InitialWindow(wx.Frame):
         self.ProgressText.SetLabel(Message)
         self.Panel.Layout()
 
-    def UpdateOutputBox(self, Message): #*** Get rid of this later? ***
+    def UpdateOutputBox(self, Message):
         """Dummy function, accepts a message argument but ignores it. Allows CoreTools.StartProcess to work."""
         pass
 
@@ -355,29 +356,30 @@ class InitialWindow(wx.Frame):
 #Begin Initaization Thread.
 class InitThread(threading.Thread):
     def __init__(self, ParentWindow):
-        """Make a temporary directory for mountpoints used by this program. If it already exists, delete it and recreate it. Then start the thread."""
-        #Remove the temporary directory if it exists.
-        if os.path.isdir("/tmp/wxfixboot/mountpoints"):
-            #Check nothing is using it.
-            if "/tmp/wxfixboot/mountpoints" in CoreTools.StartProcess("mount", ReturnOutput=True)[1]: #*** GUI freezes if this happens, investigate why ***
-                CoreTools.EmergencyExit("There are mounted filesystems in /tmp/wxfixboot/mountpoints, WxFixBoot's temporary mountpoints directory! Please unmount any filesystems there and try again.")
-                sys.exit("There are mounted filesystems in /tmp/wxfixboot/mountpoints, WxFixBoot's temporary mountpoints directory! Please unmount any filesystems there and try again.")
-
-            shutil.rmtree("/tmp/wxfixboot/mountpoints")
-
-        os.makedirs("/tmp/wxfixboot/mountpoints")
+        """Start the thread."""
+        #Initialize the thread.
+        threading.Thread.__init__(self)
+        self.ParentWindow = ParentWindow
 
         #Set up dialog tools.
         Tools.dialogtools.ParentWindow = ParentWindow
 
-        #Initialize the thread.
-        threading.Thread.__init__(self)
-        self.ParentWindow = ParentWindow
+        #Start the thread.
         self.start()
 
     def run(self):
-        """Set some default settings and wait for the GUI to initialize."""
+        """Create the temporary mount point folder and set some default settings."""
         logger.debug("InitThread(): Starting...")
+
+        #Remove the temporary directory if it exists.
+        if os.path.isdir("/tmp/wxfixboot/mountpoints"):
+            #Check nothing is using it.
+            if "/tmp/wxfixboot/mountpoints" in CoreTools.StartProcess("mount", ReturnOutput=True)[1]:
+                CoreTools.EmergencyExit("There are mounted filesystems in /tmp/wxfixboot/mountpoints, WxFixBoot's temporary mountpoints directory! Please unmount any filesystems there and try again.")
+
+            shutil.rmtree("/tmp/wxfixboot/mountpoints")
+
+        os.makedirs("/tmp/wxfixboot/mountpoints")
 
         #Define dictionaries.
         global SystemInfo
@@ -391,9 +393,6 @@ class InitThread(threading.Thread):
         OSInfo = {}
         BootloaderInfo = {}
         Settings = {}
-
-        #*** Put this somewhere else ***
-        Settings["MainSettings"] = {}
 
         #Make dictionaries available to modules.
         Tools.coretools.DiskInfo = DiskInfo
@@ -470,14 +469,12 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
         logger.info("InitThread(): Done...")
 
-        #*** Find mountpoint of / if not on livedisk ***
-
         #Get the firmware type.
         logger.info("InitThread(): Determining Firmware Type...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining Firmware Type...")
         MainStartupTools.GetFirmwareType()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "70")
-        logger.info("InitThread(): Determined Firmware Type as: "+Settings["MainSettings"]["FirmwareType"])
+        logger.info("InitThread(): Determined Firmware Type as: "+Settings["FirmwareType"])
 
         #New bootloader info getting function.
         logger.info("InitThread(): Finding all Bootloaders and getting their settings...")
@@ -693,12 +690,7 @@ class MainWindow(wx.Frame):
 
         self.SaveMainOpts()
 
-        #if SystemInfo["UEFISystemPartition"] == None: *** How to do this warning? ***
-        #    dlg = wx.MessageDialog(self.Panel, "Seeing as you have no UEFI partition, you will be unable to select a UEFI bootloader to install, or as your current bootloader. However, in the bootloader options window, you can select a new UEFI partition.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-        #    dlg.ShowModal()
-        #    dlg.Destroy()
-
-        if Settings["MainSettings"]["FirmwareType"] == "BIOS":
+        if Settings["FirmwareType"] == "BIOS":
             dlg = wx.MessageDialog(self.Panel, "Make sure you set the Root Device correctly here! Chances are, you won't need to change it, but it always needs to be set to the device your system boots off (usually the first hard drive in the system). You can see this information in the default OS selection in the following window. For example if your OS boots off /dev/sdc3, the root device should be set to /dev/sdc. The root device here will also be the device that's backed up if either backup option is selected. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
 
@@ -882,10 +874,12 @@ class MainWindow(wx.Frame):
         #    Operations.append(BackendThread(self).GenerateSystemReport)
         #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
 
-        #Check if we need to check the internet connection, and do so first if needed. *** Will need to change how this is checked *** *** Run from ManageBootloader? ***
-        #if True:
-        #    logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()...")
-        #    Operations.insert(0, EssentialBackendTools.CheckInternetConnection())
+        #Check if we need to check the internet connection, and do so first if needed.
+        for Function in Operations:
+            if type(Function) == type([]):
+                logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()...")
+                Operations.insert(0, EssentialBackendTools.CheckInternetConnection())
+                break
 
         NumberOfOperations = len(Operations)
 
@@ -1381,12 +1375,10 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().LaunchblOpts(): Calling self.SaveOptions()...")
         self.SaveOptions()
 
-        #Give some warnings here if needed. *** How to detect and prevent this ***
-        #if SystemInfo["UEFISystemPartition"] == None:
-        #    logger.info("SettingsWindow().LaunchblOpts(): No UEFI partition. Therefore installing UEFI bootloaders will be disabled.")
-        #    dlg = wx.MessageDialog(self.Panel, "You have no UEFI Partition. If you wish to install a UEFI bootloader, you'll need to create one first. WxFixBoot will not install a UEFI bootloader without a UEFI partition, as it's impossible, and those options will now be disabled.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-        #    dlg.ShowModal()
-        #    dlg.Destroy()
+        if SystemInfo["DetectedFirmwareType"] == "BIOS":
+            dlg = wx.MessageDialog(self.Panel, "You have BIOS firmware so you will be unable to select a UEFI bootloader to install.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
 
         #Open the Firmware Options window
         logger.debug("SettingsWindow().LaunchblOpts(): Starting Bootloader Settings Window...")
@@ -1412,7 +1404,7 @@ class SettingsWindow(wx.Frame):
             self.BootloaderOptionsButton.Disable()
 
             #Reset some settings.
-            Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
+            Settings["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
 
         else:
             #Enable some options.
@@ -1547,7 +1539,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["UserFriendlyOSNames"])
 
         #Advanced Options.
-        self.NewBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "GRUB-UEFI", "GRUB2", "ELILO", "LILO"]) #*** Disable EFI options on BIOS systems, check which options to enable on Fedora and derivatives, and so on ***
+        self.NewBootloaderChoice = wx.Choice(self.Panel, -1, choices=[])
         self.BackupBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify"])
         self.RestoreBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify"])
 
@@ -1792,6 +1784,26 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         self.LoadSettings()
         self.SetGUIState()
         self.SetTextLabels()
+
+        #Set up NewBootloaderChoice.
+        if OSInfo[self.OSChoice.GetStringSelection()]["EFIPartition"] == "Unknown":
+            Choices = ["GRUB2", "LILO"]
+            dlg = wx.MessageDialog(self.Panel, "This OS has no UEFI partition, so you will be unable to select a UEFI bootloader to install.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
+
+        elif SystemInfo["DetectedFirmwareType"] == "BIOS":
+            Choices = ["GRUB2", "LILO"]
+
+        else:
+            Choices = ["GRUB-UEFI", "GRUB2", "ELILO", "LILO"]
+
+        self.NewBootloaderChoice.Clear()
+
+        for Choice in ["-- Please Select --"]+Choices:
+            self.NewBootloaderChoice.Append(Choice) #*** Check which options to enable on Fedora and derivatives ***
+
+        self.NewBootloaderChoice.SetStringSelection("-- Please Select --")
 
         #Make sure the window displays properly.
         self.MainSizer.SetSizeHints(self)
@@ -2581,7 +2593,7 @@ class ProgressWindow(wx.Frame):
 
         global PartScheme
 
-        Settings["MainSettings"]["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
+        Settings["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
 
         #Show MainWindow
         MainFrame = MainWindow()
@@ -2735,7 +2747,7 @@ class BackendThread(threading.Thread):
         #Do Firmware Information.
         ReportList.write("\n##########Firmware Information##########\n")
         ReportList.write("Detected firmware type: "+SystemInfo["DetectedFirmwareType"]+"\n")
-        ReportList.write("Selected Firmware Type: "+Settings["MainSettings"]["FirmwareType"]+"\n")
+        ReportList.write("Selected Firmware Type: "+Settings["FirmwareType"]+"\n")
         ReportList.write("UEFI System Partition (UEFI Bootloader target): "+SystemInfo["UEFISystemPartition"]+"\n")
 
         #Do Bootloader information
