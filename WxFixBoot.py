@@ -1466,7 +1466,7 @@ class SettingsWindow(wx.Frame):
 
 #End Settings Window
 #Begin Bootloader Options Window.
-class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
+class BootloaderOptionsWindow(wx.Frame):
     def __init__(self, ParentWindow):
         """Initialise bootloader options window"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Bootloader Options", size=(400,200), style=wx.DEFAULT_FRAME_STYLE)
@@ -1690,6 +1690,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         """Load all settings for this OS into the checkboxes and choice boxes"""
         OS = self.OSChoice.GetStringSelection()
 
+        logger.debug("BootloaderOptionsWindow().LoadSettings(): Loading settings for "+OS+"...")
         self.ReinstallBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["Reinstall"])
         self.UpdateBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["Update"])
         self.KeepBootloaderTimeoutCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"])
@@ -1709,6 +1710,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         """Set all the GUI element's states (enabled/disabled) for this OS"""
         OS = self.OSChoice.GetStringSelection()
 
+        logger.debug("BootloaderOptionsWindow().SetGUIState(): Setting GUI state for "+OS+"...")
         self.ReinstallBootloaderCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["ReinstallCheckBoxState"])
         self.UpdateBootloaderCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"])
         self.KeepBootloaderTimeoutCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"])
@@ -1755,6 +1757,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
 
     def OnOSChoiceChange(self, Event=None, Startup=False):
         """Save and load new GUI settings and states in accordance with the OS choice change"""
+        logger.debug("BootloaderOptionsWindow().OnOSChoiceChange(): OS choice has changed. Saving and then loading settings...")
+        #Save settings when selection a new choice, but not when this is called when the window is first opened.
         if Startup == False:
             self.SaveSettings(OS=SystemInfo["PreviousOSChoice"])
             self.SaveGUIState(OS=SystemInfo["PreviousOSChoice"])
@@ -1778,6 +1782,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
 
         self.NewBootloaderChoice.Clear()
 
+        #Add choices.
         for Choice in ["-- Please Select --"]+Choices:
             self.NewBootloaderChoice.Append(Choice) #*** Check which options to enable on Fedora and derivatives ***
 
@@ -1790,6 +1795,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         """Set text labels for GUI elements"""
         OS = self.OSChoice.GetStringSelection()
 
+        logger.debug("BootloaderOptionsWindow().SetTextLabels(): Setting text labels for "+OS+"...")
         self.KeepKernelOptionsCheckBox.SetLabel("Keep "+BootloaderInfo[OS]["Bootloader"]+"'s existing kernel options")
         self.InstallNewBootloaderCheckBox.SetLabel("Replace "+BootloaderInfo[OS]["Bootloader"]+" with:")
         self.ReinstallBootloaderCheckBox.SetLabel("Fix/Reinstall "+BootloaderInfo[OS]["Bootloader"])
@@ -1798,7 +1804,9 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         self.BackupBootloaderCheckBox.SetLabel("Backup "+BootloaderInfo[OS]["Bootloader"])
 
     def OnUpdateOrReinstallCheckBox(self, Event=None):
-        """Enable/Disable the bootloader timeout checkbox, based on the value of the update/reinstall checkboxes."""
+        """Enable/Disable options, based on the value of the update/reinstall checkboxes."""
+        logger.debug("BootloaderOptionsWindow().OnUpdateOrReinstallCheckBox(): Enabling and isabling options as needed...")
+ 
         if self.ReinstallBootloaderCheckBox.IsChecked():
             self.UpdateBootloaderCheckBox.Disable()
             self.KeepBootloaderTimeoutCheckBox.Enable()
@@ -1842,6 +1850,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
 
     def OnKernelOptionsCheckBox(self, Event=None):
         """Enable/Disable the kernel options text ctrl, based on the value of the kernel options checkbox."""
+        logger.debug("BootloaderOptionsWindow().OnKernelOptionsCheckBox(): Enabling and Disabling options as needed...")
+
         if self.KeepKernelOptionsCheckBox.IsChecked():
             self.NewKernelOptionsTextCtrl.SetValue(BootloaderInfo[self.OSChoice.GetStringSelection()]["Settings"]["NewKernelOptions"])
             self.NewKernelOptionsTextCtrl.Disable()
@@ -1851,6 +1861,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
 
     def OnTimeoutCheckBox(self, Event=None):
         """Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox."""
+        logger.debug("BootloaderOptionsWindow().OnTimeoutCheckBox(): Enabling and Disabling options s needed...")
+
         if self.KeepBootloaderTimeoutCheckBox.IsChecked():
             self.BootloaderTimeoutSpinner.SetValue(BootloaderInfo[self.OSChoice.GetStringSelection()]["Settings"]["NewTimeout"])
             self.BootloaderTimeoutSpinner.Disable()
@@ -1860,6 +1872,8 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
 
     def OnBackupBootloaderCheckBox(self, Event=None):
         """Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox."""
+        logger.debug("BootloaderOptionsWindow().OnBackupBootloaderCheckBox(): Enabling and Disabling options as needed...")
+
         if self.BackupBootloaderCheckBox.IsChecked():
             self.BackupBootloaderChoice.Enable()
 
@@ -1867,7 +1881,9 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.BackupBootloaderChoice.Disable()
 
     def OnRestoreBootloaderCheckBox(self, Event=None):
-        """Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox."""
+        """Enable/Disable options, based on the value of the timeout checkbox."""
+        logger.debug("BootloaderOptionsWindow(). Enabling and disabling options as needed...")
+
         if self.RestoreBootloaderCheckBox.IsChecked():
             self.RestoreBootloaderChoice.Enable()
             self.ReinstallBootloaderCheckBox.Disable()
@@ -1883,7 +1899,9 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.NewBootloaderChoice.Disable()
 
     def OnInstallNewBootloaderCheckBox(self, Event=None):
-        """Enable/Disable the new bootloader choice box, based on the value of the new bootloader checkbox."""
+        """Enable/Disable options, based on the value of the new bootloader checkbox."""
+        logger.debug("BootloaderOptionsWindow().OnInstallNewBootloaderCheckBox(): Enabling and disabling options as needed...")
+
         if self.InstallNewBootloaderCheckBox.IsChecked():
             self.NewBootloaderChoice.Enable()
             self.ReinstallBootloaderCheckBox.Disable()
@@ -1913,6 +1931,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
     def OnOSInfo(self, Event=None):
         """Hide/Show the OS info, and rotate the arrow"""
         if self.ListCtrl.IsShown():
+            logger.debug("BootloaderOptionsWindow().OnOSInfo(): Hiding OS Info...")
             self.Arrow1.SetBitmap(self.RightArrowImage)
 
             self.MainSizer.Detach(self.ListCtrl)
@@ -1921,6 +1940,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.SystemInfoButton.Hide()
 
         else:
+            logger.debug("BootloaderOptionsWindow().OnOSInfo(): Showing OS Info...")
             self.Arrow1.SetBitmap(self.DownArrowImage)
 
             self.MainSizer.Insert(4, self.ListCtrl, 5, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
@@ -1928,12 +1948,17 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.ListCtrl.Show()
             self.SystemInfoButton.Show()
 
+        #Make sure the window is displayed properly.
         self.MainSizer.SetSizeHints(self)
 
     def OnBasicOptions(self, Event=None):
         """Hide/Show the basic options, and rotate the arrow"""
         if self.ReinstallBootloaderCheckBox.IsShown():
+            logger.debug("BootloaderOptionsWindow().OnBasicOptions(): Hiding Basic Options...")
+
+            #Refuse to collapse this section if Advanced Settings are shown.
             if self.InstallNewBootloaderCheckBox.IsShown():
+                logger.debug("BootloaderOptionsWindow().OnBasicOptions(): Cancelling because Advanced Options are shown...")
                 return True
 
             self.Arrow2.SetBitmap(self.RightArrowImage)
@@ -1951,8 +1976,10 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.DefaultOSChoice.Hide()
 
         else:
+            logger.debug("BootloaderOptionsWindow().OnBasicOptions(): Showing Basic Options...")
             self.Arrow2.SetBitmap(self.DownArrowImage)
 
+            #Find the first index to re-add items in MainSizer.
             if self.ListCtrl.IsShown():
                 FirstNumber = 8
 
@@ -1971,11 +1998,13 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.DefaultOSText.Show()
             self.DefaultOSChoice.Show()
 
+        #Make sure the window displays properly.
         self.MainSizer.SetSizeHints(self)
 
     def OnAdvancedOptions(self, Event=None):
         """Show/Hide the advanced options, and rotate the arrow"""
         if self.InstallNewBootloaderCheckBox.IsShown():
+            logger.debug("BootloaderOptionsWindow().OnAdvancedOptions(): Hiding Advanced Options...")
             self.Arrow3.SetBitmap(self.RightArrowImage)
 
             self.MainSizer.Detach(self.KernelOptionsSizer)
@@ -1997,7 +2026,11 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.RestoreBootloaderChoice.Hide()
 
         else:
+            logger.debug("BootloaderOptionsWindow().OnAdvancedOptions(): Showing Advanced Options...")
+
+            #If Basic Options are hidden, show them.
             if self.ReinstallBootloaderCheckBox.IsShown() == False:
+                logger.debug("BootloaderOptionsWindow().OnAdvancedOptions(): Showing Basic Options first...")
                 self.OnBasicOptions()
 
             self.Arrow3.SetBitmap(self.DownArrowImage)
@@ -2026,10 +2059,13 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
             self.RestoreBootloaderText.Show()
             self.RestoreBootloaderChoice.Show()
 
+        #Make sure the window displays properly.
         self.MainSizer.SetSizeHints(self)
 
     def SaveSettings(self, Event=None, OS=None):
         """Save all settings for this OS from the checkboxes and choice boxes"""
+        logger.debug("BootloaderOptionsWindow().SaveSettings(): Saving settings for "+OS+"...")
+
         BootloaderInfo[OS]["Settings"]["Reinstall"] = self.ReinstallBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["Update"] = self.UpdateBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] = self.KeepBootloaderTimeoutCheckBox.GetValue()
@@ -2045,13 +2081,16 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
         BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = self.RestoreBootloaderChoice.GetStringSelection()
 
         if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["Update"] or BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] or BootloaderInfo[OS]["Settings"]["RestoreBootloader"]:
+            logger.debug("BootloaderOptionsWindow().SaveSettings(): "+OS+" is being modified...")
             BootloaderInfo[OS]["Settings"]["ChangeThisOS"] = True
 
         else:
+            logger.debug("BootloaderOptionsWindow().SaveSettings(): "+OS+" is not being modified...")
             BootloaderInfo[OS]["Settings"]["ChangeThisOS"] = False
 
     def SaveGUIState(self, Event=None, OS=None):
         """Save all the GUI element's states (enabled/disabled) for this OS"""
+        logger.debug("BootloaderOptionsWindow().SaveGUIState(): Saving GUI state for "+OS+"...")
         BootloaderInfo[OS]["GUIState"]["ReinstallCheckBoxState"] = self.ReinstallBootloaderCheckBox.IsEnabled()
         BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"] = self.UpdateBootloaderCheckBox.IsEnabled()
         BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = self.KeepBootloaderTimeoutCheckBox.IsEnabled()
@@ -2068,6 +2107,7 @@ class BootloaderOptionsWindow(wx.Frame): #*** Add comments and logging stuff ***
 
     def OnClose(self, Event=None):
         """Save settings and GUI state, and then close BootloaderOptionsWindow"""
+        logger.debug("BootloaderOptionsWindow().OnClose(): Closing BootloaderOptionsWindow...")
         self.SaveSettings(OS=self.OSChoice.GetStringSelection())
         self.SaveGUIState(OS=self.OSChoice.GetStringSelection())
 
