@@ -27,7 +27,7 @@ class Main():
         """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
         logger.info("MainStartupTools(): Main().CheckDepends(): Checking dependencies...")
         #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies.
-        CmdList = ("lshw", "mount", "dmidecode", "chroot", "dd", "gdisk", "blkid", "strings")
+        CmdList = ("file", "lshw", "mount", "dmidecode", "chroot", "dd", "gdisk", "blkid", "strings")
 
         #Create a list to contain names of failed commands.
         FailedList = []
@@ -187,7 +187,7 @@ class Main():
             if Retval != 0 and OSArch != None:
                 OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch)
 
-            #Look for APT. *** Maybe put this block somewhere else ***
+            #Look for APT. *** Maybe put this block somewhere else *** *** Refactor like arch detection code ***
             Retval = CoreTools.StartProcess(APTCmd, ShowOutput=False)
 
             if Retval != 0:
@@ -478,21 +478,6 @@ class Main():
             logger.critical("MainStartupTools: Main().FinalCheck(): Required Settings: "+', '.join(FailedList)+" have not been Determined! This is probably a bug in the program! Exiting...")
             CoreTools.EmergencyExit("The required variables: "+', '.join(FailedList)+", have not been set! WxFixBoot will now shut down to prevent damage to your system. This is probably a bug in the program.")
 
-        #Check and warn about conflicting settings. *** These aren't helpful to people who are new and just want to fix it quick. Maybe try to clarify them/automatically deal with this stuff? Perhaps avoid some of these situations completely by improving startup code *** *** Check we're doing the right things here ***
-        #Firmware type warnings.
-        #if Settings["FirmwareType"] == "BIOS" and SystemInfo["Bootloader"] in ('GRUB-UEFI', 'ELILO'):
-        #    logger.warning("MainStartupTools: Main().FinalCheck(): Bootloader is UEFI-type, but system firmware is BIOS! Odd, perhaps a migrated drive? Continuing and setting firmware type to UEFI...")
-        #    DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer seems to use BIOS firmware, but you're using a UEFI-enabled bootloader! WxFixBoot reckons your firmware type was misdetected, and will now set it to UEFI. BIOS firmware does not support booting UEFI-enabled bootloaders, so if you think your firmware type actually is BIOS, it is recommended to install a BIOS-enabled bootloader instead, such as GRUB2. You can safely ignore this message if your firmware type is UEFI.")
-        #    SystemInfo["DetectedFirmwareType"] = "UEFI"
-        #    Settings["FirmwareType"] = "UEFI"
-
-        #if Settings["FirmwareType"] == "BIOS" and SystemInfo["GPTDisks"] != []: *** Check if we're booting from said device ***
-        #    logger.warning("MainStartupTools: Main().FinalCheck(): Firmware is BIOS, but at least one device on the system is using a gpt partition table! This device probably won't be bootable. WxFixBoot suggests repartitioning, if you intend to boot from that device.")
-        #    DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses BIOS firmware, but you're using an incompatable partition system on at least one device! BIOS firmware will probably fail to boot your operating system, if it resides on that device, so a repartition may be necessary for that device. You can safely ignore this message if your firmware type has been misdetected, or if you aren't booting from that device.")
-
-        #Partition scheme warnings. *** Be more intelligent with these warnings ***
-        #if SystemInfo["GPTDisks"] != [] and SystemInfo["Bootloader"] in ('GRUB2', 'LILO', 'GRUB-LEGACY'): *** Check if we boot from said device ***
-        #    logger.warning("MainStartupTools: Main().FinalCheck(): GPT Partition table on at least one device with msdos bootloader! Most BIOS firmware cannot read GPT disks. WxFixBoot suggests repartitioning.")
-        #    DialogTools.ShowMsgDlg(Kind="warning", Message="You're using a BIOS-enabled bootloader, but you're using an incompatable partition system on at least one device! Most firmware will not support this setup. Ignore this message if you do not boot from this device.")
+        #Check and warn about conflicting settings. *** TODO ***
 
 #End main Class.

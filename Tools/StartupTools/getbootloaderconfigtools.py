@@ -28,7 +28,6 @@ class Main(): #*** Refactor all of these ***
 
         #Do some setup.
         LikelyGRUBInstallDisks = (DiskInfo[OSPartition]["HostDevice"], OSPartition)
-        FoundGRUB = False
 
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking in "+' '.join(LikelyGRUBInstallDisks)+"...")
 
@@ -43,18 +42,12 @@ class Main(): #*** Refactor all of these ***
             for Line in DiskInfo[Disk]["BootRecordStrings"]:
                 #Check that we have the right version of GRUB, and double check that GRUB is present.
                 if LookFor in Line and "GRUB" in Line:
-                    FoundGRUB = True
-                    BootDisk = Disk
-                    logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Found "+GRUBVersion+" on "+BootDisk+"...")
-                    break
+                    logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Found "+GRUBVersion+" on "+Disk+"...")
+                    logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Done!")
+                    return Disk
 
-        if FoundGRUB:
-            logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Done!")
-            return BootDisk
-
-        else:
-            logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+"...")
-            return "Unknown"
+        logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+"...")
+        return "Unknown"
 
     def ParseGRUB2MenuEntries(self, MenuEntriesFilePath):
         """Find and parse GRUB2 (EFI and BIOS) menu entries."""

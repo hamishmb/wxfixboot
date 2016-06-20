@@ -52,7 +52,7 @@ class Main():
             BootloaderPackages = ("grub2-efi", "elilo", "grub2", "lilo", "grub") #*** Check these ***
             PackageDict = {"grub2-efi": "GRUB-UEFI", "elilo": "ELILO", "grub2": "GRUB2", "lilo": "LILO", "grub": "GRUB-LEGACY"}
 
-        for Package in BootloaderPackages:
+        for Package in BootloaderPackages: #*** Check this works with YUM/DNF ***
             Found = False
 
             for Line in Output:

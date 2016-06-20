@@ -680,16 +680,6 @@ class MainWindow(wx.Frame):
 
         self.SaveMainOpts()
 
-        if Settings["FirmwareType"] == "BIOS":
-            dlg = wx.MessageDialog(self.Panel, "Make sure you set the Root Device correctly here! Chances are, you won't need to change it, but it always needs to be set to the device your system boots off (usually the first hard drive in the system). You can see this information in the default OS selection in the following window. For example if your OS boots off /dev/sdc3, the root device should be set to /dev/sdc. The root device here will also be the device that's backed up if either backup option is selected. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-
-        else:
-            dlg = wx.MessageDialog(self.Panel, "The boot sector to backup in this case is the UEFI System Partition, if there is one. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-
-        dlg.Destroy()
-
         OptionsDlg1Run = True
         self.Hide()
         SettingsWindow(self).Show()
@@ -2405,7 +2395,6 @@ class BackendThread(threading.Thread):
         DialogTools.ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
 
         #Make dictionaries accessible. *** Add as needed *** *** Minimise these later if possible ***
-        Tools.BackendTools.essentials.DiskInfo = DiskInfo
         Tools.BackendTools.essentials.SystemInfo = SystemInfo
 
         Tools.BackendTools.helpers.BootloaderInfo = BootloaderInfo

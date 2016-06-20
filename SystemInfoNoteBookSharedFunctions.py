@@ -82,7 +82,7 @@ def UpdateListCtrl(self, Event=None, Headings=[], Dictionary={}):
             if unicode(type(Data)) == type([]):
                 Data = ', '.join(Data)
 
-            elif unicode(type(Data)) != type(str("")) or unicode(type(Data)) != type(""): #*** Why is the string check here? ***
+            elif unicode(type(Data)) != type(""):
                 Data = unicode(Data)
 
             if Column == 0:
