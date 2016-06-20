@@ -543,7 +543,6 @@ class InitThread(threading.Thread):
         global Verify
         global MakeSystemSummary
         global BLOptsDlgRun
-        global RestoreBootSector
         global BootSectorTargetDevice
         global BootSectorBackupType
         global OptionsDlg1Run
@@ -556,13 +555,12 @@ class InitThread(threading.Thread):
         Verify = ""
         MakeSystemSummary = ""
         BLOptsDlgRun = ""
-        RestoreBootSector = ""
         BootSectorTargetDevice = ""
         BootSectorBackupType = ""
         OptionsDlg1Run = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, RestoreBootSector, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
+        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -1269,14 +1267,6 @@ class SettingsWindow(wx.Frame):
         else:
             self.LogOutputCheckBox.SetValue(False)
 
-        if RestoreBootSector:
-            #Disable/reset some options.
-            self.BootloaderOptionsButton.Disable()
-
-        else:
-            #Enable some options.
-            self.BootloaderOptionsButton.Enable()
-
         logger.debug("SettingsWindow().SetupOptions(): Finished!")
 
     def SetupSizers(self):
@@ -1375,16 +1365,6 @@ class SettingsWindow(wx.Frame):
         """Refresh the settings in SettingsWindow before re-showing it"""
         #Check if the boot sector is to be restored.
         logger.debug("SettingsWindow().RefreshOptionsDlg1(): Refreshing SettingsWindow...")
-        if RestoreBootSector:
-            #Disable/reset some options.
-            self.BootloaderOptionsButton.Disable()
-
-            #Reset some settings.
-            Settings["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
-
-        else:
-            #Enable some options.
-            self.BootloaderOptionsButton.Enable()
 
         #Setup options again.
         self.SetupOptions()
@@ -2245,7 +2225,6 @@ class RestoreWindow(wx.Frame):
         logger.debug("RestoreWindow().SelectFile(): File selection choice box changed...")
 
         #Set up global variables.
-        global RestoreBootSector
         global BootSectorBackupType
 
         File = self.BackupFileChoice.GetStringSelection()
@@ -2319,7 +2298,6 @@ class RestoreWindow(wx.Frame):
         #Save File, Restoring, and BackupType to the correct global variables, depending on which purpose this class is serving (Boot Sector Restoration Window).
         logger.info("RestoreWindow().SelectFile(): Current config: File = "+File+", Restore = "+unicode(Restore)+", BackupType = "+BackupType+"...")
 
-        RestoreBootSector = Restore
         BootSectorBackupType = BackupType
 
     def SelectTargetDevice(self, Event=None):
@@ -2356,7 +2334,6 @@ class RestoreWindow(wx.Frame):
 
     def ExitWindow(self, Event=None):
         """Exits Restore Window, or shows a warning to the user if needed"""
-        Restore = RestoreBootSector
         TargetDevice = BootSectorTargetDevice
 
         if File != "None" and Restore and TargetDevice != "None":
