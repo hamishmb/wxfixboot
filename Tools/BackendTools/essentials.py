@@ -71,57 +71,6 @@ class Main(): #*** These need refactoring ***
                     logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
 
-    def BackupBootSector(self): #*** DEPRECATED *** *** Can't save boot sector backup file variable like this, move to settings window *** *** Reduce duplication *** *** What if we need to backup a PBR? ***
-        """Backup the bootsector."""
-        #For GPT disks, backup UEFI System Partition.
-        #For MBR disks, backup with dd if=/dev/sdX of=<somefile> bs=512 count=1.
-        #We need to find RootDevice's partition scheme.
-        #PartScheme = DiskInfo[SystemInfo["RootDevice"]]["Partitioning"] *** DISABLED ***
-        PartScheme = "gpt"
-
-        logger.info("EssentialBackendTools: Main().BackupBootSector(): Preparing to backup the boot sector...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to backup the Boot Sector...")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to Backup the Boot Sector...###\n")
-
-        if PartScheme == "mbr":
-            #Let's backup the MBR, but we need to ask where to back it up first. *** Maybe do this in settings window? ***
-            BootSectorBackupFile = DialogTools.ShowSaveFileDlg(Title="WxFixBoot - Select Bootsector Backup Target File", Wildcard="IMG Image file (*.img)|*.img|All Files/Devices (*)|*")
-
-            #Make sure the backup file always has the correct file extension on it.
-            if BootSectorBackupFile[-4:] != ".img":
-                BootSectorBackupFile = BootSectorBackupFile+".img"
-
-            Cmd = "dd if=/dev/sda of="+BootSectorBackupFile+" bs=512 count=1"
-
-        elif SystemInfo["UEFISystemPartition"] != None:
-            #We need to ask where to back it up to. *** Maybe do this in settings window? ***
-            BootSectorBackupFile = DialogTools.ShowSaveFileDlg(Title="WxFixBoot - Select Bootsector Backup Target File", Wildcard="IMG Image file (*.img)|*.img|All Files/Devices (*)|*")
-
-            #Make sure the backup file always has the correct file extension on it.
-            if BootSectorBackupFile[-4:] != ".img":
-                BootSectorBackupFile = BootSectorBackupFile+".img"
-
-            Cmd = "dd if="+SystemInfo["UEFISystemPartition"]+" of="+BootSectorBackupFile
-
-        else:
-            logger.error("EssentialBackendTools: Main().BackupBootSector(): Failed to backup UEFI Partition, because there isn't one!") #*** What if we're booting GRUB on gpt? ***
-            DialogTools.ShowMsgDlg(Kind="error", Message="You have no UEFI Partition, so WxFixBoot couldn't backup your bootsector! Click okay to skip this operation.")
-            return
-
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Backing up the Boot Sector...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOutputBox, Message="\n###Backing up the Boot Sector...###\n")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
-
-        #Backup the boot sector.
-        logger.info("EssentialBackendTools: Main().BackupBootSector(): Backing up the boot sector to file: "+BootSectorBackupFile+"...")
-        retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
-
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Backing up the Boot Sector!")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Backing up the Boot Sector!###\n")
-        logger.info("EssentialBackendTools: Main().BackupBootSector(): Finished backing up Boot Sector! Exit code: "+unicode(retval))
-
     def RestoreBootSector(self): #*** DEPRECATED ***
         """Restore the bootsector‎."""
         #For GPT disks, restore with dd.

@@ -845,10 +845,6 @@ class MainWindow(wx.Frame):
 
         #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
         #Do essential processes first.
-        #if BackupBootSector: *** DEPRECATED, needs to be replaced ***
-        #    Operations.append(EssentialBackendTools.BackupBootSector)
-        #    logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BackupBootSector to Operations...")
-
         if RestoreBootSector:
             Operations.append(EssentialBackendTools.RestoreBootSector)
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.RestoreBootSector to Operations...")
