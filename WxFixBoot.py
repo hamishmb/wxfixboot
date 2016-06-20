@@ -2735,15 +2735,8 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.BootloaderTools.setconfigtools.SystemInfo = SystemInfo
         Tools.BackendTools.BootloaderTools.setconfigtools.OSInfo = OSInfo
 
-        #Run functions to do operations. *** Some of these might not work correctly until switch to dictionaries even with the extra abstraction code after running the function ***
+        #Run functions to do operations.
         for function in Operations:
-            #*** Extra temporary stuff needed to make things work for the time being until we switch to dictionaries (Set vars inside modules) ***
-            #*** We temporarily need global declarations in modules to make sure the global variables are set right, when they aren't directly passed to the functions within ***
-            #*** Essential backend tools ***
-            Tools.BackendTools.essentials.BootSectorFile = BootSectorFile
-            Tools.BackendTools.essentials.BootSectorBackupType = BootSectorBackupType
-            Tools.BackendTools.essentials.BootSectorTargetDevice = BootSectorTargetDevice
-
             #Run the function.
             if type(function) != type([]):
                 function()
