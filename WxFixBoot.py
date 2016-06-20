@@ -50,7 +50,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "17/6/2016"
+ReleaseDate = "20/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1504,7 +1504,6 @@ class BootloaderOptionsWindow(wx.Frame):
         #Advanced Options.
         self.AdvancedOptionsText = wx.lib.stattext.GenStaticText(self.Panel, -1, "Advanced Options")
         self.NewKernelOptionsText = wx.StaticText(self.Panel, -1, "New kernel options:")
-        self.NewBootloaderText = wx.StaticText(self.Panel, -1, "") #*** Is this used? ***
         self.BackupBootloaderText = wx.StaticText(self.Panel, -1, "Backup to:")
         self.RestoreBootloaderText = wx.StaticText(self.Panel, -1, "Restore from:")
 
@@ -1518,8 +1517,8 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Advanced Options.
         self.NewBootloaderChoice = wx.Choice(self.Panel, -1, choices=[])
-        self.BackupBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify"])
-        self.RestoreBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify"])
+        self.BackupBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify File Path..."])
+        self.RestoreBootloaderChoice = wx.Choice(self.Panel, -1, choices=["-- Please Select --", "Specify File Path..."])
 
     def CreateCheckBoxes(self):
         """Create the check boxes"""
@@ -1637,7 +1636,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Add items to InstallNewBootloaderSizer.
         self.InstallNewBootloaderSizer.Add(self.InstallNewBootloaderCheckBox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        self.InstallNewBootloaderSizer.Add(self.NewBootloaderText, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.InstallNewBootloaderSizer.Add((5,5), 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
         self.InstallNewBootloaderSizer.Add(self.NewBootloaderChoice, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         self.BackupBootloaderSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1754,6 +1753,30 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Choiceboxes.
         self.Bind(wx.EVT_CHOICE, self.OnOSChoiceChange, self.OSChoice)
+        self.Bind(wx.EVT_CHOICE, self.OnRestoreBootloaderChoice, self.RestoreBootloaderChoice)
+
+    def OnRestoreBootloaderChoice(self, Event=None):
+        """Allow the user to select a config file to restore the bootloader from"""
+        logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Selecting bootloader config backup file...")
+
+        File = self.RestoreBootloaderChoice.GetStringSelection()
+
+        #Determine what to do here.
+        if File == "Specify File Path...":
+            Dlg = wx.FileDialog(self.Panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.OPEN)
+
+            if Dlg.ShowModal() == wx.ID_OK: #*** Load config from file ***
+                File = Dlg.GetPath()
+                self.RestoreBootloaderChoice.Append(File)
+                self.RestoreBootloaderChoice.SetStringSelection(File)
+                logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): File is "+File+"...")
+                logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): ***TODO*** Loading config from "+File+"...")
+
+            Dlg.Destroy()
+
+        elif File != "-- Please Select --":
+            logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): ***TODO*** Loading config from "+File+"...")
+            pass #*** Load config from file ***
 
     def OnOSChoiceChange(self, Event=None, Startup=False):
         """Save and load new GUI settings and states in accordance with the OS choice change"""
@@ -2016,7 +2039,6 @@ class BootloaderOptionsWindow(wx.Frame):
             self.NewKernelOptionsText.Hide()
             self.NewKernelOptionsTextCtrl.Hide()
             self.InstallNewBootloaderCheckBox.Hide()
-            self.NewBootloaderText.Hide()
             self.NewBootloaderChoice.Hide()
             self.BackupBootloaderCheckBox.Hide()
             self.BackupBootloaderText.Hide()
@@ -2050,7 +2072,6 @@ class BootloaderOptionsWindow(wx.Frame):
             self.NewKernelOptionsText.Show()
             self.NewKernelOptionsTextCtrl.Show()
             self.InstallNewBootloaderCheckBox.Show()
-            self.NewBootloaderText.Show()
             self.NewBootloaderChoice.Show()
             self.BackupBootloaderCheckBox.Show()
             self.BackupBootloaderText.Show()
@@ -2117,7 +2138,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.Destroy()
 
 #End New Bootloader Options Window.
-#Begin Restore Window *** DEPRECATED *** *** This uses the flawed concept of RootDevice, will need to change later *** *** This is buggy, but fix it later *** *** Will be removed upon integration of the new bootloader options window ***
+#Begin Restore Window *** DEPRECATED *** *** This uses the flawed concept of RootDevice, will need to change later *** *** Will be removed upon integration of the new bootloader options window ***
 class RestoreWindow(wx.Frame):
     def __init__(self, ParentWindow):
         """Initialise RestoreWindow"""
