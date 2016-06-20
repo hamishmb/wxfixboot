@@ -71,63 +71,6 @@ class Main(): #*** These need refactoring ***
                     logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
 
-    def RestoreBootSector(self): #*** DEPRECATED ***
-        """Restore the bootsector‎."""
-        #For GPT disks, restore with dd.
-        #For MBR disks, restore with dd if=<somefile> of=/dev/sdX bs=446 count=1
-        logger.info("EssentialBackendTools: Main().RestoreBootSector(): Preparing to restore the Boot Sector...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to restore the Boot Sector...")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to restore the Boot Sector...###\n")
-
-        #We need to check if BootSectorFile is on a different partition or device, so we can make sure it's available. (this is necessary if the user did an FS check). *** Actually I don't think it unmounts anything, just remounts read-only. I will investigate. ***
-        if "/tmp/wxfixboot/mountpoints/" in BootSectorFile: #*** Does looking for '/tmp/wxfixboot/mountpoints/' work? ***
-            #It is! Determine which partition we need to mount.
-            Temp = BootSectorFile.split('/')
-            PartitionToMount = "/"+'/'.join(Temp[2:4])
-
-            #Mount it, and set a variable so we can unmount it afterwards. *** With that variable, check if it was mounted before, and if so leave it alone! ***
-            if CoreTools.MountPartition(Partition=PartitionToMount, MountPoint="/tmp/wxfixboot/mountpoints"+PartitionToMount) != 0:
-                logger.error("EssentialBackendTools: Main().RestoreBootSector(): Failed to mount "+PartitionToMount+" to /tmp/wxfixboot/mountpoints"+PartitionToMount+"! Continuing anyway...")
-
-            MountedFS = PartitionToMount
-            logger.info("EssentialBackendTools: Main().RestoreBootSector(): Okay. Mounted the partition: "+MountedFS+" that houses the file. Now let's restore the Boot Sector...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 35)
-
-        else:
-            #Nope, it's on this partition.
-            MountedFS = "None"
-            logger.info("EssentialBackendTools: Main().RestoreBootSector(): Okay. Now let's restore the Boot Sector...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 35)
-
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Restoring the Boot Sector...")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Restoring the Boot Sector...###\n")
-
-        if BootSectorBackupType == "mbr":
-            #Let's restore the MBR bootsector.
-            logger.info("EssentialBackendTools: Main().RestoreBootSector(): Restoring MBR boot sector from file: "+BootSectorFile+" to device: "+BootSectorTargetDevice+"...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
-            CoreTools.StartProcess("dd if="+BootSectorFile+" of="+BootSectorTargetDevice+" bs=446 count=1", ShowOutput=False)
-
-        else:
-            #Restore the UEFISystemPartition.
-            logger.info("EssentialBackendTools: Main().RestoreBootSector(): Restoring UEFI Partition ("+SystemInfo["UEFISystemPartition"]+") from file: "+BootSectorFile+"...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 65)
-            CoreTools.StartProcess("dd if="+BootSectorFile+" of="+SystemInfo["UEFISystemPartition"], ShowOutput=False)
-
-        #Unmount the partition containing the file, if there is one. *** Is this necessary? ***
-        if MountedFS != "None":
-            logger.info("EssentialBackendTools: Main().RestoreBootSector(): Unmounting partition: "+MountedFS+"...")
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 85)
-            if CoreTools.Unmount(MountedFS) != 0:
-                logger.error("EssentialBackendTools: Main().RestoreBootSector(): Failed to unmount "+MountedFS+"! Continuing anyway...")
-
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Restoring the Boot Sector!")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Restoring the Boot Sector...###\n")
-        logger.info("EssentialBackendTools: Main().RestoreBootSector(): Finished restoring the boot sector!")
-
     def QuickFileSystemCheck(self): #*** This is very duplicated with BadSectorCheck, can we merge them and put a check in? *** *** Will need lots of work when we switch to dictionaries ***
         """Quickly check all filesystems."""
         logger.debug("EssentialBackendTools: Main().QuickFileSystemCheck(): Starting...")
