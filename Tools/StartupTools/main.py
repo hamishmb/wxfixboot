@@ -448,14 +448,13 @@ class Main():
 
         #Options in Restore dlgs
         BootSectorTargetDevice = "None"
-        BootSectorBackupType = "None"
 
         #Other Options
         OptionsDlg1Run = False
 
         SystemInfo["PreviousOSChoice"] = ""
 
-        return QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run
+        return QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, BootSectorTargetDevice, OptionsDlg1Run
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""

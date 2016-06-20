@@ -544,7 +544,6 @@ class InitThread(threading.Thread):
         global MakeSystemSummary
         global BLOptsDlgRun
         global BootSectorTargetDevice
-        global BootSectorBackupType
         global OptionsDlg1Run
 
         #Initialise them.
@@ -556,11 +555,10 @@ class InitThread(threading.Thread):
         MakeSystemSummary = ""
         BLOptsDlgRun = ""
         BootSectorTargetDevice = ""
-        BootSectorBackupType = ""
         OptionsDlg1Run = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
+        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, BootSectorTargetDevice, OptionsDlg1Run = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -2224,9 +2222,6 @@ class RestoreWindow(wx.Frame):
         """Grab Image path"""
         logger.debug("RestoreWindow().SelectFile(): File selection choice box changed...")
 
-        #Set up global variables.
-        global BootSectorBackupType
-
         File = self.BackupFileChoice.GetStringSelection()
 
         #Determine what to do here.
@@ -2297,8 +2292,6 @@ class RestoreWindow(wx.Frame):
 
         #Save File, Restoring, and BackupType to the correct global variables, depending on which purpose this class is serving (Boot Sector Restoration Window).
         logger.info("RestoreWindow().SelectFile(): Current config: File = "+File+", Restore = "+unicode(Restore)+", BackupType = "+BackupType+"...")
-
-        BootSectorBackupType = BackupType
 
     def SelectTargetDevice(self, Event=None):
         """Grab Boot Sector Image path."""
