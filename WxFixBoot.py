@@ -543,7 +543,6 @@ class InitThread(threading.Thread):
         global Verify
         global MakeSystemSummary
         global BLOptsDlgRun
-        global BootSectorTargetDevice
         global OptionsDlg1Run
 
         #Initialise them.
@@ -554,11 +553,10 @@ class InitThread(threading.Thread):
         Verify = ""
         MakeSystemSummary = ""
         BLOptsDlgRun = ""
-        BootSectorTargetDevice = ""
         OptionsDlg1Run = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, BootSectorTargetDevice, OptionsDlg1Run = MainStartupTools.SetDefaults()
+        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, OptionsDlg1Run = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -2200,7 +2198,6 @@ class RestoreWindow(wx.Frame):
 
     def SetupOptions(self):
         """Set up the choiceboxes according to the values of the variables."""
-        TargetDevice = BootSectorTargetDevice
 
         #Image file choice.
         if File != "None":
@@ -2297,9 +2294,6 @@ class RestoreWindow(wx.Frame):
         """Grab Boot Sector Image path."""
         logger.debug("RestoreWindow().SelectTargetDevice(): Target device selection choice box has changed...")
 
-        #Set up global variables.
-        global BootSectorTargetDevice
-
         TargetDevice = self.TargetDeviceChoice.GetStringSelection()
 
         #Determine what to do here.
@@ -2323,12 +2317,8 @@ class RestoreWindow(wx.Frame):
         #Save TargetDevice to the correct global variable, depending on which purpose this class is serving (Boot Sector Restoration Window).
         logger.info("RestoreWindow().SelectTargetDevice(): Current config: TargetDevice = "+TargetDevice+"...")
 
-        BootSectorTargetDevice = TargetDevice
-
     def ExitWindow(self, Event=None):
         """Exits Restore Window, or shows a warning to the user if needed"""
-        TargetDevice = BootSectorTargetDevice
-
         if File != "None" and Restore and TargetDevice != "None":
             #Show an info message.
             dlg = wx.MessageDialog(self.Panel, "Do you want to continue? This operation can cause data loss. Only continue if you are certain you've selected the right target device and backup file, and if the backup was created with WxFixBoot. If you restore a bootsector, some options, such as installing a different bootloader and reinstalling or updating your bootloader, will be disabled. If you want to change other settings, you can always restart WxFixBoot afterwards and then change them.", "WxFixBoot - Information", style=wx.YES_NO | wx.ICON_EXCLAMATION, pos=wx.DefaultPosition)

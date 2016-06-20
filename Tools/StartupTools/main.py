@@ -446,15 +446,12 @@ class Main():
         #Options in Bootloader Options dlg
         BLOptsDlgRun = False
 
-        #Options in Restore dlgs
-        BootSectorTargetDevice = "None"
-
         #Other Options
         OptionsDlg1Run = False
 
         SystemInfo["PreviousOSChoice"] = ""
 
-        return QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, BootSectorTargetDevice, OptionsDlg1Run
+        return QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, OptionsDlg1Run
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""
