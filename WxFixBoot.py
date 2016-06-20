@@ -544,7 +544,6 @@ class InitThread(threading.Thread):
         global MakeSystemSummary
         global BLOptsDlgRun
         global RestoreBootSector
-        global BootSectorFile
         global BootSectorTargetDevice
         global BootSectorBackupType
         global OptionsDlg1Run
@@ -558,13 +557,12 @@ class InitThread(threading.Thread):
         MakeSystemSummary = ""
         BLOptsDlgRun = ""
         RestoreBootSector = ""
-        BootSectorFile = ""
         BootSectorTargetDevice = ""
         BootSectorBackupType = ""
         OptionsDlg1Run = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, RestoreBootSector, BootSectorFile, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
+        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, RestoreBootSector, BootSectorTargetDevice, BootSectorBackupType, OptionsDlg1Run = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -809,8 +807,6 @@ class MainWindow(wx.Frame):
     def SaveMainOpts(self):
         """Save all options"""
         logger.debug("MainWindow().SaveMainOpts(): Saving Options on MainWindow...")
-        global BootSectorFile
-        global RestoreBootSector
         global QuickFSCheck
         global BadSectCheck
 
@@ -2226,7 +2222,6 @@ class RestoreWindow(wx.Frame):
 
     def SetupOptions(self):
         """Set up the choiceboxes according to the values of the variables."""
-        File = BootSectorFile
         TargetDevice = BootSectorTargetDevice
 
         #Image file choice.
@@ -2250,7 +2245,6 @@ class RestoreWindow(wx.Frame):
         logger.debug("RestoreWindow().SelectFile(): File selection choice box changed...")
 
         #Set up global variables.
-        global BootSectorFile
         global RestoreBootSector
         global BootSectorBackupType
 
@@ -2325,7 +2319,6 @@ class RestoreWindow(wx.Frame):
         #Save File, Restoring, and BackupType to the correct global variables, depending on which purpose this class is serving (Boot Sector Restoration Window).
         logger.info("RestoreWindow().SelectFile(): Current config: File = "+File+", Restore = "+unicode(Restore)+", BackupType = "+BackupType+"...")
 
-        BootSectorFile = File
         RestoreBootSector = Restore
         BootSectorBackupType = BackupType
 
@@ -2363,7 +2356,6 @@ class RestoreWindow(wx.Frame):
 
     def ExitWindow(self, Event=None):
         """Exits Restore Window, or shows a warning to the user if needed"""
-        File = BootSectorFile
         Restore = RestoreBootSector
         TargetDevice = BootSectorTargetDevice
 
@@ -2821,11 +2813,11 @@ class BackendThread(threading.Thread):
             #ReportList.write("\n\tBacked up Boot Sector From: "+SystemInfo["RootDevice"]+"\n")
         #    ReportList.write("\tTarget Boot Sector File: (*** Disabled as no way of saving this until switch to dictionaries ***)\n\n") #*** +BootSectorBackupFile+"\n\n")
 
-        ReportList.write("Restore Boot Sector: "+unicode(RestoreBootSector)+"\n")
-        if RestoreBootSector:
-            ReportList.write("\n\tBoot Sector Backup File: "+BootSectorFile+"\n")
-            ReportList.write("\tBoot Sector Target Device: "+BootSectorTargetDevice+"\n")
-            ReportList.write("\tBoot Sector Backup Type: "+BootSectorBackupType+"\n") 
+        #ReportList.write("Restore Boot Sector: "+unicode(RestoreBootSector)+"\n")
+        #if RestoreBootSector:
+        #    ReportList.write("\n\tBoot Sector Backup File: "+BootSectorFile+"\n")
+        #    ReportList.write("\tBoot Sector Target Device: "+BootSectorTargetDevice+"\n")
+        #    ReportList.write("\tBoot Sector Backup Type: "+BootSectorBackupType+"\n") 
 
         #Do WxFixBoot's settings.
         ReportList.write("\n##########Other WxFixBoot Settings##########\n")
