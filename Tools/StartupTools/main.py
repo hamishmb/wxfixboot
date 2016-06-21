@@ -115,20 +115,10 @@ class Main():
 
     def SortSomeInfo(self): #*** Put this somewhere else ***
         """TEMPORARY function to hold this stuff before I put it somewhere else"""
-        SystemInfo["Devices"] = []
-
-        Keys = DiskInfo.keys()
-        Keys.sort()
-
-        for Disk in Keys:
-            if DiskInfo[Disk]["Type"] == "Device":
-                if Disk[5:7] in ("sd", "hd"):
-                    SystemInfo["Devices"].append(Disk)
-
         #Detect Linux Partitions.
         SystemInfo["LinuxPartitions"] = []
 
-        for Disk in Keys:
+        for Disk in DiskInfo.keys():
             print(DiskInfo[Disk]["FileSystem"], Disk)
             if DiskInfo[Disk]["FileSystem"] in ("ext", "ext2", "ext3", "ext4", "btrfs", "xfs", "jfs", "zfs", "minix", "reiserfs"):
                 SystemInfo["LinuxPartitions"].append(Disk)
@@ -455,7 +445,7 @@ class Main():
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["Devices"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], Settings["FirmwareType"], OSInfo.
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], Settings["FirmwareType"], OSInfo.
         VarList = ()
         FailedList = []
 

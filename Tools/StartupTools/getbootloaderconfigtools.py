@@ -426,7 +426,7 @@ class Main(): #*** Refactor all of these ***
         MenuEntriesFile.close()
         return MenuEntries, MenuIDs
 
-    def AssembleLILOMenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter):
+    def AssembleLILOMenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter): #*** Refactor ***
         """Assemble a menu entry in the dictionary for LILO/ELILO"""
         logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Preparing to get menu entry info...")
 
@@ -541,7 +541,7 @@ class Main(): #*** Refactor all of these ***
         logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Done! Returning information...")
         ConfigFile.close()
 
-        #Ignore ELILO's boot disk setting. *** Check that it's the same as the detected EFI partition? ***
+        #Ignore ELILO's boot disk setting.
         if "/etc/lilo.conf" in ConfigFilePath:
             return (Timeout, KernelOptions, BootDisk, DefaultOS)
 
