@@ -186,7 +186,6 @@ class Main():
                 OSInfo[OSName]["Partition"] = Partition
                 OSInfo[OSName]["PackageManager"] = PackageManager
                 OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName)
-                OSInfo[OSName]["IsModifyable"] = "Unknown"
                 SystemInfo["UserFriendlyOSNames"].append(OSName)
 
                 if Chroot == False:
@@ -250,7 +249,7 @@ class Main():
                 SystemInfo["FirmwareType"] = "UEFI"
                 DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
 
-    def GetBootloaders(self): #*** Test this thoroughly *** *** Fedora: Check under /boot/grub2, and also check for subdirs like i386-pc in grubdir *** *** Check for separate /boot partition ***
+    def GetBootloaders(self): #*** Test this thoroughly *** *** Fedora: Check under /boot/grub2, and also check for subdirs like i386-pc in grubdir ***
         """Find all bootloaders (for each OS), and gather some information about them"""
         Keys = OSInfo.keys()
         Keys.sort()
@@ -264,17 +263,28 @@ class Main():
 
                 if CoreTools.MountPartition(OSInfo[OS]["Partition"], MountPoint) != 0:
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to mount "+OS+"'s partition! Skipping bootloader detection for this OS.")
+                    continue
 
                 #Set up chroot.
-                Retval = CoreTools.SetUpChroot(MountPoint)
-
-                if Retval != 0:
+                if CoreTools.SetUpChroot(MountPoint) != 0:
                     logger.error("MainStartupTools: Main().GetBootloaders(): Couldn't set up chroot on "+MountPoint+"! Attempting to remove it in case it's partially set up, and then skipping this OS...")
                     CoreTools.TearDownChroot(MountPoint)
+                    continue
 
             else:
                 MountPoint = ""
                 Chroot = False
+
+            #Mount a /boot partition if it exists.
+            if OSInfo[OS]["BootPartition"] != "Unknown":
+                if CoreTools.MountPartition(OSInfo[OS]["BootPartition"], MountPoint+"/boot") != 0:
+                    logger.error("MainStartupTools: Main().GetBootloaders(): Failed to mount "+OS+"'s /boot partition! Skipping bootloader detection for this OS.")
+                    CoreTools.TearDownChroot(MountPoint)
+
+                    if not OSInfo[OS]["IsCurrentOS"]:
+                        CoreTools.Unmount(MountPoint)
+
+                    continue
 
             #Look for bootloaders.
             BootloaderInfo[OS] = {}
@@ -335,8 +345,8 @@ class Main():
                         print("\t\t\t"+Thing)
 
             #*****************
-
-            BootloaderInfo[OS]["IsModifyable"] = OSInfo[OS]["IsModifyable"] #*** Do we need these here as well? ***
+            #*** Implemment this ***
+            BootloaderInfo[OS]["IsModifyable"] = "Unknown"
             BootloaderInfo[OS]["Comments"] = "N/A"
 
             #Initialise some default no-action settings.
@@ -371,6 +381,11 @@ class Main():
             BootloaderInfo[OS]["GUIState"]["BackupBootloaderChoiceState"] = False
             BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
             BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = False
+
+            #Unmount a /boot partition if it exists.
+            if OSInfo[OS]["BootPartition"] != "Unknown":
+                if CoreTools.Unmount(MountPoint+"/boot") != 0:
+                    logger.error("MainStartupTools: Main().GetBootloaders(): Failed to unmount "+OS+"'s /boot partition! Continuing anyway...")
 
             #Clean up if needed.
             if not OSInfo[OS]["IsCurrentOS"]:

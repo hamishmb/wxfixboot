@@ -1038,18 +1038,17 @@ class SystemInfoPage4(wx.Panel):
         NoteBookSharedFunctions.BindEvents(self)
 
         logger.debug("SystemInfoPage4().__init__(): Updating list ctrl with OS Info...")
-        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager", "IsModifyable"], Dictionary=OSInfo)
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager"], Dictionary=OSInfo)
 
     def OnSize(self, Event=None):
         """Auto resize the ListCtrl columns"""
         Width, Height = self.ListCtrl.GetClientSizeTuple()
 
-        self.ListCtrl.SetColumnWidth(0, int(Width * 0.25))
+        self.ListCtrl.SetColumnWidth(0, int(Width * 0.4))
         self.ListCtrl.SetColumnWidth(1, int(Width * 0.1))
         self.ListCtrl.SetColumnWidth(2, int(Width * 0.1))
-        self.ListCtrl.SetColumnWidth(3, int(Width * 0.15))
+        self.ListCtrl.SetColumnWidth(3, int(Width * 0.2))
         self.ListCtrl.SetColumnWidth(4, int(Width * 0.2))
-        self.ListCtrl.SetColumnWidth(5, int(Width * 0.2))
 
         if Event != None:
             Event.Skip()
@@ -1496,7 +1495,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #List Ctrl.
         self.ListCtrl = wx.ListCtrl(self.Panel, -1, style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_VRULES)
-        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager", "IsModifyable"], Dictionary=OSInfo)
+        NoteBookSharedFunctions.UpdateListCtrl(self, Headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager"], Dictionary=OSInfo)
 
         #Text ctrl.
         self.NewKernelOptionsTextCtrl = wx.TextCtrl(self.Panel, -1, "")
@@ -1505,12 +1504,11 @@ class BootloaderOptionsWindow(wx.Frame):
         """Auto resize the ListCtrl columns"""
         Width, Height = self.ListCtrl.GetClientSizeTuple()
 
-        self.ListCtrl.SetColumnWidth(0, int(Width * 0.25))
+        self.ListCtrl.SetColumnWidth(0, int(Width * 0.4))
         self.ListCtrl.SetColumnWidth(1, int(Width * 0.1))
         self.ListCtrl.SetColumnWidth(2, int(Width * 0.1))
-        self.ListCtrl.SetColumnWidth(3, int(Width * 0.15))
+        self.ListCtrl.SetColumnWidth(3, int(Width * 0.2))
         self.ListCtrl.SetColumnWidth(4, int(Width * 0.2))
-        self.ListCtrl.SetColumnWidth(5, int(Width * 0.2))
 
         if Event != None:
             Event.Skip()
