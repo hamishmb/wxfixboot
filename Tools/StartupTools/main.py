@@ -185,7 +185,7 @@ class Main():
 
             #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name. *** For current OS, quit if not named ***
             if Retval != 0 and OSArch != None:
-                OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch)
+                OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch, IsCurrentOS=IsCurrentOS)
 
             #Look for APT. *** Maybe put this block somewhere else *** *** Refactor like arch detection code ***
             Retval = CoreTools.StartProcess(APTCmd, ShowOutput=False)

@@ -49,7 +49,7 @@ class Main(): #*** Refactor all of these ***
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+"...")
         return "Unknown"
 
-    def ParseGRUB2MenuEntries(self, MenuEntriesFilePath):
+    def ParseGRUB2MenuEntries(self, MenuEntriesFilePath): #*** Reduce duplication, perhaps with a recursive call ***
         """Find and parse GRUB2 (EFI and BIOS) menu entries."""
         logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Finding and parsing menu entries...")
 
@@ -169,7 +169,7 @@ class Main(): #*** Refactor all of these ***
 
         return MenuEntries, EntryCounter
 
-    def GetGRUB2Config(self, ConfigFilePath, GRUBEnvironmentFilePath, MenuEntries): #*** Refactor ***
+    def GetGRUB2Config(self, ConfigFilePath, GRUBEnvironmentFilePath, MenuEntries): #*** Refactor, and reduce duplication  ***
         """Get important bits of config from grub2 (MBR or UEFI)"""
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Getting config at "+ConfigFilePath+"...")
 
@@ -207,7 +207,7 @@ class Main(): #*** Refactor all of these ***
                 Temp = Line.split("=")[1].replace("\"", "").replace("\'", "").replace("\n", "")
 
                 if Temp.isdigit() or ">" in Temp:
-                    #Find the corresponding GRUB menutentry, counting up from 0.
+                    #Find the corresponding GRUB menuentry, matching by ID. *** What if we don't get a match? ***
                     logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by index...")
                     for Menu in MenuEntries.keys():
                         for OS in MenuEntries[Menu].keys():
@@ -216,16 +216,56 @@ class Main(): #*** Refactor all of these ***
                                 break
 
                 elif Temp == "saved":
-                    #Find the corresponding GRUB menutentry, matching by name. *** What if it's an ID? *** *** Handle that too ***
-                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by name in GRUB environment file...")
+                    #Find the corresponding GRUB menuentry, matching by name or ID.
+                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS in GRUB environment file...")
                     GRUBEnvironmentFile = open(GRUBEnvironmentFilePath, "r")
 
                     for Var in GRUBEnvironmentFile:
                         if "saved_entry=" in Var:
-                            DefaultOS = Var.split("=")[1] #*** Check that it matches something in the MenuEntries list *** *** Also handle this if it's a string ***
+                            DefaultOS = Var.split("=")[1].replace("\n", "")
 
-                else: #*** Check that it matches something in the MenuEntries list ***
-                    DefaultOS = Temp
+                    if DefaultOS.isdigit() or ">" in DefaultOS:
+                        #Find the corresponding GRUB menuentry, matching by ID. *** What if we don't get a match? ***
+                        logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by index...")
+                        for Menu in MenuEntries.keys():
+                            for OS in MenuEntries[Menu].keys():
+                                if MenuEntries[Menu][OS]["ID"] == DefaultOS:
+                                    DefaultOS = OS
+                                    break
+
+                    else:
+                        #Check it is in the menuentries list.
+                        logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by name...")
+                        Found = False
+
+                        for Menu in MenuEntries.keys():
+                            for MenuEntry in MenuEntries[Menu].keys():
+                                if DefaultOS == MenuEntry:
+                                    Found = True
+
+                        if not Found:
+                            logger.warning("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Didn't find default OS by name...")
+                            DefaultOS = "Unknown"
+
+                        else:
+                            logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Found default OS by name...")
+
+                else:
+                    #Check it is in the menuentries list.
+                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by name...")
+                    Found = False
+
+                    for Menu in MenuEntries.keys():
+                        for MenuEntry in MenuEntries[Menu].keys():
+                            if DefaultOS == MenuEntry:
+                                Found = True
+
+                    if Found:
+                        logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Found default OS by name...")
+                        DefaultOS = Temp
+
+                    else:
+                        logger.warning("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Didn't find default OS by name...")
 
                 logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Done!")
 
