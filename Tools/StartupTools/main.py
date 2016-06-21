@@ -119,7 +119,6 @@ class Main():
         SystemInfo["LinuxPartitions"] = []
 
         for Disk in DiskInfo.keys():
-            print(DiskInfo[Disk]["FileSystem"], Disk)
             if DiskInfo[Disk]["FileSystem"] in ("ext", "ext2", "ext3", "ext4", "btrfs", "xfs", "jfs", "zfs", "minix", "reiserfs"):
                 SystemInfo["LinuxPartitions"].append(Disk)
 
@@ -141,7 +140,10 @@ class Main():
         SystemInfo["UserFriendlyOSNames"] = []
 
         #Get Linux OSs.
-        for Partition in SystemInfo["LinuxPartitions"]:
+        Keys = DiskInfo.keys()
+        Keys.sort()
+
+        for Partition in Keys:
             logger.debug("MainStartupTools: Main().GetLinuxOSs(): Looking on "+Partition+"...")
 
             if Partition == RootFS:
