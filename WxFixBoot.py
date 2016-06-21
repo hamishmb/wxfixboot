@@ -471,7 +471,7 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining Firmware Type...")
         MainStartupTools.GetFirmwareType()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "70")
-        logger.info("InitThread(): Determined Firmware Type as: "+Settings["FirmwareType"])
+        logger.info("InitThread(): Determined Firmware Type as: "+SystemInfo["FirmwareType"])
 
         #New bootloader info getting function.
         logger.info("InitThread(): Finding all Bootloaders and getting their settings...")
@@ -2302,8 +2302,6 @@ class ProgressWindow(wx.Frame):
         #Reset all settings to defaults, except ones like LiveDisk, which won't ever need to change.
         MainStartupTools.SetDefaults()
 
-        Settings["FirmwareType"] = SystemInfo["FirmwareType"]
-
         #Show MainWindow
         MainFrame = MainWindow()
         app.SetTopWindow(MainFrame)
@@ -2448,7 +2446,6 @@ class BackendThread(threading.Thread):
         #Do Firmware Information.
         ReportList.write("\n##########Firmware Information##########\n")
         ReportList.write("Detected firmware type: "+SystemInfo["FirmwareType"]+"\n")
-        ReportList.write("Selected Firmware Type: "+Settings["FirmwareType"]+"\n")
         ReportList.write("UEFI System Partition (UEFI Bootloader target): "+SystemInfo["UEFISystemPartition"]+"\n")
 
         #Do Bootloader information
