@@ -1321,7 +1321,7 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().LaunchblOpts(): Calling self.SaveOptions()...")
         self.SaveOptions()
 
-        if SystemInfo["DetectedFirmwareType"] == "BIOS":
+        if SystemInfo["FirmwareType"] == "BIOS":
             dlg = wx.MessageDialog(self.Panel, "You have BIOS firmware so you will be unable to select a UEFI bootloader to install.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
@@ -1735,7 +1735,7 @@ class BootloaderOptionsWindow(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
 
-        elif SystemInfo["DetectedFirmwareType"] == "BIOS":
+        elif SystemInfo["FirmwareType"] == "BIOS":
             Choices = ["GRUB2", "LILO"]
 
         else:
@@ -2302,7 +2302,7 @@ class ProgressWindow(wx.Frame):
         #Reset all settings to defaults, except ones like LiveDisk, which won't ever need to change.
         MainStartupTools.SetDefaults()
 
-        Settings["FirmwareType"] = SystemInfo["DetectedFirmwareType"]
+        Settings["FirmwareType"] = SystemInfo["FirmwareType"]
 
         #Show MainWindow
         MainFrame = MainWindow()
@@ -2447,7 +2447,7 @@ class BackendThread(threading.Thread):
 
         #Do Firmware Information.
         ReportList.write("\n##########Firmware Information##########\n")
-        ReportList.write("Detected firmware type: "+SystemInfo["DetectedFirmwareType"]+"\n")
+        ReportList.write("Detected firmware type: "+SystemInfo["FirmwareType"]+"\n")
         ReportList.write("Selected Firmware Type: "+Settings["FirmwareType"]+"\n")
         ReportList.write("UEFI System Partition (UEFI Bootloader target): "+SystemInfo["UEFISystemPartition"]+"\n")
 

@@ -234,7 +234,7 @@ class Main():
             #It's UEFI.
             logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as UEFI.")
             Settings["FirmwareType"] = "UEFI" #*** Get rid of this ***
-            SystemInfo["DetectedFirmwareType"] = "UEFI"
+            SystemInfo["FirmwareType"] = "UEFI"
 
         else:
             #Look a second way.
@@ -244,13 +244,13 @@ class Main():
                 #It's BIOS.
                 logger.info("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as BIOS...")
                 Settings["FirmwareType"] = "BIOS"
-                SystemInfo["DetectedFirmwareType"] = "BIOS"
+                SystemInfo["FirmwareType"] = "BIOS"
 
             else:
                 #It's UEFI.
                 logger.warning("MainStartupTools: Main().GetFirmwareType(): Detected Firmware Type as UEFI, but couldn't find UEFI variables!")
                 Settings["FirmwareType"] = "UEFI"
-                SystemInfo["DetectedFirmwareType"] = "UEFI"
+                SystemInfo["FirmwareType"] = "UEFI"
                 DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
 
     def GetBootloaders(self): #*** Test this thoroughly *** *** Fedora: Check under /boot/grub2, and also check for subdirs like i386-pc in grubdir *** *** Check for separate /boot partition ***
@@ -412,7 +412,7 @@ class Main():
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], Settings["FirmwareType"], OSInfo.
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["DefaultOS"], SystemInfo["FirmwareType"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], Settings["FirmwareType"], OSInfo.
         VarList = ()
         FailedList = []
 
