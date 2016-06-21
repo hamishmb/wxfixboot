@@ -217,14 +217,14 @@ class Main():
         #Make sure efivars module is loaded. If it doesn't exist, continue anyway.
         CoreTools.StartProcess("modprobe efivars")
 
-        #Look for the UEFI vars in some common directories. *** Just because the dir is there doesn't mean the vars are (I think) ***
-        if os.path.isdir("/sys/firmware/efi/vars"):
+        #Look for the UEFI vars in some common directories.
+        if os.path.isdir("/sys/firmware/efi/vars") and CoreTools.StartProcess("ls /sys/firmware/efi/vars", ReturnOutput=True)[1] != "":
             UEFIVariables = True
             logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/vars...")
 
-        elif os.path.isdir("/proc/efi/vars"):
+        elif os.path.isdir("/proc/efi/vars") and CoreTools.StartProcess("ls /proc/efi/vars", ReturnOutput=True)[1] != "":
             UEFIVariables = True
-            logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/efivars...")
+            logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /proc/efi/efivars...")
 
         else:
             logger.info("MainStartupTools: Main().GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars or /sys/firmware/efi/efivars. This is normal if running on a BIOS system. Determining firmware type a different way...")
