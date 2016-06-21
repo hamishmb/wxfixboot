@@ -57,21 +57,21 @@ class Main():
                 UnmountAfter = True
 
                 #Mount the partition using the global mount function.
-                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
-
-                if Retval != 0:
+                if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
                     logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+Partition+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
-                    DialogTools.ShowMsgDlg(Kind="error", Message="WxixBoot failed to mount the partition containing: "+OS+"! This OS will now be skipped.")
+                    DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"! This OS will now be skipped.")
                     return False #*** Not handled at the moment ***
 
             #Set up chroot.
-            Retval = CoreTools.SetUpChroot(MountPoint)
-
-            if Retval != 0:
+            if CoreTools.SetUpChroot(MountPoint) != 0:
                 logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
-            #If there's a seperate /boot partition for this OS, make sure it's mounted. *** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this *** *** this might mount other stuff and interfere too ***
-            CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False)
+            #If there's a seperate /boot partition for this OS, make sure it's mounted.
+            if OSInfo[OS]["BootPartition"] != "Unknown":
+                if CoreTools.MountPartition(Partition=OSInfo[OS]["BootPartition"], MountPoint=MountPoint+"/boot") != 0:
+                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+Partition+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
+                    DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! This OS will now be skipped.")
+                    return False #*** Not handled at the moment ***
 
         #Remove the bootloader. *** Test all these ***
         if BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY":
@@ -108,7 +108,8 @@ class Main():
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         if CoreTools.StartProcess(Cmd) != 0:
-            logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove old bootloader! Warning user... ***TODO***") #*** Warn user ***
+            logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! Warning user...")
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS"+! This OS will now be skipped.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
 
         #Tear down chroot if needed.
         if UseChroot:
@@ -170,21 +171,21 @@ class Main():
             else:
                 UnmountAfter = True
 
-                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint)
-
-                if Retval != 0:
+                if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
                     logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+Partition+"! Warn the user and skip this OS.")
                     DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. It is recommended to do a Bad Sector check, and then try again.") #*** Is this good advice? Try to determine the cause of the problem ***
                     return False #*** Not handled yet ***
 
             #Set up chroot.
-            Retval = CoreTools.SetUpChroot(MountPoint=MountPoint)
-
-            if Retval != 0:
+            if CoreTools.SetUpChroot(MountPoint=MountPoint) != 0:
                 logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
 
             #If there's a seperate /boot partition for this OS, make sure it's mounted.
-            CoreTools.StartProcess("chroot "+MountPoint+" mount -av", ShowOutput=False) #*** Read this OS's FSTAB instead of hoping that this works, cos then we can use the global mount function to do this ***
+            if OSInfo[OS]["BootPartition"] != "Unknown":
+                if CoreTools.MountPartition(Partition=OSInfo[OS]["BootPartition"], MountPoint=MountPoint+"/boot") != 0:
+                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+Partition+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
+                    DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! This OS will now be skipped.")
+                    return False #*** Not handled at the moment ***
 
         #Update the package lists.
         if PackageManager == "apt-get":
@@ -218,12 +219,10 @@ class Main():
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing GRUB-UEFI...")
             #Mount the UEFI partition at MountPoint/boot/efi.
-            #Unmount it first though, in case it's already mounted. *** Alternately, check where it's mounted and leave it if it's okay ***
-            if CoreTools.Unmount(BootloaderInfo[OS]["BootDisk"]) != 0:
-                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+BootloaderInfo[OS]["BootDisk"]+"! This probably doesn't matter...")
-
             if CoreTools.MountPartition(Partition=BootloaderInfo[OS]["BootDisk"], MountPoint=MountPoint+"/boot/efi") != 0:
-                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+BootloaderInfo[OS]["BootDisk"]+"! to "+MountPoint+"/boot/efi! *** TODO: Abort bootloader installation. *** For now, continue anyway...")
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+BootloaderInfo[OS]["BootDisk"]+"! to "+MountPoint+"/boot/efi! Aborting bootloader installation and warning user...")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to mount the partition containing "+OS+"'s EFI partition! This OS will now be skipped.")
+                return False #*** Not handled at the moment ***
 
             if PackageManager == "apt-get":
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
@@ -243,8 +242,9 @@ class Main():
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        if CoreTools.StartProcess(Cmd) != 0: #*** Warn User ***
-            logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to uninstall old bootloader. Warn user ***TODO***...")
+        if CoreTools.StartProcess(Cmd) != 0:
+            logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to uninstall old bootloader. Warn user...")
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to uninstall "+OS+"'s old bootloader! Continuing anyway...")
 
         #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot.
         if CoreTools.Unmount(MountPoint+"/boot") != 0:
