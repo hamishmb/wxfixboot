@@ -113,15 +113,6 @@ class Main():
             logger.critical("MainStartupTools: Main().CheckFS(): Failed to check filesystems! Doing emergency exit...")
             CoreTools.EmergencyExit("Failed to check filesystems! Please fix your filesystems and then run WxFixBoot again.")
 
-    def SortSomeInfo(self): #*** Put this somewhere else ***
-        """TEMPORARY function to hold this stuff before I put it somewhere else"""
-        #Detect Linux Partitions.
-        SystemInfo["LinuxPartitions"] = []
-
-        for Disk in DiskInfo.keys():
-            if DiskInfo[Disk]["FileSystem"] in ("ext", "ext2", "ext3", "ext4", "btrfs", "xfs", "jfs", "zfs", "minix", "reiserfs"):
-                SystemInfo["LinuxPartitions"].append(Disk)
-
     def MountCoreFS(self):
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
@@ -447,7 +438,7 @@ class Main():
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["LinuxPartitions"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], Settings["FirmwareType"], OSInfo.
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["DefaultOS"], SystemInfo["DetectedFirmwareType"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], Settings["FirmwareType"], OSInfo.
         VarList = ()
         FailedList = []
 
