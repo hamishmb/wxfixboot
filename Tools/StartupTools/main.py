@@ -169,51 +169,22 @@ class Main():
             #Run the function to get the architechure.
             OSArch = CoreStartupTools.DetermineOSArchitecture(MountPoint=MountPoint)
 
-            #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name. *** For current OS, quit if not named ***
+            #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name.
             if Retval != 0 and OSArch != None:
                 OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch, IsCurrentOS=IsCurrentOS)
 
-            #Look for APT. *** Maybe put this block somewhere else *** *** Refactor like arch detection code ***
-            Retval = CoreTools.StartProcess(APTCmd, ShowOutput=False)
-
-            if Retval != 0:
-                #Couldn't find apt!
-                logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Didn't find apt...")
-                APT = False
-
-                #Look for YUM.
-                Retval = CoreTools.StartProcess(YUMCmd, ShowOutput=False)
-
-                if Retval != 0:
-                    logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Didn't find yum...")
-                    YUM = False
-
-                else:
-                    #Found YUM!
-                    logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Found yum...")
-                    YUM = True
-
-            else:
-                #Found APT!
-                logger.info("MainBootloaderTools: Main().LookForAPTOnPartition(): Found apt...")
-                APT = True
-                YUM = False
+            #Look for APT.
+            PackageManager = CoreStartupTools.DeterminePackageManager(APTCmd=APTCmd, YUMCmd=YUMCmd) 
 
             #Also check if CoreStartupTools.AskForOSName was used to determine the name. If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
-            if OSName != None and OSArch != None and (APT or YUM):
+            if OSName != None and OSArch != None and PackageManager != "Unknown":
                 #Add this information to OSInfo.
                 OSInfo[OSName] = {}
                 OSInfo[OSName]["Name"] = OSName
                 OSInfo[OSName]["IsCurrentOS"] = IsCurrentOS
                 OSInfo[OSName]["Arch"] = OSArch
                 OSInfo[OSName]["Partition"] = Partition
-
-                if APT:
-                    OSInfo[OSName]["PackageManager"] = "apt-get"
-
-                else:
-                    OSInfo[OSName]["PackageManager"] = "yum"
-
+                OSInfo[OSName]["PackageManager"] = PackageManager
                 OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName)
                 OSInfo[OSName]["IsModifyable"] = "Unknown"
                 SystemInfo["UserFriendlyOSNames"].append(OSName)

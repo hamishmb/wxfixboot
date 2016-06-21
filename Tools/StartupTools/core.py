@@ -23,6 +23,35 @@ from __future__ import unicode_literals
 
 #Begin Main Class. *** Optimise/Reorganise this again later ***
 class Main():
+    def DeterminePackageManager(self, APTCmd, YUMCmd):
+        """Determine and return the package manager using the given command strings."""
+        PackageManager = "Unknown"
+
+        for Cmd in (APTCmd, YUMCmd):
+            Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
+
+            if Retval != 0:
+                if Cmd == APTCmd:
+                    #Couldn't find apt!
+                    logger.info("MainStartupTools: Main().DeterminePackageManager(): Didn't find apt. Looking for yum...")
+                    continue
+
+                else:
+                    logger.info("MainStartupTools: Main().DeterminePackageManager(): Didn't find apt or yum. Returning 'Unknown'...")
+
+            else:
+                if Cmd == APTCmd:
+                    #Found APT!
+                    logger.info("MainStartupTools: Main().DeterminePackageManager(): Found apt...")
+                    PackageManager = "apt-get"
+
+                else:
+                    #Found YUM!
+                    logger.info("MainStartupTools: Main().DeterminePackageManager(): Found yum...")
+                    PackageManager = "yum"
+
+        return PackageManager
+
     def LookForBootloadersOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly ***
         """Look for bootloaders installed in the OS in the given mount point."""
         if UsingChroot:
@@ -182,7 +211,7 @@ class Main():
             return None
 
         else:
-            logger.debug("CoreStartupTools: Main().AskForOSName(): User reported recent Linux OS in "+Partition+". Asking name of OS...")
+            logger.debug("CoreStartupTools: Main().AskForOSName(): User reported recent Linux OS in "+Partition+" (or OS is current OS). Asking name of OS...")
             #User reported that an OS is here.
             Result = DialogTools.ShowTextEntryDlg(Message="Please enter the name of the operating system that is on "+Partition+".\nThe name you specify will be used later in the program", Title="WxFixBoot - Enter OS Name")
 
