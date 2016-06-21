@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor all of these *** *** Add recovery boot options for LILO/ELILO *** *** Check if LILO installs on GPT disks (GRUB2 does) *** *** Set GRUB_DEFAULT to an ID, rather than "saved" *** *** Use kernel options from each menuentry? ***
+class Main(): #*** Refactor all of these *** *** Add recovery boot options for LILO/ELILO *** *** Check if LILO installs on GPT disks (GRUB2 does) *** *** Set GRUB_DEFAULT to an ID, rather than "saved" ***
     def SetGRUB2Config(self, filetoopen, BootloaderTimeout, KernelOptions):
         """Set GRUB2 config."""
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Setting GRUB2 Config in "+filetoopen+"...")

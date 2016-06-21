@@ -824,18 +824,18 @@ class MainWindow(wx.Frame):
         #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
         #Do essential processes first.
         if QuickFSCheck:
-            Operations.append(EssentialBackendTools.QuickFileSystemCheck)
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.QuickFileSystemCheck to Operations...")
+            Operations.append((EssentialBackendTools.FileSystemCheck, "Quick"))
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.FileSystemCheck to Operations...")
 
         if BadSectCheck:
-            Operations.append(EssentialBackendTools.BadSectorCheck)
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.BadSectorCheck to Operations...")
+            Operations.append((EssentialBackendTools.FileSystemCheck, "Thorough"))
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.FileSystemCheck to Operations...")
 
         #Now do other processes.
         for OS in BootloaderInfo.keys():
             if BootloaderInfo[OS]["Settings"]["ChangeThisOS"]:
-                Operations.append([MainBootloaderTools.ManageBootloader, OS])
-                logger.info("MainWindow().CountOperations(): Added [MainBootloaderTools.ManageBootloader, "+OS+"] to Operations...")
+                Operations.append((MainBootloaderTools.ManageBootloader, OS))
+                logger.info("MainWindow().CountOperations(): Added (MainBootloaderTools.ManageBootloader, "+OS+") to Operations...")
 
         #*** Disabled temporarily ***
         #if MakeSystemSummary:
@@ -844,7 +844,7 @@ class MainWindow(wx.Frame):
 
         #Check if we need to check the internet connection, and do so first if needed.
         for Function in Operations:
-            if type(Function) == type([]):
+            if type(Function) == type([]) and Function[0] == MainBootloaderTools.ManageBootloader:
                 logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()...")
                 Operations.insert(0, EssentialBackendTools.CheckInternetConnection())
                 break
@@ -2412,7 +2412,7 @@ class BackendThread(threading.Thread):
         #Run functions to do operations.
         for function in Operations:
             #Run the function.
-            if type(function) != type([]):
+            if type(function) != type(()):
                 function()
 
             else:

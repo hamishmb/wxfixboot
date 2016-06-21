@@ -33,15 +33,15 @@ class Main():
 
         for Disk in Keys:
             #Check the FSType is known and isn't swap.
-            if DiskInfo[Disk]["FileSystem"] not in ("Unknown", "N/A", "swap"):
+            if DiskInfo[Disk]["FileSystem"] not in ("Unknown", "N/A"):
                 #Check if this module is present.
-                if CoreTools.StartProcess("which fsck."+FSType, ShowOutput=False) != 0:
+                if CoreTools.StartProcess("which fsck."+DiskInfo[Disk]["FileSystem"], ShowOutput=False) != 0:
                     #Couldn't find it, add it to the failed list.
-                    logger.warning("HelperBackendTools: Main().FSCKModules(): Couldn't find FSCK module fsck."+FSType+"! Adding it to the list of missing modules...")
-                    FailedList.append("fsck."+FSType)
+                    logger.warning("HelperBackendTools: Main().FSCKModules(): Couldn't find FSCK module fsck."+DiskInfo[Disk]["FileSystem"]+"! Adding it to the list of missing modules...")
+                    FailedList.append("fsck."+DiskInfo[Disk]["FileSystem"])
 
                 else:
-                    logger.debug("HelperBackendTools: Main().FSCKModules(): Found fsck."+FSType+"...")
+                    logger.debug("HelperBackendTools: Main().FSCKModules(): Found fsck."+DiskInfo[Disk]["FileSystem"]+"...")
 
         #Return the list, so FSCheck functions know which FSes to ignore.
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
@@ -98,11 +98,11 @@ class Main():
 
             if CheckTheFS:
                 #Add it to the list for checking.
-                CheckList.append(Disk+" "+FSType+" "+unicode(RemountPartitionAfter))
+                CheckList.append(Disk+" "+DiskInfo[Disk]["FileSystem"]+" "+unicode(RemountPartitionAfter))
 
             else:
                 #Add it to the non-checkable list
-                DoNotCheckList.append(Disk+" with Filesystem: "+FSType)
+                DoNotCheckList.append(Disk+" with Filesystem: "+DiskInfo[Disk]["FileSystem"])
 
         #Report uncheckable partitions.
         if DoNotCheckList != []:

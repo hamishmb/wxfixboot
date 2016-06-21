@@ -99,7 +99,7 @@ class Main():
 
         if Retval != 0:
             logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! Warning user...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS"+! This OS will now be skipped.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! This OS will now be skipped.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
 
         #Tear down chroot if needed.
         if UseChroot:
