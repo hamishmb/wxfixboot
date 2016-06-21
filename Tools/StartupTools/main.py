@@ -135,6 +135,9 @@ class Main():
         Keys.sort()
 
         for Partition in Keys:
+            if DiskInfo[Partition]["Type"] == "Device":
+                continue
+
             logger.debug("MainStartupTools: Main().GetLinuxOSs(): Looking on "+Partition+"...")
 
             if Partition == RootFS:
@@ -153,7 +156,7 @@ class Main():
                 Chroot = True
                 IsCurrentOS = False
 
-                #Mount the partition and check if anything went wrong.
+                #Mount the partition and check if anything went wrong. *** NTFS filesystems can't be mounted twice ***
                 if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
                     #Ignore the partition.
                     logger.warning("MainStartupTools: Main().GetLinuxOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
@@ -164,7 +167,7 @@ class Main():
             OSName = Temp.replace('\n', '')
 
             #Run the function to get the architechure.
-            OSArch = CoreStartupTools.DetermineOSArchitecture(Partition=Partition, Chroot=Chroot) #*** No need to use chroot to do this ***
+            OSArch = CoreStartupTools.DetermineOSArchitecture(MountPoint=MountPoint)
 
             #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name. *** For current OS, quit if not named ***
             if Retval != 0 and OSArch != None:
