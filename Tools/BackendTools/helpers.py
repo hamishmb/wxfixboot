@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. *** These need refactoring ***
+#Begin Main Class.
 class Main():
     def FindMissingFSCKModules(self):
         """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc)."""
@@ -32,16 +32,12 @@ class Main():
         Keys.sort()
 
         for Disk in Keys:
-            FSType = DiskInfo[Disk]["FileSystem"]
-
-            #Check the FSType is known.
-            if FSType not in ("Unknown", "N/A"):
+            #Check the FSType is known and isn't swap.
+            if DiskInfo[Disk]["FileSystem"] not in ("Unknown", "N/A", "swap"):
                 #Check if this module is present.
-                Retval = CoreTools.StartProcess("which fsck."+FSType, ShowOutput=False)
-
-                if Retval != 0:
-                    #OS probably couldn't find it, add it to the failed list.
-                    logger.warning("HelperBackendTools: Main().FSCKModules(): Couldn't find FSCK module: fsck."+FSType+"! Adding it to the list of missing modules...")
+                if CoreTools.StartProcess("which fsck."+FSType, ShowOutput=False) != 0:
+                    #Couldn't find it, add it to the failed list.
+                    logger.warning("HelperBackendTools: Main().FSCKModules(): Couldn't find FSCK module fsck."+FSType+"! Adding it to the list of missing modules...")
                     FailedList.append("fsck."+FSType)
 
                 else:
@@ -51,13 +47,14 @@ class Main():
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
         return FailedList
 
-    def FindCheckableFileSystems(self): #*** Tidy this up later ***
+    def FindCheckableFileSystems(self): #*** Test this again ***
         """Find all checkable filesystems, and then return them to MainBackendTools().BadSectorCheck()/MainBackendTools().QuickFSCheck()"""
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Finding and returning all filesystems/partitions that can be checked...")
 
         #Do setup.
         DoNotCheckList = []
         CheckList = []
+        RootFS = CoreTools.GetPartitionMountedAt("/")
 
         #Get a list of missing fsck modules (if any) based on the existing filesystems.
         MissingFSCKModules = self.FindMissingFSCKModules()
@@ -67,50 +64,45 @@ class Main():
 
         #Determine checkable partitions.
         for Disk in Keys:
-            #Make sure we're looking at a partition, if not, ignore it.
-            if DiskInfo[Disk]["Type"] == "Partition":
-                #Get the FSType.
-                FSType = DiskInfo[Disk]["FileSystem"]
+            #Ignore all devices.
+            if DiskInfo[Disk]["Type"] == "Device":
+                continue
 
-                #Check if the required fsck module is present, and that the partition isn't RootFS
-                if "fsck."+FSType not in MissingFSCKModules and FSType not in ("Unknown", "N/A"):
-                    #If we're not running on a live disk, skip the filesystem if it's the same as RootFS (in which case checking it may corrupt data) *** Not sure this is needed, but an alternative would speed this up a little ***
-                    #if SystemInfo["IsLiveDisk"] == False and Disk == SystemInfo["RootFS"]:
-                    #    CheckTheFS = False
-                    #    RemountPartitionAfter = False
-                    #    continue
+            #Check if the required fsck module is present, and that the partition isn't RootFS
+            if "fsck."+DiskInfo[Disk]["FileSystem"] in MissingFSCKModules:
+                CheckTheFS = False
+                RemountPartitionAfter = False
 
-                    #Check if the partition is mounted.
-                    PartitionIsMounted = CoreTools.IsMounted(Disk)
+            else:
+                #If we're not running on a live disk, skip the filesystem if it's the same as RootFS (in which case checking it may corrupt data).
+                if SystemInfo["IsLiveDisk"] == False and Disk == RootFS:
+                    CheckTheFS = False
+                    RemountPartitionAfter = False
+                    continue
 
-                    if PartitionIsMounted == False:
-                        #Not mounted.
-                        CheckTheFS = True
+                #Check if the partition is mounted.
+                if CoreTools.IsMounted(Disk) == False:
+                    CheckTheFS = True
+                    RemountPartitionAfter = False
+
+                else:
+                    #Unmount the FS temporarily, to avoid data corruption.
+                    if CoreTools.Unmount(Disk) != 0:
+                        logger.warning("HelperBackendTools: Main().FindCheckableFileSystems(): Failed to unmount "+Disk+", which is necessary for safe disk checking! Ignoring it...")
+                        CheckTheFS = False
                         RemountPartitionAfter = False
 
                     else:
-                        #Unmount the FS temporarily, to avoid data corruption.
-                        Retval = CoreTools.Unmount(Disk)
+                        CheckTheFS = True
+                        RemountPartitionAfter = True
 
-                        if Retval != 0:
-                            logger.warning("HelperBackendTools: Main().FindCheckableFileSystems(): Failed to unmount "+Disk+", which is necessary for safe disk checking! Ignoring it, becuase it's probably a home directory (if running an OS on the HDD, and not a live disk) or an essential system dir...")
-                            CheckTheFS = False
-                            RemountPartitionAfter = False
+            if CheckTheFS:
+                #Add it to the list for checking.
+                CheckList.append(Disk+" "+FSType+" "+unicode(RemountPartitionAfter))
 
-                        else:
-                            CheckTheFS = True
-                            RemountPartitionAfter = True
-                else:
-                    CheckTheFS = False
-                    RemountPartitionAfter = False
-
-                if CheckTheFS == False:
-                    #Add it to the non-checkable list
-                    DoNotCheckList.append(Disk+" with Filesystem: "+FSType)
-
-                else:
-                    #Add it to the list for checking.
-                    CheckList.append(Disk+" "+FSType+" "+unicode(RemountPartitionAfter))
+            else:
+                #Add it to the non-checkable list
+                DoNotCheckList.append(Disk+" with Filesystem: "+FSType)
 
         #Report uncheckable partitions.
         if DoNotCheckList != []:
@@ -146,14 +138,14 @@ class Main():
                 #A good choice. WxFixBoot will now disable any bootloader operations. *** Keep note of why we disabled bootloader operations here ***
                 logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User disabled bootloader operations as recommended, due to bad sectors/HDD problems/FS Checker problems...")
 
-                SystemInfo["OSsForBootloaderRemoval"] = []
+                SystemInfo["OSsForBootloaderRemoval"] = [] #*** Get rid of these ***
                 SystemInfo["DisableBootloaderOperations"] = True
 
             else:
                 #Seriously? Well, okay, we'll do it anyway... This is probably a very bad idea...
                 logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User ignored the warning and went ahead with bootloader modifications (if any) anyway, even with possible HDD problems/Bad sectors! This is a REALLY bad idea, but we'll do it anyway, as requested...")
 
-    def WriteFSTABEntryForUEFIPartition(self, MountPoint):
+    def WriteFSTABEntryForUEFIPartition(self, MountPoint): #*** Don't use SystemInfo["UEFISystemPartition"] ***
         """Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one."""
         logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Preparing to write an fstab entry for the UEFI partition ("+SystemInfo["UEFISystemPartition"]+")...")
 
@@ -202,12 +194,13 @@ class Main():
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Done!")
 
     def BackupUEFIFiles(self, MountPoint):
-        """Backup some .efi files, just in case something goes wrong.""" #*** Make this more user friendly ***
+        """Backup some .efi files, just in case something goes wrong.""" #*** Make this more user friendly *** *** Make this smarter when we detect Windows ***
         logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Backing up UEFI Files...")
 
         #We'll backup /EFI/boot/bootx64.efi if it exists, and we'll also backup Windows's uefi files, if they exist.
         #First do /EFI/boot/bootx64.efi. Fortunately, the UEFI partition is always a fat32/fat16 filesystem, so case doesn't matter.
         logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Backing up "+MountPoint+"/boot/efi/boot/boot*.efi...")
+
         if os.path.isfile(MountPoint+"/boot/efi/EFI/boot/boot*.efi"):
             retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/boot/boot*.efi "+MountPoint+"/boot/efi/EFI/boot/bkpbootx64.efi", ShowOutput=False)
 
