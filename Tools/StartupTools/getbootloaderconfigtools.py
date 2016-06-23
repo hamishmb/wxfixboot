@@ -29,7 +29,7 @@ class Main(): #*** Refactor all of these ***
         #Do some setup.
         LikelyGRUBInstallDisks = (DiskInfo[OSPartition]["HostDevice"], OSPartition)
 
-        logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking in "+' '.join(LikelyGRUBInstallDisks)+"...")
+        logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking in "+', '.join(LikelyGRUBInstallDisks)+"...")
 
         #Look for the right string for each boot loader.
         if GRUBVersion == "GRUB2":
@@ -39,7 +39,7 @@ class Main(): #*** Refactor all of these ***
             LookFor = "ZRrI"
 
         for Disk in LikelyGRUBInstallDisks:
-            print(DiskInfo[Disk], DiskInfo[Disk]["BootRecordStrings"])
+            logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): "+DiskInfo[Disk]+" "+DiskInfo[Disk]["BootRecordStrings"])
             for Line in DiskInfo[Disk]["BootRecordStrings"]:
                 #Check that we have the right version of GRUB, and double check that GRUB is present.
                 if LookFor in Line and "GRUB" in Line:
