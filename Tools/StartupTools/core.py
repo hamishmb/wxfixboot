@@ -78,8 +78,8 @@ class Main():
             PackageDict = {"grub-efi": "GRUB-UEFI", "elilo": "ELILO", "grub-pc": "GRUB2", "lilo": "LILO", "grub": "GRUB-LEGACY"}
 
         else:
-            BootloaderPackages = ("grub2-efi", "grub2", "grub")
-            PackageDict = {"grub2-efi": "GRUB-UEFI", "grub2": "GRUB2", "grub": "GRUB-LEGACY"}
+            BootloaderPackages = ("grub2", "grub2-efi", "grub")
+            PackageDict = {"grub2": "GRUB2", "grub2-efi": "GRUB-UEFI", "grub": "GRUB-LEGACY"}
 
         for Package in BootloaderPackages:
             Found = False
