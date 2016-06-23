@@ -294,7 +294,6 @@ class Main():
                 DiskInfo[Volume]["LVName"] = Volume.split("/")[-1]
                 DiskInfo[Volume]["VGName"] = Volume.split("/")[2]
                 DiskInfo[Volume]["Type"] = "LVM"
-                DiskInfo[Volume]["HostDevice"] = "N/A"
                 DiskInfo[Volume]["Partitions"] = []
                 DiskInfo[Volume]["Vendor"] = "Linux"
                 DiskInfo[Volume]["Product"] = "LVM Partition"
@@ -310,6 +309,10 @@ class Main():
 
             elif "LV Size" in Line:
                 DiskInfo[Volume]["Capacity"] = ' '.join(Line.split()[-2:])
+
+            elif "Physical volume" in Line:
+                DiskInfo[Volume]["HostPartition"] = Line.split()[-1]
+                DiskInfo[Volume]["HostDevice"] = DiskInfo[DiskInfo[Volume]["HostPartition"]]["HostDisk"]
 
     def GetInfo(self, Standalone=False):
         """Get Disk Information."""
@@ -367,8 +370,8 @@ class Main():
                 Volume = self.GetPartitionInfo(SubNode, HostDisk)
 
         #Find any LVM disks. Don't use -c because it doesn't give us enough information.
-        logger.debug("GetDevInfo: Main().GetInfo(): Running 'LC_ALL=C lvdisplay'...")
-        cmd = subprocess.Popen("LC_ALL=C lvdisplay", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        logger.debug("GetDevInfo: Main().GetInfo(): Running 'LC_ALL=C lvdisplay --maps'...")
+        cmd = subprocess.Popen("LC_ALL=C lvdisplay --maps", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.LVMOutput = cmd.communicate()[0].split("\n")
         logger.debug("GetDevInfo: Main().GetInfo(): Done!")
 
