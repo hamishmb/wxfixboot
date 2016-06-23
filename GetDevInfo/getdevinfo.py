@@ -288,7 +288,8 @@ class Main():
         #Start assembling the entry.
         for Line in RawLVMInfo:
             if "LV Path" in Line:
-                Volume = Line.split()[-1] #*** Organise differently for compatibility with Fedora? ***
+                Temp = Line.split()[-1]
+                Volume = "/dev/mapper/"+'-'.join(Temp.split("/")[2:])
                 DiskInfo[Volume] = {}
                 DiskInfo[Volume]["Name"] = Volume
                 DiskInfo[Volume]["LVName"] = Volume.split("/")[-1]

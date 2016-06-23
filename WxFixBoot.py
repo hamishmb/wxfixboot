@@ -1449,7 +1449,6 @@ class BootloaderOptionsWindow(wx.Frame):
         """Create the choice boxes"""
         self.OSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["UserFriendlyOSNames"])
         self.OSChoice.SetStringSelection(SystemInfo["PreviousOSChoice"])
-        print(self.OSChoice.GetStringSelection())
 
         #Basic Options.
         self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["UserFriendlyOSNames"])
