@@ -249,7 +249,7 @@ class Main():
                 SystemInfo["FirmwareType"] = "UEFI"
                 DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
 
-    def GetBootloaders(self): #*** Test this thoroughly *** *** Fedora: Check under /boot/grub2, and also check for subdirs like i386-pc in grubdir ***
+    def GetBootloaders(self): #*** Test this thoroughly ***
         """Find all bootloaders (for each OS), and gather some information about them"""
         Keys = OSInfo.keys()
         Keys.sort()
@@ -305,8 +305,15 @@ class Main():
                 SystemInfo["UEFISystemPartition"] = None
 
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
-                BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuEntries(MountPoint+"/boot/grub/grub.cfg")
-                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["DefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", MountPoint+"/boot/grub/grubenv", BootloaderInfo[OS]["MenuEntries"])
+                #Find grub.cfg. (different place on Fedora)
+                if os.path.isdir(MountPoint+"/boot/grub"):
+                    GRUBDir = MountPoint+"/boot/grub"
+
+                elif os.path.isdir(MountPoint+"/boot/grub2"):
+                    GRUBDir = MountPoint+"/boot/grub2"
+
+                BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuEntries(GRUBDir+"/grub.cfg")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["DefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", GRUBDir+"/grubenv", BootloaderInfo[OS]["MenuEntries"])
 
                 #Try to find GRUB's location if this is GRUB2.
                 if BootloaderInfo[OS]["Bootloader"] == "GRUB2":
