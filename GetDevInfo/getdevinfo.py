@@ -180,7 +180,7 @@ class Main():
         logger.info("GetDevInfo: Main().GetBootRecord(): Finding strings in boot record...")
         cmd = subprocess.Popen("strings", stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         cmd.stdin.write(BootRecord)
-        BootRecordStrings = cmd.communicate()[0].split("\n")
+        BootRecordStrings = cmd.communicate()[0].replace(" ", "").split("\n")
         Retval = cmd.returncode
 
         if Retval != 0:
