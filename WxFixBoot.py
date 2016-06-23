@@ -1423,6 +1423,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Set up the window.
         if SystemInfo["PreviousOSChoice"] == "":
+            print(SystemInfo["UserFriendlyOSNames"][0])
             SystemInfo["PreviousOSChoice"] = SystemInfo["UserFriendlyOSNames"][0]
 
         self.OnOSChoiceChange(Startup=True)
