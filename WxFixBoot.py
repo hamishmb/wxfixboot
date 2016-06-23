@@ -1413,6 +1413,10 @@ class BootloaderOptionsWindow(wx.Frame):
         self.ParentWindow = ParentWindow
         wx.Frame.SetIcon(self, AppIcon)
 
+        #Set up the previous OS choice.
+        if SystemInfo["PreviousOSChoice"] == "":
+            SystemInfo["PreviousOSChoice"] = SystemInfo["UserFriendlyOSNames"][0]
+
         self.CreateText()
         self.CreateChoiceBoxes()
         self.CreateCheckBoxes()
@@ -1420,10 +1424,6 @@ class BootloaderOptionsWindow(wx.Frame):
         self.CreateOtherWidgets()
         self.SetupSizers()
         self.BindEvents()
-
-        #Set up the window.
-        if SystemInfo["PreviousOSChoice"] == "":
-            SystemInfo["PreviousOSChoice"] = SystemInfo["UserFriendlyOSNames"][0]
 
         self.OnOSChoiceChange(Startup=True)
         
