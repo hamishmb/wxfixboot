@@ -299,7 +299,8 @@ class Main():
             Retval = Result[0]
 
             if Retval != 0:
-                logger.error("CoreTools: Main().SetUpChroot(): Error: Failed to run command: "+', '.join(ExecList)+"! Chroot may not be set up properly!")
+                logger.error("CoreTools: Main().SetUpChroot(): Error: Failed to run command: "+', '.join(ExecList)+"! Chroot may not be set up properly! Continuing anyway...") #*** Ignore this error, it happens on Fedora. Investigate to see if it messes anything up ***
+                Retval = 0
 
         self.UpdateChrootMtab(MountPoint=MountPoint)
 

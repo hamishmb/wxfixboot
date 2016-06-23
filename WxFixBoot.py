@@ -715,7 +715,7 @@ class MainWindow(wx.Frame):
         #Reveal MainWindow
         self.Show()
 
-    def OnAbout(self, Event=None):
+    def OnAbout(self, Event=None): #*** No icon here on Fedora ***
         """Shows the About Box"""
         logger.debug("MainWindow().OnAbout(): Showing About Box...")
         aboutbox = wx.AboutDialogInfo()
