@@ -39,7 +39,7 @@ class Main(): #*** Refactor all of these ***
             LookFor = "ZRrI"
 
         for Disk in LikelyGRUBInstallDisks:
-            logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): "+DiskInfo[Disk]+" "+DiskInfo[Disk]["BootRecordStrings"])
+            logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): "+DiskInfo[Disk]["Name"]+" "+DiskInfo[Disk]["BootRecordStrings"])
             for Line in DiskInfo[Disk]["BootRecordStrings"]:
                 #Check that we have the right version of GRUB, and double check that GRUB is present.
                 if LookFor in Line and "GRUB" in Line:
