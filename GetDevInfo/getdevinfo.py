@@ -312,7 +312,7 @@ class Main():
 
             elif "Physical volume" in Line:
                 DiskInfo[Volume]["HostPartition"] = Line.split()[-1]
-                DiskInfo[Volume]["HostDevice"] = DiskInfo[DiskInfo[Volume]["HostPartition"]]["HostDisk"]
+                DiskInfo[Volume]["HostDevice"] = DiskInfo[DiskInfo[Volume]["HostPartition"]]["HostDevice"]
 
     def GetInfo(self, Standalone=False):
         """Get Disk Information."""
