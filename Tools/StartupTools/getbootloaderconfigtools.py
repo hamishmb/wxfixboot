@@ -221,7 +221,7 @@ class Main(): #*** Refactor all of these ***
                     GRUBEnvironmentFile = open(GRUBEnvironmentFilePath, "r")
 
                     for Var in GRUBEnvironmentFile:
-                        if "saved_entry=" in Var:
+                        if "saved_entry=" in Var or "default=" in Var:
                             DefaultOS = Var.split("=")[1].replace("\n", "")
 
                     if DefaultOS.isdigit() or ">" in DefaultOS:
