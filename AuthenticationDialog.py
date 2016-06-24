@@ -27,6 +27,7 @@ import wx.animate
 import time
 import subprocess
 import os
+import sys
 
 #Begin Authentication Window.
 class AuthWindow(wx.Frame):  
@@ -197,7 +198,7 @@ class AuthWindow(wx.Frame):
 
     def StartWxFixBoot(self, Password):
         """Start WxFixBoot and exit"""
-        Cmd = subprocess.Popen("sudo -SH /usr/share/wxfixboot/WxFixBoot.py", stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        Cmd = subprocess.Popen("sudo -SH /usr/share/wxfixboot/WxFixBoot.py", stdin=subprocess.PIPE, stdout=sys.stdout, stderr=subprocess.PIPE, shell=True)
 
         #Send the password to sudo through stdin, to avoid showing the user's password in the system/activity monitor.
         Cmd.stdin.write(Password+"\n")
