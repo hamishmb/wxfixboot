@@ -2397,6 +2397,7 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.helpers.SystemInfo = SystemInfo
 
         Tools.BackendTools.main.OSInfo = OSInfo
+        Tools.BackendTools.main.DiskInfo = DiskInfo
         Tools.BackendTools.main.SystemInfo = SystemInfo
         Tools.BackendTools.main.BootloaderInfo = BootloaderInfo
 
