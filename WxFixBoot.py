@@ -25,6 +25,7 @@
 #*** When backing up, save bootloader config, instead of bootloader itself? That way WxFixBoot can handle reinstalling/fixing the bootloader as required ***
 #*** Can FAT filesystems be mounted in 2 places at once? ***
 #*** Reset operations when restarting ***
+#*** Enable menu in ELILO ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
