@@ -521,7 +521,7 @@ class Main(): #*** Refactor all of these ***
             #Look for kernel options used globally in all the boot options.
             elif 'append' in Line and '=' in Line:
                 #Found them! Save it to GlobalKernelOptions
-                KernelOptions = ' '.join(Line.split("=")[1:]).replace("\"", "")
+                KernelOptions = ' '.join(Line.split("=")[1:]).replace("\"", "").replace("\n", "")
                 logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found global kernel options...")
 
             #Look for the 'boot' setting.
