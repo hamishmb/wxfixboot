@@ -16,7 +16,7 @@
 
 #*** Add package dependancy on lvm2 ***
 #*** Add package dependency on binutils (for strings command) ***
-#*** Remove package dependancy on lsb_release ***
+#*** Remove package dependency on lsb_release ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Test DialogTools.ShowMultiChoiceDlg() ***
 #*** Figure out what to do in each instance where something might fail ***
@@ -27,6 +27,12 @@
 #*** Do startup scripts again after restarting ***
 #*** Enable menu in ELILO ***
 #*** ELILO Kernel options not detected ***
+#*** LILO can work on GPT disks ***
+#*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? If so do what it does ***
+#*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
+#*** Figure out how to make badblocks output to stdout or find that fake pty thing for python ***
+#*** Add lvdisplay to dependency list ***
+#*** Add LVM and BeautifulSoup4 fedora packages to dependency list ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -54,7 +60,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "23/6/2016"
+ReleaseDate = "27/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")

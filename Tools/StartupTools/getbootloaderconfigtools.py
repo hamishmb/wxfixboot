@@ -204,9 +204,9 @@ class Main(): #*** Refactor all of these ***
             #Look for kernel options used globally in all the boot options.
             elif 'GRUB_CMDLINE_LINUX' in Line and '=' in Line:
                 #Found them! Save them.
-                Temp = '='.join(Line.split("=")[1:]).replace("\'", "").replace("\n", "")
+                Temp = '='.join(Line.split("=")[1:]).replace("\'", "").replace("\"", "").replace("\n", "")
 
-                if Temp != "\"\"":
+                if Temp != "":
                     KernelOptions = Temp
 
                     logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Found global kernel options...")
