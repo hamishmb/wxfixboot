@@ -72,25 +72,25 @@ class Main():
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
-                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive 'apt-get purge -y grub-pc grub-pc-bin grub-common'"
+                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub-pc grub-pc-bin grub-common'"
 
         elif BootloaderInfo[OS]["Bootloader"] == "LILO":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing LILO...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
-                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive 'apt-get purge -y lilo'"
+                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y lilo'"
 
         elif BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-UEFI...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
-                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive 'apt-get purge -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common'"
+                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common'"
 
         elif BootloaderInfo[OS]["Bootloader"] == "ELILO":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing ELILO...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
-                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive 'apt-get purge -y elilo'"
+                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y elilo'"
 
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
