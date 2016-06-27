@@ -510,7 +510,7 @@ class Main(): #*** Refactor all of these ***
             #Look for the delay/timeout setting.
             if ('delay' in Line or 'timeout' in Line) and '=' in Line:
                 #Save it, carefully avoiding errors.
-                Timeout = Line.split("=")[1].replace(" ","")
+                Timeout = Line.split("=")[1].replace(" ","").replace("\n", "")
 
                 if Timeout.isdigit():
                     #Great! We got it.
