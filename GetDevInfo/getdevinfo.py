@@ -347,7 +347,7 @@ class Main():
         #Support for Ubuntu 12.04 LTS as that lshw outputs XML differently in that release.
         print(self.Output)
         if unicode(type(self.Output.list)) == "<type 'NoneType'>":
-            ListOfDevices = self.Output.body.children
+            ListOfDevices = self.Output.children
 
         else:
             ListOfDevices = self.Output.list.children
