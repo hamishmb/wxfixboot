@@ -134,6 +134,7 @@ class Main(): #*** Refactor all of these ***
     def AssembleGRUB2MenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter):
         """Assemble a menu entry in the dictionary for GRUB2 (BIOS and UEFI)"""
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Preparing to get menu entry info...")
+        print(Line)
         MenuEntry = Line.split("\'")[1]
         Temp = MenuEntry.replace(")", "").split(" (")
 
