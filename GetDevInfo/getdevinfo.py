@@ -342,7 +342,7 @@ class Main():
         logger.debug("GetDevInfo: Main().GetInfo(): Done.")
 
         #Parse XML as HTML to support Ubuntu 12.04 LTS. Otherwise output is cut off.
-        self.Output = BeautifulSoup(stdout, "html")
+        self.Output = BeautifulSoup(stdout, "html.parser")
 
         #Support for Ubuntu 12.04 LTS as that lshw outputs XML differently in that release. *** Output html with -html? ***
         if unicode(type(self.Output.list)) == "<type 'NoneType'>":
