@@ -386,6 +386,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         #First, make sure everything else comes first, because LILO and ELILO are picky with the placement of the image files (they must be at the end of the file).
         #We'll also make a placeholder for the default OS, so it comes before the image entries too.
+        #Also comment out other existing entries first.
         logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Making placeholder for default OS if needed...")
 
         Temp = False
@@ -394,6 +395,12 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
             if 'default' in line and '=' in line and '#' not in line:
                 #The place holder already exists. Set a variable so we don't make one.
                 Temp = True
+
+            elif ("image" in line or "initrd" in line or "label" in line) and "=" in line:
+                line = "#"+line
+
+            elif "read-only" in line or "read-write" in line:
+                line = "#"+line
 
             NewFileContents.append(line)
 
