@@ -167,8 +167,8 @@ class Main():
         logger.info("GetDevInfo: Main().GetBootRecord(): Getting MBR/PBR for: "+Disk+"...")
         logger.info("GetDevInfo: Main().GetBootRecord(): Reading boot record from "+Disk+"...")
 
-        #Use status=none to avoid getting status messages from dd in our boot record.
-        cmd = subprocess.Popen("dd if="+Disk+" bs=512 count=1 status=none", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        #Use status=noxfer to try to avoid getting status messages from dd in our boot record (status=none not supported on Ubuntu 12.04).
+        cmd = subprocess.Popen("dd if="+Disk+" bs=512 count=1 status=noxfer", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         BootRecord = cmd.communicate()[0]
         Retval = cmd.returncode
 
