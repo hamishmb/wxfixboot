@@ -156,7 +156,7 @@ class Main():
                 Chroot = True
                 IsCurrentOS = False
 
-                #Mount the partition and check if anything went wrong. *** NTFS filesystems can't be mounted twice ***
+                #Mount the partition and check if anything went wrong.
                 if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
                     #Ignore the partition.
                     logger.warning("MainStartupTools: Main().GetLinuxOSs(): Couldn't mount "+Partition+"! Skipping this partition...")

@@ -25,8 +25,6 @@
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Support EFI on 32-bit firmware? ***
 #*** When backing up, save bootloader config, instead of bootloader itself? That way WxFixBoot can handle reinstalling/fixing the bootloader as required ***
-#*** Can FAT filesystems be mounted in 2 places at once? ***
-#*** Do startup scripts again after restarting ***
 #*** Enable menu in ELILO ***
 #*** ELILO Kernel options not detected ***
 #*** LILO can work on GPT disks ***
@@ -351,7 +349,7 @@ class InitialWindow(wx.Frame):
         logger.info("Closing Initial Window and Starting Main Window...")
 
         #Show the user some important information
-        dlg = wx.MessageDialog(self.Panel, "Make sure you have a working internet connection before performing any operations. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+        dlg = wx.MessageDialog(self.Panel, "Please make sure you have a working internet connection before performing any bootloader operations. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
         dlg.ShowModal()
         dlg.Destroy()
 
@@ -1750,11 +1748,19 @@ class BootloaderOptionsWindow(wx.Frame):
         else:
             Choices = ["GRUB-UEFI", "GRUB2", "ELILO", "LILO"]
 
+        #Disable ELILO and LILO on Fedora systems. *** Check this works ***
+        if "Fedora" in self.OSChoice.GetStringSelection():
+            if "ELILO" in Choices:
+                Choices.remove("ELILO")
+
+            if "LILO" in Choices:
+                Choices.remove("LILO")
+
         self.NewBootloaderChoice.Clear()
 
         #Add choices.
         for Choice in ["-- Please Select --"]+Choices:
-            self.NewBootloaderChoice.Append(Choice) #*** Check which options to enable on Fedora and derivatives ***
+            self.NewBootloaderChoice.Append(Choice)
 
         self.NewBootloaderChoice.SetStringSelection("-- Please Select --")
 
@@ -2308,13 +2314,12 @@ class ProgressWindow(wx.Frame):
         logger.debug("ProgressWindow().RestartWxFixBoot(): Restarting WxFixBoot...")
         self.Hide()
 
-        #Reset all settings to defaults, except ones like LiveDisk, which won't ever need to change.
-        MainStartupTools.SetDefaults()
+        #Make sure any mounted filesystems in /tmp/wxfixbootmountpoints are unmounted first. *** Fix later, no filesystems should be mounted there after operations anyway ***
+        #MainStartupTools.UnmountAllFS()
 
-        #Show MainWindow
-        MainFrame = MainWindow()
-        app.SetTopWindow(MainFrame)
-        MainFrame.Show(True)
+        InitialFrame = InitialWindow()
+        app.SetTopWindow(InitialFrame)
+        InitialFrame.Show(True)
 
         #Destroy Progress Window.
         logger.debug("ProgressWindow().RestartWxFixBoot(): WxFixBoot has been reset and restarted, returning to MainWindow()")
@@ -2433,7 +2438,15 @@ class BackendThread(threading.Thread):
 
         wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished!")
 
-        DialogTools.ShowMsgDlg(Kind="info", Message="Your operations are all done! Thank you for using WxFixBoot. If you performed any bootloader operations, please now reboot your system.") #*** Check this and customise message if needed ***
+        #Change the dialog's message if needed.
+        DialogMessage = "Your operations are all done! Thank you for using WxFixBoot."
+
+        for Function in Operations:
+            if type(Function) == type(()):
+                if MainBootloaderTools.ManageBootloader in Function:
+                    DialogMessage += " You performed bootloader operations on at least one OS, so please now reboot your system."
+
+        DialogTools.ShowMsgDlg(Kind="info", Message=DialogMessage)
 
         wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
