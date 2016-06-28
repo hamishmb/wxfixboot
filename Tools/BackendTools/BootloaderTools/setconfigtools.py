@@ -317,21 +317,21 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
             #Look for the 'boot' setting.
             elif 'boot' in line and '=' in line and '#' not in line:
                 #Found it, seperate the line.
-                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Found boot setting, setting it to "+SystemInfo["UEFISystemPartition"]+"'s ID if possible, else just "+SystemInfo["UEFISystemPartition"]+"...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Found boot setting, setting it to "+BootloaderInfo[OS]["BootDisk"]+"'s ID if possible, else just "+BootloaderInfo[OS]["BootDisk"]+"...")
                 SetUEFIPart = True
                 head, sep, Temp = line.partition('=')
 
-                if DiskInfo[SystemInfo["UEFISystemPartition"]]["ID"] != "Unknown":
+                if DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"] != "Unknown":
                     #Good, we've got the ID.
-                    logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[SystemInfo["UEFISystemPartition"]]["ID"]+"...")
+                    logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]+"...")
 
-                    #Set it to SystemInfo["UEFISystemPartition"]'s ID.                    
-                    Temp = "/dev/disk/by-id/"+DiskInfo[SystemInfo["UEFISystemPartition"]]["ID"]
+                    #Set it to BootloaderInfo[OS]["BootDisk"]'s ID.                    
+                    Temp = "/dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]
 
                 else:
                     #Not so good... We'll have to use the partition's name, which may change, especially if we're using chroot.
-                    logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): We don't have the ID! Setting boot to "+SystemInfo["UEFISystemPartition"]+". This may cause problems if the device name changes!")
-                    Temp = SystemInfo["UEFISystemPartition"]
+                    logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): We don't have the ID! Setting boot to "+BootloaderInfo[OS]["BootDisk"]+". This may cause problems if the device name changes!")
+                    Temp = BootloaderInfo[OS]["BootDisk"]
 
                 #Reassemble the line.
                 line = head+sep+Temp+"\n"
@@ -350,20 +350,20 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
             NewFileContents.append("delay="+unicode(BootloaderTimeout)+"\n")
 
         if SetUEFIPart == False:
-            #Now let's find the ID of SystemInfo["UEFISystemPartition"].
-            logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+SystemInfo["UEFISystemPartition"]+"'s ID if possible, else just "+SystemInfo["UEFISystemPartition"]+"...")
+            #Now let's find the ID of BootloaderInfo[OS]["BootDisk"].
+            logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+BootloaderInfo[OS]["BootDisk"]+"'s ID if possible, else just "+BootloaderInfo[OS]["BootDisk"]+"...")
 
-            if DiskInfo[SystemInfo["UEFISystemPartition"]]["ID"] != "Unknown":
+            if DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"] != "Unknown":
                 #Good, we've got the ID.
-                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[SystemInfo["UEFISystemPartition"]]["ID"]+"...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]+"...")
 
-                #Set it to SystemInfo["UEFISystemPartition"]'s ID.                    
-                Temp = "/dev/disk/by-id/"+DiskInfo[SystemInfo["UEFISystemPartition"]]["ID"]
+                #Set it to BootloaderInfo[OS]["BootDisk"]'s ID.                    
+                Temp = "/dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]
 
             else:
                 #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
-                logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): We don't have the ID! Setting boot to "+SystemInfo["UEFISystemPartition"]+". This may cause problems if the device name changes!")
-                Temp = SystemInfo["UEFISystemPartition"]
+                logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): We don't have the ID! Setting boot to "+BootloaderInfo[OS]["BootDisk"]+". This may cause problems if the device name changes!")
+                Temp = BootloaderInfo[OS]["BootDisk"]
 
             NewFileContents.append("boot="+Temp+"\n")
 
@@ -474,12 +474,12 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs as a UUID if possible...")
 
             if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO": #*** Test this works ***
-                if DiskInfo[SystemInfo["UEFISystemPartition"]]["UUID"] == "Unknown": #*** Warn user? ***
-                    logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+SystemInfo["UEFISystemPartition"]+"! This might not work cos it can change!")
+                if DiskInfo[BootloaderInfo[OS]["BootDisk"]]["UUID"] == "Unknown": #*** Warn user? ***
+                    logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+BootloaderInfo[OS]["BootDisk"]+"! This might not work cos it can change!")
                     NewFileContents.append("\troot="+Partition+"\n")
 
                 else:
-                    logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[SystemInfo["UEFISystemPartition"]]["UUID"]+"...")
+                    logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["UUID"]+"...")
                     NewFileContents.append("\troot=UUID="+DiskInfo[Partition]["UUID"]+"\n")
 
             else:
@@ -587,11 +587,11 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         #Return the return value.
         return Retval
 
-    def InstallELILOToPartition(self, PackageManager, MountPoint):
+    def InstallELILOToPartition(self, OS, PackageManager, MountPoint):
         """Install ELILO to the EFI/UEFI Partition"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if PackageManager == "apt-get":
-            Cmd = "elilo -b "+SystemInfo["UEFISystemPartition"]+" --efiboot"
+            Cmd = "elilo -b "+BootloaderInfo[OS]["BootDisk"]+" --efiboot"
 
         if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd

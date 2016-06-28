@@ -2396,9 +2396,7 @@ class BackendThread(threading.Thread):
         #Log the BackendThread start event (in debug mode).
         logger.debug("BackendThread().run(): Started. Calling self.StartOperations()...")
 
-        Bobert = DialogTools.ShowYesNoDlg(Message="There is a Linux operating system on partition: bob3 but WxFixBoot couldn't find its name. It isn't the currently running OS. Do you want to name it and include it in the list? Only click yes if you believe it is a recent OS. Click Yes if you want to name it, otherwise click No.", Buttons=("Yes Button", "No Button."))
-
-#        self.StartOperations()
+        self.StartOperations()
 
     def StartOperations(self):
         """Start doing operations."""
@@ -2472,7 +2470,7 @@ class BackendThread(threading.Thread):
         #Do Firmware Information.
         ReportList.write("\n##########Firmware Information##########\n")
         ReportList.write("Detected firmware type: "+SystemInfo["FirmwareType"]+"\n")
-        ReportList.write("UEFI System Partition (UEFI Bootloader target): "+SystemInfo["UEFISystemPartition"]+"\n")
+        #ReportList.write("UEFI System Partition (UEFI Bootloader target): "+SystemInfo["UEFISystemPartition"]+"\n")
 
         #Do Bootloader information
         ReportList.write("\n##########BootLoader Information##########\n")

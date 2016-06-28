@@ -83,7 +83,7 @@ class Main():
 
         logger.debug("DialogTools: Main().ShowThreadYesNoDlg(): Result of Thread Yes/No Dialog was: "+unicode(self.DlgResult))
 
-    def ShowYesNoDlg(self, Message, Title="WxFixBoot - Question", Buttons=(None, None)): #*** Test custom buttons work and are in the right order ***
+    def ShowYesNoDlg(self, Message, Title="WxFixBoot - Question", Buttons=(None, None)):
         """Handle showing thread yes/no dialogs, reducing code duplication and compilications and errors.
         It can be used like this: DialogTools().ShowYesNoDlg(Message=<message>, Title=<title>)
         Message is whatever you want the dialog to say.

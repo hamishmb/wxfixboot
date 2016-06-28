@@ -288,11 +288,13 @@ class Main():
         #then copy current system's /etc/resolv.conf (the contents, not the link) to MountPoint/etc/resolv.conf, enabling internet access.
 
         MountList = ("/dev", "/dev/pts", "/proc", "/sys")
+
         for FileSystem in MountList:
             if self.MountPartition(Partition=FileSystem, MountPoint=MountPoint+FileSystem, Options="--bind") != 0:
                 logger.error("CoreTools: Main().SetUpChroot(): Failed to bind "+FileSystem+" to "+MountPoint+Filesystem+"! Chroot isn't set up properly! Attempting to continue anyway...") #*** What shall we do here? ***
 
         ExecList = ("mv -vf "+MountPoint+"/etc/resolv.conf "+MountPoint+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+MountPoint+"/etc/resolv.conf")
+
         for ExecCmd in ExecList:
             Result = self.StartProcess(ExecCmd, ShowOutput=False, ReturnOutput=True)
             output = Result[1]

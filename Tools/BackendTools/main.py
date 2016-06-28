@@ -328,7 +328,7 @@ class Main():
             BootloaderConfigSettingTools.UpdateGRUB2(PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint)
 
             #Make an entry in fstab for the UEFI Partition, if needed.
-            HelperBackendTools.WriteFSTABEntryForUEFIPartition(MountPoint=MountPoint)
+            HelperBackendTools.WriteFSTABEntryForUEFIPartition(OS=OS, MountPoint=MountPoint)
 
             #Copy and backup EFI files where needed.
             HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
@@ -399,7 +399,7 @@ class Main():
 
             #Now Install ELILO to the UEFI Partition.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing ELILO to "+BootloaderInfo[OS]["BootDisk"]+"...")
-            BootloaderConfigSettingTools.InstallELILOToPartition(PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint)
+            BootloaderConfigSettingTools.InstallELILOToPartition(OS=OS, PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint)
 
             #Mount the UEFI partition at MountPoint/boot/efi.
             if CoreTools.MountPartition(Partition=BootloaderInfo[OS]["BootDisk"], MountPoint=MountPoint+"/boot/efi") != 0:

@@ -297,13 +297,6 @@ class Main():
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "ELILO"):
                 BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
-                #*** Remove this later, makes legacy code work for the mean time ***
-                SystemInfo["UEFISystemPartition"] = OSInfo[OS]["EFIPartition"]
-
-            else:
-                #*** Remove this later, makes legacy code work for the mean time ***
-                SystemInfo["UEFISystemPartition"] = None
-
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
                 #Find grub.cfg. (different place on Fedora)
                 if os.path.isdir(MountPoint+"/boot/grub"):
@@ -431,7 +424,7 @@ class Main():
 
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["DefaultOS"], SystemInfo["FirmwareType"], SystemInfo["UEFISystemPartition"], SystemInfo["EmptyEFIPartition"], SystemInfo["FirmwareType"], OSInfo.
+        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["DefaultOS"], SystemInfo["FirmwareType"], SystemInfo["EmptyEFIPartition"], SystemInfo["FirmwareType"], OSInfo.
         VarList = ()
         FailedList = []
 
