@@ -27,7 +27,6 @@
 #*** When backing up, save bootloader config, instead of bootloader itself? That way WxFixBoot can handle reinstalling/fixing the bootloader as required ***
 #*** Enable menu in ELILO ***
 #*** ELILO Kernel options not detected ***
-#*** LILO can work on GPT disks ***
 #*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? If so do what it does ***
 #*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
 #*** Figure out how to make badblocks output to stdout or find that fake pty thing for python ***
@@ -303,6 +302,7 @@ class InitialWindow(wx.Frame):
 
         #Start the Initalization Thread, which performs all necessary startup scripts and checks, and let it know this is the first start.
         logger.debug("Starting InitThread()...")
+
         InitThread(self)       
 
     def CreateProgressBarAndText(self):
@@ -2395,7 +2395,9 @@ class BackendThread(threading.Thread):
         #Log the BackendThread start event (in debug mode).
         logger.debug("BackendThread().run(): Started. Calling self.StartOperations()...")
 
-        self.StartOperations()
+        Bobert = DialogTools.ShowYesNoDlg(Message="There is a Linux operating system on partition: bob3 but WxFixBoot couldn't find its name. It isn't the currently running OS. Do you want to name it and include it in the list? Only click yes if you believe it is a recent OS. Click Yes if you want to name it, otherwise click No.", Buttons=("Yes Button", "No Button."))
+
+#        self.StartOperations()
 
     def StartOperations(self):
         """Start doing operations."""

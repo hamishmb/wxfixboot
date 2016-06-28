@@ -116,7 +116,7 @@ class Main():
 
         logger.debug("DialogTools: Main().ShowThreadChoiceDlg(): Result of Thread Choice Dialog was: "+unicode(self.DlgResult))
 
-    def ShowChoiceDlg(self, Message, Title, Choices, AllowCancel=False): #*** Test AllowCancel ***
+    def ShowChoiceDlg(self, Message, Title, Choices, AllowCancel=False):
         """Handle showing thread choice dialogs, reducing code duplication and compilications and errors.
         It can be used like this: DialogTools().ShowChoiceDlg(Message=<message>, Title=<title>, Choices=<choices>)
         Message is whatever you want the dialog to say.
@@ -140,7 +140,7 @@ class Main():
             else:
                 return self.DlgResult
 
-    def ShowThreadMultiChoiceDlg(self, msg, choices, title="WxFixBoot - Select your options"): #*** Test this ***
+    def ShowThreadMultiChoiceDlg(self, msg, choices, title="WxFixBoot - Select your options"): #*** Is this needed? ***
         """Shows a multi-choice dialog from a thread upon instruction"""
         logger.debug("DialogTools: Main().ShowThreadMultiChoiceDlg(): Showing Thread Multi Choice Dialog...")
         dlg = wx.MultiChoiceDialog(ParentWindow.Panel, msg, title, choices, pos=wx.DefaultPosition)
@@ -165,7 +165,7 @@ class Main():
 
         logger.debug("DialogTools: Main().ShowThreadMultiChoiceDlg(): Result of Thread Multi Choice Dialog was: "+unicode(self.DlgResult))
 
-    def ShowMultiChoiceDlg(self, Message, Title, Choices, AllowCancel=False): #*** Test AllowCancel ***
+    def ShowMultiChoiceDlg(self, Message, Title, Choices, AllowCancel=False):
         """Handle showing thread multi-choice dialogs, reducing code duplication and compilications and errors.
         It can be used like this: DialogTools().ShowMultiChoiceDlg(Message=<message>, Title=<title>, Choices=<choices>)
         Message is whatever you want the dialog to say.
