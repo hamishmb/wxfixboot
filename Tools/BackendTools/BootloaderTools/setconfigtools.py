@@ -25,9 +25,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
     def SetGRUB2Config(self, filetoopen, BootloaderTimeout, KernelOptions):
         """Set GRUB2 config."""
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Setting GRUB2 Config in "+filetoopen+"...")
-        SetTimeout = False
-        SetKOpts = False
-        SetDefault = False
+        SetTimeout, SetKopts, SetDefault = (False, False, False)
 
         #Open the file in read mode, so we can find the new config that needs setting. Also, use a list to temporarily store the modified lines.
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Attempting to modify existing lines in the config file first, without making any new ones...")
@@ -70,7 +68,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
             #Comment out the GRUB_HIDDEN_TIMEOUT line.
             elif 'GRUB_HIDDEN_TIMEOUT' in line and 'GRUB_HIDDEN_TIMEOUT_QUIET' not in line and '=' in line and '#' not in line:
-                logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Commenting out GRUB_HIDDEN_TIMEOUT/GRUB_HIDDEN_TIMEOUT_QUIET...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Commenting out GRUB_HIDDEN_TIMEOUT...")
                 line = "#"+line
 
             NewFileContents.append(line)
@@ -113,7 +111,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         #Return the return value.
         return Retval
 
-    def InstallGRUBUEFIToPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch): #*** Change the name to "InstallGRUB2ToEFIPartition" ***
+    def InstallGRUB2ToEFIPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch):
         """Install GRUB2 (EFI/UEFI version) into the EFI/UEFI partition"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if Arch == "64-bit":
@@ -147,7 +145,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         #Return the return value.
         return Retval
 
-    def SetGRUB2DefaultOS(self, OS, MountPoint): #*** Make this more user-friendly *** *** Use number instead *** *** Save in /etc/default/grub ***
+    def SetGRUB2DefaultOS(self, OS, MountPoint): #*** Get rid of this soon ***
         """Set GRUB2's (both BIOS and EFI/UEFI) default OS to boot"""
         #I couldn't find a reliable way of doing this automatically, so give the user a choice box instead. *** Do this before release of final v2.0, probably in the 1st or 2nd rc. Maybe use disk names and save grub's name for each one ***
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Setting GRUB2's Default OS...")
@@ -423,6 +421,14 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         for OS in Keys:
             logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make an entry for: "+OS)
 
+            if not os.path.isfile(MountPoint+"/vmlinuz") or not os.path.isfile(MountPoint+"/initrd.img"):
+                #We can't make an entry for this OS. Warn the user.
+                logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Couldn't find /vmlinuz or /initrd.img for "+OS+"! Telling the user we can't make an entry...")
+
+                Result = DialogTools.ShowMsgDlg(Message="Warning: The shortcut to the latest kernel or initrd weren't found for "+OS+"! Unfortunately, this means WxFixBoot can't make a bootloader entry for this OS. Click okay to continue.", Kind="Warning")
+
+                continue
+
             #Names in LILO are not allowed to have spaces, so let's remove the spaces from them.
             OSName = OS.replace(' ','')
 
@@ -440,34 +446,12 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
             CurrentOS = OSInfo[OS]["IsCurrentOS"]
 
-            #Check that MountPoint/vmlinuz and MountPoint/initrd.img exist. (If this is the current OS, MountPoint = "", and so doesn't get in the way).
-            if os.path.isfile(MountPoint+"/vmlinuz"):
-                #Good, add this to the file. (It's local to the partition, so we don't need to include MountPoint in the path)
-                logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Found /vmlinuz! Adding it to the config file...")
-                NewFileContents.append("\nimage=/vmlinuz\n")
+            #Set kernel and initrd.
+            logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Adding /vmlinuz to the config file...")
+            NewFileContents.append("\nimage=/vmlinuz\n")
 
-            else:
-                #We can't make an entry for this OS. Warn the user. *** Check this beforehand ***
-                logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Couldn't find /vmlinuz for: "+OS+"! Telling the user we can't make an entry...")
-
-                Result = DialogTools.ShowMsgDlg(Message="Warning: /vmlinuz (shortcut to the latest kernel) wasn't found for: "+OS+"! Unfortunately, this means WxFixBoot can't make a bootloader entry for this OS. Click okay to continue.", Kind="Warning")
-                continue
-
-            if os.path.isfile(MountPoint+"/initrd.img"):
-                #Good, add this to the file. (It's local to the partition, so we don't need to include MountPoint in the path)
-                logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Found /initrd.img! Adding it to the config file...")
-                NewFileContents.append("\tinitrd=/initrd.img\n")
-
-            else:
-                #We can't make an entry for this OS. Warn the user. *** Check this beforehand ***
-                logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Couldn't find /initrd.img for "+OS+"! Telling the user we can't make an entry...")
-
-                Result = DialogTools.ShowMsgDlg(Message="Warning: /initrd.img (shortcut to the latest Initial Filesystem) wasn't found for: "+OS+"! Unfortunately, this means WxFixBoot can't make a bootloader entry for this OS. Click okay to continue.", Title="WxFixBoot - Add OS to boot menu?")
-
-                #Okay, delete the last entry, so we don't have an unconfigured image, and then go back to the start of the loop.
-                logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Deleting the unconfigured image, and skipping this OS...")
-                Temp = NewFileContents.pop()
-                continue
+            logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Adding /initrd.img to the config file...")
+            NewFileContents.append("\tinitrd=/initrd.img\n")
 
             #Set the root device.
             #Use UUID's here if we can.

@@ -129,21 +129,34 @@ class Main():
                 DialogTools.ShowMsgDlg(Kind="warning", Message="The filesystem checker found and successfully fixed errors on partition: "+Partition+". Click okay to continue.")
 
         else:
-            #Something bad happened! *** Check if we're actually doing bootloader operations first! ***
-            logger.error("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): "+ExecList[0]+" Errored with exit value "+unicode(Retval)+"! This could indicate filesystem corruption or bad sectors! Asking the user whether to skip any bootloader operations...")
+            #Something bad happened!
+            #If we're doing bootloader operations, prompt the user to disable them.
+            BootloaderOperations = False
 
-            Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(Retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, WxFixBoot could become unstable, and your system could become unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?")
+            for Function in Operations:
+                if type(Function) == type(()):
+                    if MainBootloaderTools.ManageBootloader in Function:
+                        BootloaderOperations = True
+                        break
 
-            if Result:
-                #A good choice. WxFixBoot will now disable any bootloader operations. *** Keep note of why we disabled bootloader operations here ***
-                logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User disabled bootloader operations as recommended, due to bad sectors/HDD problems/FS Checker problems...")
+            logger.error("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): "+ExecList[0]+" Errored with exit value "+unicode(Retval)+"! This could indicate filesystem corruption or bad sectors!
 
-                SystemInfo["OSsForBootloaderRemoval"] = [] #*** Get rid of these ***
-                SystemInfo["DisableBootloaderOperations"] = True
+            if BootloaderOperations:
+                logger.error("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): Asking the user whether to skip bootloader operations...")
 
-            else:
-                #Seriously? Well, okay, we'll do it anyway... This is probably a very bad idea...
-                logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User ignored the warning and went ahead with bootloader modifications (if any) anyway, even with possible HDD problems/Bad sectors! This is a REALLY bad idea, but we'll do it anyway, as requested...")
+                Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(Retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, WxFixBoot could become unstable, and your system could become unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?")
+
+                if Result:
+                    #A good choice. WxFixBoot will now disable any bootloader operations.
+                    logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User disabled bootloader operations as recommended, due to bad sectors/HDD problems/FS Checker problems...")
+
+                    #*** Should these be in SystemInfo? *** *** Add to report and warn at end of operations ***
+                    SystemInfo["DisabledBootloaderOperations"] = True
+                    SystemInfo["DisabledBootloaderOperationsBecause"] = "Filesystem corruption was detected"
+
+                else:
+                    #Seriously? Well, okay, we'll do it anyway... This is probably a very bad idea...
+                    logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User ignored the warning and went ahead with bootloader modifications (if any) anyway, even with possible HDD problems/Bad sectors! This is a REALLY bad idea, but we'll do it anyway, as requested...")
 
     def WriteFSTABEntryForUEFIPartition(self, OS, MountPoint):
         """Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one."""

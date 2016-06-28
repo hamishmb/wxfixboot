@@ -20,7 +20,6 @@
 #*** Add LVM and BeautifulSoup4 fedora packages to dependency list ***
 
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
-#*** Test DialogTools.ShowMultiChoiceDlg() ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Support EFI on 32-bit firmware? ***
@@ -2446,6 +2445,7 @@ class BackendThread(threading.Thread):
             if type(Function) == type(()):
                 if MainBootloaderTools.ManageBootloader in Function:
                     DialogMessage += " You performed bootloader operations on at least one OS, so please now reboot your system."
+                    break
 
         DialogTools.ShowMsgDlg(Kind="info", Message=DialogMessage)
 
@@ -2482,7 +2482,7 @@ class BackendThread(threading.Thread):
                 if ReinstallBootloader:
                     ReportList.write("Reinstall/Fix The Current BootLoader: "+unicode(ReinstallBootloader)+"\n")
                     #ReportList.write("Selected Bootloader To Reinstall/Fix: "+SystemInfo["BootloaderToInstall"]+"\n")
-                    ReportList.write("Reinstall/Fix bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
+                    #ReportList.write("Reinstall/Fix bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
                     #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
@@ -2491,7 +2491,7 @@ class BackendThread(threading.Thread):
                 elif UpdateBootloader:
                     ReportList.write("Update The Current BootLoader's Config: "+unicode(UpdateBootloader)+"\n")
                     #ReportList.write("Selected Bootloader To Update: "+SystemInfo["BootloaderToInstall"]+"\n")
-                    ReportList.write("Update Bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
+                    #ReportList.write("Update Bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nBootloader's New Configuration:"+"\n")
                     #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
@@ -2500,8 +2500,8 @@ class BackendThread(threading.Thread):
                 else:
                     #We must be installing a new bootloader.
                     #ReportList.write("Selected Bootloader To Install: "+SystemInfo["BootloaderToInstall"]+"\n")
-                    ReportList.write("Remove Old Bootloader from: "+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"\n")
-                    ReportList.write("Install New Bootloader to: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
+                    #ReportList.write("Remove Old Bootloader from: "+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"\n")
+                    #ReportList.write("Install New Bootloader to: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
                     ReportList.write("\nNew Bootloader's Configuration:"+"\n")
                     #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
                     #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
