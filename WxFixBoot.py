@@ -30,6 +30,7 @@
 #*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? If so do what it does ***
 #*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
 #*** Figure out how to make badblocks output to stdout or find that fake pty thing for python ***
+#*** Match LILO default OS to ours ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import

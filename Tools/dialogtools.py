@@ -66,7 +66,7 @@ class Main():
         #Try to set custom buttons labels if needed (handle attribute error on wx 2.8.11).
         if buttons != (None, None):
             try:
-                if dlg.SetYesNoLabels(buttons[0], button[1]):
+                if dlg.SetYesNoLabels(buttons[0], buttons[1]):
                     #If it worked get rid of the last unneccessary sentence in the message.
                     dlg.SetMessage(' '.join(msg.split(".")[0:-1]))
 
