@@ -14,9 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#*** Add package dependancy on lvm2 ***
-#*** Add package dependency on binutils (for strings command) ***
-#*** Remove package dependency on lsb_release ***
+#*** Add ubuntu package dependency on lvm2 ***
+#*** Add ubuntu package dependency on binutils (for strings command) ***
+#*** Remove ubuntu package dependency on lsb_release ***
+#*** Add LVM and BeautifulSoup4 fedora packages to dependency list ***
+
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Test DialogTools.ShowMultiChoiceDlg() ***
 #*** Figure out what to do in each instance where something might fail ***
@@ -31,8 +33,6 @@
 #*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? If so do what it does ***
 #*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
 #*** Figure out how to make badblocks output to stdout or find that fake pty thing for python ***
-#*** Add lvdisplay to dependency list ***
-#*** Add LVM and BeautifulSoup4 fedora packages to dependency list ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -60,7 +60,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "27/6/2016"
+ReleaseDate = "28/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -724,11 +724,12 @@ class MainWindow(wx.Frame):
         #Reveal MainWindow
         self.Show()
 
-    def OnAbout(self, Event=None): #*** No icon here on Fedora ***
+    def OnAbout(self, Event=None):
         """Shows the About Box"""
         logger.debug("MainWindow().OnAbout(): Showing About Box...")
         aboutbox = wx.AboutDialogInfo()
         aboutbox.Name = "WxFixBoot"
+        aboutbox.SetIcon(AppIcon)
         aboutbox.Version = Version
         aboutbox.Copyright = "(C) 2013-2016 Hamish McIntyre-Bhatty"
         aboutbox.Description = "Utility to fix the bootloader on a\ncomputer quickly"
