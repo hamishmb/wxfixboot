@@ -61,6 +61,17 @@ class Main():
                     DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! This OS will now be skipped.")
                     return False #*** Not handled at the moment ***
 
+        #Mount a /boot partition if it exists.
+        if OSInfo[OS]["BootPartition"] != "Unknown":
+            if CoreTools.MountPartition(OSInfo[OS]["BootPartition"], MountPoint+"/boot") != 0:
+                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OS+"'s /boot partition! Skipping bootloader removal for this OS.")
+
+                if not OSInfo[OS]["IsCurrentOS"]:
+                    CoreTools.TearDownChroot(MountPoint)
+                    CoreTools.Unmount(MountPoint)
+
+                return False #*** Not handled yet ***
+
         #Remove the bootloader. *** Test all these on fedora ***
         if BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
@@ -115,6 +126,11 @@ class Main():
         if Retval != 0:
             logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! Warning user...")
             DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! This OS will now be skipped.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
+
+        #Unmount a /boot partition if it exists.
+        if OSInfo[OS]["BootPartition"] != "Unknown":
+            if CoreTools.Unmount(MountPoint+"/boot") != 0:
+                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to unmount "+OS+"'s /boot partition! Continuing anyway...")
 
         #Tear down chroot if needed.
         if UseChroot:
