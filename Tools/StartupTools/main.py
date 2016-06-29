@@ -279,9 +279,9 @@ class Main():
             if OSInfo[OS]["BootPartition"] != "Unknown":
                 if CoreTools.MountPartition(OSInfo[OS]["BootPartition"], MountPoint+"/boot") != 0:
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to mount "+OS+"'s /boot partition! Skipping bootloader detection for this OS.")
-                    CoreTools.TearDownChroot(MountPoint)
 
                     if not OSInfo[OS]["IsCurrentOS"]:
+                        CoreTools.TearDownChroot(MountPoint)
                         CoreTools.Unmount(MountPoint)
 
                     continue

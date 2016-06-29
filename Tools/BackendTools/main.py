@@ -318,6 +318,17 @@ class Main():
 
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
 
+        #Mount a /boot partition if it exists.
+        if OSInfo[OS]["BootPartition"] != "Unknown":
+            if CoreTools.MountPartition(OSInfo[OS]["BootPartition"], MountPoint+"/boot") != 0:
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount "+OS+"'s /boot partition! Skipping bootloader config setting for this OS.")
+
+                if not OSInfo[OS]["IsCurrentOS"]:
+                    CoreTools.TearDownChroot(MountPoint)
+                    CoreTools.Unmount(MountPoint)
+
+                continue
+
         #Look for the configuration file, based on which SetConfig() function we're about to run.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
             #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
@@ -442,6 +453,11 @@ class Main():
             #Unmount the EFI partition.
             if CoreTools.Unmount(BootloaderInfo[OS]["BootDisk"]) != 0: #*** Warn user? ***
                 logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
+
+        #Unmount a /boot partition if it exists.
+        if OSInfo[OS]["BootPartition"] != "Unknown":
+            if CoreTools.Unmount(MountPoint+"/boot") != 0:
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount "+OS+"'s /boot partition! Continuing anyway...")
 
         #Tear down chroot if needed.
         if UseChroot:
