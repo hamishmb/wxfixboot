@@ -170,10 +170,9 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         GrubMenuEntries = []
 
-        if OSInfo[OS]["PackageManager"] == "apt-get":
-            GrubConfigFile = open(GrubConfigFilePath, "r")
-            GrubConfig = GrubConfigFile.read()
-            GrubConfigFile.close()
+        GrubConfigFile = open(GrubConfigFilePath, "r")
+        GrubConfig = GrubConfigFile.read()
+        GrubConfigFile.close()
 
         for Line in GrubConfig.split("\n"):
             if "menuentry " in Line:
