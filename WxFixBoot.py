@@ -17,6 +17,7 @@
 #*** Add ubuntu package dependency on lvm2 ***
 #*** Add ubuntu package dependency on binutils (for strings command) ***
 #*** Remove ubuntu package dependency on lsb_release ***
+#*** Remove package dependancy on file ***
 #*** Add LVM and BeautifulSoup4 fedora packages to dependency list ***
 
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
@@ -30,6 +31,7 @@
 #*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
 #*** Figure out how to make badblocks output to stdout or find that fake pty thing for python ***
 #*** Match LILO default OS to ours ***
+#*** Use the "arch" command ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import

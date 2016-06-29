@@ -139,7 +139,7 @@ class Main():
                         BootloaderOperations = True
                         break
 
-            logger.error("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): "+ExecList[0]+" Errored with exit value "+unicode(Retval)+"! This could indicate filesystem corruption or bad sectors!
+            logger.error("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): "+ExecList[0]+" Errored with exit value "+unicode(Retval)+"! This could indicate filesystem corruption or bad sectors!")
 
             if BootloaderOperations:
                 logger.error("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): Asking the user whether to skip bootloader operations...")

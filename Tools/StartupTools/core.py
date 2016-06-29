@@ -155,41 +155,26 @@ class Main():
         return (RawFSTABContents, EFIPartition, BootPartition)
 
     def DetermineOSArchitecture(self, MountPoint):
-        """Look for OS architecture on given partition, looking for 64-bit first, then 32-bit."""
+        """Look for OS architecture on given partition."""
         if MountPoint != "":
             logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for OS at "+MountPoint+"...")
 
         else:
             logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for Current OS...")
 
-        #Do setup and look for 64-bit first.
+        #Do setup.
         OSArch = None
-        WantedArch = "64-bit"
 
-        cmd = "file -L "+MountPoint+"/usr/bin/ld"
+        Cmd = "arch"
 
-        Retval, Output = CoreTools.StartProcess(cmd, ReturnOutput=True)
+        if MountPoint != "":
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval, OSArch = CoreTools.StartProcess(Cmd, ReturnOutput=True)
 
         #If the command failed, give up.
         if Retval != 0:
             return None
-
-        #Use a loop to avoid duplicating code.
-        while OSArch == None:
-            #Now let's check if the OS uses this architecture.
-            if WantedArch in Output:
-                logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): OS at "+MountPoint+" is "+WantedArch+"...")
-                OSArch = WantedArch
-
-            elif WantedArch == "64-bit":
-                #Now look for 32-bit and restart the loop.
-                logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): OS at "+MountPoint+" isn't 64-bit. Looking for a 32-bit OS...")
-                WantedArch = "32-bit"
-
-            else:
-                #We couldn't find it as either 32-bit or 64-bit!
-                logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Couldn't find architecture for OS at "+MountPoint+"! Returning None...")
-                break
 
         #Return the arch (or None, if we didn't find it).
         return OSArch

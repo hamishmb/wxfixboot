@@ -27,7 +27,7 @@ class Main():
         """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
         logger.info("MainStartupTools(): Main().CheckDepends(): Checking dependencies...")
         #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies.
-        CmdList = ("file", "lshw", "mount", "dmidecode", "chroot", "dd", "gdisk", "blkid", "strings", "lvdisplay")
+        CmdList = ("arch", "lshw", "mount", "dmidecode", "chroot", "dd", "gdisk", "blkid", "strings", "lvdisplay")
 
         #Create a list to contain names of failed commands.
         FailedList = []
