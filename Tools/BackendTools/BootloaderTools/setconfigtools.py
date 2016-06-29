@@ -134,7 +134,11 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
     def UpdateGRUB2(self, PackageManager, MountPoint):
         """Run 'update-grub' to update GRUB2's (BIOS and EFI/UEFI) configuration and bootloader menu"""
         #We need to update grub.
-        Cmd = "update-grub2"
+        if PackageManager == "apt-get":
+            Cmd = "update-grub2"
+
+        elif PackageManager == "yum":
+            Cmd = "grub2-mkconfig -o /boot/grub2/grub.cfg"
 
         if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
@@ -151,7 +155,15 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         #Make a list of OSs grub2 found (hopefully all of them).
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Finding GRUB2's menu entries...")
-        GrubConfigFilePath = "/boot/grub/grub.cfg"
+
+        #Find grub.cfg. (different place on Fedora)
+        if os.path.isdir(MountPoint+"/boot/grub"):
+            GRUBDir = MountPoint+"/boot/grub"
+
+        elif os.path.isdir(MountPoint+"/boot/grub2"):
+            GRUBDir = MountPoint+"/boot/grub2"
+
+        GrubConfigFilePath = GRUBDir+"/grub.cfg"
 
         if MountPoint != "":
             GrubConfigFilePath = MountPoint+GrubConfigFilePath
