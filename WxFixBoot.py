@@ -17,7 +17,7 @@
 #*** Add ubuntu package dependency on lvm2 ***
 #*** Add ubuntu package dependency on binutils (for strings command) ***
 #*** Remove ubuntu package dependency on lsb_release ***
-#*** Remove package dependancy on file ***
+#*** Remove package dependency on file ***
 #*** Add LVM and BeautifulSoup4 fedora packages to dependency list ***
 
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
@@ -59,7 +59,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "28/6/2016"
+ReleaseDate = "29/6/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")

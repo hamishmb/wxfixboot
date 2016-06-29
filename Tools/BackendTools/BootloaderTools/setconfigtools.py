@@ -103,6 +103,9 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         if PackageManager == "apt-get":
             Cmd = "grub-install --force "+Device
 
+        elif PackageManager == "yum":
+            Cmd = "grub2-install --force "+Device
+
         if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
 
@@ -114,14 +117,11 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
     def InstallGRUB2ToEFIPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch):
         """Install GRUB2 (EFI/UEFI version) into the EFI/UEFI partition"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
-        if Arch == "64-bit":
-            GRUBArch = "x86_64"
-
-        else:
-            GRUBArch = "i386"
-
         if PackageManager == "apt-get":
-            Cmd = "grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+GRUBArch+"-efi"
+            Cmd = "grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi"
+
+        elif PackageManager == "yum":
+            Cmd = "grub2-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi"
 
         if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
@@ -133,9 +133,8 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
     def UpdateGRUB2(self, PackageManager, MountPoint):
         """Run 'update-grub' to update GRUB2's (BIOS and EFI/UEFI) configuration and bootloader menu"""
-        #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
-        if PackageManager == "apt-get":
-            Cmd = "update-grub"
+        #We need to update grub.
+        Cmd = "update-grub2"
 
         if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
@@ -195,7 +194,10 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         if OSInfo[OS]["PackageManager"] == "apt-get":
             Cmd = "grub-set-default '"+DefaultOS+"'"
 
-        if not (SystemInfo["IsLiveDisk"] == False and MountPoint == ""):
+        elif OSInfo[OS]["PackageManager"] == "yum":
+            Cmd = "grub2-set-default '"+DefaultOS+"'"
+
+        if not OSInfo[OS]["IsCurrentOS"]:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)

@@ -61,12 +61,15 @@ class Main():
                     DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! This OS will now be skipped.")
                     return False #*** Not handled at the moment ***
 
-        #Remove the bootloader. *** Test all these ***
+        #Remove the bootloader. *** Test all these on fedora ***
         if BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY":
-            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...") #*** Test this ***
+            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
-                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub grub-legacy-doc grub-common'"
+                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub grub-legacy-doc grub-common'" #*** Test this ***
+
+            elif OSInfo[OS]["PackageManager"] == "yum":
+                Cmd = "yum -y remove grub"
 
         elif BootloaderInfo[OS]["Bootloader"] == "GRUB2":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")
@@ -74,11 +77,17 @@ class Main():
             if OSInfo[OS]["PackageManager"] == "apt-get":
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub-pc grub-pc-bin grub-common'"
 
+            elif OSInfo[OS]["PackageManager"] == "yum":
+                Cmd = "yum -y remove grub2 grub2-tools"
+
         elif BootloaderInfo[OS]["Bootloader"] == "LILO":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing LILO...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y lilo'"
+
+            elif OSInfo[OS]["PackageManager"] == "yum":
+                Cmd = "echo 'ERROR: LILO not available on Fedora or derivatives. Continuing anyway...'"
 
         elif BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-UEFI...")
@@ -86,11 +95,17 @@ class Main():
             if OSInfo[OS]["PackageManager"] == "apt-get":
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common'"
 
+            elif OSInfo[OS]["PackageManager"] == "yum":
+                Cmd = "yum -y remove grub2-efi grub2-tools grub2-efi-modules"
+
         elif BootloaderInfo[OS]["Bootloader"] == "ELILO":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing ELILO...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y elilo'"
+
+            elif OSInfo[OS]["PackageManager"] == "yum":
+                Cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. Continuing anyway...'"
 
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
@@ -168,6 +183,9 @@ class Main():
         if OSInfo[OS]["PackageManager"] == "apt-get":
             Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'"
 
+        elif OSInfo[OS]["PackageManager"] == "yum":
+            Cmd = "yum check-update"
+
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
@@ -185,11 +203,17 @@ class Main():
             if OSInfo[OS]["PackageManager"] == "apt-get":
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'"
 
+            elif OSInfo[OS]["PackageManager"] == "yum":
+                Cmd = "yum -y install grub2 grub2-tools"
+
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing LILO...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y lilo'"
+
+            elif OSInfo[OS]["PackageManager"] == "yum":
+                Cmd = "echo 'ERROR: LILO not available on Fedora or derivatives. Continuing anyway...'"
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing GRUB-UEFI...")
@@ -203,6 +227,9 @@ class Main():
             if OSInfo[OS]["PackageManager"] == "apt-get":
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
 
+            elif OSInfo[OS]["PackageManager"] == "yum":
+                Cmd = "yum -y install grub2-efi grub2-efi-modules grub2-tools"
+
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing ELILO...")
             #Unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
@@ -214,6 +241,9 @@ class Main():
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'"
+
+            elif OSInfo[OS]["PackageManager"] == "yum":
+                Cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. Continuing anyway...'"
 
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
