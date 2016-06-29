@@ -201,11 +201,12 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         DefaultOS = DialogTools.ShowChoiceDlg(Message="Please select the OS you want to use as "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s Default OS. You are setting configuration for "+OS, Title="WxFixBoot - Select Default OS", Choices=GRUBOSNameList)
 
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): User chose "+DefaultOS+". Setting default OS...")
+
         #Use the user's selection to set the default OS.
         if OSInfo[OS]["PackageManager"] == "apt-get":
             Cmd = "grub-set-default '"+DefaultOS+"'"
 
-        elif OSInfo[OS]["PackageManager"] == "yum":
+        elif OSInfo[OS]["PackageManager"] == "yum": #*** Check this is working ***
             Cmd = "grub2-set-default '"+DefaultOS+"'"
 
         if not OSInfo[OS]["IsCurrentOS"]:
