@@ -25,7 +25,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
     def SetGRUB2Config(self, OS, filetoopen, BootloaderTimeout, KernelOptions):
         """Set GRUB2 config."""
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Setting GRUB2 Config in "+filetoopen+"...")
-        SetTimeout, SetKopts, SetDefault = (False, False, False)
+        SetTimeout, SetKOpts, SetDefault = (False, False, False)
 
         #Open the file in read mode, so we can find the new config that needs setting. Also, use a list to temporarily store the modified lines.
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Attempting to modify existing lines in the config file first, without making any new ones...")
