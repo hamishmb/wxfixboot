@@ -327,7 +327,7 @@ class Main():
                     CoreTools.TearDownChroot(MountPoint)
                     CoreTools.Unmount(MountPoint)
 
-                continue
+                return False #*** Not handled yet ***
 
         #Look for the configuration file, based on which SetConfig() function we're about to run.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
