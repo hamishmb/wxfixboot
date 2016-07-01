@@ -300,7 +300,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Done!")
 
-    def SetELILOConfig(self, filetoopen, PackageManager, MountPoint, BootloaderTimeout):
+    def SetELILOConfig(self, OS, filetoopen, PackageManager, MountPoint, BootloaderTimeout):
         """Set ELILO config."""
         logger.info("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting ELILO config in "+filetoopen+"...")
         SetTimeout = False

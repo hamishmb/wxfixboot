@@ -31,7 +31,9 @@
 #*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
 #*** Figure out how to make badblocks output to stdout or find that fake pty thing for python ***
 #*** Match LILO default OS to ours ***
-#*** Use the "arch" command ***
+#*** Fix initial layout glitch on ProgressWindow ***
+#*** Allow installing EFI bootloaders on BIOS systems, if there's an EFI partition ***
+#*** Is /etc/default/grub created after switching to grub? ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -59,7 +61,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "29/6/2016"
+ReleaseDate = "1/7/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
