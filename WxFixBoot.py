@@ -31,8 +31,6 @@
 #*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
 #*** Figure out how to make badblocks output to stdout or find that fake pty thing for python ***
 #*** Match LILO default OS to ours ***
-#*** Fix initial layout glitch on ProgressWindow ***
-#*** Allow installing EFI bootloaders on BIOS systems, if there's an EFI partition ***
 #*** Is /etc/default/grub created after switching to grub? ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
@@ -61,7 +59,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "1/7/2016"
+ReleaseDate = "4/7/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1333,11 +1331,6 @@ class SettingsWindow(wx.Frame):
         logger.debug("SettingsWindow().LaunchblOpts(): Calling self.SaveOptions()...")
         self.SaveOptions()
 
-        if SystemInfo["FirmwareType"] == "BIOS":
-            dlg = wx.MessageDialog(self.Panel, "You have BIOS firmware so you will be unable to select a UEFI bootloader to install.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-            dlg.Destroy()
-
         #Open the Firmware Options window
         logger.debug("SettingsWindow().LaunchblOpts(): Starting Bootloader Settings Window...")
         self.Hide()
@@ -1746,9 +1739,6 @@ class BootloaderOptionsWindow(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
 
-        elif SystemInfo["FirmwareType"] == "BIOS":
-            Choices = ["GRUB2", "LILO"]
-
         else:
             Choices = ["GRUB-UEFI", "GRUB2", "ELILO", "LILO"]
 
@@ -2116,6 +2106,9 @@ class ProgressWindow(wx.Frame):
 
         self.SetupSizers()
         self.BindEvents()
+
+        #Make sure the panel displays properly.
+        self.Panel.Layout()
 
         logger.debug("ProgressWindow().__init__(): Progress Window Started.")
         logger.debug("ProgressWindow().__init__(): Starting Backend Thread...")

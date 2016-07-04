@@ -23,56 +23,52 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def StartProcess(self, ExecCmds, StdinLines=[], ShowOutput=True, ReturnOutput=False): #*** ShowOutput is ignored currently ***
+    def StartProcess(self, ExecCmds, StdinLines=[], ShowOutput=True, ReturnOutput=False, UsePty=False): #*** ShowOutput is ignored currently ***
         """Start a process given a string of commands to execute.
         ShowOutput is boolean and specifies whether to show output in the outputbox (if exists) or not.
         ReturnOutput is boolean and specifies whether to return the output back to the caller or not.
         """
-        #Make sure output is always in English.
-        ExecCmds = "LC_ALL=C "+ExecCmds
+        self.UsePty = UsePty
+
+        #Make sure output is always in English. (if not using pty)
+        if UsePty == False:
+            ExecCmds = "LC_ALL=C "+ExecCmds
 
         #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
         Counter = 0
-        Line = str("")
-        LineList = []
+        self.Line = str("")
+        self.LineList = []
 
         #Run the command(s).
-        logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds)
-        cmd = subprocess.Popen(ExecCmds, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        if UsePty:
+            logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds+" with pty...")
+            pty.spawn(ExecCmds.split(" "), self.HandleOutput)
+            Retval = 0 #*** How to get this? ***
 
-        #If we have any lines to write to stdin, do that now. *** Check this works *** *** Do we need this, and if not shall we keep it anyway for future-proofing? ***
-        if StdinLines != []:
-            for Line in StdinLines:
-                cmd.stdin.write(Line+"\n")
+        else:
+            logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds+"...")
+            cmd = subprocess.Popen(ExecCmds, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
-        #Close stdin (some programs wait for this before they will exit).
-        cmd.stdin.close()
+            #If we have any lines to write to stdin, do that now. *** Check this works *** *** Do we need this, and if not shall we keep it anyway for future-proofing? ***
+            if StdinLines != []:
+                for Line in StdinLines:
+                    cmd.stdin.write(Line+"\n")
 
-        while cmd.poll() == None or Counter < 100:
-            Char = cmd.stdout.read(1)
+            #Close stdin (some programs wait for this before they will exit).
+            cmd.stdin.close()
 
-            if cmd.poll() != None and Char == "":
-                Counter += 1
-                break
+            while cmd.poll() == None or Counter < 100:
+                self.HandleOutput(Stdout=cmd.stdout)
 
-            Line += Char
+                if cmd.poll() != None and self.Char == "":
+                    Counter += 1
+                    break #*** Why's this here? ***
 
-            if Char in ("\n", "\r"):
-                #Convert to unicode if needed and remove "NULL" characters.
-                if unicode(type(Line)) != type(""):
-                    Line = unicode(Line, errors="replace").replace("\x00", "")
-
-                wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
-                LineList.append(Line.replace("\n", "").replace("\r", ""))
-
-                #Reset Line.
-                Line = str("")
-
-        #Save runcmd.returncode, as it tends to reset fairly quickly.
-        Retval = int(cmd.returncode)
+            #Save runcmd.returncode, as it tends to reset fairly quickly.
+            Retval = int(cmd.returncode)
 
         #Log this info in a debug message.
-        logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+'\n'.join(LineList)+"\"\n")
+        logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+'\n'.join(self.LineList)+"\"\n")
 
         if ReturnOutput == False:
             #Return the return code back to whichever function ran this process, so it can handle any errors.
@@ -80,7 +76,31 @@ class Main():
 
         else:
             #Return the return code, as well as the output.
-            return (Retval, '\n'.join(LineList))
+            return (Retval, '\n'.join(self.LineList))
+
+    def HandleOutput(self, Stdout):
+        """Handle output from commands"""
+        if self.UsePty:
+            self.Char = os.read(Stdout, 1)
+
+        else:
+            self.Char = Stdout.read(1)
+
+        self.Line += self.Char
+
+        if self.Char in ("\n", "\r"):
+            #Convert to unicode if needed and remove "NULL" characters.
+            if unicode(type(self.Line)) != type(""):
+                self.Line = unicode(self.Line, errors="replace").replace("\x00", "")
+
+            print(self.Line)
+            #wx.CallAfter(ParentWindow.UpdateOutputBox, self.Line)
+            self.LineList.append(self.Line.replace("\n", "").replace("\r", ""))
+
+            #Reset Line.
+            self.Line = str("")
+
+        return self.Char
 
     def IsMounted(self, Partition, MountPoint=None):
         """Checks if the given partition is mounted.
