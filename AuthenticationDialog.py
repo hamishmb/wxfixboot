@@ -214,6 +214,7 @@ class AuthWindow(wx.Frame):
 
     def OnExit(self, Event=None):
         """Close AuthWindow() and exit"""
+        time.sleep(10)
         self.Destroy()
 
 #End Authentication Window.
