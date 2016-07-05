@@ -29,7 +29,6 @@
 #*** ELILO Kernel options not detected ***
 #*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? If so do what it does ***
 #*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
-#*** Figure out how to make badblocks output to stdout or find that fake pty thing for python ***
 #*** Match LILO default OS to ours ***
 #*** Is /etc/default/grub created after switching to grub? ***
 
@@ -2247,9 +2246,15 @@ class ProgressWindow(wx.Frame):
 
         self.OutputBox.SetInsertionPoint(NewInsertionPoint)
 
+    def BackSpace(self):
+        """Handles backspaces in output"""
+        #Move the insertion point 1 char to the left.
+        self.OutputBox.SetInsertionPoint(self.OutputBox.GetInsertionPoint()-1)
+
     def UpdateOutputBox(self, Line):
         """Update the output box"""
         CRs = []
+        BKSPs = []
         CharNo = 0
 
         for Char in Line:
@@ -2258,27 +2263,34 @@ class ProgressWindow(wx.Frame):
             if Char == "\r":
                 CRs.append(CharNo)
 
+            elif Char == "\x08":
+                BKSPs.append(CharNo)
+
         CharNo = 0
         TempLine = ""
+
         for Char in Line:
             CharNo += 1
 
-            if CharNo not in CRs:
+            if CharNo not in CRs and CharNo not in BKSPs:
                 TempLine += Char
                 if Char == "\n":
-                    self.AddLineToOutputBox(TempLine, CRs, CharNo)
+                    self.AddLineToOutputBox(TempLine, CRs, BKSPs, CharNo)
                     TempLine = ""
 
             else:
-                self.AddLineToOutputBox(TempLine, CRs, CharNo)
+                self.AddLineToOutputBox(TempLine, CRs, BKSPs, CharNo)
                 TempLine = ""
 
-    def AddLineToOutputBox(self, Line, CRs, CharNo):
+    def AddLineToOutputBox(self, Line, CRs, BKSPs, CharNo):
         InsertionPoint = self.OutputBox.GetInsertionPoint()
         self.OutputBox.Replace(InsertionPoint, InsertionPoint+len(Line), Line)
 
         if CharNo in CRs:
             self.CarriageReturn()
+
+        elif CharNo in BKSPs:
+            self.BackSpace()
 
     def UpdateCurrentProgress(self,msg):
         """Update the progress of the current progress progress bar"""

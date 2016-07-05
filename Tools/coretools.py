@@ -57,13 +57,13 @@ class Main():
 
             Line += Char
 
-            if Char in ("\n", "\r"):
+            if Char in ("\n", "\r", "\x08"):
                 #Convert to unicode if needed and remove "NULL" characters.
                 if unicode(type(Line)) != type(""):
                     Line = unicode(Line, errors="replace").replace("\x00", "")
 
-                #wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
-                LineList.append(Line.replace("\n", "").replace("\r", ""))
+                wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
+                LineList.append(Line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
                 #Reset Line.
                 Line = str("")

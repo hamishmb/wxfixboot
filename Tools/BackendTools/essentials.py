@@ -88,8 +88,7 @@ class Main(): #*** These need refactoring ***
         #Find the length of the list (this is needed to update the progressbars).
         CheckListLength = len(CheckList)
 
-        #*** Use pty or pexpect module to fix this ***
-        DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot will now perform the disk check. Do not be alarmed by on-screen inactivity, even in the terminal output box, as this operation could take a long time to complete.")
+        DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot will now perform the disk check. You may wish to open the terminal output box to view the progress of the disk checks.")
 
         #Run the check on the checkable partitions
         for Element in CheckList:
