@@ -33,7 +33,7 @@ class Main():
         #If this is the current OS, let the remover function know that we aren't using chroot.
         if OSInfo[OS]["IsCurrentOS"]:
             logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Modifying current OS so not using chroot...")
-            UseChroot, UnmountAfter, MountPoint = (False, False, None)
+            UseChroot, UnmountAfter, MountPoint = (False, False, "")
 
         else:
             logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Using chroot to modify another OS...")
