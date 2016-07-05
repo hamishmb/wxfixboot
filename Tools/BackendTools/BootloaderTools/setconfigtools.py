@@ -165,9 +165,6 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         GrubConfigFilePath = GRUBDir+"/grub.cfg"
 
-        if MountPoint != "":
-            GrubConfigFilePath = MountPoint+GrubConfigFilePath
-
         GrubMenuEntries = []
 
         GrubConfigFile = open(GrubConfigFilePath, "r")
