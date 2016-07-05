@@ -14,12 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#*** Add ubuntu package dependency on lvm2 ***
-#*** Add ubuntu package dependency on binutils (for strings command) ***
-#*** Remove ubuntu package dependency on lsb_release ***
-#*** Remove package dependency on file ***
-#*** Add LVM and BeautifulSoup4 fedora packages to dependency list ***
-
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** Remove grub's .efi files after installing elilo and vice versa ***
