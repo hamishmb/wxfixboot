@@ -378,7 +378,7 @@ class Main():
 
             #Now Install GRUB-UEFI to the UEFI Partition. *** Is this necessary when updating it? ***
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to "+BootloaderInfo[OS]["BootDisk"]+"...")
-            BootloaderConfigSettingTools.InstallGRUB2ToEFIPartition(PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint, UEFISystemPartitionMountPoint=MountPoint+"/boot/efi", Arch=OSInfo[OS]["Arch"])
+            BootloaderConfigSettingTools.InstallGRUB2ToEFIPartition(PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint, UEFISystemPartitionMountPoint="/boot/efi", Arch=OSInfo[OS]["Arch"])
 
             #Update GRUB.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
