@@ -294,7 +294,7 @@ class Main():
                 DiskInfo[Volume]["Name"] = Volume
                 DiskInfo[Volume]["LVName"] = Volume.split("/")[-1]
                 DiskInfo[Volume]["VGName"] = Volume.split("/")[2]
-                DiskInfo[Volume]["Type"] = "LVM"
+                DiskInfo[Volume]["Type"] = "Partition"
                 DiskInfo[Volume]["Partitions"] = []
                 DiskInfo[Volume]["Vendor"] = "Linux"
                 DiskInfo[Volume]["Product"] = "LVM Partition"

@@ -2187,6 +2187,16 @@ class ProgressWindow(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.ExitButton)
         self.Bind(wx.EVT_CLOSE, self.OnExit)
 
+        #Prevent focus on Output Box.
+        self.OutputBox.Bind(wx.EVT_SET_FOCUS, self.FocusOnOutputButton)
+
+    def FocusOnOutputButton(self, Event=None):
+        """Focus on the show output button instead of the TextCtrl, and reset the insertion point back after 30 milliseconds, preventing the user from changing the insertion point and messing the formatting up."""
+        #Just a slightly hacky way of trying to make sure the user can't change the insertion point! Works unless you start doing silly stuff like tapping on the output box constantly :)
+        self.ShowOutputButton.SetFocus()
+        InsertionPoint = self.OutputBox.GetInsertionPoint()
+        wx.CallLater(30, self.OutputBox.SetInsertionPoint, InsertionPoint)
+
     def ShowOutput(self, Event=None):
         """Show and Hide the output box in ProgressWindow()"""
         logger.debug("ProgressWindow().ShowOutput() was Toggled to position: "+unicode(self.ShowOutputButton.GetValue())+", where True = Depressed and vice versa.")
