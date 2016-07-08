@@ -451,7 +451,7 @@ class Main(): #*** Refactor all of these ***
             if "label" in MenuEntryData:
                 MenuEntry = MenuEntryData.split("=")[1]
 
-            if "image" in MenuEntryData.split() and "=" in MenuEntryData.split() and "#" not in MenuEntryData.split():
+            if MenuEntryData != Line and "image" in MenuEntryData.split() and "=" in MenuEntryData.split() and "#" not in MenuEntryData.split():
                 #Remove the last line.
                 RawMenuEntryData.pop()
                 break
@@ -501,6 +501,7 @@ class Main(): #*** Refactor all of these ***
         Timeout = "Unknown"
         KernelOptions = "Unknown"
         BootDisk = "Unknown"
+        DefaultOS = "Unknown"
 
         #Open the file in read mode, so we can save the important bits of config.
         ConfigFile = open(ConfigFilePath, 'r')
@@ -551,6 +552,8 @@ class Main(): #*** Refactor all of these ***
         #Close the file.
         logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Done! Returning information...")
         ConfigFile.close()
+
+        #*** Pick the 1st menuentry if default OS wasn't found. *** 
 
         #Ignore ELILO's boot disk setting.
         if "/etc/lilo.conf" in ConfigFilePath:
