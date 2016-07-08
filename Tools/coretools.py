@@ -62,7 +62,16 @@ class Main():
                 if unicode(type(Line)) != type(""):
                     Line = unicode(Line, errors="replace").replace("\x00", "")
 
-                wx.CallAfter(ParentWindow.UpdateOutputBox, Line.replace("\r", "-r"))
+                wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
+
+                print(Line)
+                Ints = []
+
+                for TheChar in Line:
+                    Ints.append((int(TheChar))
+
+                print(Ints)
+
                 LineList.append(Line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
                 #Reset Line.
