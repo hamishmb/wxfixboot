@@ -68,7 +68,7 @@ class Main():
                 Ints = []
 
                 for TheChar in Line:
-                    Ints.append((int(TheChar))
+                    Ints.append(int(TheChar))
 
                 print(Ints)
 
