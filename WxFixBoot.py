@@ -2290,9 +2290,12 @@ class ProgressWindow(wx.Frame):
         InsertionPoint = self.OutputBox.GetInsertionPoint()
 
         #Handle \r\n as \n, fixing formatting problems.
+        Text = self.OutputBox.GetValue()
+
         if InsertionPoint != 0:
-            if Line == "\n" and self.OutputBox.GetRange(InsertionPoint-1, InsertionPoint) == "\r":
-                self.OutputBox.Remove(InsertionPoint-1, InsertionPoint)
+            if Line == "\n" and self.OutputBox.GetRange(len(Text)-1, len(Text)) == "\r":
+                self.OutputBox.Remove(len(Text)-1, len(Text))
+                self.OutputBox.SetInsertionPoint(len(Text)-1)
 
         self.OutputBox.Replace(InsertionPoint, InsertionPoint+len(Line), Line)
 
