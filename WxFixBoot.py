@@ -2288,6 +2288,11 @@ class ProgressWindow(wx.Frame):
 
     def AddLineToOutputBox(self, Line, CRs, BKSPs, CharNo):
         InsertionPoint = self.OutputBox.GetInsertionPoint()
+
+        #Handle \r\n as \n, fixing formatting problems.
+        if Line == "\n" and self.OutputBox.GetRange(InsertionPoint-1, InsertionPoint) == "\r":
+            self.OutputBox.Remove(InsertionPoint-1, InsertionPoint)
+
         self.OutputBox.Replace(InsertionPoint, InsertionPoint+len(Line), Line)
 
         if CharNo in CRs:
