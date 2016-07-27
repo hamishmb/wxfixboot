@@ -22,7 +22,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Begin Main Class.
-class Main(): #*** These need refactoring ***
+class Main():
     def CheckInternetConnection(self):
         """Check the internet connection."""
         DialogTools.ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations. This will be done by pinging the OpenDNS DNS servers.")
@@ -64,7 +64,7 @@ class Main(): #*** These need refactoring ***
 
                 if Result == False:
                     logger.warning("EssentialBackendTools: Main().CheckInternetConnection(): Disabling bootloader operations due to bad internet connection...")
-                    SystemInfo["DisableBootloaderOperations"] = True
+                    SystemInfo["DisableBootloaderOperations"] = True #*** Get rid of this ***
                     break
 
                 else:
@@ -72,7 +72,7 @@ class Main(): #*** These need refactoring ***
                     logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
 
-    def FileSystemCheck(self, Type): #*** Will need lots of work when we switch to dictionaries ***
+    def FileSystemCheck(self, Type): #*** Will need lots of work when we switch to dictionaries *** *** Refactor at that time ***
         """Quickly check all filesystems."""
         logger.debug("EssentialBackendTools: Main().FileSystemCheck(): Starting...")
 
@@ -81,99 +81,97 @@ class Main(): #*** These need refactoring ***
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to do the Filesystem Check...###\n")
 
-        #Determine which partitions are to be checked.
-        CheckList = HelperBackendTools.FindCheckableFileSystems()
+        #Determine which Disks are to be checked.
+        FileSystemsToCheck = HelperBackendTools.FindCheckableFileSystems()
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30)
 
         #Find the length of the list (this is needed to update the progressbars).
-        CheckListLength = len(CheckList)
+        FileSystemsToCheckLength = len(FileSystemsToCheck)
+        Checked = 0
 
         DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot will now perform the disk check. You may wish to open the terminal output box to view the progress of the disk checks.")
 
-        #Run the check on the checkable partitions
-        for Element in CheckList:
-            #Gather info. *** Do it a different way? Dictionary? ***
-            SplitElement = Element.split()
-            Partition = SplitElement[0]
-            FSType = SplitElement[1]
-            RemountPartitionAfter = SplitElement[2]
+        #Run the check on the checkable Disks
+        for Disk in FileSystemsToCheck:
+            #Gather info.
+            logger.info("EssentialBackendTools: Main().FileSystemCheck():: Checking "+Disk+"...")
+            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking Disk: "+Disk+"###\n")
+            wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking Disk: "+Disk)
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30+((50//FileSystemsToCheckLength)*(Checked+1)))
 
-            logger.info("EssentialBackendTools: Main().FileSystemCheck():: Checking Partition: "+Partition+"...")
-            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking Partition: "+Partition+"###\n")
-            wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking Partition: "+Partition)
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30+((50//CheckListLength)*(CheckList.index(Element)+1)))
-
-            #Create a command list that will work based on the fstype of this partition and the type of check we're performing. If there aren't any use cases for the fstype, display a message to the user and skip it.
+            #Create a command list that will work based on the fstype of this Disk and the type of check we're performing. If there aren't any use cases for the fstype, display a message to the user and skip it.
             if Type == "Quick":
-                if FSType == "jfs":
-                    ExecCmds = "fsck.jfs -vf "+Partition
+                if DiskInfo[Disk]["FileSystem"] == "jfs":
+                    ExecCmds = "fsck.jfs -vf "+Disk
 
-                elif FSType == "minix":
-                    ExecCmds = "fsck.minix -avf "+Partition
+                elif DiskInfo[Disk]["FileSystem"] == "minix":
+                    ExecCmds = "fsck.minix -avf "+Disk
 
-                elif FSType == "reiserfs":
-                    ExecCmds = "fsck.reiserfs -apf "+Partition
+                elif DiskInfo[Disk]["FileSystem"] == "reiserfs":
+                    ExecCmds = "fsck.reiserfs -apf "+Disk
 
-                elif FSType == "xfs":
-                    ExecCmds = "xfs_repair -Pvd "+Partition
+                elif DiskInfo[Disk]["FileSystem"] == "xfs":
+                    ExecCmds = "xfs_repair -Pvd "+Disk
 
-                elif FSType == "vfat":
-                    ExecCmds = "fsck.vfat -yv "+Partition
+                elif DiskInfo[Disk]["FileSystem"] == "vfat":
+                    ExecCmds = "fsck.vfat -yv "+Disk
 
-                elif FSType in ('ext2', 'ext3', 'ext4', 'ext4dev'):
-                    ExecCmds = "fsck."+FSType+" -yvf "+Partition
+                elif DiskInfo[Disk]["FileSystem"] in ('ext2', 'ext3', 'ext4', 'ext4dev'):
+                    ExecCmds = "fsck."+DiskInfo[Disk]["FileSystem"]+" -yvf "+Disk
 
                 else:
                     ExecCmds = ""
-                    logger.warning("EssentialBackendTools: Main().FileSystemCheck(): Skipping Partition: "+Partition+", as WxFixBoot doesn't support checking it yet...")
-                    DialogTools.ShowMsgDlg(Kind="error", Message="The filesystem on partition: "+Partition+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Partition+" will now be skipped.")
+                    logger.warning("EssentialBackendTools: Main().FileSystemCheck(): Skipping Disk: "+Disk+", as WxFixBoot doesn't support checking it yet...")
+                    DialogTools.ShowMsgDlg(Kind="error", Message="The filesystem on Disk: "+Disk+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Disk+" will now be skipped.")
 
             else:
-                if FSType == "jfs":
-                    #No support for bad sector check in jfs. Notify the user and do a normal check instead.
-                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on partition: "+Partition+" (jfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
-                    ExecCmds = "fsck.jfs -vf "+Partition
+                if DiskInfo[Disk]["FileSystem"] == "jfs":
+                    #No support for bad sector check in jfs. Notify the user and do a normal check instead. *** Run badblocks manually too? ***
+                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on Disk: "+Disk+" (jfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
+                    ExecCmds = "fsck.jfs -vf "+Disk
 
-                elif FSType == "minix":
-                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on partition: "+Partition+" (minix) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
-                    ExecCmds = "fsck.minix -avf "+Partition
+                elif DiskInfo[Disk]["FileSystem"] == "minix":
+                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on Disk: "+Disk+" (minix) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
+                    ExecCmds = "fsck.minix -avf "+Disk
 
-                elif FSType == "reiserfs":
-                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on partition: "+Partition+" (reiserfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
-                    ExecCmds = "fsck.reiserfs -apf "+Partition
+                elif DiskInfo[Disk]["FileSystem"] == "reiserfs":
+                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on Disk: "+Disk+" (reiserfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
+                    ExecCmds = "fsck.reiserfs -apf "+Disk
 
-                elif FSType == "xfs":
-                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on partition: "+Partition+" (xfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
-                    ExecCmds = "xfs_repair -Pvd "+Partition
+                elif DiskInfo[Disk]["FileSystem"] == "xfs":
+                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on Disk: "+Disk+" (xfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
+                    ExecCmds = "xfs_repair -Pvd "+Disk
 
-                elif FSType == "vfat":
-                    ExecCmds = "fsck.vfat -yvt "+Partition
+                elif DiskInfo[Disk]["FileSystem"] == "vfat":
+                    ExecCmds = "fsck.vfat -yvt "+Disk
 
-                elif FSType in ('ext2', 'ext3', 'ext4', 'ext4dev'):
-                    ExecCmds = "fsck."+FSType+" -yvcf "+Partition
+                elif DiskInfo[Disk]["FileSystem"] in ('ext2', 'ext3', 'ext4', 'ext4dev'):
+                    ExecCmds = "fsck."+DiskInfo[Disk]["FileSystem"]+" -yvcf "+Disk
 
                 else:
                     ExecCmds = ""
-                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem on partition: "+Partition+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Partition+" will now be skipped.")
+                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem on Disk: "+Disk+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Disk+" will now be skipped.")
 
-            #Run the command with Piping = False, if ExecList != ['None'], otherwise do nothing, but do remount the partition if needed.
+            #Run the command with Piping = False, if ExecList != ['None'], otherwise do nothing, but do remount the Disk if needed.
             if ExecCmds != "":
                 retval = CoreTools.StartProcess(ExecCmds)
 
                 #Check the return values, and run the handler if needed.
                 if retval == 0:
                     #Success.
-                    logger.info("EssentialBackendTools: Main().FileSystemCheck(): Checked partition: "+Partition+". No Errors Found!")
+                    logger.info("EssentialBackendTools: Main().FileSystemCheck(): Checked Disk: "+Disk+". No Errors Found!")
 
                 else:
-                    HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Partition)
+                    HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Disk)
 
-            if RemountPartitionAfter == "True":
-                logger.debug("EssentialBackendTools: Main().FileSystemCheck(): Remounting Partition: "+Partition+" Read-Write...")
-                Retval = CoreTools.MountPartition(Partition=Partition, MountPoint="/tmp/wxfixboot/mountpoints"+Partition)
+            if FileSystemsToCheck[Disk]["Remount"]:
+                logger.debug("EssentialBackendTools: Main().FileSystemCheck(): Remounting Disk: "+Disk+" Read-Write...")
+                Retval = CoreTools.MountPartition(Partition=Disk, MountPoint="/tmp/wxfixboot/mountpoints"+Disk)
 
                 if Retval != 0:
-                    logger.warning("EssentialBackendTools: Main().FileSystemCheck(): Failed to remount partition: "+Partition+" after check. We probably need to reboot first. Never mind...")
+                    logger.warning("EssentialBackendTools: Main().FileSystemCheck(): Failed to remount Disk: "+Disk+" after check. We probably need to reboot first. Never mind...")
+
+            Checked += 1
 
         #Update Current Operation Text.
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Filesystem Check!")

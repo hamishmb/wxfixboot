@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# WxFixBoot Version 2.0~pre2
+# WxFixBoot Version 2.0~pre3
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
@@ -52,7 +52,7 @@ from wx.animate import Animation
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "2.0~pre2"
+Version = "2.0~pre3"
 ReleaseDate = "27/7/2016"
 
 def usage():
@@ -2244,6 +2244,7 @@ class BackendThread(threading.Thread):
 
         #Make dictionaries accessible. *** Add as needed *** *** Minimise these later if possible ***
         Tools.BackendTools.essentials.SystemInfo = SystemInfo
+        Tools.BackendTools.essentials.DiskInfo = DiskInfo
 
         Tools.BackendTools.helpers.BootloaderInfo = BootloaderInfo
         Tools.BackendTools.helpers.DiskInfo = DiskInfo

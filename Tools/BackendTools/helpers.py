@@ -53,7 +53,7 @@ class Main():
 
         #Do setup.
         DoNotCheckList = []
-        CheckList = []
+        FileSystemsToCheck = {}
         RootFS = CoreTools.GetPartitionMountedAt("/")
 
         #Get a list of missing fsck modules (if any) based on the existing filesystems.
@@ -97,8 +97,9 @@ class Main():
                         RemountPartitionAfter = True
 
             if CheckTheFS:
-                #Add it to the list for checking.
-                CheckList.append(Disk+" "+DiskInfo[Disk]["FileSystem"]+" "+unicode(RemountPartitionAfter))
+                #Add it to the dictionary for checking.
+                FileSystemsToCheck[Disk] = {}
+                FileSystemsToCheck[Disk]["Remount"] = RemountPartitionAfter
 
             else:
                 #Add it to the non-checkable list
@@ -110,7 +111,7 @@ class Main():
             DialogTools.ShowMsgDlg(Kind="info", Message="The following filesystems will not be checked:\n\n"+'\n'.join(DoNotCheckList)+".\n\nThe most likely reason for this is that some of the filesystems are in use, or that the required filesystem checkers weren't found. WxFixBoot will now continue to check the remaining filesystems.")
 
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Done! Filesystems that won't be checked: "+'\n'.join(DoNotCheckList)+"...")
-        return CheckList
+        return FileSystemsToCheck
 
     def HandleFilesystemCheckReturnValues(self, ExecCmds, Retval, Partition):
         """Handle Filesystem Checker return codes."""
