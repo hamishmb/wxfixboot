@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# Device Information Obtainer for WxFixBoot Version 2.0~pre1
+# Device Information Obtainer for WxFixBoot Version 2.0~pre3
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. #*** Refactor ***
+#Begin Main Class.
 class Main():
     def GetVendor(self, Node):
         """Get the vendor"""
@@ -299,7 +299,7 @@ class Main():
                 DiskInfo[Volume]["Vendor"] = "Linux"
                 DiskInfo[Volume]["Product"] = "LVM Partition"
                 DiskInfo[Volume]["Description"] = "LVM partition "+DiskInfo[Volume]["LVName"]+" in volume group "+DiskInfo[Volume]["VGName"]
-                DiskInfo[Volume]["Flags"] = [] #*** Add support for this later ***
+                DiskInfo[Volume]["Flags"] = []
                 DiskInfo[Volume]["FileSystem"] = self.GetLVFileSystem(Volume)
                 DiskInfo[Volume]["Partitioning"] = "N/A"
                 DiskInfo[Volume]["BootRecord"], DiskInfo[Volume]["BootRecordStrings"] = self.GetBootRecord(Volume)

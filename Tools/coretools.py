@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Core Tools in the Tools Package for WxFixBoot Version 2.0~pre2
+# Core Tools in the Tools Package for WxFixBoot Version 2.0~pre3
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -53,7 +53,6 @@ class Main():
 
             if cmd.poll() != None and Char == "":
                 Counter += 1
-                break #*** Why is this here? ***
 
             Line += Char
 
@@ -291,7 +290,7 @@ class Main():
 
         for FileSystem in MountList:
             if self.MountPartition(Partition=FileSystem, MountPoint=MountPoint+FileSystem, Options="--bind") != 0:
-                logger.error("CoreTools: Main().SetUpChroot(): Failed to bind "+FileSystem+" to "+MountPoint+Filesystem+"! Chroot isn't set up properly! Attempting to continue anyway...") #*** What shall we do here? ***
+                logger.error("CoreTools: Main().SetUpChroot(): Failed to bind "+FileSystem+" to "+MountPoint+Filesystem+"! Chroot isn't set up properly! Attempting to continue anyway...")
 
         ExecList = ("mv -vf "+MountPoint+"/etc/resolv.conf "+MountPoint+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+MountPoint+"/etc/resolv.conf")
 
@@ -318,13 +317,13 @@ class Main():
 
         for FileSystem in UnmountList:
             if self.Unmount(FileSystem) != 0:
-                logger.error("CoreTools: Main().TearDownChroot(): Faied to unmount "+FileSystem+"! Chroot isn't removed properly! Attempting to continue anyway...") #*** What do we do here? ***
+                logger.error("CoreTools: Main().TearDownChroot(): Faied to unmount "+FileSystem+"! Chroot isn't removed properly! Attempting to continue anyway...")
 
         #We'll also need to replace the MountPoint/etc/resolv.conf with the backup file, MountPoint/etc/resolv.conf.bak.
         Retval = self.StartProcess("mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf", ShowOutput=False)
 
         if Retval != 0:
-            logger.error("CoreTools: Main().TearDownChroot(): Failed to run command: 'mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf'! Return value was: "+Retval+". Chroot may not be removed properly!") #*** What do we do here? ***
+            logger.error("CoreTools: Main().TearDownChroot(): Failed to run command: 'mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf'! Return value was: "+Retval+". Chroot may not be removed properly!")
 
         logger.debug("CoreTools: Main().TearDownChroot(): Finished removing chroot at MountPoint: "+MountPoint+"...")
         return Retval

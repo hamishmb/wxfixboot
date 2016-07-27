@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# NoteBook page functions for the system info window for WxFixBoot Version 2.0~pre2
+# NoteBook page functions for the system info window for WxFixBoot Version 2.0~pre3
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Main Startup Tools in the StartupTools Package for WxFixBoot Version 2.0~pre2
+# Main Startup Tools in the StartupTools Package for WxFixBoot Version 2.0~pre3
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it

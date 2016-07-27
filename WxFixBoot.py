@@ -1557,13 +1557,16 @@ class BootloaderOptionsWindow(wx.Frame):
         else:
             Choices = ["GRUB-UEFI", "GRUB2", "ELILO", "LILO"]
 
-        #Disable ELILO and LILO on Fedora systems. *** Check this works ***
+        #Disable ELILO and LILO on Fedora systems.
         if "Fedora" in self.OSChoice.GetStringSelection():
             if "ELILO" in Choices:
                 Choices.remove("ELILO")
 
             if "LILO" in Choices:
                 Choices.remove("LILO")
+
+        #Remove the current bootloader from the choices.
+        Choices.remove(BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"])
 
         self.NewBootloaderChoice.Clear()
 
