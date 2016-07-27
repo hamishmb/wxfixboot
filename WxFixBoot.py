@@ -543,7 +543,6 @@ class InitThread(threading.Thread):
         global Verify
         global MakeSystemSummary
         global BLOptsDlgRun
-        global OptionsDlg1Run
 
         #Initialise them.
         QuickFSCheck = ""
@@ -553,10 +552,9 @@ class InitThread(threading.Thread):
         Verify = ""
         MakeSystemSummary = ""
         BLOptsDlgRun = ""
-        OptionsDlg1Run = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun, OptionsDlg1Run = MainStartupTools.SetDefaults()
+        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -620,13 +618,16 @@ class MainWindow(wx.Frame):
         """Create the buttons"""
         self.AboutButton = wx.Button(self.Panel, wx.ID_ANY, "About")
         self.ExitButton = wx.Button(self.Panel, wx.ID_ANY, "Quit")
-        self.OptionsButton = wx.Button(self.Panel, wx.ID_ANY, "View Program Options")
+        self.BootloaderOptionsButton = wx.Button(self.Panel, -1, "Bootloader Options")
         self.ApplyOperationsButton = wx.Button(self.Panel, wx.ID_ANY, "Apply All Operations")
 
     def CreateCBs(self):
         """Create the checkboxes"""
-        self.BadSectorCheckCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Check All File Systems (thorough)")
-        self.CheckFileSystemsCB = wx.CheckBox(self.Panel, wx.ID_ANY, "Check All File Systems (quick)")
+        self.BadSectorCheckCB = wx.CheckBox(self.Panel, -1, "Check All File Systems (thorough)")
+        self.CheckFileSystemsCB = wx.CheckBox(self.Panel, -1, "Check All File Systems (quick)")
+        self.FullVerboseCheckBox = wx.CheckBox(self.Panel, -1, "Show diagnostic terminal output")
+        self.MakeSummaryCheckBox = wx.CheckBox(self.Panel, -1, "Save System Report To File")
+        self.LogOutputCheckBox = wx.CheckBox(self.Panel, -1, "Save terminal output in Report")
 
     def CreateMenus(self):
         """Create the menus"""
@@ -639,7 +640,7 @@ class MainWindow(wx.Frame):
         self.menuAbout = helpmenu.Append(wx.ID_ABOUT, "&About", "Information about this program")
         self.menuExit = filemenu.Append(wx.ID_EXIT,"&Exit", "Terminate this program")
         self.menuSystemInfo = viewmenu.Append(wx.ID_ANY,"&System Information", "Information about all detected disks, OSs, and Bootloaders")
-        self.menuOpts = editmenu.Append(wx.ID_PREFERENCES, "&Options", "General settings used to modify your system")
+        self.menuBootloaderOpts = editmenu.Append(wx.ID_PREFERENCES, "&Bootloader Options", "All Bootloader Options used to modify/fix your system")
 
         #Creating the menubar.
         menuBar = wx.MenuBar()
@@ -670,19 +671,27 @@ class MainWindow(wx.Frame):
         else:
             self.BadSectorCheckCB.Enable()
 
+        #Log output, and Make Summary checkboxes.
+        if self.MakeSummaryCheckBox.IsChecked():
+            self.LogOutputCheckBox.Enable()
+            self.LogOutputCheckBox.SetValue(True)
+
+        else:
+            self.LogOutputCheckBox.SetValue(False)
+            self.LogOutputCheckBox.Disable()
+
         logger.debug("MainWindow().OnCheckBox(): Done. Calling self.SaveMainOpts()...")
         self.SaveMainOpts()
 
-    def Opts(self, Event=None):
-        """Starts Settings Window"""
-        global OptionsDlg1Run
-        logger.debug("MainWindow().Opts(): Starting Settings Window and hiding MainWindow...")
-
+    def BootloaderOptions(self, Event=None):
+        #Safeguard program reliability (and continuity) by saving the settings first.
+        logger.debug("MainWindow().BootloaderOptions(): Calling self.SaveMainOpts()...")
         self.SaveMainOpts()
 
-        OptionsDlg1Run = True
+        #Open the Bootloader Options window
+        logger.debug("SettingsWindow().LaunchblOpts(): Starting Bootloader Settings Window...")
         self.Hide()
-        SettingsWindow(self).Show()
+        BootloaderOptionsWindow(self).Show()
 
     def SystemInfo(self, Event=None):
         """Start SystemInfoWindow"""
@@ -691,18 +700,12 @@ class MainWindow(wx.Frame):
 
     def ProgressWindow(self, Event=None):
         """Starts Progress Window"""
-        if OptionsDlg1Run:
-            logger.debug("MainWindow().ProgressWindow(): Starting Progress Window...")
-            self.SaveMainOpts()
-            ProgressFrame = ProgressWindow()
-            app.SetTopWindow(ProgressFrame)
-            ProgressFrame.Show(True)
-            self.Destroy()
-
-        else:
-            dlg = wx.MessageDialog(self.Panel, "Please check the settings in the Settings Window before continuing, especially after changing the options in the Main Window!", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-            dlg.Destroy()
+        logger.debug("MainWindow().ProgressWindow(): Starting Progress Window...")
+        self.SaveMainOpts()
+        ProgressFrame = ProgressWindow()
+        app.SetTopWindow(ProgressFrame)
+        ProgressFrame.Show(True)
+        self.Destroy()
 
     def RefreshMainWindow(self,msg):
         """Refresh the main window to reflect changes in the options, or after a restart."""
@@ -710,6 +713,9 @@ class MainWindow(wx.Frame):
 
         self.CheckFileSystemsCB.SetValue(QuickFSCheck)
         self.BadSectorCheckCB.SetValue(BadSectCheck)
+        self.FullVerboseCheckBox.SetValue(FullVerbose)
+        self.MakeSummaryCheckBox.SetValue(MakeSystemSummary)
+        self.LogOutputCheckBox.SetValue(SaveOutput)
 
         #Enable and Disable Checkboxes as necessary
         self.OnCheckBox()
@@ -751,6 +757,9 @@ class MainWindow(wx.Frame):
         #Add items to the check box sizer.
         CheckBoxSizer.Add(self.BadSectorCheckCB, 1, wx.BOTTOM, 10)
         CheckBoxSizer.Add(self.CheckFileSystemsCB, 1, wx.BOTTOM, 10)
+        CheckBoxSizer.Add(self.FullVerboseCheckBox, 1, wx.BOTTOM, 10)
+        CheckBoxSizer.Add(self.MakeSummaryCheckBox, 1, wx.BOTTOM, 10)
+        CheckBoxSizer.Add(self.LogOutputCheckBox, 1, wx.BOTTOM, 10)
 
         #Add items to the check box and logo sizer.
         CheckBoxAndLogoSizer.Add(CheckBoxSizer, 2, wx.RIGHT, 10)
@@ -758,7 +767,7 @@ class MainWindow(wx.Frame):
 
         #Add items to the bottom button sizer.
         BottomButtonSizer.Add(self.AboutButton, 1, wx.RIGHT|wx.EXPAND, 10)
-        BottomButtonSizer.Add(self.OptionsButton, 2, wx.RIGHT|wx.EXPAND, 10)
+        BottomButtonSizer.Add(self.BootloaderOptionsButton, 2, wx.RIGHT|wx.EXPAND, 10)
         BottomButtonSizer.Add(self.ExitButton, 1, wx.EXPAND)
 
         #Add items to the main sizer.
@@ -781,19 +790,23 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnAbout, self.AboutButton)
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.ExitButton)
         self.Bind(wx.EVT_MENU, self.SystemInfo, self.menuSystemInfo)
-        self.Bind(wx.EVT_MENU, self.Opts, self.menuOpts)
-        self.Bind(wx.EVT_BUTTON, self.Opts, self.OptionsButton)
+        self.Bind(wx.EVT_MENU, self.BootloaderOptions, self.menuBootloaderOpts)
+        self.Bind(wx.EVT_BUTTON, self.BootloaderOptions, self.BootloaderOptionsButton)
         self.Bind(wx.EVT_BUTTON, self.ProgressWindow, self.ApplyOperationsButton)
 
         #Checkboxes on the main window.
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.CheckFileSystemsCB)
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.BadSectorCheckCB)
+        self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.MakeSummaryCheckBox)
 
     def SaveMainOpts(self):
         """Save all options"""
         logger.debug("MainWindow().SaveMainOpts(): Saving Options on MainWindow...")
         global QuickFSCheck
         global BadSectCheck
+        global FullVerbose
+        global MakeSystemSummary
+        global SaveOutput
 
         #Bad Sector Check Choicebox
         if self.BadSectorCheckCB.IsChecked():
@@ -812,6 +825,15 @@ class MainWindow(wx.Frame):
         else:
             self.BadSectorCheckCB.Enable()
             QuickFSCheck = False
+
+        #Diagnostic output checkbox.
+        FullVerbose = self.FullVerboseCheckBox.IsChecked()
+
+        #System Summary checkBox
+        MakeSystemSummary = self.MakeSummaryCheckBox.IsChecked()
+
+        #Save output checkbox.
+        SaveOutput = self.LogOutputCheckBox.IsChecked()
 
         logger.debug("MainWindow().SaveMainOpts(): MainWindow options saved! Counting operations to do...")
         self.CountOperations()
@@ -1177,230 +1199,6 @@ class SystemInfoWindow(wx.Frame):
         self.Destroy()
 
 #End System Info Window
-#Begin Settings Window
-class SettingsWindow(wx.Frame):
-    def __init__(self, ParentWindow):
-        """Initialise SettingsWindow"""
-        wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - Settings", size=(600,360), style=wx.DEFAULT_FRAME_STYLE)
-        self.Panel = wx.Panel(self)
-        self.SetClientSize(wx.Size(600,360))
-        self.ParentWindow = ParentWindow
-        wx.Frame.SetIcon(self, AppIcon)
-
-        self.CreateButtons()
-        self.CreateText()
-        self.CreateCBs()
-        self.SetupOptions()
-        self.SetupSizers()
-        self.BindEvents()
-
-        logger.debug("SettingsWindow().__init__(): SettingsWindow Started.")
-
-    def CreateButtons(self):
-        """Create Some buttons."""
-        self.ExitButton = wx.Button(self.Panel, -1, "Apply these Settings and Close")
-        self.BootloaderOptionsButton = wx.Button(self.Panel, -1, "Bootloader Options")
-
-    def CreateText(self):
-        """Create the text."""
-        self.WelcomeText = wx.StaticText(self.Panel, -1, "Welcome to Settings. Please give everything a once-over.")
-        self.BasicSettingsText = wx.StaticText(self.Panel, -1, "Basic Settings:")
-        self.AdvancedSettingsText = wx.StaticText(self.Panel, -1, "Advanced Settings:")
-
-    def CreateCBs(self):
-        """Create the checkboxes"""
-        #Basic settings
-        self.FullVerboseCheckBox = wx.CheckBox(self.Panel, -1, "Show diagnostic terminal output")
-
-        #Advanced settings
-        self.MakeSummaryCheckBox = wx.CheckBox(self.Panel, -1, "Save System Report To File")
-        self.LogOutputCheckBox = wx.CheckBox(self.Panel, -1, "Save terminal output in Report")
-
-    def OnCheckBox(self, Event=None):
-        """Manage the checkboxes' states"""
-        if self.MakeSummaryCheckBox.IsChecked():
-            self.LogOutputCheckBox.Enable()
-            self.LogOutputCheckBox.SetValue(True)
-
-        else:
-            self.LogOutputCheckBox.SetValue(False)
-            self.LogOutputCheckBox.Disable()
-
-    def SetupOptions(self):
-        """Load all Options here."""
-        logger.debug("SettingsWindow().SetupOptions(): Setting up options...")
-
-        #Checkboxes
-        #Diagnostic output checkbox.
-        if FullVerbose:
-            self.FullVerboseCheckBox.SetValue(True)
-
-        else:
-            self.FullVerboseCheckBox.SetValue(False)
-
-        #System Summary checkBox
-        if MakeSystemSummary:
-            self.MakeSummaryCheckBox.SetValue(True)
-
-        else:
-            self.MakeSummaryCheckBox.SetValue(False)
-
-        #Save output checkbox.
-        if SaveOutput:
-            self.LogOutputCheckBox.SetValue(True)
-
-        else:
-            self.LogOutputCheckBox.SetValue(False)
-
-        logger.debug("SettingsWindow().SetupOptions(): Finished!")
-
-    def SetupSizers(self):
-        """Setup all sizers for OptionsWindow"""
-        #Create the main sizer.
-        MainSizer = wx.BoxSizer(wx.VERTICAL)
-
-        #Create the highest-level sizer that holds all of the settings.
-        AllSettingsSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        #Create the sizer that holds the basic settings.
-        BasicSettingsSizer = wx.BoxSizer(wx.VERTICAL)
-
-        #Create the sizer that holds the advanced settings.
-        AdvancedSettingsSizer = wx.BoxSizer(wx.VERTICAL)
-
-        #Create the sizer that holds the default OS choice and text.
-        DefaultOSChoiceSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        #Create the sizer that holds the bootloader options button and text.
-        BootloaderOptionsSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        #Create the sizer that holds the buttons at the bottom of the window.
-        BottomButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        #Add items to the basic settings sizer.
-        BasicSettingsSizer.Add(self.BasicSettingsText, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
-        BasicSettingsSizer.Add(self.FullVerboseCheckBox, 1, wx.BOTTOM, 10)
-
-        #Add items to the advanced settings sizer.
-        AdvancedSettingsSizer.Add(self.AdvancedSettingsText, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER, 10)
-        AdvancedSettingsSizer.Add(self.MakeSummaryCheckBox, 1, wx.BOTTOM, 10)
-        AdvancedSettingsSizer.Add(self.LogOutputCheckBox, 1, wx.BOTTOM, 10)
-
-        #Add items to the all settings sizer.
-        AllSettingsSizer.Add(BasicSettingsSizer, 4, wx.RIGHT|wx.EXPAND, 5)
-        AllSettingsSizer.Add(wx.StaticLine(self.Panel), 0, wx.EXPAND)
-        AllSettingsSizer.Add(AdvancedSettingsSizer, 3, wx.LEFT|wx.EXPAND, 5)
-
-        #Add items to the bootloader options sizer.
-        BootloaderOptionsSizer.Add(self.BootloaderOptionsButton, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-
-        #Add items to the bottom button sizer.
-        BottomButtonSizer.Add(self.ExitButton, 3, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-
-        #Add items to the main sizer.
-        MainSizer.Add(self.WelcomeText, 1, wx.ALL|wx.ALIGN_CENTER, 10)
-        MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(AllSettingsSizer, 6, wx.RIGHT|wx.LEFT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(BootloaderOptionsSizer, 1, wx.RIGHT|wx.LEFT|wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(wx.StaticLine(self.Panel), 0, wx.BOTTOM|wx.EXPAND, 10)
-        MainSizer.Add(BottomButtonSizer, 1, wx.RIGHT|wx.LEFT|wx.BOTTOM|wx.EXPAND, 10)
-
-        #Get the sizer set up for the frame.
-        self.Panel.SetSizer(MainSizer)
-        MainSizer.SetMinSize(wx.Size(600,360))
-        MainSizer.SetSizeHints(self)
-
-    def BindEvents(self):
-        """Bind events for SettingsWindow"""
-        self.Bind(wx.EVT_BUTTON, self.CloseOpts, self.ExitButton)
-        self.Bind(wx.EVT_CLOSE, self.CloseOpts)
-        self.Bind(wx.EVT_BUTTON, self.LaunchblOpts, self.BootloaderOptionsButton)
-        self.Bind(wx.EVT_CHECKBOX, self.OnCheckBox, self.MakeSummaryCheckBox)
-
-    def LaunchblOpts(self, Event=None):
-        """Start the Bootloader Options Window"""
-        #Safeguard program reliability (and continuity) by saving the settings in optionswindow1 first.
-        logger.debug("SettingsWindow().LaunchblOpts(): Calling self.SaveOptions()...")
-        self.SaveOptions()
-
-        #Open the Firmware Options window
-        logger.debug("SettingsWindow().LaunchblOpts(): Starting Bootloader Settings Window...")
-        self.Hide()
-        BootloaderOptionsWindow(self).Show()
-
-    def RefreshOptionsDlg1(self,msg):
-        """Refresh the settings in SettingsWindow before re-showing it"""
-        #Check if the boot sector is to be restored.
-        logger.debug("SettingsWindow().RefreshOptionsDlg1(): Refreshing SettingsWindow...")
-
-        #Setup options again.
-        self.SetupOptions()
-        self.Panel.Layout()
-
-        #Show OptionsDlg1.
-        self.Show()
-
-    def SaveOptions(self, Event=None):
-        """Save all options"""
-        global SaveOutput
-        global FullVerbose
-        global SaveOutput
-        global MakeSystemSummary
-
-        logger.info("SettingsWindow().SaveOptions(): Saving Options...")
-        
-        #Checkboxes.
-        #Create Log checkbox.
-        if self.LogOutputCheckBox.IsChecked():
-            SaveOutput = True
-
-        else:
-            SaveOutput = False
-
-        logger.debug("SettingsWindow().SaveOptions(): Value of SaveOutput is: "+unicode(SaveOutput))
-
-        #Check FS cb
-        if self.FullVerboseCheckBox.IsChecked():
-            FullVerbose = True
-
-        else:
-            FullVerbose = False
-
-        logger.debug("SettingsWindow().SaveOptions(): Value of FullVerbose is: "+unicode(FullVerbose))
-
-        #Remount FS CB
-        if self.LogOutputCheckBox.IsChecked():
-            SaveOutput = True
-
-        else:
-            SaveOutput = False
-
-        logger.debug("SettingsWindow().SaveOptions(): Value of SaveOutput is: "+unicode(SaveOutput))
-
-        #Use chroot in operations checkbox
-        if self.MakeSummaryCheckBox.IsChecked():
-            MakeSystemSummary = True
-
-        else:
-            MakeSystemSummary = False
-
-        logger.debug("SettingsWindow().SaveOptions(): Value of MakeSystemSummary is: "+unicode(MakeSystemSummary))
-        logger.info("SettingsWindow().SaveOptions(): Saved options.")
-
-    def CloseOpts(self, Event=None):
-        """Save options and close SettingsWindow"""
-        #Save the options first.
-        self.SaveOptions()
-
-        #Send a message to mainwindow so it can refresh.
-        wx.CallAfter(self.ParentWindow.RefreshMainWindow, "Closed")
-
-        #Exit options window 1.
-        logger.debug("SettingsWindow().SaveOptions(): SettingsWindow is closing. Revealing MainWindow...")
-        self.Destroy()
-
-#End Settings Window
 #Begin Bootloader Options Window.
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self, ParentWindow):
@@ -2072,8 +1870,8 @@ class BootloaderOptionsWindow(wx.Frame):
         self.SaveSettings(OS=self.OSChoice.GetStringSelection())
         self.SaveGUIState(OS=self.OSChoice.GetStringSelection())
 
-        #Send a message to SettingsWindow so it can refresh.
-        wx.CallAfter(self.ParentWindow.RefreshOptionsDlg1, "Closed")
+        #Send a message to MainWindow so it can refresh.
+        wx.CallAfter(self.ParentWindow.RefreshMainWindow, "Closed")
 
         self.Destroy()
 
