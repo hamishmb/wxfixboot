@@ -140,55 +140,6 @@ class Main():
             else:
                 return self.DlgResult
 
-    def ShowThreadMultiChoiceDlg(self, msg, choices, title="WxFixBoot - Select your options"): #*** Is this needed? ***
-        """Shows a multi-choice dialog from a thread upon instruction"""
-        logger.debug("DialogTools: Main().ShowThreadMultiChoiceDlg(): Showing Thread Multi Choice Dialog...")
-        dlg = wx.MultiChoiceDialog(ParentWindow.Panel, msg, title, choices, pos=wx.DefaultPosition)
-
-        #Where possible, destroy just before setting self.DlgResult to avoid potential race conditions.
-        if dlg.ShowModal() == wx.ID_OK:
-            #Get the integer selections.
-            Selections = dlg.GetSelections()
-            dlg.Destroy()
-
-            #Get the string selections.
-            TempList = []
-
-            for IntSelection in Selections:
-                TempList.append(choices[IntSelection])
-
-            self.DlgResult = TempList
-
-        else:
-            dlg.Destroy()
-            self.DlgResult = False
-
-        logger.debug("DialogTools: Main().ShowThreadMultiChoiceDlg(): Result of Thread Multi Choice Dialog was: "+unicode(self.DlgResult))
-
-    def ShowMultiChoiceDlg(self, Message, Title, Choices, AllowCancel=False):
-        """Handle showing thread multi-choice dialogs, reducing code duplication and compilications and errors.
-        It can be used like this: DialogTools().ShowMultiChoiceDlg(Message=<message>, Title=<title>, Choices=<choices>)
-        Message is whatever you want the dialog to say.
-        Title sets the title bar text on the dialog.
-        Choices is a list of choices you want the dialog to display.
-        """
-        while True:
-            self.DlgResult = None
-
-            wx.CallAfter(self.ShowThreadMultiChoiceDlg, msg=Message, title=Title, choices=Choices)
-
-            #Trap the thread until the user responds.
-            while self.DlgResult == None:
-                time.sleep(0.5)
-
-            #Don't let the user bypass any choice dialogs.
-            if self.DlgResult in ("", False) and AllowCancel == False:
-                logger.warning("DialogTools: Main().ShowMultiChoiceDlg(): User closed dialog without answering. Warning user and asking again...")
-                self.ShowMsgDlg(Kind="warning", Message="Please select an option.")
-
-            else:
-                return self.DlgResult
-
     def ShowThreadTextEntryDlg(self, msg, title="WxFixBoot - Text Entry"):
         """Shows a text entry dialog from a thread upon instruction"""
         logger.debug("DialogTools: Main().ShowThreadTextEntryDlg(): Showing Thread Text Entry Dialog...")
