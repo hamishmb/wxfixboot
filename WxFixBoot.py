@@ -122,7 +122,6 @@ from Tools.BackendTools.helpers import Main as HelperBackendToolsCallable
 from Tools.BackendTools.essentials import Main as EssentialBackendToolsCallable
 from Tools.BackendTools.main import Main as MainBackendToolsCallable
 
-from Tools.BackendTools.BootloaderTools.main import Main as MainBootloaderToolsCallable
 from Tools.BackendTools.BootloaderTools.setconfigtools import Main as BootloaderConfigSettingToolsCallable
 
 import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
@@ -141,7 +140,6 @@ HelperBackendTools = HelperBackendToolsCallable()
 EssentialBackendTools = EssentialBackendToolsCallable()
 MainBackendTools = MainBackendToolsCallable()
 
-MainBootloaderTools = MainBootloaderToolsCallable()
 BootloaderConfigObtainingTools = BootloaderConfigObtainingToolsCallable()
 BootloaderConfigSettingTools = BootloaderConfigSettingToolsCallable()
 
@@ -207,16 +205,7 @@ Tools.BackendTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtaini
 Tools.BackendTools.main.BootloaderConfigSettingTools = BootloaderConfigSettingTools
 Tools.BackendTools.main.DialogTools = DialogTools
 
-#BootloaderTools Package (Main)
-Tools.BackendTools.BootloaderTools.main.wx = wx
-Tools.BackendTools.BootloaderTools.main.logger = logger
-Tools.BackendTools.BootloaderTools.main.CoreTools = CoreTools
-Tools.BackendTools.BootloaderTools.main.HelperBackendTools = HelperBackendTools
-Tools.BackendTools.BootloaderTools.main.EssentialBackendTools = EssentialBackendTools
-Tools.BackendTools.BootloaderTools.main.MainBackendTools = MainBackendTools
-Tools.BackendTools.BootloaderTools.main.DialogTools = DialogTools
-
-#BootloaderTools Package (GetConfigTools)
+#StartupTools Package (GetConfigTools)
 Tools.StartupTools.getbootloaderconfigtools.logger = logger
 
 #BootloaderTools Package (SetConfigTools)
@@ -2222,7 +2211,6 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.helpers.ParentWindow = ParentWindow
         Tools.BackendTools.essentials.ParentWindow = ParentWindow
         Tools.BackendTools.main.ParentWindow = ParentWindow
-        Tools.BackendTools.BootloaderTools.main.ParentWindow = ParentWindow
 
         #Start the main part of this thread.
         threading.Thread.__init__(self)
@@ -2255,10 +2243,6 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.main.DiskInfo = DiskInfo
         Tools.BackendTools.main.SystemInfo = SystemInfo
         Tools.BackendTools.main.BootloaderInfo = BootloaderInfo
-
-        Tools.BackendTools.BootloaderTools.main.BootloaderInfo = BootloaderInfo
-        Tools.BackendTools.BootloaderTools.main.SystemInfo = SystemInfo
-        Tools.BackendTools.BootloaderTools.main.OSInfo = OSInfo
 
         Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderInfo = BootloaderInfo
         Tools.BackendTools.BootloaderTools.setconfigtools.DiskInfo = DiskInfo
