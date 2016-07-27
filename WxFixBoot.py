@@ -857,8 +857,8 @@ class MainWindow(wx.Frame):
         #Now do other processes.
         for OS in BootloaderInfo.keys():
             if BootloaderInfo[OS]["Settings"]["ChangeThisOS"]:
-                Operations.append((MainBootloaderTools.ManageBootloader, OS))
-                logger.info("MainWindow().CountOperations(): Added (MainBootloaderTools.ManageBootloader, "+OS+") to Operations...")
+                Operations.append((MainBackendTools.ManageBootloader, OS))
+                logger.info("MainWindow().CountOperations(): Added (MainBackendTools.ManageBootloader, "+OS+") to Operations...")
 
         #*** Disabled temporarily ***
         #if MakeSystemSummary:
@@ -867,7 +867,7 @@ class MainWindow(wx.Frame):
 
         #Check if we need to check the internet connection, and do so first if needed.
         for Function in Operations:
-            if type(Function) == type([]) and Function[0] == MainBootloaderTools.ManageBootloader:
+            if type(Function) == type([]) and Function[0] == MainBackendTools.ManageBootloader:
                 logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()...")
                 Operations.insert(0, EssentialBackendTools.CheckInternetConnection())
                 break
@@ -2283,7 +2283,7 @@ class BackendThread(threading.Thread):
 
         for Function in Operations:
             if type(Function) == type(()):
-                if MainBootloaderTools.ManageBootloader in Function:
+                if MainBackendTools.ManageBootloader in Function:
                     DialogMessage += " You performed bootloader operations on at least one OS, so please now reboot your system."
                     break
 

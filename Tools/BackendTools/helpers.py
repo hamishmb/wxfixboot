@@ -191,7 +191,7 @@ class Main():
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Writing fstab entry...")
             NewFileContents.append("\n#fstab entry for UEFI System Partition ("+BootloaderInfo[OS]["BootDisk"]+"), written by WxFixBoot.\n")
 
-            if DiskInfo[BootloaderInfo[OS]["BootDisk"]]["UUID"] != "Unknown": #*** Check this earlier ***
+            if DiskInfo[BootloaderInfo[OS]["BootDisk"]]["UUID"] != "Unknown":
                 logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Using UUID to prevent problems down the line...")
                 NewFileContents.append("UUID="+UUID+" /boot/efi vfat defaults 0 2\n")
 

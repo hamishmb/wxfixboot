@@ -23,6 +23,38 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
+    def ManageBootloader(self, OS):
+        """Manage the installation and removal of each bootloader.""" #*** Check each operation worked with a return value! ***
+        if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["Update"]:
+            BootloaderInfo[OS]["Settings"]["NewBootloader"] = BootloaderInfo[OS]["Bootloader"]
+
+        if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["InstallNewBootloader"]:
+            #First remove the old bootloader, then install the new one.
+            logger.info("MainBackendTools(): Main().ManageBootloader(): Calling MainBackendTools().RemoveOldBootloader()...")
+            self.RemoveOldBootloader(OS)
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 33)
+
+            logger.info("MainBackendTools(): Main().ManageBootloader(): Calling MainBackendTools().InstallNewBootloader()...")
+            BootloaderInstallSucceded = self.InstallNewBootloader(OS)
+
+            if BootloaderInstallSucceded == False:
+                #Bootloader installation failed for at least one OS! *** Clarify this message with better info ***
+                logger.error("MainBackendTools(): Main().ManageBootloader(): Failed to install new bootloader in at least one OS! Asking user whether to continue with configuration or not...")
+                Result = DialogTools.ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Please tell WxFixBoot what to do now. Click Yes to configure bootloaders anyway, and no to skip configuration.", Title="WxFixBoot - Configure Bootloader?", Buttons=("Configure Bootloaders Anyway", "Skip Bootloader Configuration"))
+
+                if Result == False:
+                    logger.warning("MainBackendTools(): Main().ManageBootloader(): Configuring bootloaders anyway. Calling MainBackendTools().SetNewBootloaderConfig()...")
+
+                else:
+                    logger.warning("MainBackendTools(): Main().ManageBootloader(): Not configuring bootloaders...")
+                    return True
+
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 66)
+        self.SetNewBootloaderConfig(OS)
+
+        logger.info("MainBackendTools(): Main().ManageBootloader(): Done!")
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+
     def RemoveOldBootloader(self, OS): #*** Handle return values better, and return them *** *** Give more information to user when there are errors ***
         """Remove the currently installed bootloader."""
         logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"...")
@@ -72,7 +104,7 @@ class Main():
 
                 return False #*** Not handled yet ***
 
-        #Remove the bootloader. *** Test all these on fedora ***
+        #Remove the bootloader.
         if BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
 
@@ -100,7 +132,7 @@ class Main():
             elif OSInfo[OS]["PackageManager"] == "yum":
                 Cmd = "echo 'ERROR: LILO not available on Fedora or derivatives. Continuing anyway...'"
 
-        elif BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
+        elif BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI": #*** Test this on Fedora ***
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-UEFI...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
