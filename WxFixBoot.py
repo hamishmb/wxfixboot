@@ -45,6 +45,7 @@ import os
 import shutil
 import time
 import re
+import plistlib
 from distutils.version import LooseVersion
 from wx.animate import AnimationCtrl
 from wx.animate import Animation
@@ -451,14 +452,6 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "63")
         logger.info("InitThread(): Done Mounting Core Filsystems!")
 
-        #Check if there are any linux partitions in the list. *** How to do this warning now? ***
-        #if SystemInfo["LinuxPartitions"] == []:
-            #There are none, exit.
-        #    logger.critical("InitThread(): No Linux Partitions (on HDD) of type ext(1,2,3,4), btrfs, xfs, jfs, zfs, minix or resierfs found! If you do have Linux partitions but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
-
-            #Exit.
-        #    CoreTools.EmergencyExit("You don't appear to have any Linux partitions on your hard disks. If you do have Linux partitions but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
-
         #Get a list of Linux OSs.
         logger.info("InitThread(): Finding Linux OSs...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Linux Operating Systems...")
@@ -468,6 +461,13 @@ class InitThread(threading.Thread):
 
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
         logger.info("InitThread(): Done...")
+
+        #Check if any modifyable Linux installations were found. *** Do modifyability later ***
+        if len(OSInfo) == 0:
+            logger.critical("InitThread(): No Linux installations found! If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
+
+            #Exit.
+            CoreTools.EmergencyExit("You don't appear to have any Linux installations on your hard disks. If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
 
         #Get the firmware type.
         logger.info("InitThread(): Determining Firmware Type...")
@@ -1485,6 +1485,7 @@ class BootloaderOptionsWindow(wx.Frame):
         #Choiceboxes.
         self.Bind(wx.EVT_CHOICE, self.OnOSChoiceChange, self.OSChoice)
         self.Bind(wx.EVT_CHOICE, self.OnRestoreBootloaderChoice, self.RestoreBootloaderChoice)
+        self.Bind(wx.EVT_CHOICE, self.OnBackupBootloaderChoice, self.BackupBootloaderChoice)
 
     def OnRestoreBootloaderChoice(self, Event=None):
         """Allow the user to select a config file to restore the bootloader from"""
@@ -1492,22 +1493,47 @@ class BootloaderOptionsWindow(wx.Frame):
 
         File = self.RestoreBootloaderChoice.GetStringSelection()
 
-        #Determine what to do here.
+        #Determine what to do here. *** TODO set up window to do things ***
         if File == "Specify File Path...":
             Dlg = wx.FileDialog(self.Panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.OPEN)
 
-            if Dlg.ShowModal() == wx.ID_OK: #*** Load config from file ***
+            if Dlg.ShowModal() == wx.ID_OK:
                 File = Dlg.GetPath()
                 self.RestoreBootloaderChoice.Append(File)
                 self.RestoreBootloaderChoice.SetStringSelection(File)
                 logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): File is "+File+"...")
-                logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): ***TODO*** Loading config from "+File+"...")
-
+                logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Loading config from "+File+"...")
+                print(plistlib.readPlist(File))
+                
             Dlg.Destroy()
 
         elif File != "-- Please Select --":
-            logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): ***TODO*** Loading config from "+File+"...")
-            pass #*** Load config from file ***
+            logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Loading config from "+File+"...")
+            print(plistlib.readPlist(File))
+
+    def OnBackupBootloaderChoice(self, Event=None):
+        """Allow the user to select a config file to backup the bootloader to"""
+        logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Selecting bootloader config backup file...")
+
+        File = self.BackupBootloaderChoice.GetStringSelection()
+
+        #Determine what to do here.
+        if File == "Specify File Path...":
+            Dlg = wx.FileDialog(self.Panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.SAVE)
+
+            if Dlg.ShowModal() == wx.ID_OK:
+                File = Dlg.GetPath()
+                self.BackupBootloaderChoice.Append(File)
+                self.BackupBootloaderChoice.SetStringSelection(File)
+                logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): File is "+File+"...")
+                logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Saving config to "+File+"...")
+                plistlib.writePlist(BootloaderInfo[self.OSChoice.GetStringSelection()], File)
+                
+            Dlg.Destroy()
+
+        elif File != "-- Please Select --":
+            logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Saving config to "+File+"...")
+            plistlib.writePlist(BootloaderInfo[self.OSChoice.GetStringSelection()], File)
 
     def OnOSChoiceChange(self, Event=None, Startup=False):
         """Save and load new GUI settings and states in accordance with the OS choice change"""
