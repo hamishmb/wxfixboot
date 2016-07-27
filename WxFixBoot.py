@@ -52,7 +52,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre2"
-ReleaseDate = "8/7/2016"
+ReleaseDate = "27/7/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -542,7 +542,6 @@ class InitThread(threading.Thread):
         global FullVerbose
         global Verify
         global MakeSystemSummary
-        global BLOptsDlgRun
 
         #Initialise them.
         QuickFSCheck = ""
@@ -551,10 +550,9 @@ class InitThread(threading.Thread):
         FullVerbose = ""
         Verify = ""
         MakeSystemSummary = ""
-        BLOptsDlgRun = ""
 
         logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary, BLOptsDlgRun = MainStartupTools.SetDefaults()
+        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
