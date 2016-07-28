@@ -53,7 +53,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre3"
-ReleaseDate = "27/7/2016"
+ReleaseDate = "28/7/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1209,7 +1209,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.BindEvents()
 
         self.OnOSChoiceChange(Startup=True)
-        
+
         logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Window Started.")
 
     def CreateText(self):
@@ -1234,7 +1234,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.OSChoice.SetStringSelection(SystemInfo["PreviousOSChoice"])
 
         #Basic Options.
-        self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["UserFriendlyOSNames"])
+        self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=[])
 
         #Advanced Options.
         self.NewBootloaderChoice = wx.Choice(self.Panel, -1, choices=[])
@@ -1251,8 +1251,8 @@ class BootloaderOptionsWindow(wx.Frame):
         #Advanced Options.
         self.KeepKernelOptionsCheckBox = wx.CheckBox(self.Panel, -1, "")
         self.InstallNewBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Install a New Bootloader")
-        self.BackupBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "")
-        self.RestoreBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Restore this OS's bootloader")
+        self.BackupBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Backup this OS's bootloader config")
+        self.RestoreBootloaderCheckBox = wx.CheckBox(self.Panel, -1, "Restore this OS's bootloader config")
 
     def CreateButtons(self):
         """Create the buttons"""
@@ -1490,15 +1490,14 @@ class BootloaderOptionsWindow(wx.Frame):
                 File = Dlg.GetPath()
                 self.RestoreBootloaderChoice.Append(File)
                 self.RestoreBootloaderChoice.SetStringSelection(File)
-                logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): File is "+File+"...")
                 logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Loading config from "+File+"...")
-                print(plistlib.readPlist(File))
+                self.SetupForRestoringBootloader(plistlib.readPlist(File))
                 
             Dlg.Destroy()
 
         elif File != "-- Please Select --":
             logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Loading config from "+File+"...")
-            print(plistlib.readPlist(File))
+            self.SetupForRestoringBootloader(plistlib.readPlist(File))
 
     def OnBackupBootloaderChoice(self, Event=None):
         """Allow the user to select a config file to backup the bootloader to"""
@@ -1524,6 +1523,63 @@ class BootloaderOptionsWindow(wx.Frame):
             logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Saving config to "+File+"...")
             plistlib.writePlist(BootloaderInfo[self.OSChoice.GetStringSelection()], File)
 
+    def SetupForRestoringBootloader(self, Config):
+        """Setup the window to use the configuration from the chosen bootloader config backup file"""
+        OS = self.OSChoice.GetStringSelection()
+
+        #Check this is the right config for this OS.
+        if Config["OSName"] != OS:
+            dlg = wx.MessageDialog(self.Panel, "This config file is config for "+Config["OSName"]+", not "+OS+", the current OS. Please change the selected OS, or select the correct config file for this OS.", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return True
+
+        #Check the bootloader in the config file can be installed in this OS.
+        if self.NewBootloaderChoice.FindString(Config["Bootloader"]) == -1 and Config["Bootloader"] != BootloaderInfo[OS]["Bootloader"]:
+            dlg = wx.MessageDialog(self.Panel, "The bootloader installed at the time the config was backed up cannot be installed in this OS. Most likely, the config file has been tampered with or has corrupted.", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return True
+
+        #Disable the restore config checkbox.
+        self.RestoreBootloaderChoice.SetStringSelection("-- Please Select --")
+        self.RestoreBootloaderCheckBox.SetValue(0)
+        self.OnRestoreBootloaderCheckBox()
+
+        #Determine if the current bootloader is the same as the backed up one. 
+        if Config["Bootloader"] == BootloaderInfo[OS]["Bootloader"]:
+            #Set up to reinstall the current bootloader.
+            self.ReinstallBootloaderCheckBox.Enable()
+            self.ReinstallBootloaderCheckBox.SetValue(1)
+            self.OnUpdateOrReinstallCheckBox()
+
+        else:
+            #Set up to replace the current bootloader with the old one.
+            self.InstallNewBootloaderCheckBox.Enable()
+            self.InstallNewBootloaderCheckBox.SetValue(1)
+            self.OnInstallNewBootloaderCheckBox()
+            self.NewBootloaderChoice.SetStringSelection(Config["Bootloader"])
+
+        #Use kernel options used when the backup was taken.
+        self.KeepKernelOptionsCheckBox.SetValue(0)
+        self.OnKernelOptionsCheckBox()
+        self.NewKernelOptionsTextCtrl.SetValue(Config["GlobalKernelOptions"])
+
+        #Use timeout used when the backup was taken.
+        self.KeepBootloaderTimeoutCheckBox.SetValue(0)
+        self.OnTimeoutCheckBox()
+        self.BootloaderTimeoutSpinner.SetValue(Config["Timeout"])
+
+        #Use default OS used when the backup was taken. *** What if this isn't generated when the new bootloader is configured? Manual user selection or default OS? ***
+        self.DefaultOSChoice.SetStringSelection(Config["DefaultOS"])
+
+        #Notify user that the restore was successful.
+        dlg = wx.MessageDialog(self.Panel, "The bootloader configuration was successfully restored. Please review the changes in this window, and then continue if you are satisfied.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+        logger.debug("BootloaderOptionsWindow().SetupForRestoringBootloader(): Finished loading config from file...")
+
     def OnOSChoiceChange(self, Event=None, Startup=False):
         """Save and load new GUI settings and states in accordance with the OS choice change"""
         logger.debug("BootloaderOptionsWindow().OnOSChoiceChange(): OS choice has changed. Saving and then loading settings...")
@@ -1531,6 +1587,15 @@ class BootloaderOptionsWindow(wx.Frame):
         if Startup == False:
             self.SaveSettings(OS=SystemInfo["PreviousOSChoice"])
             self.SaveGUIState(OS=SystemInfo["PreviousOSChoice"])
+
+        #Set up the default OS choice.
+        Choices = []
+
+        for Menu in BootloaderInfo[self.OSChoice.GetStringSelection()]["MenuEntries"]:
+            for MenuEntry in BootloaderInfo[self.OSChoice.GetStringSelection()]["MenuEntries"][Menu]:
+                Choices.append(MenuEntry)
+
+        self.DefaultOSChoice.Set(Choices)
 
         self.LoadSettings()
         self.SetGUIState()
@@ -1557,12 +1622,8 @@ class BootloaderOptionsWindow(wx.Frame):
         #Remove the current bootloader from the choices.
         Choices.remove(BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"])
 
-        self.NewBootloaderChoice.Clear()
-
-        #Add choices.
-        for Choice in ["-- Please Select --"]+Choices:
-            self.NewBootloaderChoice.Append(Choice)
-
+        #Set the choices.
+        self.NewBootloaderChoice.Set(["-- Please Select --"]+Choices)
         self.NewBootloaderChoice.SetStringSelection("-- Please Select --")
 
         #Make sure the window displays properly.
@@ -1578,11 +1639,10 @@ class BootloaderOptionsWindow(wx.Frame):
         self.ReinstallBootloaderCheckBox.SetLabel("Fix/Reinstall "+BootloaderInfo[OS]["Bootloader"])
         self.UpdateBootloaderCheckBox.SetLabel("Update "+BootloaderInfo[OS]["Bootloader"]+"'s Config")
         self.KeepBootloaderTimeoutCheckBox.SetLabel("Keep "+BootloaderInfo[OS]["Bootloader"]+"'s existing menu timeout")
-        self.BackupBootloaderCheckBox.SetLabel("Backup "+BootloaderInfo[OS]["Bootloader"])
 
     def OnUpdateOrReinstallCheckBox(self, Event=None):
         """Enable/Disable options, based on the value of the update/reinstall checkboxes."""
-        logger.debug("BootloaderOptionsWindow().OnUpdateOrReinstallCheckBox(): Enabling and isabling options as needed...")
+        logger.debug("BootloaderOptionsWindow().OnUpdateOrReinstallCheckBox(): Enabling and Disabling options as needed...")
  
         if self.ReinstallBootloaderCheckBox.IsChecked():
             self.UpdateBootloaderCheckBox.Disable()

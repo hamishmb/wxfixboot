@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor all of these ***
+class Main(): #*** Refactor all of these *** *** GRUB2: Can't always get partition used for menu entry, use UUID embedded in menu entry data instead ***
     def FindGRUB(self, OSPartition, GRUBVersion): #*** Test this thoroughly ***
         """Find GRUB for the given OS."""
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking for "+GRUBVersion+"...")
