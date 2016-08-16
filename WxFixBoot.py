@@ -14,11 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+#*** Check setting default OS is working ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Support EFI on 32-bit firmware? ***
-#*** When backing up, save bootloader config, instead of bootloader itself? That way WxFixBoot can handle reinstalling/fixing the bootloader as required ***
 #*** Enable menu in ELILO ***
 #*** ELILO Kernel options not detected ***
 #*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? If so do what it does ***
@@ -53,7 +53,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~pre3"
-ReleaseDate = "28/7/2016"
+ReleaseDate = "16/8/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1482,22 +1482,47 @@ class BootloaderOptionsWindow(wx.Frame):
 
         File = self.RestoreBootloaderChoice.GetStringSelection()
 
-        #Determine what to do here. *** TODO set up window to do things ***
+        #Determine what to do here.
         if File == "Specify File Path...":
             Dlg = wx.FileDialog(self.Panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.OPEN)
 
             if Dlg.ShowModal() == wx.ID_OK:
                 File = Dlg.GetPath()
-                self.RestoreBootloaderChoice.Append(File)
-                self.RestoreBootloaderChoice.SetStringSelection(File)
                 logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Loading config from "+File+"...")
-                self.SetupForRestoringBootloader(plistlib.readPlist(File))
-                
-            Dlg.Destroy()
 
-        elif File != "-- Please Select --":
-            logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Loading config from "+File+"...")
-            self.SetupForRestoringBootloader(plistlib.readPlist(File))
+                try:
+                    self.SetupForRestoringBootloader(plistlib.readPlist(File))
+
+                except:
+                    #Error!
+                    logger.error("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Error when loading config! Warning user and reloading previous settings...")
+
+                    #Let the user know about the error.
+                    MsgDlg = wx.MessageDialog(self.Panel, "Couldn't restore config from "+File+"! Are you sure you selected the right file? WxFixBoot will revert back to the preious settings now.", "Config Restore Failed!", wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                    MsgDlg.ShowModal()
+                    MsgDlg.Destroy()
+
+                    #Reload previous settings.
+                    self.OnOSChoiceChange()
+
+                else:
+                    logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Successfully loaded config from "+File+"...")
+
+                    #Let the user know we were successful.
+                    MsgDlg = wx.MessageDialog(self.Panel, "The bootloader configuration was successfully restored. Please review the changes in this window, and then continue if you are satisfied.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+                    MsgDlg.ShowModal()
+                    MsgDlg.Destroy()
+
+                    #Reset the choicebox and checkbox.
+                    self.RestoreBootloaderChoice.SetStringSelection("-- Please Select --")
+                    self.RestoreBootloaderCheckBox.SetValue(0)
+                    self.OnRestoreBootloaderCheckBox()
+
+            else:
+                #Reset choice box.
+                self.RestoreBootloaderChoice.SetStringSelection("-- Please Select --")
+
+            Dlg.Destroy()
 
     def OnBackupBootloaderChoice(self, Event=None):
         """Allow the user to select a config file to backup the bootloader to"""
@@ -1511,17 +1536,26 @@ class BootloaderOptionsWindow(wx.Frame):
 
             if Dlg.ShowModal() == wx.ID_OK:
                 File = Dlg.GetPath()
-                self.BackupBootloaderChoice.Append(File)
-                self.BackupBootloaderChoice.SetStringSelection(File)
                 logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): File is "+File+"...")
                 logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Saving config to "+File+"...")
                 plistlib.writePlist(BootloaderInfo[self.OSChoice.GetStringSelection()], File)
-                
-            Dlg.Destroy()
+                logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Finished saving config to "+File+"...")
 
-        elif File != "-- Please Select --":
-            logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Saving config to "+File+"...")
-            plistlib.writePlist(BootloaderInfo[self.OSChoice.GetStringSelection()], File)
+                #Let the user know we were successful.
+                MsgDlg = wx.MessageDialog(self.Panel, "Finished backing up config to "+File+"!", "Config Backup Successful", wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+                MsgDlg.ShowModal()
+                MsgDlg.Destroy()
+
+                #Reset the choicebox and checkbox.
+                self.BackupBootloaderChoice.SetStringSelection("-- Please Select --")
+                self.BackupBootloaderCheckBox.SetValue(0)
+                self.OnBackupBootloaderCheckBox()
+
+            else:
+                #Reset choice box.
+                self.BackupBootloaderChoice.SetStringSelection("-- Please Select --")
+
+            Dlg.Destroy()
 
     def SetupForRestoringBootloader(self, Config):
         """Setup the window to use the configuration from the chosen bootloader config backup file"""
@@ -1572,11 +1606,6 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Use default OS used when the backup was taken. *** What if this isn't generated when the new bootloader is configured? Manual user selection or default OS? ***
         self.DefaultOSChoice.SetStringSelection(Config["DefaultOS"])
-
-        #Notify user that the restore was successful.
-        dlg = wx.MessageDialog(self.Panel, "The bootloader configuration was successfully restored. Please review the changes in this window, and then continue if you are satisfied.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-        dlg.ShowModal()
-        dlg.Destroy()
 
         logger.debug("BootloaderOptionsWindow().SetupForRestoringBootloader(): Finished loading config from file...")
 
