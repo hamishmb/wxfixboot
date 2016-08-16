@@ -25,6 +25,7 @@
 #*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
 #*** Match LILO default OS to ours ***
 #*** Is /etc/default/grub created after switching to grub? ***
+#*** Test disabling bootloader operations, as if a filesystem check failed ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -1999,11 +2000,15 @@ class ProgressWindow(wx.Frame):
         self.CreateButtons()
         self.CreateProgressBars()
 
-        #Create the output box.
+        #Create the output box and log.
         self.OutputBox = wx.TextCtrl(self.Panel, -1, "", size=(480,240), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_WORDWRAP)
         self.OutputBox.SetBackgroundColour((0,0,0))
         self.OutputBox.SetDefaultStyle(wx.TextAttr(wx.WHITE))
 
+        global OutputLog
+        OutputLog = []
+
+        #Setup the rest of the window.
         self.SetupSizers()
         self.BindEvents()
 
@@ -2163,7 +2168,11 @@ class ProgressWindow(wx.Frame):
         self.OutputBox.SetInsertionPoint(self.OutputBox.GetInsertionPoint()-1)
 
     def UpdateOutputBox(self, Line):
-        """Update the output box"""
+        """Update the output box, and add lines to the list"""
+        #Add the line to the output log.
+        global OutputLog
+        OutputLog.append(Line)
+
         CRs = []
         BKSPs = []
         CharNo = 0
@@ -2458,7 +2467,7 @@ class BackendThread(threading.Thread):
         #Save terminal output.
         if SaveOutput:
             ReportList.write("\n##########Terminal Output##########\n")
-            ReportList.write(self.ParentWindow.OutputBox.GetValue()) #*** Only works if FullVerbose is enabled, otherwise some output will be hidden. As such, all output is currently being shown with absolutely no regard to FullVerbose or ShowOutput passed to the function, or the user's checkbox in settingswindow ***
+            ReportList.write(OutputLog)
 
         #Save Log File.
         ReportList.write("\n##########WxFixBoot's Log File##########\n")
