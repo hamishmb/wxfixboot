@@ -143,7 +143,7 @@ MainBackendTools = MainBackendToolsCallable()
 BootloaderConfigObtainingTools = BootloaderConfigObtainingToolsCallable()
 BootloaderConfigSettingTools = BootloaderConfigSettingToolsCallable()
 
-#Setup custom-made modules (make global variables accessible inside the packages). *** Continue to change stuff as needed ***
+#Setup custom-made modules (make global variables accessible inside the packages). *** Minimise if possible ***
 #GetDevInfo Package.
 GetDevInfo.getdevinfo.subprocess = subprocess
 GetDevInfo.getdevinfo.logger = logger
@@ -398,6 +398,10 @@ class InitThread(threading.Thread):
         Tools.StartupTools.main.Settings = Settings
         Tools.StartupTools.getbootloaderconfigtools.DiskInfo = DiskInfo
         GetDevInfo.getdevinfo.DiskInfo = DiskInfo
+
+        #Set variables used for checking whether bootloader operations have been disabled.
+        SystemInfo["DisabledBootloaderOperations"] = False
+        SystemInfo["DisabledBootloaderOperationsBecause"] = []
 
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
@@ -2319,7 +2323,7 @@ class BackendThread(threading.Thread):
 
         DialogTools.ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
 
-        #Make dictionaries accessible. *** Add as needed *** *** Minimise these later if possible ***
+        #Make dictionaries accessible. *** Minimise these if possible ***
         Tools.BackendTools.essentials.SystemInfo = SystemInfo
         Tools.BackendTools.essentials.DiskInfo = DiskInfo
 
@@ -2364,7 +2368,7 @@ class BackendThread(threading.Thread):
 
         wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
-    def GenerateSystemReport(self): #*** Leave this here until switch to dictionaries cos otherwise this'll be a mighty pain in the backside! :) *** *** Use dictionaries here ***
+    def GenerateSystemReport(self): #*** Use dictionaries here *** *** Add SystemInfo["DisabledBootloaderOperations"] functionality to here, and warn at end of operations ***
         """Create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary."""
         DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot will now create your system report. Click okay to continue.")
 

@@ -244,7 +244,7 @@ class Main():
 
                 if Chroot:
                     #Unmount the filesystem.
-                    if CoreTools.Unmount(MountPoint) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
+                    if CoreTools.Unmount(MountPoint) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again, or remove chroot again? ***
                         logger.error("MainStartupTools: Main().GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
                         CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 

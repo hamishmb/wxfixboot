@@ -145,15 +145,13 @@ class Main():
             if BootloaderOperations:
                 logger.error("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): Asking the user whether to skip bootloader operations...")
 
-                Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(Retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, WxFixBoot could become unstable, and your system could become unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?")
+                Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(Retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, your system could become unstable or unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?")
 
                 if Result:
                     #A good choice. WxFixBoot will now disable any bootloader operations.
                     logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User disabled bootloader operations as recommended, due to bad sectors/HDD problems/FS Checker problems...")
-
-                    #*** Should these be in SystemInfo? *** *** Add to report and warn at end of operations ***
                     SystemInfo["DisabledBootloaderOperations"] = True
-                    SystemInfo["DisabledBootloaderOperationsBecause"] = "Filesystem corruption was detected"
+                    SystemInfo["DisabledBootloaderOperationsBecause"].append("Filesystem corruption was detected on "+Partition)
 
                 else:
                     #Seriously? Well, okay, we'll do it anyway... This is probably a very bad idea...

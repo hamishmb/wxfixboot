@@ -96,7 +96,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Done!")
 
-    def InstallGRUB2ToMBR(self, PackageManager, MountPoint, Device): #*** Will need changing when we get rid of the Root Device concept ***
+    def InstallGRUB2ToMBR(self, PackageManager, UseChroot, MountPoint, Device):
         """Install GRUB2 (BIOS version) into the MBR of the hard drive"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the MBR.
         #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition. *** Do we want to do that? ***
@@ -106,7 +106,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         elif PackageManager == "yum":
             Cmd = "grub2-install --force "+Device
 
-        if MountPoint != "":
+        if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
@@ -114,7 +114,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         #Return the return value.
         return Retval
 
-    def InstallGRUB2ToEFIPartition(self, PackageManager, MountPoint, UEFISystemPartitionMountPoint, Arch):
+    def InstallGRUB2ToEFIPartition(self, PackageManager, UseChroot, MountPoint, UEFISystemPartitionMountPoint, Arch):
         """Install GRUB2 (EFI/UEFI version) into the EFI/UEFI partition"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if PackageManager == "apt-get":
@@ -123,7 +123,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         elif PackageManager == "yum":
             Cmd = "grub2-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi"
 
-        if MountPoint != "":
+        if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
  
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
@@ -131,7 +131,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         #Return the return value.
         return Retval
 
-    def UpdateGRUB2(self, PackageManager, MountPoint):
+    def UpdateGRUB2(self, PackageManager, UseChroot, MountPoint):
         """Run 'update-grub' to update GRUB2's (BIOS and EFI/UEFI) configuration and bootloader menu"""
         #We need to update grub.
         if PackageManager == "apt-get":
@@ -140,7 +140,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         elif PackageManager == "yum":
             Cmd = "grub2-mkconfig -o /boot/grub2/grub.cfg"
 
-        if MountPoint != "":
+        if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
@@ -570,11 +570,11 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Done!")
 
-    def InstallLILOToMBR(self, PackageManager, MountPoint):
+    def InstallLILOToMBR(self, PackageManager, UseChroot, MountPoint):
         """Install LILO into the MBR."""
         Cmd = "lilo"
 
-        if MountPoint != "":
+        if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
@@ -582,13 +582,13 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         #Return the return value.
         return Retval
 
-    def InstallELILOToPartition(self, OS, PackageManager, MountPoint):
+    def InstallELILOToPartition(self, OS, PackageManager, UseChroot, MountPoint):
         """Install ELILO to the EFI/UEFI Partition"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
         if PackageManager == "apt-get":
             Cmd = "elilo -b "+BootloaderInfo[OS]["BootDisk"]+" --efiboot"
 
-        if MountPoint != "":
+        if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
