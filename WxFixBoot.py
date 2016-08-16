@@ -326,8 +326,8 @@ class InitialWindow(wx.Frame):
         self.ProgressText.SetLabel(Message)
         self.Panel.Layout()
 
-    def UpdateOutputBox(self, Message):
-        """Dummy function, accepts a message argument but ignores it. Allows CoreTools.StartProcess to work."""
+    def UpdateOutputBox(self, Line, ShowOutput):
+        """Dummy function, accepts 'Line' and 'ShowOutput' arguments but ignores them. Allows CoreTools.StartProcess to work during startup."""
         pass
 
     def FinishedInit(self, Event=None):
@@ -2167,7 +2167,7 @@ class ProgressWindow(wx.Frame):
         #Move the insertion point 1 char to the left.
         self.OutputBox.SetInsertionPoint(self.OutputBox.GetInsertionPoint()-1)
 
-    def UpdateOutputBox(self, Line, ShowOutput): #*** Refactor ***
+    def UpdateOutputBox(self, Line, ShowOutput=True): #*** Refactor ***
         """Update the output box, and add lines to the list"""
         #Add the line to the output log.
         global OutputLog

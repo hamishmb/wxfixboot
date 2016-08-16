@@ -89,7 +89,7 @@ class Main():
         """
         if MountPoint == None:
             logger.debug("CoreTools: Main().IsMounted(): Checking if "+Partition+" is mounted...")
-            MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
+            MountInfo = self.StartProcess("mount -l", ShowOutput=False, ReturnOutput=True)[1]
 
             Mounted = False
 
@@ -114,12 +114,12 @@ class Main():
             logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
             return False
 
-    def GetPartitionMountedAt(self, MountPoint):
+    def GetPartitionMountedAt(self, MountPoint): #*** Is this used? ***
         """Returns the partition mounted at the given mountpoint, if any.
         Otherwise, return None"""
         logger.info("CoreTools: Main().GetPartitionMountedAt(): Trying to get partition mounted at "+MountPoint+"...")
 
-        MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
+        MountInfo = self.StartProcess("mount -l", ShowOutput=False, ReturnOutput=True)[1]
         Partition = None
 
         for Line in MountInfo.split("\n"):
@@ -141,7 +141,7 @@ class Main():
         Otherwise, return None"""
         logger.info("CoreTools: Main().GetMountPointOf(): Trying to get mount point of partition "+Partition+"...")
 
-        MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
+        MountInfo = self.StartProcess("mount -l", ShowOutput=False, ReturnOutput=True)[1]
         MountPoint = None
 
         for Line in MountInfo.split("\n"):
@@ -171,7 +171,7 @@ class Main():
         else:
             logger.info("CoreTools: Main().MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with no extra options...")
             
-        MountInfo = self.StartProcess("mount -l", ReturnOutput=True)[1]
+        MountInfo = self.StartProcess("mount -l", ShowOutput=False, ReturnOutput=True)[1]
 
         #There is a partition mounted here. Check if our partition is already mounted in the right place.
         if MountPoint == self.GetMountPointOf(Partition):
@@ -193,7 +193,7 @@ class Main():
             os.makedirs(MountPoint)
     
         #Mount the device to the mount point.
-        Retval = self.StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
+        Retval = self.StartProcess("mount "+Options+" "+Partition+" "+MountPoint, ShowOutput=False)
 
         if Retval == 0:
             logger.debug("CoreTools: Main().MountPartition(): Successfully mounted partition!")
@@ -228,7 +228,7 @@ class Main():
         """
         logger.debug("CoreTools: Main().Unmount(): Preparing to unmount "+MountPoint)
 
-        if MountPoint not in self.StartProcess("mount -l", ReturnOutput=True)[1]:
+        if MountPoint not in self.StartProcess("mount -l", ShowOutput=False, ReturnOutput=True)[1]:
             logger.info("CoreTools: Main().Unmount(): "+MountPoint+" was not mounted. Continuing...")
             Retval = 0
 
@@ -341,7 +341,7 @@ class Main():
 
         #Save the log file.
         LogFile = DialogTools.ShowSaveFileDlg(Wildcard="Log Files|*.log")
-        self.StartProcess("mv -v /tmp/wxfixboot.log "+LogFile)
+        self.StartProcess("mv -v /tmp/wxfixboot.log "+LogFile, ShowOutput=False)
 
         #Exit.
         DialogTools.ShowMsgDlg(Message="Done. WxFixBoot will now exit.")
