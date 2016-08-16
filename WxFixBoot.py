@@ -441,10 +441,10 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "63")
         logger.info("InitThread(): Done Mounting Core Filsystems!")
 
-        #Get a list of Linux OSs.
-        logger.info("InitThread(): Finding Linux OSs...")
-        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Linux Operating Systems...")
-        OSInfo, SystemInfo = MainStartupTools.GetLinuxOSs()
+        #Get a list of OSs.
+        logger.info("InitThread(): Finding OSs...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Operating Systems...")
+        OSInfo, SystemInfo = MainStartupTools.GetOSs()
 
         Tools.StartupTools.main.OSInfo = OSInfo
 

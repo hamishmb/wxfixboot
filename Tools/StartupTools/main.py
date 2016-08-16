@@ -122,10 +122,10 @@ class Main():
             logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
             CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
-    def GetLinuxOSs(self):
-        """Get the names of all Linux OSs on the HDDs."""
+    def GetOSs(self):
+        """Get the names of all OSs on the HDDs."""
         #*** Crashes at log line in InitThread().run() if we couldn't detect the current OS ***
-        logger.info("MainStartupTools: Main().GetLinuxOSs(): Finding Linux operating systems...")
+        logger.info("MainStartupTools: Main().GetOSs(): Finding Linux operating systems...")
         RootFS = CoreTools.GetPartitionMountedAt("/")
         OSInfo = {}
         SystemInfo["UserFriendlyOSNames"] = []
@@ -138,75 +138,126 @@ class Main():
             if DiskInfo[Partition]["Type"] == "Device":
                 continue
 
-            logger.debug("MainStartupTools: Main().GetLinuxOSs(): Looking on "+Partition+"...")
-
-            if Partition == RootFS:
-                Cmd = "python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
-                APTCmd = "which apt-get"
-                YUMCmd = "which yum"
-                Chroot = False
-                IsCurrentOS = True
-                MountPoint = ""
-
-            else:
-                MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
-                Cmd = "chroot "+MountPoint+" python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
-                APTCmd = "chroot "+MountPoint+" which apt-get"
-                YUMCmd = "chroot "+MountPoint+" which yum"
-                Chroot = True
-                IsCurrentOS = False
+            if DiskInfo[Partition]["FileSystem"] in ("vfat", "ntfs", "exfat"): pass #*** Not fully implemented, will implement for v2.1. Disabled for now ***
+                #Look for Windows. *** NTFS can't be mounted twice ***
+                #logger.debug("MainStartupTools: Main().GetOSs(): Looking for Windows on "+Partition+"...")
 
                 #Mount the partition and check if anything went wrong.
-                if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
+                #MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
+
+                #if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
                     #Ignore the partition.
-                    logger.warning("MainStartupTools: Main().GetLinuxOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
-                    continue
+                #    logger.warning("MainStartupTools: Main().GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
+                #    continue
 
-            #Look for an OS on this partition.
-            Retval, Temp = CoreTools.StartProcess(Cmd, ReturnOutput=True)
-            OSName = Temp.replace('\n', '')
+                #Windows XP.
+                #if os.path.isfile(MountPoint+"/boot.ini") and os.path.isdir(MountPoint+"/Windows"):
+                    #Add this information to OSInfo.
+                #    logger.debug("MainStartupTools: Main().GetOSs(): Found Windows XP...")
+                #    OSName = "Windows XP"
+                #    OSInfo[OSName] = {}
+                #    OSInfo[OSName]["Name"] = OSName
+                #    OSInfo[OSName]["IsCurrentOS"] = False
+                #    OSInfo[OSName]["Arch"] = "Unknown"
+                #    OSInfo[OSName]["Partition"] = Partition
+                #    OSInfo[OSName]["PackageManager"] = "Windows Installer"
+                #    OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+                    #OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName) *** TODO ***
+                #    SystemInfo["UserFriendlyOSNames"].append(OSName)
 
-            #Run the function to get the architechure.
-            OSArch = CoreStartupTools.DetermineOSArchitecture(MountPoint=MountPoint)
+                #Windows Vista/7/8/8.1/10.
+                #elif os.path.isdir(MountPoint+"/Windows"):
+                #    logger.debug("MainStartupTools: Main().GetOSs(): Found Windows Vista/7/8/10...")
+                #    OSName = "Windows Vista/7/8/10"
+                #    OSInfo[OSName] = {}
+                #    OSInfo[OSName]["Name"] = OSName
+                #    OSInfo[OSName]["IsCurrentOS"] = False
+                #    OSInfo[OSName]["Arch"] = "Unknown"
+                #    OSInfo[OSName]["Partition"] = Partition
+                #    OSInfo[OSName]["PackageManager"] = "Windows Installer"
+                #    OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+                    #OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName) *** TODO ***
+                #    SystemInfo["UserFriendlyOSNames"].append(OSName)
 
-            #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name.
-            if Retval != 0 and OSArch != None:
-                OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch, IsCurrentOS=IsCurrentOS)
+                #else:
+                #    logger.debug("MainStartupTools: Main().GetOSs(): Didn't find Windows...")
 
-            #Look for APT.
-            PackageManager = CoreStartupTools.DeterminePackageManager(APTCmd=APTCmd, YUMCmd=YUMCmd) 
-
-            #Also check if CoreStartupTools.AskForOSName was used to determine the name. If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
-            if OSName != None and OSArch != None and PackageManager != "Unknown":
-                #Add this information to OSInfo.
-                OSInfo[OSName] = {}
-                OSInfo[OSName]["Name"] = OSName
-                OSInfo[OSName]["IsCurrentOS"] = IsCurrentOS
-                OSInfo[OSName]["Arch"] = OSArch
-                OSInfo[OSName]["Partition"] = Partition
-                OSInfo[OSName]["PackageManager"] = PackageManager
-                OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName)
-                SystemInfo["UserFriendlyOSNames"].append(OSName)
-
-                if Chroot == False:
-                    SystemInfo["CurrentOS"] = OSInfo[OSName].copy()
-
-            if Chroot:
                 #Unmount the filesystem.
-                if CoreTools.Unmount(MountPoint) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
-                    logger.error("MainStartupTools: Main().GetLinuxOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
-                    CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+                #if CoreTools.Unmount(MountPoint) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
+                #    logger.error("MainStartupTools: Main().GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
+                #    CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
-                #Remove the temporary mountpoint
-                os.rmdir(MountPoint)
+            else:
+                #Look for Linux.
+                logger.debug("MainStartupTools: Main().GetOSs(): Looking for Linux on "+Partition+"...")
 
-        #Check that at least one Linux OS was detected.
+                if Partition == RootFS:
+                    Cmd = "python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
+                    APTCmd = "which apt-get"
+                    YUMCmd = "which yum"
+                    Chroot = False
+                    IsCurrentOS = True
+                    MountPoint = ""
+
+                else:
+                    MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
+                    Cmd = "chroot "+MountPoint+" python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
+                    APTCmd = "chroot "+MountPoint+" which apt-get"
+                    YUMCmd = "chroot "+MountPoint+" which yum"
+                    Chroot = True
+                    IsCurrentOS = False
+
+                    #Mount the partition and check if anything went wrong.
+                    if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
+                        #Ignore the partition.
+                        logger.warning("MainStartupTools: Main().GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
+                        continue
+
+                #Look for Linux on this partition.
+                Retval, Temp = CoreTools.StartProcess(Cmd, ReturnOutput=True)
+                OSName = Temp.replace('\n', '')
+
+                #Run the function to get the architechure.
+                OSArch = CoreStartupTools.DetermineOSArchitecture(MountPoint=MountPoint)
+
+                #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name.
+                if Retval != 0 and OSArch != None:
+                    OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch, IsCurrentOS=IsCurrentOS)
+
+                #Look for APT.
+                PackageManager = CoreStartupTools.DeterminePackageManager(APTCmd=APTCmd, YUMCmd=YUMCmd) 
+
+                #Also check if CoreStartupTools.AskForOSName was used to determine the name. If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
+                if OSName != None and OSArch != None and PackageManager != "Unknown":
+                    #Add this information to OSInfo.
+                    OSInfo[OSName] = {}
+                    OSInfo[OSName]["Name"] = OSName
+                    OSInfo[OSName]["IsCurrentOS"] = IsCurrentOS
+                    OSInfo[OSName]["Arch"] = OSArch
+                    OSInfo[OSName]["Partition"] = Partition
+                    OSInfo[OSName]["PackageManager"] = PackageManager
+                    OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName)
+                    SystemInfo["UserFriendlyOSNames"].append(OSName)
+
+                    if Chroot == False:
+                        SystemInfo["CurrentOS"] = OSInfo[OSName].copy()
+
+                if Chroot:
+                    #Unmount the filesystem.
+                    if CoreTools.Unmount(MountPoint) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
+                        logger.error("MainStartupTools: Main().GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
+                        CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+
+                    #Remove the temporary mountpoint
+                    os.rmdir(MountPoint)
+
+        #Check that at least one OS was detected. *** Is this needed here? ***
         if len(OSInfo) >= 1:
-            logger.debug("MainStartupTools: Main().GetLinuxOSs(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
+            logger.debug("MainStartupTools: Main().GetOSs(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
             return OSInfo, SystemInfo
 
         else:
-            logger.critical("MainStartupTools: Main().GetLinuxOSs(): Couldn't find any linux operating systems! Linux partitions were detected, but don't appear to contain any OSs! WxFixBoot will now exit, and warn the user...")
+            logger.critical("MainStartupTools: Main().GetOSs(): Couldn't find any linux operating systems! Linux partitions were detected, but don't appear to contain any OSs! WxFixBoot will now exit, and warn the user...")
             CoreTools.EmergencyExit("Linux partitions were found on your computer, but no Linux operating systems were found! Perhaps you need to recover data from your hard drive, or restore an image first? If you're using Parted Magic, you'll have access to tools that can do that for you now. Otherwise, you may need to install them.")
 
     def GetFirmwareType(self):
