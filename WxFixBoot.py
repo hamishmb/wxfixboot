@@ -2167,40 +2167,41 @@ class ProgressWindow(wx.Frame):
         #Move the insertion point 1 char to the left.
         self.OutputBox.SetInsertionPoint(self.OutputBox.GetInsertionPoint()-1)
 
-    def UpdateOutputBox(self, Line):
+    def UpdateOutputBox(self, Line, ShowOutput): #*** Refactor ***
         """Update the output box, and add lines to the list"""
         #Add the line to the output log.
         global OutputLog
         OutputLog.append(Line)
 
-        CRs = []
-        BKSPs = []
-        CharNo = 0
+        if ShowOutput or FullVerbose:
+            CRs = []
+            BKSPs = []
+            CharNo = 0
 
-        for Char in Line:
-            CharNo += 1
+            for Char in Line:
+                CharNo += 1
 
-            if Char == "\r":
-                CRs.append(CharNo)
+                if Char == "\r":
+                    CRs.append(CharNo)
 
-            elif Char == "\x08":
-                BKSPs.append(CharNo)
+                elif Char == "\x08":
+                    BKSPs.append(CharNo)
 
-        CharNo = 0
-        TempLine = ""
+            CharNo = 0
+            TempLine = ""
 
-        for Char in Line:
-            CharNo += 1
+            for Char in Line:
+                CharNo += 1
 
-            if CharNo not in CRs and CharNo not in BKSPs:
-                TempLine += Char
-                if Char == "\n":
+                if CharNo not in CRs and CharNo not in BKSPs:
+                    TempLine += Char
+                    if Char == "\n":
+                        self.AddLineToOutputBox(TempLine, CRs, BKSPs, CharNo)
+                        TempLine = ""
+
+                else:
                     self.AddLineToOutputBox(TempLine, CRs, BKSPs, CharNo)
                     TempLine = ""
-
-            else:
-                self.AddLineToOutputBox(TempLine, CRs, BKSPs, CharNo)
-                TempLine = ""
 
     def AddLineToOutputBox(self, Line, CRs, BKSPs, CharNo):
         InsertionPoint = self.OutputBox.GetInsertionPoint()
@@ -2455,7 +2456,7 @@ class BackendThread(threading.Thread):
         ReportList.write("\n##########Other WxFixBoot Settings##########\n")
         ReportList.write("Do Quick Filesystem Check: "+unicode(QuickFSCheck)+"\n")
         ReportList.write("Do Bad Sector Check: "+unicode(BadSectCheck)+"\n")
-        ReportList.write("Show Diagnostic Terminal Output (***ignored***): "+unicode(FullVerbose)+"\n")
+        ReportList.write("Show Diagnostic Terminal Output: "+unicode(FullVerbose)+"\n")
         ReportList.write("Save System Report To File: "+unicode(MakeSystemSummary)+"\n")
 
         if MakeSystemSummary:
@@ -2471,6 +2472,7 @@ class BackendThread(threading.Thread):
 
         #Save Log File.
         ReportList.write("\n##########WxFixBoot's Log File##########\n")
+
         logfile = open("/tmp/wxfixboot.log", "r")
         for line in logfile:
             ReportList.write(line)

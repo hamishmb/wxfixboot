@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def StartProcess(self, ExecCmds, StdinLines=[], ShowOutput=True, ReturnOutput=False): #*** ShowOutput is ignored currently ***
+    def StartProcess(self, ExecCmds, StdinLines=[], ShowOutput=True, ReturnOutput=False):
         """Start a process given a string of commands to execute.
         ShowOutput is boolean and specifies whether to show output in the outputbox (if exists) or not.
         ReturnOutput is boolean and specifies whether to return the output back to the caller or not.
@@ -61,7 +61,7 @@ class Main():
                 if unicode(type(Line)) != type(""):
                     Line = unicode(Line, errors="replace").replace("\x00", "")
 
-                wx.CallAfter(ParentWindow.UpdateOutputBox, Line)
+                wx.CallAfter(ParentWindow.UpdateOutputBox, Line, ShowOutput)
                 LineList.append(Line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
                 #Reset Line.
