@@ -390,6 +390,8 @@ class Main():
                 for MenuEntry in MenuEntries:
                     print("\tMenu Entry Name: "+MenuEntry+"\n\n")
                     print("\t\tID: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["ID"]+"\n\n")
+                    print("\t\tPartition: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["Partition"]+"\n\n")
+                    print("\t\tKernel Options: "+', '.join(BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["KernelOptions"])+"\n\n")
                     print("\t\tMenu Entry Data:\n\n")
 
                     for Thing in BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["RawMenuEntryData"]:

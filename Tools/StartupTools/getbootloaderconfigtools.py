@@ -146,24 +146,78 @@ class Main(): #*** Refactor all of these *** *** GRUB2: Can't always get partiti
         MenuEntries[Menu][MenuEntry] = {}
         MenuEntries[Menu][MenuEntry]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
 
-        logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry's boot partition...")
-
-        try:
-            MenuEntries[Menu][MenuEntry]["Partition"] = Temp[1].split(" ")[-1]
-
-        except IndexError:
-            MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
-
-        MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = []
-
         #Get the full contents of the menuentry (keep adding lines to the list until we find a "}").
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry data...")
+
+        MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = []
 
         for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
             MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
 
             if MenuEntryData.split()[-1] == "}":
                 break
+
+        #Get boot partition.
+        logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry's boot partition with entry name...")
+
+        #Try multiple methods to get this info.
+        MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
+
+        #Try to get it from the menu entry name (older GRUB2 versions).
+        try:
+            MenuEntries[Menu][MenuEntry]["Partition"] = Temp[1].split(" ")[-1]
+
+        except IndexError: pass
+
+        #If this fails, try finding the UUID in the menu-entry data. *** Check this works ***
+        if MenuEntries[Menu][MenuEntry]["Partition"] == "Unknown" or "/dev/" not in MenuEntries[Menu][MenuEntry]["Partition"]:
+            logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry's boot partition with UUID...")
+            UUID = ""
+
+            for EachLine in MenuEntries[Menu][MenuEntry]["RawMenuEntryData"]:
+                if "search " in EachLine:
+                    UUID = EachLine.split()[-1]
+                    logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Found UUID...")
+                    break
+
+            if UUID != "":
+                #Convert to device name if possible.
+                logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Matching UUID to disk...")
+                for Disk in DiskInfo.keys():
+                    if DiskInfo[Disk]["UUID"] == UUID:
+                        MenuEntries[Menu][MenuEntry]["Partition"] = Disk
+
+        #If THAT fails, try to use the "set root=" line. *** Check this works right ***
+        if MenuEntries[Menu][MenuEntry]["Partition"] == "Unknown" or "/dev/" not in MenuEntries[Menu][MenuEntry]["Partition"]:
+            logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry's boot partition with GRUB2's 'set root=' line...")
+            RootLine = ""
+
+            for EachLine in MenuEntries[Menu][MenuEntry]["RawMenuEntryData"]:
+                if "set root" in EachLine:
+                    RootLine = EachLine
+                    logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Found GRUB2's 'set root=' line...")
+                    break
+
+            if RootLine != "":
+                #Get the numbers used in this line.
+                logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Finding GRUB device name numbers...")
+                Numbers = []
+
+                for Char in RootLine:
+                    if Char.isdigit():
+                        Numbers.append(int(Char))
+
+                #chr(97) is 'a', so add 97 to first number to get the linux name (e.g. sda)
+                Letter = chr(Numbers[0]+97)
+
+                #Check it's a letter from a to z.
+                if Numbers[0] in range(0, 25):
+                    MenuEntries[Menu][MenuEntry]["Partition"] = "/dev/sd"+Letter+unicode(Numbers[1])
+
+        #Log if we STILL haven't found the disk.
+        if MenuEntries[Menu][MenuEntry]["Partition"] == "Unknown" or "/dev/" not in MenuEntries[Menu][MenuEntry]["Partition"]:
+            MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
+            logger.error("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Couldn't find boot partition for menu entry! Continuing anyway...")
 
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting kernel options...")
         MenuEntries[Menu][MenuEntry]["KernelOptions"] = ["Unknown"]

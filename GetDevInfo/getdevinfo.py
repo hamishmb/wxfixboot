@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# Device Information Obtainer for WxFixBoot Version 2.0~pre3
+# Device Information Obtainer for WxFixBoot Version 2.0~rc1
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -126,7 +126,13 @@ class Main():
         for Line in self.BlkidOutput.split('\n'):
             if Disk in Line:
                 UUID = Line.split()[-1]
-                break
+
+                #Fix a bug where an invalid UUID is used when blkid couldn't find one.
+                if UUID == "mounted)":
+                        UUID = "Unknown"
+
+                else:
+                    break
 
         if UUID != "Unknown":
             logger.info("GetDevInfo: Main().GetUUID(): Found UUID ("+UUID+") for: "+Disk+"...")

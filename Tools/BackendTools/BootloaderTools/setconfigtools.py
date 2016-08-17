@@ -99,7 +99,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
     def InstallGRUB2ToMBR(self, PackageManager, UseChroot, MountPoint, Device):
         """Install GRUB2 (BIOS version) into the MBR of the hard drive"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the MBR.
-        #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition. *** Do we want to do that? ***
+        #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition.
         if PackageManager == "apt-get":
             Cmd = "grub-install --force "+Device
 
