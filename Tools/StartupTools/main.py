@@ -356,7 +356,14 @@ class Main():
                 elif os.path.isdir(MountPoint+"/boot/grub2"):
                     GRUBDir = MountPoint+"/boot/grub2"
 
-                BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuEntries(GRUBDir+"/grub.cfg")
+                #Process menu entries, and pass the entire contents of the menu entries file to the parser.
+                MenuEntriesFile = open(GRUBDir+"/grub.cfg", "r")
+                MenuData = MenuEntriesFile.readlines()
+                MenuEntriesFile.close()
+
+                BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData)
+
+                #Get GRUB2's config.
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["DefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", GRUBDir+"/grubenv", BootloaderInfo[OS]["MenuEntries"])
 
                 #Try to find GRUB's location if this is GRUB2.

@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor all of these *** *** GRUB2: Can't always get partition used for menu entry, use UUID embedded in menu entry data instead ***
+class Main(): #*** Refactor all of these ***
     def FindGRUB(self, OSPartition, GRUBVersion): #*** Test this thoroughly ***
         """Find GRUB for the given OS."""
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking for "+GRUBVersion+"...")
@@ -31,7 +31,7 @@ class Main(): #*** Refactor all of these *** *** GRUB2: Can't always get partiti
 
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking in "+', '.join(LikelyGRUBInstallDisks)+"...")
 
-        #Look for the right string for each boot loader.
+        #Look for the right string for each boot loader. *** Test this ***
         if GRUBVersion == "GRUB2":
             LookFor = ("ZRr=", "TCPAf")
 
@@ -40,6 +40,7 @@ class Main(): #*** Refactor all of these *** *** GRUB2: Can't always get partiti
 
         for Disk in LikelyGRUBInstallDisks:
             logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): "+DiskInfo[Disk]["Name"]+" "+', '.join(DiskInfo[Disk]["BootRecordStrings"]))
+
             for Line in DiskInfo[Disk]["BootRecordStrings"]:
                 #Check that we have the right version of GRUB, and double check that GRUB is present.
                 if Line in LookFor and "GRUB" in DiskInfo[Disk]["BootRecordStrings"]:
@@ -47,30 +48,24 @@ class Main(): #*** Refactor all of these *** *** GRUB2: Can't always get partiti
                     logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Done!")
                     return Disk
 
-        logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+"...")
+        logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+" on any likely disks...")
         return "Unknown"
 
-    def ParseGRUB2MenuEntries(self, MenuEntriesFilePath): #*** Reduce duplication, perhaps with a recursive call ***
-        """Find and parse GRUB2 (EFI and BIOS) menu entries."""
-        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Finding and parsing menu entries...")
+    def ParseGRUB2MenuData(self, MenuData, MenuEntries={}, MenuName="MainMenu", MenuIDs={}, MenuID=""):
+        """Find and parse GRUB2 (EFI and BIOS) menu entries in the given line list"""
+        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in given menu data...")
+        logger.debug("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Parsing menu data for menu: "+MenuName+"...")
 
-        #Open the menu entries file to find and save all the menu entries.
-        MenuEntriesFile = open(MenuEntriesFilePath, "r")
-        MenuEntriesFileContents = MenuEntriesFile.readlines()
-        MenuEntries = {}
-        Menu = "MainMenu"
-        MenuEntries[Menu] = {}
-        MenuIDs = {}
-        MenuIDs[Menu] = {}
-        MenuIDs[Menu]["ID"] = ""
-        MenuData = {}
-        MenuData[Menu] = {}
-        MenuData[Menu]["EntryCounter"] = 0
+        MenuEntries[MenuName] = {}
+        MenuIDs[MenuName] = {}
+        MenuIDs[MenuName]["ID"] = MenuID
+
+        EntryCounter = 0
         SkipUntil = 0
         LineCounter = 0
 
         #Read each line.
-        for Line in MenuEntriesFileContents:
+        for Line in MenuData:
             LineCounter += 1
 
             #Skip some lines if needed.
@@ -79,80 +74,80 @@ class Main(): #*** Refactor all of these *** *** GRUB2: Can't always get partiti
 
             #Parse any menu entries we find.
             if "menuentry " in Line:
-                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Found a menu entry. Assembling into a dictionary with self.AssembleGRUB2MenuEntry()...")
-                MenuEntries, MenuData[Menu]["EntryCounter"] = self.AssembleGRUB2MenuEntry(MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, MenuData[Menu]["EntryCounter"])
-                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Done!")
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Found a menu entry. Assembling into a dictionary with self.AssembleGRUB2MenuEntry()...")
+                MenuEntries = self.AssembleGRUB2MenuEntry(MenuEntries, MenuIDs, MenuData, MenuName, Line, EntryCounter)
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Done!")
+
+                #Increment the entry counter.
+                EntryCounter += 1
 
             #Handle submenus correctly.
             elif "submenu " in Line:
-                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Found submenu...")
-                #Get the submenu, create a sub-dictionary for it, save its ID, and change the Value of "Menu" to the submenu's name.
-                SubMenu = ' '.join(Line.split(" ")[1:-1]).replace("\"", "")
-                MenuEntries[SubMenu] = {}
-                MenuIDs[SubMenu] = {}
-                MenuIDs[SubMenu]["ID"] = unicode(MenuData[Menu]["EntryCounter"])+">"
-                MenuData[Menu]["EntryCounter"] += 1
-                Menu = SubMenu
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Found submenu...")
+                #Get the submenu's name, create a sub-dictionary for it, save its ID, and change the Value of "MenuName" to the submenu's name.
+                SubMenuName = Line.split("'")[1].replace("\"", "").replace("\'", "")
 
                 #Get the entire contents of the submenu.
-                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Getting the entire text content of the submenu...")
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Getting the entire text content of the submenu...")
                 BracketCount = 0
-                MenuData[Menu] = {}
-                MenuData[Menu]["EntryCounter"] = 0
-                MenuData[Menu]["RawMenuData"] = []
+                SubMenuData = []
 
-                for SubMenuData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
-                    MenuData[Menu]["RawMenuData"].append(SubMenuData)
+                for SubMenuDataLine in MenuData[MenuData.index(Line):]:
+                    #Don't add the first line to the SubMenuData to avoid an endless recursive call.
+                    if "submenu " not in SubMenuDataLine:
+                        SubMenuData.append(SubMenuDataLine)
 
-                    if "{" in SubMenuData:
+                    if "{" in SubMenuDataLine:
                         BracketCount += 1
 
-                    elif "}" in SubMenuData:
+                    elif "}" in SubMenuDataLine:
                         BracketCount -= 1
 
                     if BracketCount == 0:
                         break
 
-                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Done! Processing any menu entries in the submenu...")
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Done! Processing any menu entries in the submenu with recursive call...")
 
-                #Process any menu entries in the submenu.
-                for SubLine in MenuData[Menu]["RawMenuData"]:
-                    if "menuentry " in SubLine:
-                        MenuEntries, MenuData[Menu]["EntryCounter"] = self.AssembleGRUB2MenuEntry(MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, SubLine, MenuData[Menu]["EntryCounter"])
+                #Call this function again with the contents of the submenu, and some arguments so everything works correctly.
+                MenuEntries, MenuIDs = self.ParseGRUB2MenuData(SubMenuData, MenuEntries=MenuEntries, MenuName=SubMenuName, MenuIDs=MenuIDs, MenuID=unicode(EntryCounter)+">")
 
-                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Done! Jumping past the submenu data to avoid duplicating menu entries...")
+                logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Done! Jumping past the submenu data to avoid duplicating menu entries...")
+
+                #Increment the entry counter.
+                EntryCounter += 1
+
                 #Skip the submenu data, and set "Menu" back to "MainMenu" again so entries are added correctly.
-                SkipUntil = LineCounter+len(MenuData[Menu]["RawMenuData"])
+                SkipUntil = LineCounter+len(SubMenuData)
 
-                Menu = "MainMenu"
-
-        #Close the file.
-        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuEntries(): Finished!")
-        MenuEntriesFile.close()
+        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finished!")
         return MenuEntries, MenuIDs
 
     def AssembleGRUB2MenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter):
         """Assemble a menu entry in the dictionary for GRUB2 (BIOS and UEFI)"""
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Preparing to get menu entry info...")
 
+        #Get the menu entry name.
         if "\'" in Line:
-            MenuEntry = Line.split("\'")[1]
+            MenuEntryName = Line.split("\'")[1]
 
         else:
-            MenuEntry = Line.split("\"")[1]
+            MenuEntryName = Line.split("\"")[1]
 
-        Temp = MenuEntry.replace(")", "").split(" (")
+        logger.debug("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Menu Entry name: "+MenuEntryName+"...")
 
-        MenuEntries[Menu][MenuEntry] = {}
-        MenuEntries[Menu][MenuEntry]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
+        #Get the menu entry ID.
+        MenuEntries[Menu][MenuEntryName] = {}
+        MenuEntries[Menu][MenuEntryName]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
+
+        logger.debug("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Menu Entry ID: "+MenuEntries[Menu][MenuEntryName]["ID"]+"...")
 
         #Get the full contents of the menuentry (keep adding lines to the list until we find a "}").
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry data...")
 
-        MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = []
+        MenuEntries[Menu][MenuEntryName]["RawMenuEntryData"] = []
 
         for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
-            MenuEntries[Menu][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
+            MenuEntries[Menu][MenuEntryName]["RawMenuEntryData"].append(MenuEntryData)
 
             if MenuEntryData.split()[-1] == "}":
                 break
@@ -161,20 +156,21 @@ class Main(): #*** Refactor all of these *** *** GRUB2: Can't always get partiti
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry's boot partition with entry name...")
 
         #Try multiple methods to get this info.
-        MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
+        MenuEntries[Menu][MenuEntryName]["Partition"] = "Unknown"
 
         #Try to get it from the menu entry name (older GRUB2 versions).
         try:
-            MenuEntries[Menu][MenuEntry]["Partition"] = Temp[1].split(" ")[-1]
+            #Remove the brackets, split with " ", and grab the last element in the resulting list, which is hopefully the partition name e.g. /dev/sdc.
+            MenuEntries[Menu][MenuEntryName]["Partition"] = MenuEntryName.replace(")", "").split(" (")[1].split(" ")[-1]
 
         except IndexError: pass
 
-        #If this fails, try finding the UUID in the menu-entry data. *** Check this works ***
-        if MenuEntries[Menu][MenuEntry]["Partition"] == "Unknown" or "/dev/" not in MenuEntries[Menu][MenuEntry]["Partition"]:
+        #If this fails, try finding the UUID in the menu-entry data and converting that to a device name. *** Check this works ***
+        if MenuEntries[Menu][MenuEntryName]["Partition"] == "Unknown" or "/dev/" not in MenuEntries[Menu][MenuEntryName]["Partition"]:
             logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry's boot partition with UUID...")
             UUID = ""
 
-            for EachLine in MenuEntries[Menu][MenuEntry]["RawMenuEntryData"]:
+            for EachLine in MenuEntries[Menu][MenuEntryName]["RawMenuEntryData"]:
                 if "search " in EachLine:
                     UUID = EachLine.split()[-1]
                     logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Found UUID...")
@@ -185,14 +181,14 @@ class Main(): #*** Refactor all of these *** *** GRUB2: Can't always get partiti
                 logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Matching UUID to disk...")
                 for Disk in DiskInfo.keys():
                     if DiskInfo[Disk]["UUID"] == UUID:
-                        MenuEntries[Menu][MenuEntry]["Partition"] = Disk
+                        MenuEntries[Menu][MenuEntryName]["Partition"] = Disk
 
-        #If THAT fails, try to use the "set root=" line. *** Check this works right ***
-        if MenuEntries[Menu][MenuEntry]["Partition"] == "Unknown" or "/dev/" not in MenuEntries[Menu][MenuEntry]["Partition"]:
+        #If THAT fails, try to use the "set root=" line to find the device name. *** Check this works right ***
+        if MenuEntries[Menu][MenuEntryName]["Partition"] == "Unknown" or "/dev/" not in MenuEntries[Menu][MenuEntryName]["Partition"]:
             logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry's boot partition with GRUB2's 'set root=' line...")
             RootLine = ""
 
-            for EachLine in MenuEntries[Menu][MenuEntry]["RawMenuEntryData"]:
+            for EachLine in MenuEntries[Menu][MenuEntryName]["RawMenuEntryData"]:
                 if "set root" in EachLine:
                     RootLine = EachLine
                     logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Found GRUB2's 'set root=' line...")
@@ -212,23 +208,33 @@ class Main(): #*** Refactor all of these *** *** GRUB2: Can't always get partiti
 
                 #Check it's a letter from a to z.
                 if Numbers[0] in range(0, 25):
-                    MenuEntries[Menu][MenuEntry]["Partition"] = "/dev/sd"+Letter+unicode(Numbers[1])
+                    MenuEntries[Menu][MenuEntryName]["Partition"] = "/dev/sd"+Letter+unicode(Numbers[1])
 
         #Log if we STILL haven't found the disk.
-        if MenuEntries[Menu][MenuEntry]["Partition"] == "Unknown" or "/dev/" not in MenuEntries[Menu][MenuEntry]["Partition"]:
-            MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
+        if MenuEntries[Menu][MenuEntryName]["Partition"] == "Unknown" or "/dev/" not in MenuEntries[Menu][MenuEntryName]["Partition"]:
+            MenuEntries[Menu][MenuEntryName]["Partition"] = "Unknown"
             logger.error("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Couldn't find boot partition for menu entry! Continuing anyway...")
 
+        else:
+            logger.debug("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Menu Entry Boot Partition: "+MenuEntries[Menu][MenuEntryName]["Partition"]+"...")
+
+        #Get the kernel options for this menuentry.
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting kernel options...")
-        MenuEntries[Menu][MenuEntry]["KernelOptions"] = ["Unknown"]
 
-        for Line in MenuEntries[Menu][MenuEntry]["RawMenuEntryData"]:
+        MenuEntries[Menu][MenuEntryName]["KernelOptions"] = ["Unknown"]
+
+        for Line in MenuEntries[Menu][MenuEntryName]["RawMenuEntryData"]:
             if "linux" in Line:
-                MenuEntries[Menu][MenuEntry]["KernelOptions"] = Line.split()[3:]
+                MenuEntries[Menu][MenuEntryName]["KernelOptions"] = Line.split()[3:]
 
-        EntryCounter += 1
+        #Check we got them.
+        if MenuEntries[Menu][MenuEntryName]["KernelOptions"] == ["Unknown"]:
+            logger.error("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Couldn't find kernel options for menu entry! Continuing anyway...")
 
-        return MenuEntries, EntryCounter
+        else:
+            logger.debug("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Menu Entry Kernel Options: "+', '.join(MenuEntries[Menu][MenuEntryName]["KernelOptions"])+"...")
+
+        return MenuEntries
 
     def GetGRUB2Config(self, ConfigFilePath, GRUBEnvironmentFilePath, MenuEntries): #*** Refactor, and reduce duplication  ***
         """Get important bits of config from grub2 (MBR or UEFI)"""
