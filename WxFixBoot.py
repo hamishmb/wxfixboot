@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+#*** Can't call grub-set-default with submenu ID e.g. 2>3, it won't work. Write to grubenv manually instead. ***
 #*** Check setting default OS is working ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Figure out what to do in each instance where something might fail ***
