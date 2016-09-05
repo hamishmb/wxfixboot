@@ -386,6 +386,16 @@ class Main():
                 BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB-LEGACY")
                 BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset" #*** Guess this from menu entries *** *** Default OS? ***
 
+            #Determine if we can modify this OS from our current one.
+            if OSInfo[OS]["Arch"] == SystemInfo["CurrentOSArch"] or (OSInfo[OS]["Arch"] == "i386" and SystemInfo["CurrentOSArch"] == "x86_64"):
+                BootloaderInfo[OS]["IsModifyable"] = True
+                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+"."
+                SystemInfo["ModifyableOSs"].append(OS)
+
+            else:
+                BootloaderInfo[OS]["IsModifyable"] = False
+                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+". Not modifyable because current OS is "+SystemInfo["CurrentOSArch"]+"."
+
             #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
             logger.info("MainStartupTools: Main().GetBootloaders(): Attempting to match the bootloader's default OS to any OS that WxFixBoot detected...")
 
@@ -428,15 +438,6 @@ class Main():
                         print("\t\t\t"+Thing)
 
             #*****************
-            #Determine if we can modify this OS from our current one.
-            if OSInfo[OS]["Arch"] == SystemInfo["CurrentOSArch"] or (OSInfo[OS]["Arch"] == "i386" and SystemInfo["CurrentOSArch"] == "x86_64"):
-                BootloaderInfo[OS]["IsModifyable"] = True
-                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+"."
-                SystemInfo["ModifyableOSs"].append(OS)
-
-            else:
-                BootloaderInfo[OS]["IsModifyable"] = False
-                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+". Not modifyable because current OS is "+SystemInfo["CurrentOSArch"]+"."
 
             #Initialise some default no-action settings.
             BootloaderInfo[OS]["Settings"] = {}
