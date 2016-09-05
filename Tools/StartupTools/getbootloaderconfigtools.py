@@ -619,7 +619,12 @@ class Main(): #*** Refactor all of these ***
         logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Done! Returning information...")
         ConfigFile.close()
 
-        #*** Pick the 1st menuentry if default OS wasn't found. *** 
+        #Find the 1st menu entry and use that if we couldn't find the default OS.
+        if DefaultOS == "Unknown":
+            for Entry in MenuEntries["MainMenu"]:
+                if MenuEntries["MainMenu"][Entry]["ID"] == 0:
+                    DefaultOS = Entry
+                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Set default OS to "+Entry+" instead. Continuing...")
 
         #Ignore ELILO's boot disk setting.
         if "/etc/lilo.conf" in ConfigFilePath:
