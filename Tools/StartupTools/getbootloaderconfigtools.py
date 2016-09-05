@@ -550,7 +550,7 @@ class Main(): #*** Refactor all of these ***
                 elif "append" in Line:
                     #Get the kernel options.
                     logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Found kernel options...")
-                    MenuEntries[Menu][MenuEntry]["KernelOptions"] = Line.split("=")[1].replace("\"", "")
+                    MenuEntries[Menu][MenuEntry]["KernelOptions"] = Line.split("=")[1].replace("\"", "").split()
 
         except IndexError:
             pass
