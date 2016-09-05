@@ -535,10 +535,12 @@ class Main(): #*** Refactor all of these ***
                     #If we get a UUID, convert it to a device node.
                     if "UUID=" in Temp:
                         UUID = Temp.split("=")[1].replace("\"", "")
+                        logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Found UUID "+UUID+". Finding device node...")
 
                         for Disk in DiskInfo.keys():
-                            if DiskInfo[Disk]["UUID"] == Temp:
-                                MenuEntries[Menu][MenuEntry]["Partition"] = DiskInfo[Disk]["UUID"]
+                            if DiskInfo[Disk]["UUID"] == UUID:
+                                MenuEntries[Menu][MenuEntry]["Partition"] = Disk
+                                logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Found device node "+Disk+". Continuing...")
 
                     else:
                         MenuEntries[Menu][MenuEntry]["Partition"] = Temp

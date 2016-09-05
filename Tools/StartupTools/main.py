@@ -407,7 +407,6 @@ class Main():
 
             #We have the partition, so now find the OS that resides on that partition.
             for OSName in OSInfo:
-                print(OSInfo[OSName]["Partition"], DefaultBootDevice)
                 if OSInfo[OSName]["Partition"] == DefaultBootDevice:
                     #Set it.
                     BootloaderInfo[OS]["DefaultOS"] = OSName
