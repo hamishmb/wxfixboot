@@ -55,7 +55,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "17/8/2016"
+ReleaseDate = "5/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1136,7 +1136,7 @@ class SystemInfoPage6(wx.Panel):
         self.ListCtrl.SetColumnWidth(1, int(Width * 0.1))
         self.ListCtrl.SetColumnWidth(2, int(Width * 0.2))
         self.ListCtrl.SetColumnWidth(3, int(Width * 0.1))
-        self.ListCtrl.SetColumnWidth(3, int(Width * 0.2))
+        self.ListCtrl.SetColumnWidth(4, int(Width * 0.2))
 
         if Event != None:
             Event.Skip()
@@ -1204,7 +1204,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Set up the previous OS choice.
         if SystemInfo["PreviousOSChoice"] == "":
-            SystemInfo["PreviousOSChoice"] = SystemInfo["UserFriendlyOSNames"][0]
+            SystemInfo["PreviousOSChoice"] = SystemInfo["ModifyableOSs"][0]
 
         self.CreateText()
         self.CreateChoiceBoxes()
@@ -1236,7 +1236,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def CreateChoiceBoxes(self):
         """Create the choice boxes"""
-        self.OSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["UserFriendlyOSNames"])
+        self.OSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["ModifyableOSs"])
         self.OSChoice.SetStringSelection(SystemInfo["PreviousOSChoice"])
 
         #Basic Options.

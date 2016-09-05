@@ -88,6 +88,10 @@ class Main():
             SystemInfo["OnPartedMagic"] = False
             logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Result: "+unicode(SystemInfo["IsLiveDisk"]))
 
+        #Get current OS architecture.
+        logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Getting architecture of current OS...")
+        SystemInfo["CurrentOSArch"] = CoreStartupTools.DetermineOSArchitecture(MountPoint="")
+
     def UnmountAllFS(self):
         """Unmount any unnecessary filesystems, to prevent data corruption."""
         #Warn about removing devices.
@@ -128,7 +132,6 @@ class Main():
         logger.info("MainStartupTools: Main().GetOSs(): Finding Linux operating systems...")
         RootFS = CoreTools.GetPartitionMountedAt("/")
         OSInfo = {}
-        SystemInfo["UserFriendlyOSNames"] = []
 
         #Get Linux OSs.
         Keys = DiskInfo.keys()
@@ -163,7 +166,6 @@ class Main():
                 #    OSInfo[OSName]["PackageManager"] = "Windows Installer"
                 #    OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
                     #OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName) *** TODO ***
-                #    SystemInfo["UserFriendlyOSNames"].append(OSName)
 
                 #Windows Vista/7/8/8.1/10.
                 #elif os.path.isdir(MountPoint+"/Windows"):
@@ -177,7 +179,6 @@ class Main():
                 #    OSInfo[OSName]["PackageManager"] = "Windows Installer"
                 #    OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
                     #OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName) *** TODO ***
-                #    SystemInfo["UserFriendlyOSNames"].append(OSName)
 
                 #else:
                 #    logger.debug("MainStartupTools: Main().GetOSs(): Didn't find Windows...")
@@ -237,7 +238,6 @@ class Main():
                     OSInfo[OSName]["Partition"] = Partition
                     OSInfo[OSName]["PackageManager"] = PackageManager
                     OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName)
-                    SystemInfo["UserFriendlyOSNames"].append(OSName)
 
                     if Chroot == False:
                         SystemInfo["CurrentOS"] = OSInfo[OSName].copy()
@@ -302,6 +302,8 @@ class Main():
 
     def GetBootloaders(self): #*** Test this thoroughly ***
         """Find all bootloaders (for each OS), and gather some information about them"""
+        SystemInfo["ModifyableOSs"] = []
+
         Keys = OSInfo.keys()
         Keys.sort()
 
@@ -405,9 +407,15 @@ class Main():
                         print("\t\t\t"+Thing)
 
             #*****************
-            #*** Implemment this ***
-            BootloaderInfo[OS]["IsModifyable"] = "Unknown"
-            BootloaderInfo[OS]["Comments"] = "N/A"
+            #Determine if we can modify this OS from our current one.
+            if OSInfo[OS]["Arch"] == SystemInfo["CurrentOSArch"] or (OSInfo[OS]["Arch"] == "i386" and SystemInfo["CurrentOSArch"] == "x86_64"):
+                BootloaderInfo[OS]["IsModifyable"] = True
+                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+"."
+                SystemInfo["ModifyableOSs"].append(OS)
+
+            else:
+                BootloaderInfo[OS]["IsModifyable"] = False
+                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+". Not modifyable because current OS is "+SystemInfo["CurrentOSArch"]+"."
 
             #Initialise some default no-action settings.
             BootloaderInfo[OS]["Settings"] = {}
@@ -502,5 +510,14 @@ class Main():
             CoreTools.EmergencyExit("The required variables: "+', '.join(FailedList)+", have not been set! WxFixBoot will now shut down to prevent damage to your system. This is probably a bug in the program.")
 
         #Check and warn about conflicting settings. *** TODO ***
+        #Warn if any OSs aren't modifyable.
+        UnmodifyableOSs = []
+
+        for OS in BootloaderInfo:
+            if BootloaderInfo[OS]["IsModifyable"] == False:
+                UnmodifyableOSs.append(OS+BootloaderInfo[OS]["Comments"])
+
+        if UnmodifyableOSs != []:
+            DialogTools.ShowMsgDlg(Message="Some of the OSs found on your system cannot be modified! These are:\n\n"+'\n'.join(UnmodifyableOSs)+"\n\nClick okay to continue.")
 
 #End main Class.

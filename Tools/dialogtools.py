@@ -46,7 +46,7 @@ class Main():
         logger.debug("DialogTools: Main().ShowThreadMessageDlg(): Thread Message Dialog has been closed by user.")
 
     def ShowMsgDlg(self, Message, Kind="info"):
-        """Handle showing thread message dialogs, reducing code duplication and compilications and errors.
+        """Handle showing thread message dialogs, reducing code duplication and complications and errors.
         It can be used like this: DialogTools().ShowMsgDlg(Kind=<kind>, Message=<message>).
         Kind is one of 'info', 'warning' or 'error'.
         Message is whatever you want the dialog to say.
