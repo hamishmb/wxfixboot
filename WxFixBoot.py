@@ -1238,7 +1238,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.OSChoice.SetStringSelection(SystemInfo["PreviousOSChoice"])
 
         #Basic Options.
-        self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=[])
+        self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["ModifyableOSs"])
 
         #Advanced Options.
         self.NewBootloaderChoice = wx.Choice(self.Panel, -1, choices=[])
@@ -1621,18 +1621,12 @@ class BootloaderOptionsWindow(wx.Frame):
             self.SaveSettings(OS=SystemInfo["PreviousOSChoice"])
             self.SaveGUIState(OS=SystemInfo["PreviousOSChoice"])
 
-        #Set up the default OS choice. *** Match the bootloader's default OS to our so we can display the right one here ***
-        Choices = []
-
-        for Menu in BootloaderInfo[self.OSChoice.GetStringSelection()]["MenuEntries"]:
-            for MenuEntry in BootloaderInfo[self.OSChoice.GetStringSelection()]["MenuEntries"][Menu]:
-                Choices.append(MenuEntry)
-
-        self.DefaultOSChoice.Set(Choices)
-
         self.LoadSettings()
         self.SetGUIState()
         self.SetTextLabels()
+
+        #Default OS choice.
+        self.DefaultOSChoice.SetStringSelection(BootloaderInfo[self.OSChoice.GetStringSelection()]["DefaultOS"])
 
         #Set up NewBootloaderChoice.
         if OSInfo[self.OSChoice.GetStringSelection()]["EFIPartition"] == "Unknown":
