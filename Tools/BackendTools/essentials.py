@@ -72,7 +72,7 @@ class Main():
                     logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
 
-    def FileSystemCheck(self, Type): #*** Will need lots of work when we switch to dictionaries *** *** Refactor at that time ***
+    def FileSystemCheck(self, Type): #*** Refactor ***
         """Quickly check all filesystems."""
         logger.debug("EssentialBackendTools: Main().FileSystemCheck(): Starting...")
 
@@ -166,7 +166,7 @@ class Main():
 
             if FileSystemsToCheck[Disk]["Remount"]:
                 logger.debug("EssentialBackendTools: Main().FileSystemCheck(): Remounting Disk: "+Disk+" Read-Write...")
-                Retval = CoreTools.MountPartition(Partition=Disk, MountPoint="/tmp/wxfixboot/mountpoints"+Disk)
+                Retval = CoreTools.MountPartition(Partition=Disk, MountPoint=FileSystemsToCheck[Disk]["MountPoint"])
 
                 if Retval != 0:
                     logger.warning("EssentialBackendTools: Main().FileSystemCheck(): Failed to remount Disk: "+Disk+" after check. We probably need to reboot first. Never mind...")

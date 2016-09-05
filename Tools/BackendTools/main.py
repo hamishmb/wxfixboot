@@ -24,36 +24,70 @@ from __future__ import unicode_literals
 #Begin Main Class.
 class Main():
     def ManageBootloader(self, OS):
-        """Manage the installation and removal of each bootloader.""" #*** Check each operation worked with a return value! ***
+        """Manage the installation and removal of each bootloader."""
         if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["Update"]:
             BootloaderInfo[OS]["Settings"]["NewBootloader"] = BootloaderInfo[OS]["Bootloader"]
 
+        #Create a list of functions to call.
+        FunctionList = [self.SetNewBootloaderConfig]
+        
         if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["InstallNewBootloader"]:
-            #First remove the old bootloader, then install the new one.
-            logger.info("MainBackendTools(): Main().ManageBootloader(): Calling MainBackendTools().RemoveOldBootloader()...")
-            self.RemoveOldBootloader(OS)
-            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 33)
+            #Add more stuff to the list.
+            FunctionList = [self.RemoveOldBootloader, self.InstallNewBootloader, self.SetNewBootloaderConfig]
 
-            logger.info("MainBackendTools(): Main().ManageBootloader(): Calling MainBackendTools().InstallNewBootloader()...")
-            BootloaderInstallSucceded = self.InstallNewBootloader(OS)
+        #Safegaurd operations usiang a loop.
+        for Function in FunctionList:
+            logger.info("MainBackendTools(): Main().ManageBootloader(): Calling "+unicode(Function)+"...")
 
-            if BootloaderInstallSucceded == False:
-                #Bootloader installation failed for at least one OS! *** Clarify this message with better info ***
-                logger.error("MainBackendTools(): Main().ManageBootloader(): Failed to install new bootloader in at least one OS! Asking user whether to continue with configuration or not...")
-                Result = DialogTools.ShowYesNoDlg(Message="Bootloader Installation failed for at least one OS! Please tell WxFixBoot what to do now. Click Yes to configure bootloaders anyway, and no to skip configuration.", Title="WxFixBoot - Configure Bootloader?", Buttons=("Configure Bootloaders Anyway", "Skip Bootloader Configuration"))
+            Success = False
 
-                if Result == False:
-                    logger.warning("MainBackendTools(): Main().ManageBootloader(): Configuring bootloaders anyway. Calling MainBackendTools().SetNewBootloaderConfig()...")
+            #Allow the user to keep trying if stuff goes wrong.
+            while Success == False:
+                #Create some text.
+                if Function == self.RemoveOldBootloader:
+                    Operation = "remove"
+
+                elif Function == self.InstallNewBootloader:
+                    Operation = "install"
 
                 else:
-                    logger.warning("MainBackendTools(): Main().ManageBootloader(): Not configuring bootloaders...")
-                    return True
+                    Operation = "configure"
 
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 66)
-        self.SetNewBootloaderConfig(OS)
+                Success = Function(OS)
+
+                #Update progress if successful.
+                if Success:
+                    if Operation == "remove":
+                        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 33)
+
+                    elif Operation == "install":
+                        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 66)
+
+                    else:
+                        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+
+                #Warn user if an error occured.
+                else:
+                    logger.error("MainBackendTools(): Main().ManageBootloader(): Failed to "+Operation+" "+OS+"'s old bootloader! Asking user whether to try again or skip this OS...")
+
+                    #Drop a leading 'e' for correct English.
+                    if Operation[-1] == "e":
+                        Text = Operation[0:-1]
+
+                    else:
+                        Text = Operation
+
+                    Result = DialogTools.ShowYesNoDlg(Message="An error occured while "+Operation+"ing "+OS+"'s old bootloader! This operating system may currently be in an unbootable state. What do you want to do? Click Yes to try again, and click No to cancel bootloader operations for this OS.", Title="WxFixBoot - Error Removing Bootloader!", Buttons=("Try Again", "Skip Bootloader Operations For This OS"))
+
+                    if Result:
+                        logger.info("MainBackendTools(): Main().ManageBootloader(): Trying again...")
+
+                    else:
+                        logger.error("MainBackendTools(): Main().ManageBootloader(): Skipping the rest of the bootloader operations for "+OS+"! Other operations will continue as normal. Returning False...")
+                        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+                        return False
 
         logger.info("MainBackendTools(): Main().ManageBootloader(): Done!")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
     def RemoveOldBootloader(self, OS): #*** Handle return values better, and return them *** *** Give more information to user when there are errors ***
         """Remove the currently installed bootloader."""
@@ -80,7 +114,7 @@ class Main():
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["Partition"], MountPoint=MountPoint) != 0:
                     logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
                     DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"! This OS will now be skipped.")
-                    return False #*** Not handled at the moment ***
+                    return False
 
             #Set up chroot.
             if CoreTools.SetUpChroot(MountPoint) != 0:
@@ -91,7 +125,7 @@ class Main():
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["BootPartition"], MountPoint=MountPoint+"/boot") != 0:
                     logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
                     DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! This OS will now be skipped.")
-                    return False #*** Not handled at the moment ***
+                    return False
 
         #Mount a /boot partition if it exists.
         if OSInfo[OS]["BootPartition"] != "Unknown":
@@ -102,7 +136,7 @@ class Main():
                     CoreTools.TearDownChroot(MountPoint)
                     CoreTools.Unmount(MountPoint)
 
-                return False #*** Not handled yet ***
+                return False
 
         #Remove the bootloader.
         if BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY":
@@ -186,6 +220,7 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished removing "+BootloaderInfo[OS]["Bootloader"]+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
         DialogTools.ShowMsgDlg(Kind="info", Message="Finished removing "+BootloaderInfo[OS]["Bootloader"]+"! WxFixBoot will now install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" to "+OS+".")
+        return True
 
     def InstallNewBootloader(self, OS): #*** Give more info to user when there are errors ***
         """Install a new bootloader."""
@@ -214,7 +249,7 @@ class Main():
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["Partition"], MountPoint=MountPoint) != 0:
                     logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warn the user and skip this OS.")
                     DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. It is recommended to do a Bad Sector check, and then try again.") #*** Is this good advice? Try to determine the cause of the problem ***
-                    return False #*** Not handled yet ***
+                    return False
 
             #Set up chroot.
             if CoreTools.SetUpChroot(MountPoint=MountPoint) != 0:
@@ -225,7 +260,7 @@ class Main():
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["BootPartition"], MountPoint=MountPoint+"/boot") != 0:
                     logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["BootPartition"]+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
                     DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! This OS will now be skipped.")
-                    return False #*** Not handled at the moment ***
+                    return False
 
         #Update the package lists.
         if OSInfo[OS]["PackageManager"] == "apt-get":
@@ -270,7 +305,7 @@ class Main():
             if CoreTools.MountPartition(Partition=OSInfo[OS]["EFIPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
                 logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+OSInfo[OS]["EFIPartition"]+"! to "+MountPoint+"/boot/efi! Aborting bootloader installation and warning user...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to mount the partition containing "+OS+"'s EFI partition! This OS will now be skipped.")
-                return False #*** Not handled at the moment ***
+                return False
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
@@ -358,7 +393,7 @@ class Main():
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["Partition"], MountPoint=MountPoint) != 0:
                     #Ignore this partition.
                     logger.warning("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount "+OSInfo[OS]["Partition"]+"! Ignoring this partition...")
-                    return False #*** Not handled yet ***
+                    return False
 
             #Set up chroot.
             if CoreTools.SetUpChroot(MountPoint=MountPoint) != 0:
@@ -375,7 +410,7 @@ class Main():
                     CoreTools.TearDownChroot(MountPoint)
                     CoreTools.Unmount(MountPoint)
 
-                return False #*** Not handled yet ***
+                return False
 
         #Look for the configuration file, based on which SetConfig() function we're about to run.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
@@ -521,5 +556,6 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+        return True
 
 #End main Class.

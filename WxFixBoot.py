@@ -14,12 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#*** Can't call grub-set-default with submenu ID e.g. 2>3, it won't work. Write to grubenv manually instead. ***
 #*** Check setting default OS is working ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** Remove grub's .efi files after installing elilo and vice versa ***
-#*** Support EFI on 32-bit firmware? ***
 #*** Enable menu in ELILO ***
 #*** ELILO Kernel options not detected ***
 #*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? If so do what it does ***
@@ -1623,7 +1621,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.SaveSettings(OS=SystemInfo["PreviousOSChoice"])
             self.SaveGUIState(OS=SystemInfo["PreviousOSChoice"])
 
-        #Set up the default OS choice.
+        #Set up the default OS choice. *** Match the bootloader's default OS to our so we can display the right one here ***
         Choices = []
 
         for Menu in BootloaderInfo[self.OSChoice.GetStringSelection()]["MenuEntries"]:
@@ -2239,8 +2237,7 @@ class ProgressWindow(wx.Frame):
         logger.debug("ProgressWindow().RestartWxFixBoot(): Restarting WxFixBoot...")
         self.Hide()
 
-        #Make sure any mounted filesystems in /tmp/wxfixbootmountpoints are unmounted first. *** Fix later, no filesystems should be mounted there after operations anyway ***
-        #MainStartupTools.UnmountAllFS()
+        #*** Double check that no filesystems are mounted in /tmp/wxfixbootmountpoints after all operations ***
 
         InitialFrame = InitialWindow()
         app.SetTopWindow(InitialFrame)

@@ -70,23 +70,28 @@ class Main():
 
             #Check if the required fsck module is present, and that the partition isn't RootFS
             if "fsck."+DiskInfo[Disk]["FileSystem"] in MissingFSCKModules:
+                MountPoint = "None"
                 CheckTheFS = False
                 RemountPartitionAfter = False
 
             else:
                 #If we're not running on a live disk, skip the filesystem if it's the same as RootFS (in which case checking it may corrupt data).
                 if SystemInfo["IsLiveDisk"] == False and Disk == RootFS:
+                    MountPoint = "/"
                     CheckTheFS = False
                     RemountPartitionAfter = False
                     continue
 
                 #Check if the partition is mounted.
                 if CoreTools.IsMounted(Disk) == False:
+                    MountPoint = "None"
                     CheckTheFS = True
                     RemountPartitionAfter = False
 
                 else:
                     #Unmount the FS temporarily, to avoid data corruption.
+                    MountPoint = CoreTools.GetMountPointOf(Disk)
+
                     if CoreTools.Unmount(Disk) != 0:
                         logger.warning("HelperBackendTools: Main().FindCheckableFileSystems(): Failed to unmount "+Disk+", which is necessary for safe disk checking! Ignoring it...")
                         CheckTheFS = False
@@ -100,6 +105,7 @@ class Main():
                 #Add it to the dictionary for checking.
                 FileSystemsToCheck[Disk] = {}
                 FileSystemsToCheck[Disk]["Remount"] = RemountPartitionAfter
+                FileSystemsToCheck[Disk]["MountPoint"] = MountPoint
 
             else:
                 #Add it to the non-checkable list
