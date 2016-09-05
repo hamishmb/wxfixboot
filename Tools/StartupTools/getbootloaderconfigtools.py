@@ -513,7 +513,7 @@ class Main(): #*** Refactor all of these ***
             RawMenuEntryData.append(MenuEntryData)
 
             if "label" in MenuEntryData:
-                MenuEntry = MenuEntryData.split("=")[1]
+                MenuEntry = MenuEntryData.split("=")[1].replace("\n", "")
 
             if MenuEntryData != Line and "image" in MenuEntryData.split() and "=" in MenuEntryData.split() and "#" not in MenuEntryData.split():
                 #Remove the last line.
@@ -534,7 +534,7 @@ class Main(): #*** Refactor all of these ***
 
                     #If we get a UUID, convert it to a device node.
                     if "UUID=" in Temp:
-                        UUID = Temp.split("=")[1].replace("\"", "")
+                        UUID = Temp.split("=")[1].replace("\"", "").replace("\n", "")
                         logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Found UUID "+UUID+". Finding device node...")
 
                         for Disk in DiskInfo.keys():
