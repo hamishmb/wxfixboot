@@ -538,7 +538,6 @@ class Main(): #*** Refactor all of these ***
                         logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Found UUID "+UUID+". Finding device node...")
 
                         for Disk in DiskInfo.keys():
-                            print(DiskInfo[Disk]["UUID"], UUID)
                             if DiskInfo[Disk]["UUID"] == UUID:
                                 MenuEntries[Menu][MenuEntry]["Partition"] = Disk
                                 logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Found device node "+Disk+". Continuing...")
