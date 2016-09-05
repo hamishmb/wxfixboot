@@ -2168,59 +2168,52 @@ class ProgressWindow(wx.Frame):
         #Move the insertion point 1 char to the left.
         self.OutputBox.SetInsertionPoint(self.OutputBox.GetInsertionPoint()-1)
 
-    def UpdateOutputBox(self, Line, ShowOutput=True): #*** Refactor ***
+    def UpdateOutputBox(self, Line, ShowOutput=True):
         """Update the output box, and add lines to the list"""
         #Add the line to the output log.
         global OutputLog
         OutputLog.append(Line)
 
         if ShowOutput or FullVerbose:
-            CRs = []
-            BKSPs = []
-            CharNo = 0
-
-            for Char in Line:
-                CharNo += 1
-
-                if Char == "\r":
-                    CRs.append(CharNo)
-
-                elif Char == "\x08":
-                    BKSPs.append(CharNo)
-
-            CharNo = 0
             TempLine = ""
 
             for Char in Line:
-                CharNo += 1
-
-                if CharNo not in CRs and CharNo not in BKSPs:
+                if Char != "\r" and Char != "\x08":
                     TempLine += Char
+
                     if Char == "\n":
-                        self.AddLineToOutputBox(TempLine, CRs, BKSPs, CharNo)
+                        self.AddLineToOutputBox(TempLine, Type="None")
                         TempLine = ""
 
                 else:
-                    self.AddLineToOutputBox(TempLine, CRs, BKSPs, CharNo)
+                    if Char == "\r":
+                        Type = "CR"
+
+                    elif Char == "\x08":
+                        Type = "BKSP"
+
+                    self.AddLineToOutputBox(TempLine, Type)
                     TempLine = ""
 
-    def AddLineToOutputBox(self, Line, CRs, BKSPs, CharNo):
+    def AddLineToOutputBox(self, Line, Type):
         InsertionPoint = self.OutputBox.GetInsertionPoint()
 
         self.OutputBox.Replace(InsertionPoint, InsertionPoint+len(Line), Line)
 
-        if CharNo in CRs:
+        if Type == "CR":
             self.CarriageReturn()
 
-        elif CharNo in BKSPs:
+        elif Type == "BKSP":
             self.BackSpace()
 
     def UpdateCurrentProgress(self,msg):
         """Update the progress of the current progress progress bar"""
         #Called at various points during operation code.
         self.CurrentOperationProgressBar.SetValue(int(msg))
+
         if self.CurrentOperationProgressBar.GetValue() == 100:
             self.UpdateTotalProgress()
+
             #Stop this resetting when all operations are complete.
             if self.OverallProgressBar.GetValue() != 100:
                 self.CurrentOperationProgressBar.SetValue(0)
