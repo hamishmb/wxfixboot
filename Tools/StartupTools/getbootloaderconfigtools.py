@@ -573,7 +573,7 @@ class Main(): #*** Refactor all of these ***
         #Loop through each line in the file, paying attention only to the important ones.
         for Line in ConfigFile:
             #Look for the delay/timeout setting.
-            if ('delay' in Line or 'timeout' in Line) and '=' in Line:
+            if ('delay' in Line or 'timeout' in Line) and '=' in Line and "#" not in Line:
                 #Save it, carefully avoiding errors.
                 Timeout = Line.split("=")[1].replace(" ","").replace("\n", "")
 
@@ -584,7 +584,7 @@ class Main(): #*** Refactor all of these ***
                     logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found bootloader timeout...")
 
             #Look for kernel options used globally in all the boot options.
-            elif 'append' in Line and '=' in Line:
+            elif 'append' in Line and '=' in Line and "#" not in Line:
                 #Found them! Save it to GlobalKernelOptions
                 KernelOptions = ' '.join(Line.split("=")[1:]).replace("\"", "").replace("\n", "")
                 logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found global kernel options...")
