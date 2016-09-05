@@ -538,6 +538,7 @@ class Main(): #*** Refactor all of these ***
                         logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Found UUID "+UUID+". Finding device node...")
 
                         for Disk in DiskInfo.keys():
+                            print(DiskInfo[Disk]["UUID"], UUID)
                             if DiskInfo[Disk]["UUID"] == UUID:
                                 MenuEntries[Menu][MenuEntry]["Partition"] = Disk
                                 logger.info("BootloaderConfigObtainingTools: Main().AssembleLILOMenuEntry(): Found device node "+Disk+". Continuing...")
@@ -612,7 +613,7 @@ class Main(): #*** Refactor all of these ***
             #Look for the default OS setting.
             elif "default" in Line and "=" in Line and "#" not in Line:
                 #Found it.
-                DefaultOS = Line.split("=")[1]
+                DefaultOS = Line.split("=")[1].replace("\n", "")
                 logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found default OS "+DefaultOS+"...")
 
         #Close the file.
