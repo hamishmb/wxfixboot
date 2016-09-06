@@ -256,7 +256,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO *** *** Set GRUB_DEF
             #Get rid of any boot entries.
             elif 'image=' in line or '\t' in line:
                 #Skip this line, and don't append it to the list.
-                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Found boot entry, removing it...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found boot entry, removing it...")
                 continue
 
             NewFileContents.append(line)
