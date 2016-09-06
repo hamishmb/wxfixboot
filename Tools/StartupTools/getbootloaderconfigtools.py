@@ -594,7 +594,7 @@ class Main(): #*** Refactor all of these ***
             #Look for the 'boot' setting.
             elif 'boot' in Line and '=' in Line and '#' not in Line and 'map' not in Line:
                 #Found it!
-                Temp = Line.split("=")[1]
+                Temp = Line.split("=")[1].replace("\n", "")
 
                 #Convert to a device node if we have an ID.
                 if "by-id" in Temp:
@@ -605,7 +605,7 @@ class Main(): #*** Refactor all of these ***
                             break
 
                 #Check we got the device node in case we had an ID.
-                if "by-id" not in Temp:
+                if "by-id" not in Temp and "/dev/" in Temp:
                     BootDisk = Temp
                     logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found boot disk "+BootDisk+"...")
 
