@@ -320,7 +320,8 @@ class Main(): #*** Add recovery boot options for LILO/ELILO *** *** Set GRUB_DEF
         #Make the OS entries.
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Making OS Entries...")
 
-        NewFileContents.append("#################### "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" per-image section ####################")
+        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
+            NewFileContents.append("#################### ELILO per-image section ####################")
 
         #As we make these entries, we'll record which ones were actually made, as the user can cancel them if it looks like it won't work.
         CompletedEntriesList = []
