@@ -559,7 +559,7 @@ class Main(): #*** Refactor all of these ***
 
         return MenuEntries, EntryCounter
 
-    def GetLILOConfig(self, ConfigFilePath):
+    def GetLILOConfig(self, ConfigFilePath, OS):
         """Get important bits of config from lilo and elilo"""
         logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Getting config at "+ConfigFilePath+"...")
 
@@ -621,8 +621,8 @@ class Main(): #*** Refactor all of these ***
 
         #Find the 1st menu entry and use that if we couldn't find the default OS.
         if DefaultOS == "Unknown":
-            for Entry in BootloaderInfo["OS"]["MenuEntries"]["MainMenu"]:
-                if BootloaderInfo["OS"]["MenuEntries"]["MainMenu"][Entry]["ID"] == 0:
+            for Entry in BootloaderInfo[OS]["MenuEntries"]["MainMenu"]:
+                if BootloaderInfo[OS]["MenuEntries"]["MainMenu"][Entry]["ID"] == 0:
                     DefaultOS = Entry
                     logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Set default OS to "+Entry+" instead. Continuing...")
 
