@@ -398,6 +398,7 @@ class InitThread(threading.Thread):
         Tools.StartupTools.main.SystemInfo = SystemInfo
         Tools.StartupTools.main.Settings = Settings
         Tools.StartupTools.getbootloaderconfigtools.DiskInfo = DiskInfo
+        Tools.StartupTools.getbootloaderconfigtools.BootloaderInfo = BootloaderInfo
         GetDevInfo.getdevinfo.DiskInfo = DiskInfo
 
         #Set variables used for checking whether bootloader operations have been disabled.
