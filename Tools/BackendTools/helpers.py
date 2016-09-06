@@ -212,7 +212,7 @@ class Main():
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Done!")
 
     def BackupUEFIFiles(self, MountPoint):
-        """Backup some .efi files, just in case something goes wrong.""" #*** Make this more user friendly *** *** Make this smarter when we detect Windows ***
+        """Backup some .efi files, just in case something goes wrong.""" #*** Make this more user friendly *** *** v2.1: Make this smarter when we detect Windows ***
         logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Backing up UEFI Files...")
 
         #We'll backup /EFI/boot/bootx64.efi if it exists, and we'll also backup Windows's uefi files, if they exist.
@@ -268,13 +268,13 @@ class Main():
 
             if Retval != 0:
                 logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilo.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
-                DialogTools.ShowMsgDlg(Kind="error", Message="Error: WxFixBoot failed to copy one of the new bootloader's UEFI files to the backup directory! This could potentially be a problem. If your system doesn't start, this could be the reason why it doesn't start. Click okay to continue.")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
             Retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.conf "+UEFIBootDir+"/", ShowOutput=False)
 
             if Retval != 0:
                 logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilo.conf to "+UEFIBootDir+"/! Attempting to continue anyway...")
-                DialogTools.ShowMsgDlg(Kind="error", Message="Error: WxFixBoot failed to copy one of the new bootloader's UEFI files to the backup directory! This could potentially be a problem. If your system doesn't start, this could be the reason why it doesn't start. Click okay to continue.")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #We need to copy grub*.efi to UEFIBootDir.
@@ -283,6 +283,6 @@ class Main():
 
             if Retval != 0:
                 logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy grub*.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
-                DialogTools.ShowMsgDlg(Kind="error", Message="Error: WxFixBoot failed to copy the new bootloader's UEFI files to the backup directory! This could potentially be a problem. If your system doesn't start, this could be the reason why it doesn't start. Click okay to continue.")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Done!")

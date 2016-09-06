@@ -350,7 +350,7 @@ class Main(): #*** Refactor all of these ***
 
         return (Timeout, KernelOptions, DefaultOS)
 
-    def ParseGRUBLEGACYMenuEntries(self, MenuEntriesFilePath): #*** Refactor *** *** Test this ***
+    def ParseGRUBLEGACYMenuEntries(self, MenuEntriesFilePath): #*** Test this ***
         """Find and parse GRUB LEGACY menu entries."""
         logger.info("BootloaderConfigObtainingTools: Main().ParseGRUBLEGACYMenuEntries(): Finding and parsing menu entries...")
 
@@ -384,7 +384,7 @@ class Main(): #*** Refactor all of these ***
         MenuEntriesFile.close()
         return MenuEntries, MenuIDs
 
-    def AssembleGRUBLEGACYMenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter):
+    def AssembleGRUBLEGACYMenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter): #*** Refactor ***
         """Assemble a menu entry in the dictionary for GRUB LEGACY"""
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Preparing to get menu entry info...")
         MenuEntry = ' '.join(Line.split()[1:])

@@ -72,7 +72,7 @@ class Main():
                     logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
 
-    def FileSystemCheck(self, Type): #*** Refactor ***
+    def FileSystemCheck(self, Type):
         """Quickly check all filesystems."""
         logger.debug("EssentialBackendTools: Main().FileSystemCheck(): Starting...")
 
@@ -152,7 +152,7 @@ class Main():
                     ExecCmds = ""
                     DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem on Disk: "+Disk+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Disk+" will now be skipped.")
 
-            #Run the command with Piping = False, if ExecList != ['None'], otherwise do nothing, but do remount the Disk if needed.
+            #Run the command, and remount the Disk if needed.
             if ExecCmds != "":
                 retval = CoreTools.StartProcess(ExecCmds)
 
@@ -169,7 +169,7 @@ class Main():
                 Retval = CoreTools.MountPartition(Partition=Disk, MountPoint=FileSystemsToCheck[Disk]["MountPoint"])
 
                 if Retval != 0:
-                    logger.warning("EssentialBackendTools: Main().FileSystemCheck(): Failed to remount Disk: "+Disk+" after check. We probably need to reboot first. Never mind...")
+                    logger.warning("EssentialBackendTools: Main().FileSystemCheck(): Failed to remount "+Disk+" after check. We probably need to reboot first. Never mind...")
 
             Checked += 1
 

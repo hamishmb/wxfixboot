@@ -14,18 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#*** Check if the way we config LILO and ELILO always boots same kernel for different OSs or not ***
+#*** Check if the way we config LILO and ELILO means it always boots same kernel for different OSs or not ***
 #*** Check setting default OS is working ***
-#*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Figure out what to do in each instance where something might fail ***
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Enable menu in ELILO ***
-#*** ELILO Kernel options not detected ***
+#*** ELILO Kernel options not detected CHECK THIS IS TRUE/UNFIXED ***
 #*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? If so do what it does ***
 #*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
 #*** Is /etc/default/grub created after switching to grub if it was purged before? ***
 #*** Test disabling bootloader operations, as if a filesystem check failed ***
-#*** If no kernel options are found, default to using quiet splash nomodeset ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -457,7 +455,7 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
         logger.info("InitThread(): Done...")
 
-        #Check if any modifyable Linux installations were found. *** Do modifyability later ***
+        #Check if any Linux installations were found.
         if len(OSInfo) == 0:
             logger.critical("InitThread(): No Linux installations found! If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
 
@@ -477,6 +475,13 @@ class InitThread(threading.Thread):
         MainStartupTools.GetBootloaders()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): Done!")
+
+        #Check if any modifyable Linux installations were found.
+        if len(SystemInfo["ModifyableOSs"]) == 0:
+            logger.critical("InitThread(): No modifyable Linux installations found! If you think this is incorrect, please file a bug or ask a question on WxFixBoot's launchpad page. Exiting...")
+
+            #Exit.
+            CoreTools.EmergencyExit("You don't appear to have any modifyable Linux installations on your hard disks. If you think this is incorrect, please file a bug or ask a question on WxFixBoot's launchpad page.")
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
@@ -1610,7 +1615,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.OnTimeoutCheckBox()
         self.BootloaderTimeoutSpinner.SetValue(Config["Timeout"])
 
-        #Use default OS used when the backup was taken. *** What if this isn't generated when the new bootloader is configured? Manual user selection or default OS? ***
+        #Use default OS used when the backup was taken. *** What if this option isn't available any more when the new bootloader is configured? Manual user selection or auto select 1st option? ***
         self.DefaultOSChoice.SetStringSelection(Config["DefaultOS"])
 
         logger.debug("BootloaderOptionsWindow().SetupForRestoringBootloader(): Finished loading config from file...")
@@ -2233,7 +2238,7 @@ class ProgressWindow(wx.Frame):
         logger.debug("ProgressWindow().RestartWxFixBoot(): Restarting WxFixBoot...")
         self.Hide()
 
-        #*** Double check that no filesystems are mounted in /tmp/wxfixbootmountpoints after all operations ***
+        #*** Double check at runtime that no filesystems are mounted in /tmp/wxfixbootmountpoints after all operations, especially if errors occured. ***
 
         InitialFrame = InitialWindow()
         app.SetTopWindow(InitialFrame)
