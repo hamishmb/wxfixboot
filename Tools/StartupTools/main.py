@@ -384,7 +384,13 @@ class Main():
                 BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUBLEGACYMenuEntries(MountPoint+"/boot/grub/menu.lst")
                 BootloaderInfo[OS]["Timeout"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst")
                 BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB-LEGACY")
-                BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset" #*** Guess this from menu entries *** *** Default OS? ***
+                #*** Guess Kernel Options from menu entries? *** *** Default OS? ***
+
+            #If we didn't find the kernel options, set some defaults here, and warn the user.
+            if BootloaderInfo[OS]["GlobalKernelOptions"] == "Unknown":
+                BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
+                logger.warning("MainStartupTools: Main().GetBootloaders(): Couldn't find "+OS+"'s global kernel options! Assuming 'quiet splash nomodeset'...")
+                DialogTools.ShowMsgDlg(Message="Couldn't find "+OS+"'s default kernel options! Loading safe defaults instead. Click okay to continue.", Kind="warning")
 
             #Determine if we can modify this OS from our current one.
             if OSInfo[OS]["Arch"] == SystemInfo["CurrentOSArch"] or (OSInfo[OS]["Arch"] == "i386" and SystemInfo["CurrentOSArch"] == "x86_64"):

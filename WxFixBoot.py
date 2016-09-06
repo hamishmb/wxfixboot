@@ -23,7 +23,6 @@
 #*** ELILO Kernel options not detected ***
 #*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? If so do what it does ***
 #*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
-#*** Match LILO default OS to ours ***
 #*** Is /etc/default/grub created after switching to grub if it was purged before? ***
 #*** Test disabling bootloader operations, as if a filesystem check failed ***
 #*** If no kernel options are found, default to using quiet splash nomodeset ***

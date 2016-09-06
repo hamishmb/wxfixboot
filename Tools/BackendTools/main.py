@@ -89,7 +89,7 @@ class Main():
 
         logger.info("MainBackendTools(): Main().ManageBootloader(): Done!")
 
-    def RemoveOldBootloader(self, OS): #*** Handle return values better, and return them *** *** Give more information to user when there are errors ***
+    def RemoveOldBootloader(self, OS): #*** Give more information to user when there are errors ***
         """Remove the currently installed bootloader."""
         logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27)
@@ -191,7 +191,8 @@ class Main():
 
         if Retval != 0:
             logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! Warning user...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! This OS will now be skipped.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"!")
+            return False
 
         #Unmount a /boot partition if it exists.
         if OSInfo[OS]["BootPartition"] != "Unknown":
@@ -213,7 +214,7 @@ class Main():
         if Retval != 0:
             #Something went wrong! Log it and notify the user.
             logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! We'll continue anyway. Warn the user.")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that "+OS+" after WxFixBoot finishes its operations.")
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that "+OS+" boots correctly after WxFixBoot finishes its operations. Reinstall the bootloader again afterwards is recommended.")
 
         #Log and notify the user that we're finished removing bootloaders.
         logger.info("MainBackendTools: Main().RemoveOldBootloader(): Finished removing "+BootloaderInfo[OS]["Bootloader"]+"...")
@@ -315,9 +316,12 @@ class Main():
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing ELILO...")
+
             #Unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
             if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
-                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount the EFI partition! If installing ELILO fails this might be the reason. Continuing anyway...") #*** Installation won't work if unmounting failed! ***
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount the EFI partition! Giving up and warning user...")
+                DialogTools.ShowMsgDlg(Message="Couldn't unmount "+OS+"'s EFI partition! Click okay to continue.", Kind="error")
+                return False
 
             if UseChroot:
                 CoreTools.UpdateChrootMtab(MountPoint=MountPoint)
@@ -356,8 +360,9 @@ class Main():
         if Retval != 0:
             #Something went wrong! Log it and notify the user.
             BootloaderInstallSucceded = False
-            logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"! This may mean the system (or this OS) is now unbootable! We'll continue anyway. Warn the user.")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"! This may leave this OS, or your system, in an unbootable state. It is recommended to do a Bad Sector check, unplug any non-essential devices, and then try again.") #*** Maybe ask to try again right now ***
+            logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"! This may mean the system (or this OS) is now unbootable! Warning the user and asking to try again.")
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"! This may leave this OS, or your system, in an unbootable state. You will now be prompted to try again.")
+            return False
 
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...###\n")
 
@@ -494,7 +499,9 @@ class Main():
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             #Unmount the UEFI Partition now, and update mtab in the chroot.
             if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
-                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount EFI partition "+OSInfo[OS]["EFIPartition"]+"! Continuing anyway...") #*** Installation will fail if this happens! ***
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount "+OS+"'s EFI partition! Waning user and prompting to try again...")
+                DialogTools.ShowMsgDlg(Message="Couldn't unmount "+OS+"'s EFI partition! Click okay to continue.", Kind="error")
+                return False
 
             #Update chroot mtab if needed.
             if UseChroot:
