@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+#*** Check if the way we config LILO and ELILO always boots same kernel for different OSs or not ***
+#*** Don't allow installing EFI bootloaders if no EFI partition for that OS ***
 #*** Check setting default OS is working ***
 #*** Don't allow modification of 64-bit OSs from 32-bit ones (it won't work) ***
 #*** Figure out what to do in each instance where something might fail ***
@@ -53,7 +55,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "5/9/2016"
+ReleaseDate = "6/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")

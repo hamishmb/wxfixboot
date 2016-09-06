@@ -481,11 +481,11 @@ class Main():
             if os.path.isfile(MountPoint+"/etc/lilo.conf"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting LILO Configuration...")
-                BootloaderConfigSettingTools.SetLILOConfig(filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint, BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], BootDevice=DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"])
+                BootloaderConfigSettingTools.SetLILOConfig(OS=OS, filetoopen=MountPoint+"/etc/lilo.conf")
     
                 #Also, set the OS entries.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating LILO OS Entries...")
-                BootloaderConfigSettingTools.MakeLILOOSEntries(OS=OS, filetoopen=MountPoint+"/etc/lilo.conf", PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint, KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
+                BootloaderConfigSettingTools.MakeLILOOSEntries(OS=OS, filetoopen=MountPoint+"/etc/lilo.conf", MountPoint=MountPoint, KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
 
             #Now Install LILO to the MBR.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing LILO to the MBR...")
@@ -515,11 +515,11 @@ class Main():
             if os.path.isfile(MountPoint+"/etc/elilo.conf"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting ELILO Configuration...")
-                BootloaderConfigSettingTools.SetELILOConfig(OS=OS, filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint, BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"])
+                BootloaderConfigSettingTools.SetELILOConfig(OS=OS, filetoopen=MountPoint+"/etc/elilo.conf")
 
                 #Also, set the OS entries.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating ELILO OS Entries...")
-                BootloaderConfigSettingTools.MakeLILOOSEntries(OS=OS, filetoopen=MountPoint+"/etc/elilo.conf", PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint, KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
+                BootloaderConfigSettingTools.MakeLILOOSEntries(OS=OS, filetoopen=MountPoint+"/etc/elilo.conf", MountPoint=MountPoint, KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
 
             #Now Install ELILO to the UEFI Partition.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing ELILO to "+OSInfo[OS]["EFIPartition"]+"...")

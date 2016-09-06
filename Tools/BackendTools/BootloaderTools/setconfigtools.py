@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Refactor all of these *** *** Add recovery boot options for LILO/ELILO *** *** Check if LILO installs on GPT disks (GRUB2 does) *** *** Set GRUB_DEFAULT to an ID, rather than "saved" ***
+class Main(): #*** Add recovery boot options for LILO/ELILO *** *** Set GRUB_DEFAULT to an ID, rather than "saved" ***
     def SetGRUB2Config(self, OS, filetoopen, BootloaderTimeout, KernelOptions):
         """Set GRUB2 config."""
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Setting GRUB2 Config in "+filetoopen+"...")
@@ -39,32 +39,21 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
                 #Found it! Set the value to the current value of BootloaderTimeout.
                 logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found GRUB_TIMEOUT, setting it to '"+unicode(BootloaderTimeout)+"'...")
                 SetTimeout = True
-                head, sep, Temp = line.partition('=')
-                Temp = unicode(BootloaderTimeout)
-
-                #Reassemble the line.
-                line = head+sep+Temp+"\n"
+                line = "GRUB_TIMEOUT="+unicode(BootloaderTimeout)+"\n"
 
             #Look for kernel options setting.
             elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line:
                 #Found it! Set it to the options in KernelOptions, carefully making sure we aren't double-quoting it.
                 logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found GRUB_CMDLINE_LINUX_DEFAULT, setting it to '"+KernelOptions+"'...")
                 SetKOpts = True
-                head, sep, Temp = line.partition('=')
-
-                #Reassemble the line.
-                line = head+sep+"'"+KernelOptions+"'"+"\n"
+                line = "GRUB_CMDLINE_LINUX_DEFAULT='"+KernelOptions+"'\n"
 
             #Look for the "GRUB_DEFAULT" setting.
             elif "GRUB_DEFAULT" in line and '=' in line:
                 #Found it. Set it to 'saved', so we can set the default bootloader.
                 logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found GRUB_DEFAULT, setting it to 'saved'...")
                 SetDefault = True
-                head, sep, Temp = line.partition('=')
-                Temp = "saved"
-
-                #Reassemble the line.
-                line = head+sep+Temp+"\n"
+                line = "GRUB_DEFAULT=saved\n" #*** Set to entry ID ***
 
             #Comment out the GRUB_HIDDEN_TIMEOUT line.
             elif 'GRUB_HIDDEN_TIMEOUT' in line and 'GRUB_HIDDEN_TIMEOUT_QUIET' not in line and '=' in line and '#' not in line:
@@ -215,11 +204,24 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done!")
         return Retval
 
-    def SetLILOConfig(self, filetoopen, PackageManager, MountPoint, BootloaderTimeout, BootDevice):
-        """Set LILO's config."""
+    def SetLILOConfig(self, OS, filetoopen):
+        """Set config for both LILO and ELILO"""
         logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting LILO config in "+filetoopen+"...")
-        SetTimeout = False
-        SetBootDevice = False
+        SetTimeout, SetBootDevice = (False, False)
+
+        #Find the ID for the boot device if possible.
+        logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Getting ID for boot device...")
+        if DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"] != "Unknown":
+            #Good, we've got the ID.
+            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found ID /dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]+"...")
+
+            #Set it to RootDevice's ID.                    
+            BootDevice = "/dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]
+
+        else:
+            #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
+            logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): We don't have the ID! Using "+BootloaderInfo[OS]["BootDisk"]+" instead. This may cause problems if the device name changes!")
+            BootDevice = BootloaderInfo[OS]["BootDisk"]
 
         #Open the file in read mode, so we can find the important bits of config to edit. Also, use a list to temporarily store the modified lines.
         logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Attempting to modify existing lines in the config file first, without creating any new ones...")
@@ -228,122 +230,28 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         #Loop through each line in the file, paying attention only to the important ones.
         for line in ConfigFile:
-            #Look for the timeout setting.
-            if 'timeout' in line and '=' in line and '#' not in line:
+            #Look for the timeout setting (ELILO).
+            if BootloaderInfo[OS]["Bootloader"] == "ELILO" and 'delay' in line and '=' in line and '#' not in line:
                 #Found it! Set it to our value.
-                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found timeout setting, setting it to "+unicode(BootloaderTimeout)+"...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found timeout setting, setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...") 
                 SetTimeout = True
+                line = "delay="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"]*10)+"\n"
 
-                #Save it, carefully avoiding errors.
-                head, sep, Temp = line.partition('=')
-                Temp = unicode(BootloaderTimeout*10)
-
-                #Reassemble the line.
-                line = "timeout"+sep+Temp+"\n"
+            #Look for the timeout setting (LILO).
+            elif BootloaderInfo[OS]["Bootloader"] == "LILO" and 'timeout' in line and '=' in line and '#' not in line:
+                #Found it! Set it to our value.
+                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found timeout setting, setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
+                SetTimeout = True
+                line = "timeout="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"]*10)+"\n"
 
             #Look for the 'boot' setting.
             elif 'boot' in line and '=' in line and '#' not in line and 'map' not in line: 
                 #Found it, seperate the line.
-                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found boot setting, setting it to "+BootDevice+"'s ID if possible, else just "+BootDevice+"...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found boot setting, setting it to "+BootDevice+"...")
                 SetBootDevice = True
-                head, sep, Temp = line.partition('=')
-
-                if DiskInfo[BootDevice]["ID"] != "Unknown":
-                    #Good, we've got the ID.
-                    logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[BootDevice]["ID"]+"...")
-
-                    #Set it to RootDevice's ID.                    
-                    Temp = "/dev/disk/by-id/"+DiskInfo[BootDevice]["ID"]
-
-                else:
-                    #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
-                    logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): We don't have the ID! Setting boot to "+BootDevice+". This may cause problems if the device name changes!")
-                    Temp = BootDevice
 
                 #Reassemble the line.
-                line = head+sep+Temp+"\n"
-
-            NewFileContents.append(line)
-
-        #Check that everything was set. If not, write that config now.
-        if SetTimeout == False:
-            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderTimeout)+"...")
-            NewFileContents.append("timeout="+unicode(BootloaderTimeout)+"\n")
-
-        if SetBootDevice == False:
-            #Now let's find the ID of RootDevice.
-            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+BootDevice+"'s ID if possible, else just "+BootDevice+"...")
-
-            if DiskInfo[BootDevice]["ID"] != "Unknown":
-                #Good, we've got the ID.
-                logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[BootDevice]["ID"]+"...")
-
-                #Set it to RootDevice's ID.                    
-                Temp = "/dev/disk/by-id/"+DiskInfo[BootDevice]["ID"]
-
-            else:
-                #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
-                logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting boot to "+BootDevice+"! This may cause problems if the device name changes!")
-                Temp = BootDevice
-
-            NewFileContents.append("boot="+Temp+"\n")
-
-        #Write the finished lines to the file.
-        logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Writing new config to file...")
-        ConfigFile.close()
-        ConfigFile = open(filetoopen, 'w')
-        ConfigFile.write(''.join(NewFileContents))
-        ConfigFile.close()
-
-        logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Done!")
-
-    def SetELILOConfig(self, OS, filetoopen, PackageManager, MountPoint, BootloaderTimeout):
-        """Set ELILO config."""
-        logger.info("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting ELILO config in "+filetoopen+"...")
-        SetTimeout = False
-        SetUEFIPart = False
-
-        #Open the file in read mode, so we can find the important bits of config to edit. Also, use a list to temporarily store the modified lines.
-        logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Attempting to modify existing lines in the config file first, without creating any new ones...")
-        ConfigFile = open(filetoopen, 'r')
-        NewFileContents = []
-
-        #Loop through each line in the file, paying attention only to the important ones.
-        for line in ConfigFile:
-            #Look for the delay setting.
-            if 'delay' in line and '=' in line and '#' not in line:
-                #Found it! Set it to our value.
-                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Found delay setting, setting it to "+unicode(BootloaderTimeout*10)+" (tenths of a second)...") 
-                SetTimeout = True
-
-                #Save it, carefully avoiding errors.
-                head, sep, Temp = line.partition('=')
-                Temp = unicode(BootloaderTimeout*10)
-
-                #Reassemble the line.
-                line = head+sep+Temp+"\n"
-
-            #Look for the 'boot' setting.
-            elif 'boot' in line and '=' in line and '#' not in line:
-                #Found it, seperate the line.
-                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Found boot setting, setting it to "+BootloaderInfo[OS]["BootDisk"]+"'s ID if possible, else just "+BootloaderInfo[OS]["BootDisk"]+"...")
-                SetUEFIPart = True
-                head, sep, Temp = line.partition('=')
-
-                if DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"] != "Unknown":
-                    #Good, we've got the ID.
-                    logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]+"...")
-
-                    #Set it to BootloaderInfo[OS]["BootDisk"]'s ID.                    
-                    Temp = "/dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]
-
-                else:
-                    #Not so good... We'll have to use the partition's name, which may change, especially if we're using chroot.
-                    logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): We don't have the ID! Setting boot to "+BootloaderInfo[OS]["BootDisk"]+". This may cause problems if the device name changes!")
-                    Temp = BootloaderInfo[OS]["BootDisk"]
-
-                #Reassemble the line.
-                line = head+sep+Temp+"\n"
+                line = "boot="+BootDevice+"\n"
 
             #Get rid of any boot entries.
             elif 'image=' in line or '\t' in line:
@@ -354,37 +262,29 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
             NewFileContents.append(line)
 
         #Check that everything was set. If not, write that config now.
-        if SetTimeout == False:
-            logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Didn't find delay in config file. Creating it and setting it to "+unicode(BootloaderTimeout*10)+" (tenths of a second)...")
-            NewFileContents.append("delay="+unicode(BootloaderTimeout)+"\n")
+        if BootloaderInfo[OS]["Bootloader"] == "ELILO" and SetTimeout == False:
+            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
+            NewFileContents.append("delay="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"\n")
 
-        if SetUEFIPart == False:
-            #Now let's find the ID of BootloaderInfo[OS]["BootDisk"].
-            logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+BootloaderInfo[OS]["BootDisk"]+"'s ID if possible, else just "+BootloaderInfo[OS]["BootDisk"]+"...")
+        elif BootloaderInfo[OS]["Bootloader"] == "LILO" and SetTimeout == False:
+            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
+            NewFileContents.append("timeout="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"\n")
 
-            if DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"] != "Unknown":
-                #Good, we've got the ID.
-                logger.debug("BootloaderConfigSettingTools: Main().SetELILOConfig(): Setting boot to /dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]+"...")
-
-                #Set it to BootloaderInfo[OS]["BootDisk"]'s ID.                    
-                Temp = "/dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]
-
-            else:
-                #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
-                logger.warning("BootloaderConfigSettingTools: Main().SetELILOConfig(): We don't have the ID! Setting boot to "+BootloaderInfo[OS]["BootDisk"]+". This may cause problems if the device name changes!")
-                Temp = BootloaderInfo[OS]["BootDisk"]
-
-            NewFileContents.append("boot="+Temp+"\n")
+        if SetBootDevice == False:
+            #Now let's find the ID of RootDevice.
+            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+BootDevice+"...")
+            NewFileContents.append("boot="+BootDevice+"\n")
 
         #Write the finished lines to the file.
-        logger.info("BootloaderConfigSettingTools: Main().SetELILOConfig(): Writing new config to file...")
+        logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Writing new config to file...")
         ConfigFile.close()
         ConfigFile = open(filetoopen, 'w')
         ConfigFile.write(''.join(NewFileContents))
         ConfigFile.close()
-        logger.info("BootloaderConfigSettingTools: Main().SetELILOConfig(): Done!")
 
-    def MakeLILOOSEntries(self, OS, filetoopen, PackageManager, MountPoint, KernelOptions): #*** Maybe set default OS in a separate function? ***
+        logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Done!")
+
+    def MakeLILOOSEntries(self, OS, filetoopen, MountPoint, KernelOptions): #*** Maybe set default OS in a separate function? *** *** Refactor ***
         """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS"""
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make OS entries for "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
         #Okay, we've saved the kopts, timeout, and the boot device in the list.
@@ -395,7 +295,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
 
         #First, make sure everything else comes first, because LILO and ELILO are picky with the placement of the image files (they must be at the end of the file).
         #We'll also make a placeholder for the default OS, so it comes before the image entries too.
-        #Also comment out other existing entries first.
+        #Also remove existing entries first.
         logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Making placeholder for default OS if needed...")
 
         Temp = False
@@ -406,10 +306,10 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
                 Temp = True
 
             elif ("image" in line or "initrd" in line or "label" in line) and "=" in line:
-                line = "#"+line
+                continue
 
             elif "read-only" in line or "read-write" in line:
-                line = "#"+line
+                continue
 
             NewFileContents.append(line)
 
@@ -420,8 +320,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         #Make the OS entries.
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Making OS Entries...")
 
-        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
-            NewFileContents.append("#################### ELILO per-image section ####################")
+        NewFileContents.append("#################### "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" per-image section ####################")
 
         #As we make these entries, we'll record which ones were actually made, as the user can cancel them if it looks like it won't work.
         CompletedEntriesList = []
@@ -465,26 +364,21 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
             NewFileContents.append("\tinitrd=/initrd.img\n")
 
             #Set the root device.
-            #Use UUID's here if we can.
+            #Use UUID's here if we can. *** Test this works ***
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs as a UUID if possible...")
 
-            if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO": #*** Test this works ***
-                if DiskInfo[BootloaderInfo[OS]["BootDisk"]]["UUID"] == "Unknown": #*** Warn user? ***
-                    logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+BootloaderInfo[OS]["BootDisk"]+"! This might not work cos it can change!")
-                    NewFileContents.append("\troot="+Partition+"\n")
-
-                else:
-                    logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["UUID"]+"...")
-                    NewFileContents.append("\troot=UUID="+DiskInfo[Partition]["UUID"]+"\n")
+            if DiskInfo[OSInfo[OS]["Partition"]]["UUID"] == "Unknown": #*** Warn user? ***
+                logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+OSInfo[OS]["Partition"]+"! This might not work cos it can change!")
+                NewFileContents.append("\troot="+OSInfo[OS]["Partition"]+"\n")
 
             else:
-                if DiskInfo[Partition]["UUID"] == "Unknown": #*** Warn user? ***
-                    logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+Partition+"! This might not work cos it can change!")
-                    NewFileContents.append("\troot="+Partition+"\n")
+                logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"...")
+
+                if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO": #*** Test this works ***
+                    NewFileContents.append("\troot=UUID="+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"\n")
 
                 else:
-                    logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[Partition]["UUID"]+"...")
-                    NewFileContents.append("\troot=\"UUID="+DiskInfo[Partition]["UUID"]+"\"\n")
+                    NewFileContents.append("\troot=\"UUID="+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"\"\n")
 
             #Set the label.
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS label to "+OSName+"...")
@@ -517,7 +411,7 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         NewFileContents = []
 
         #Remove all of the spaces, truncating the OS name if necessary.
-        DefaultOSName = BootloaderInfo[OS]["DefaultOS"].replace(' ','')
+        DefaultOSName = BootloaderInfo[OS]["Settings"]["DefaultOS"].replace(' ','')
 
         #Check that the name is no longer than 15 characters.
         if len(DefaultOSName) > 15:
@@ -546,20 +440,9 @@ class Main(): #*** Refactor all of these *** *** Add recovery boot options for L
         for line in ConfigFile:
             if 'default' in line and '=' in line and '#' not in line:
                 logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Found default OS setting, setting it to "+DefaultOSName+"...")
-                #Get the LILO name for DefaultOS.
-                SetDefaultOS = True
-
-                #Set default to the name.
                 line = "default="+DefaultOSName+"\n"
 
             NewFileContents.append(line)
-
-        #Check that everything was set. If not, write that config now.
-        if SetDefaultOS == False:
-            #*** This won't work! *** *** This needs to be before the OS entries in the file! ***
-            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Didn't find default OS setting in config file. Creating it and setting it to "+DefaultOSName+"...")
-            logger.error("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): *** This won't work! *** *** This needs to be before the OS entries in the file! ***")
-            NewFileContents.append("default="+DefaultOSName+"\n")
 
         #Write the finished lines to the file.
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Writing finished config to file...")
