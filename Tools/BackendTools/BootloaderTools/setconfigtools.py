@@ -35,21 +35,21 @@ class Main(): #*** Add recovery boot options for LILO/ELILO *** *** Set GRUB_DEF
         #Loop through each line in the file, paying attention only to the important ones.
         for line in ConfigFile:
             #Look for the timeout setting.
-            if 'GRUB_TIMEOUT' in line and '=' in line:
+            if 'GRUB_TIMEOUT' in line and '=' in line and SetTimeout == False:
                 #Found it! Set the value to the current value of BootloaderTimeout.
                 logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found GRUB_TIMEOUT, setting it to '"+unicode(BootloaderTimeout)+"'...")
                 SetTimeout = True
                 line = "GRUB_TIMEOUT="+unicode(BootloaderTimeout)+"\n"
 
             #Look for kernel options setting.
-            elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line:
+            elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line and SetKOpts == False:
                 #Found it! Set it to the options in KernelOptions, carefully making sure we aren't double-quoting it.
                 logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found GRUB_CMDLINE_LINUX_DEFAULT, setting it to '"+KernelOptions+"'...")
                 SetKOpts = True
                 line = "GRUB_CMDLINE_LINUX_DEFAULT='"+KernelOptions+"'\n"
 
             #Look for the "GRUB_DEFAULT" setting.
-            elif "GRUB_DEFAULT" in line and '=' in line:
+            elif "GRUB_DEFAULT" in line and '=' in line and SetDefault == False:
                 #Found it. Set it to 'saved', so we can set the default bootloader.
                 logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found GRUB_DEFAULT, setting it to 'saved'...")
                 SetDefault = True
@@ -231,21 +231,21 @@ class Main(): #*** Add recovery boot options for LILO/ELILO *** *** Set GRUB_DEF
         #Loop through each line in the file, paying attention only to the important ones.
         for line in ConfigFile:
             #Look for the timeout setting (ELILO).
-            if BootloaderInfo[OS]["Bootloader"] == "ELILO" and 'delay' in line and '=' in line and '#' not in line:
+            if BootloaderInfo[OS]["Bootloader"] == "ELILO" and 'delay' in line and '=' in line and '#' not in line and SetTimeout == False:
                 #Found it! Set it to our value.
                 logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found timeout setting, setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...") 
                 SetTimeout = True
                 line = "delay="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"]*10)+"\n"
 
             #Look for the timeout setting (LILO).
-            elif BootloaderInfo[OS]["Bootloader"] == "LILO" and 'timeout' in line and '=' in line and '#' not in line:
+            elif BootloaderInfo[OS]["Bootloader"] == "LILO" and 'timeout' in line and '=' in line and '#' not in line and SetTimeout == False:
                 #Found it! Set it to our value.
                 logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found timeout setting, setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
                 SetTimeout = True
                 line = "timeout="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"]*10)+"\n"
 
             #Look for the 'boot' setting.
-            elif 'boot' in line and '=' in line and '#' not in line and 'map' not in line: 
+            elif 'boot' in line and '=' in line and '#' not in line and 'map' not in line and SetBootDevice == False: 
                 #Found it, seperate the line.
                 logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found boot setting, setting it to "+BootDevice+"...")
                 SetBootDevice = True
