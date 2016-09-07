@@ -486,30 +486,7 @@ class Main():
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
 
     def FinalCheck(self):
-        """Check for any conflicting options, and that each variable is set."""
-        #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["DefaultOS"], SystemInfo["FirmwareType"], SystemInfo["EmptyEFIPartition"], SystemInfo["FirmwareType"], OSInfo.
-        VarList = ()
-        FailedList = []
-
-        #Check each global variable (visible to this function as local) is set and declared.
-        for var in VarList:
-            if var in locals():
-                if var == None:
-                    #It isn't set.                    
-                    logger.critical("MainStartupTools: Main().FinalCheck(): Variable "+var+" hasn't been set, adding it to the failed list...")
-                    FailedList.append(var)
-
-            else:
-                #It isn't declared.                    
-                logger.critical("MainStartupTools: Main().FinalCheck(): Variable "+var+" hasn't been declared, adding it to the failed list...")
-                FailedList.append(var)
-
-        #Check if any variables weren't set.
-        if FailedList != []:
-            #Missing dependencies!
-            logger.critical("MainStartupTools: Main().FinalCheck(): Required Settings: "+', '.join(FailedList)+" have not been Determined! This is probably a bug in the program! Exiting...")
-            CoreTools.EmergencyExit("The required variables: "+', '.join(FailedList)+", have not been set! WxFixBoot will now shut down to prevent damage to your system. This is probably a bug in the program.")
-
+        """Check for any conflicting options, and warn the user of any potential pitfalls."""
         #Check and warn about conflicting settings. *** TODO ***
         #Warn if any OSs aren't modifyable.
         UnmodifyableOSs = []
