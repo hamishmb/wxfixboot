@@ -351,7 +351,7 @@ class Main():
                 BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
-                #Find grub.cfg. (different place on Fedora)
+                #Find grub.cfg. (different place on Fedora) *** Move this into ParseGRUB2MenuData ***
                 if os.path.isdir(MountPoint+"/boot/grub"):
                     GRUBDir = MountPoint+"/boot/grub"
 

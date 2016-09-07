@@ -48,7 +48,7 @@ class Main():
 
             else:
                 #Get the % packet loss.
-                for Line in Output:
+                for Line in Output.split("\n"):
                     if 'packet loss' in Line:
                         PacketLoss = Line.split()[-5]
 

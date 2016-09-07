@@ -417,8 +417,25 @@ class Main():
 
                 return False
 
+        #On GRUB2, get the new menuentries so we can set the default OS. *** Remove some of this soon when finding + reading grub.cfg is done in ParseGRUB2MenuData. ***
+        logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Reading GRUB2's menu entries tyo set default OS...")
+        if BootloaderInfo[OS]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
+            #Find grub.cfg. (different place on Fedora)
+            if os.path.isdir(MountPoint+"/boot/grub"):
+                GRUBDir = MountPoint+"/boot/grub"
+
+            elif os.path.isdir(MountPoint+"/boot/grub2"):
+                GRUBDir = MountPoint+"/boot/grub2"
+
+            #Process menu entries, and pass the entire contents of the menu entries file to the parser.
+            MenuEntriesFile = open(GRUBDir+"/grub.cfg", "r")
+            MenuData = MenuEntriesFile.readlines()
+            MenuEntriesFile.close()
+
+            BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData)
+
         #Look for the configuration file, based on which SetConfig() function we're about to run.
-        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
+        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2": #*** Reduce duplication with GRUB-UEFI bit ***
             #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
@@ -432,10 +449,6 @@ class Main():
             #Update GRUB.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
             BootloaderConfigSettingTools.UpdateGRUB2(PackageManager=OSInfo[OS]["PackageManager"], UseChroot=UseChroot, MountPoint=MountPoint)
-
-            #Set the default OS.
-            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
-            BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, MountPoint=MountPoint)
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
@@ -462,10 +475,6 @@ class Main():
             #Copy and backup EFI files where needed.
             HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
             HelperBackendTools.CopyUEFIFiles(OS=OS, MountPoint=MountPoint)
-
-            #Set the default OS.
-            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Default OS...")
-            BootloaderConfigSettingTools.SetGRUB2DefaultOS(OS=OS, MountPoint=MountPoint)
 
             #Unmount the EFI partition.
             if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0: #*** Warn user? ***

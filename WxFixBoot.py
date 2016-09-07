@@ -24,6 +24,7 @@
 #*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
 #*** Is /etc/default/grub created after switching to grub if it was purged before? ***
 #*** Test disabling bootloader operations, as if a filesystem check failed ***
+#*** Is internet connection check enabled? ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -846,9 +847,9 @@ class MainWindow(wx.Frame):
 
         #Check if we need to check the internet connection, and do so first if needed.
         for Function in Operations:
-            if type(Function) == type([]) and Function[0] == MainBackendTools.ManageBootloader:
+            if type(Function) == type(()) and Function[0] == MainBackendTools.ManageBootloader:
                 logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()...")
-                Operations.insert(0, EssentialBackendTools.CheckInternetConnection())
+                Operations.insert(0, EssentialBackendTools.CheckInternetConnection)
                 break
 
         NumberOfOperations = len(Operations)

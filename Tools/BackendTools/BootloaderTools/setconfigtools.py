@@ -21,11 +21,32 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Add recovery boot options for LILO/ELILO *** *** Set GRUB_DEFAULT to an ID, rather than "saved" ***
+class Main(): #*** Add recovery boot options for LILO/ELILO ***
     def SetGRUB2Config(self, OS, filetoopen, BootloaderTimeout, KernelOptions):
         """Set GRUB2 config."""
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Setting GRUB2 Config in "+filetoopen+"...")
         SetTimeout, SetKOpts, SetDefault = (False, False, False)
+
+        #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
+        logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Attempting to match the WxFixBoot's default OS for this bootloader to any OS that GRUB2 detected...")
+
+        #Find the partition that WxFixBoot's default OS for this bootloader is on.
+        DefaultBootDevice = OSInfo[BootloaderInfo[OS]["Settings"]["DefaultOS"]]["Partition"]
+
+        #Find the ID for the menu entry that correspondes to that OS (Main Menu only to avoid recovery options + misc).
+        BLSpecificDefaultOS = "Unknown"
+
+        for Entry in BootloaderInfo[OS]["MenuEntries"]["MainMenu"]:
+            if BootloaderInfo[OS]["MenuEntries"]["MainMenu"][Entry]["Partition"] == DefaultBootDevice:
+                BLSpecificDefaultOS = BootloaderInfo[OS]["MenuEntries"]["MainMenu"][Entry]["ID"]
+                logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found Default OS's GRUB2 ID...")
+                break
+
+        #Log if we couldn't match them.
+        if BLSpecificDefaultOS == "Unknown":
+            logger.warning("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Couldn't match! We will instead pick the 1st menu entry. Warning user...")
+            DialogTools.ShowMsgDlg(Message="Couldn't match the default OS you picked to any that "+BootloaderInfo[OS]["Bootloader"]+" has detected! This doesn't matter, so instead, the first menu entry will be the default. Click okay to continue...")
+            BLSpecificDefaultOS = "0"
 
         #Open the file in read mode, so we can find the new config that needs setting. Also, use a list to temporarily store the modified lines.
         logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Attempting to modify existing lines in the config file first, without making any new ones...")
@@ -51,9 +72,9 @@ class Main(): #*** Add recovery boot options for LILO/ELILO *** *** Set GRUB_DEF
             #Look for the "GRUB_DEFAULT" setting.
             elif "GRUB_DEFAULT" in line and '=' in line and SetDefault == False:
                 #Found it. Set it to 'saved', so we can set the default bootloader.
-                logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found GRUB_DEFAULT, setting it to 'saved'...")
+                logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found GRUB_DEFAULT, setting it to '"+BLSpecificDefaultOS+"' (ID of default OS)...")
                 SetDefault = True
-                line = "GRUB_DEFAULT=saved\n" #*** Set to entry ID ***
+                line = "GRUB_DEFAULT="+BLSpecificDefaultOS+"\n"
 
             #Comment out the GRUB_HIDDEN_TIMEOUT line.
             elif 'GRUB_HIDDEN_TIMEOUT' in line and 'GRUB_HIDDEN_TIMEOUT_QUIET' not in line and '=' in line and '#' not in line:
@@ -68,13 +89,13 @@ class Main(): #*** Add recovery boot options for LILO/ELILO *** *** Set GRUB_DEF
             NewFileContents.append("GRUB_TIMEOUT="+unicode(BootloaderTimeout)+"\n")
 
         if SetKOpts == False:
-            Temp = KernelOptions.replace('\"', '').replace("\'", "").replace("\n", "")
+            Temp = KernelOptions.replace('\"', '').replace("\'", "").replace("\n", "") #*** Is this needed? ***
             logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Didn't find GRUB_CMDLINE_LINUX_DEFAULT in config file. Creating and setting it to '"+KernelOptions+"'...")
             NewFileContents.append("GRUB_CMDLINE_LINUX_DEFAULT='"+Temp+"'\n")
 
         if SetDefault == False:
             logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Didn't find GRUB_DEFAULT in config file. Creating and setting it to 'saved'...")
-            NewFileContents.append("GRUB_DEFAULT=saved")
+            NewFileContents.append("GRUB_DEFAULT="+BLSpecificDefaultOS+"\n")
 
         #Write the finished lines to the file.
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Writing new config to file...")
@@ -135,73 +156,6 @@ class Main(): #*** Add recovery boot options for LILO/ELILO *** *** Set GRUB_DEF
         Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
 
         #Return the return value.
-        return Retval
-
-    def SetGRUB2DefaultOS(self, OS, MountPoint): #*** Get rid of this soon *** *** Before that, get bootloader config again ***
-        """Set GRUB2's (both BIOS and EFI/UEFI) default OS to boot"""
-        #I couldn't find a reliable way of doing this automatically, so give the user a choice box instead. *** Do this before release of final v2.0, probably in the 1st or 2nd rc. Maybe use disk names and save grub's name for each one ***
-        logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Setting GRUB2's Default OS...")
-
-        #Make a list of OSs grub2 found (hopefully all of them).
-        logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Finding GRUB2's menu entries...")
-
-        #Find grub.cfg. (different place on Fedora)
-        if os.path.isdir(MountPoint+"/boot/grub"):
-            GRUBDir = MountPoint+"/boot/grub"
-
-        elif os.path.isdir(MountPoint+"/boot/grub2"):
-            GRUBDir = MountPoint+"/boot/grub2"
-
-        GrubConfigFilePath = GRUBDir+"/grub.cfg"
-
-        GrubMenuEntries = []
-
-        GrubConfigFile = open(GrubConfigFilePath, "r")
-        GrubConfig = GrubConfigFile.read()
-        GrubConfigFile.close()
-
-        for Line in GrubConfig.split("\n"):
-            if "menuentry " in Line:
-                GrubMenuEntries.append(Line)
-
-        if GrubMenuEntries == []:
-            #Don't set the default OS. *** There are no menu entries! Why might this happen? ***
-            logger.error("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Couldn't find any menu entries! Warning user and not setting default OS...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set the default OS. This doesn't really matter. Click okay to continue.")
-            return 1
-
-        #Now finally make the list of grub's OS names.
-        logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done! Getting GRUB's OS Names...")
-        GRUBOSNameList = []
-
-        for OSName in GrubMenuEntries:
-            #Get each OS name, removing all of the unneeeded stuff.
-            try:
-                GRUBOSNameList.append(OSName.split("\'")[1])
-
-            except IndexError:
-                GRUBOSNameList.append(OSName.split("\"")[1])
-
-        #Now ask the user to select the correct one.
-        logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done! Asking user to choose a default OS...")
-        DefaultOS = DialogTools.ShowChoiceDlg(Message="Please select the OS you want to use as "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s Default OS. You are setting configuration for "+OS, Title="WxFixBoot - Select Default OS", Choices=GRUBOSNameList)
-
-        logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): User chose "+DefaultOS+". Setting default OS...")
-
-        #Use the user's selection to set the default OS.
-        if OSInfo[OS]["PackageManager"] == "apt-get":
-            Cmd = "grub-set-default '"+DefaultOS+"'"
-
-        elif OSInfo[OS]["PackageManager"] == "yum": #*** Check this is working ***
-            Cmd = "grub2-set-default '"+DefaultOS+"'"
-
-        if not OSInfo[OS]["IsCurrentOS"]:
-            Cmd = "chroot "+MountPoint+" "+Cmd
-
-        Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
-
-        #Return the return value.
-        logger.info("BootloaderConfigSettingTools: Main().SetGRUB2DefaultOS(): Done!")
         return Retval
 
     def SetLILOConfig(self, OS, filetoopen):
