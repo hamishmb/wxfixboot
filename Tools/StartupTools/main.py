@@ -497,23 +497,6 @@ class Main():
                 if CoreTools.Unmount(MountPoint) != 0:
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
 
-    def SetDefaults(self): #*** Modify to use dictionaries later ***
-        """Set Default for some variables"""
-        #Options in MainWindow
-        QuickFSCheck = False
-        BadSectCheck = False
-
-        #Options in Optionsdlg1
-        #Set them up for default settings.
-        SaveOutput = True
-        FullVerbose = False
-        Verify = True
-        MakeSystemSummary = True
-
-        SystemInfo["PreviousOSChoice"] = ""
-
-        return QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary
-
     def FinalCheck(self):
         """Check for any conflicting options, and that each variable is set."""
         #Create a temporary list containing all variables to be checked, and a list to contain failed variables. *** Adapt to check dictionary stuff too! *** TODO: SystemInfo["IsLiveDisk"], SystemInfo["DefaultOS"], SystemInfo["FirmwareType"], SystemInfo["EmptyEFIPartition"], SystemInfo["FirmwareType"], OSInfo.

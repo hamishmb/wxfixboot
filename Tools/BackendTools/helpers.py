@@ -48,7 +48,7 @@ class Main():
         return FailedList
 
     def FindCheckableFileSystems(self): #*** Test this again ***
-        """Find all checkable filesystems, and then return them to MainBackendTools().BadSectorCheck()/MainBackendTools().QuickFSCheck()"""
+        """Find all checkable filesystems, and then return them to EssentialBackendTools().FileSystemCheck()"""
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Finding and returning all filesystems/partitions that can be checked...")
 
         #Do setup.

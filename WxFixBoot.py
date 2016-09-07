@@ -52,7 +52,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "6/9/2016"
+ReleaseDate = "7/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -403,6 +403,9 @@ class InitThread(threading.Thread):
         SystemInfo["DisabledBootloaderOperations"] = False
         SystemInfo["DisabledBootloaderOperationsBecause"] = []
 
+        #Initialise a variable for later.
+        SystemInfo["PreviousOSChoice"] = ""
+
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking For Dependencies...")
@@ -534,25 +537,6 @@ class InitThread(threading.Thread):
             print(Var)
 
         #***************************
-        #Set some other variables to default values, avoiding problems down the line. *** Save these in a dictionary later ***
-        #Define globals.
-        global QuickFSCheck
-        global BadSectCheck
-        global SaveOutput
-        global FullVerbose
-        global Verify
-        global MakeSystemSummary
-
-        #Initialise them.
-        QuickFSCheck = ""
-        BadSectCheck = ""
-        SaveOutput = ""
-        FullVerbose = ""
-        Verify = ""
-        MakeSystemSummary = ""
-
-        logger.info("InitThread(): Setting some defaults for other variables set in GUI by user...")
-        QuickFSCheck, BadSectCheck, SaveOutput, FullVerbose, Verify, MakeSystemSummary = MainStartupTools.SetDefaults()
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
@@ -709,11 +693,11 @@ class MainWindow(wx.Frame):
         """Refresh the main window to reflect changes in the options, or after a restart."""
         logger.debug("MainWindow().RefreshMainWindow(): Refreshing MainWindow...")
 
-        self.CheckFileSystemsCB.SetValue(QuickFSCheck)
-        self.BadSectorCheckCB.SetValue(BadSectCheck)
-        self.FullVerboseCheckBox.SetValue(FullVerbose)
-        self.MakeSummaryCheckBox.SetValue(MakeSystemSummary)
-        self.LogOutputCheckBox.SetValue(SaveOutput)
+        self.CheckFileSystemsCB.SetValue(Settings["QuickFSCheck"])
+        self.BadSectorCheckCB.SetValue(Settings["BadSectorCheck"])
+        self.FullVerboseCheckBox.SetValue(Settings["FullVerbosity"])
+        self.MakeSummaryCheckBox.SetValue(Settings["MakeSystemSummary"])
+        self.LogOutputCheckBox.SetValue(Settings["SaveOutput"])
 
         #Enable and Disable Checkboxes as necessary
         self.OnCheckBox()
@@ -800,38 +784,33 @@ class MainWindow(wx.Frame):
     def SaveMainOpts(self):
         """Save all options"""
         logger.debug("MainWindow().SaveMainOpts(): Saving Options on MainWindow...")
-        global QuickFSCheck
-        global BadSectCheck
-        global FullVerbose
-        global MakeSystemSummary
-        global SaveOutput
 
         #Bad Sector Check Choicebox
         if self.BadSectorCheckCB.IsChecked():
             self.CheckFileSystemsCB.Disable()
-            BadSectCheck = True
+            Settings["BadSectorCheck"] = True
 
         else:
             self.CheckFileSystemsCB.Enable()
-            BadSectCheck = False
+            Settings["BadSectorCheck"] = False
 
         #Quick Disk Check Choicebox
         if self.CheckFileSystemsCB.IsChecked():
             self.BadSectorCheckCB.Disable()
-            QuickFSCheck = True
+            Settings["QuickFSCheck"] = True
 
         else:
             self.BadSectorCheckCB.Enable()
-            QuickFSCheck = False
+            Settings["QuickFSCheck"] = False
 
         #Diagnostic output checkbox.
-        FullVerbose = self.FullVerboseCheckBox.IsChecked()
+        Settings["FullVerbosity"] = self.FullVerboseCheckBox.IsChecked()
 
         #System Summary checkBox
-        MakeSystemSummary = self.MakeSummaryCheckBox.IsChecked()
+        Settings["MakeSystemSummary"] = self.MakeSummaryCheckBox.IsChecked()
 
         #Save output checkbox.
-        SaveOutput = self.LogOutputCheckBox.IsChecked()
+        Settings["SaveOutput"] = self.LogOutputCheckBox.IsChecked()
 
         logger.debug("MainWindow().SaveMainOpts(): MainWindow options saved! Counting operations to do...")
         self.CountOperations()
@@ -846,11 +825,11 @@ class MainWindow(wx.Frame):
 
         #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
         #Do essential processes first.
-        if QuickFSCheck:
+        if Settings["QuickFSCheck"]:
             Operations.append((EssentialBackendTools.FileSystemCheck, "Quick"))
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.FileSystemCheck to Operations...")
 
-        if BadSectCheck:
+        if Settings["BadSectorCheck"]:
             Operations.append((EssentialBackendTools.FileSystemCheck, "Thorough"))
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.FileSystemCheck to Operations...")
 
@@ -861,7 +840,7 @@ class MainWindow(wx.Frame):
                 logger.info("MainWindow().CountOperations(): Added (MainBackendTools.ManageBootloader, "+OS+") to Operations...")
 
         #*** Disabled temporarily ***
-        #if MakeSystemSummary:
+        #if Settings["MakeSystemSummary"]:
         #    Operations.append(BackendThread(self).GenerateSystemReport)
         #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
 
@@ -2173,7 +2152,7 @@ class ProgressWindow(wx.Frame):
         global OutputLog
         OutputLog.append(Line)
 
-        if ShowOutput or FullVerbose:
+        if ShowOutput or Settings["FullVerbosity"]:
             TempLine = ""
 
             for Char in Line:
@@ -2446,19 +2425,19 @@ class BackendThread(threading.Thread):
 
         #Do WxFixBoot's settings.
         ReportList.write("\n##########Other WxFixBoot Settings##########\n")
-        ReportList.write("Do Quick Filesystem Check: "+unicode(QuickFSCheck)+"\n")
-        ReportList.write("Do Bad Sector Check: "+unicode(BadSectCheck)+"\n")
-        ReportList.write("Show Diagnostic Terminal Output: "+unicode(FullVerbose)+"\n")
-        ReportList.write("Save System Report To File: "+unicode(MakeSystemSummary)+"\n")
+        ReportList.write("Do Quick Filesystem Check: "+unicode(Settings["QuickFSCheck"])+"\n")
+        ReportList.write("Do Bad Sector Check: "+unicode(Settings["BadSectorCheck"])+"\n")
+        ReportList.write("Show Diagnostic Terminal Output: "+unicode(Settings["FullVerbosity"])+"\n")
+        ReportList.write("Save System Report To File: "+unicode(Settings["MakeSystemSummary"])+"\n")
 
-        if MakeSystemSummary:
-            ReportList.write("\n\tSave Terminal Output in Report: "+unicode(SaveOutput)+"\n")
+        if Settings["MakeSystemSummary"]:
+            ReportList.write("\n\tSave Terminal Output in Report: "+unicode(Settings["SaveOutput"])+"\n")
             ReportList.write("\tSystem Report Target File: "+ReportFile+"\n\n")
 
         ReportList.write("Number of operations to do: "+unicode(NumberOfOperations)+"\n")
 
         #Save terminal output.
-        if SaveOutput:
+        if Settings["SaveOutput"]:
             ReportList.write("\n##########Terminal Output##########\n")
             ReportList.write(OutputLog)
 
