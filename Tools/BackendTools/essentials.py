@@ -64,7 +64,7 @@ class Main():
 
                 if Result == False:
                     logger.warning("EssentialBackendTools: Main().CheckInternetConnection(): Disabling bootloader operations due to bad internet connection...")
-                    SystemInfo["DisableBootloaderOperations"] = True #*** Get rid of this ***
+                    SystemInfo["DisableBootloaderOperations"] = True #*** Not working! ***
                     break
 
                 else:
