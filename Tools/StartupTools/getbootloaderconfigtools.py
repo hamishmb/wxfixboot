@@ -51,9 +51,29 @@ class Main(): #*** Refactor all of these ***
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+" on any likely disks...")
         return "Unknown"
 
-    def ParseGRUB2MenuData(self, MenuData, MenuEntries={}, MenuName="MainMenu", MenuIDs={}, MenuID=""):
+    def ParseGRUB2MenuData(self, MenuData="", MountPoint="", MenuEntries={}, MenuName="MainMenu", MenuIDs={}, MenuID=""):
         """Find and parse GRUB2 (EFI and BIOS) menu entries in the given line list"""
-        logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in given menu data...")
+        if MenuData != "":
+            logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in given menu data...")
+            GRUBDir = ""
+
+        else:
+            logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and opening GRUB config file...")
+
+            #Find grub.cfg. (different place on Fedora).
+            if os.path.isdir(MountPoint+"/boot/grub"):
+                GRUBDir = MountPoint+"/boot/grub"
+
+            elif os.path.isdir(MountPoint+"/boot/grub2"): #*** What about Fedora with EFI? Is it in the EFI partition? ***
+                GRUBDir = MountPoint+"/boot/grub2"
+
+            #Process menu entries, and pass the entire contents of the menu entries file to the parser.
+            MenuEntriesFile = open(GRUBDir+"/grub.cfg", "r")
+            MenuData = MenuEntriesFile.readlines()
+            MenuEntriesFile.close()
+
+            logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in "+GRUBDir+"/grub.cfg...")
+
         logger.debug("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Parsing menu data for menu: "+MenuName+"...")
 
         MenuEntries[MenuName] = {}
@@ -109,7 +129,7 @@ class Main(): #*** Refactor all of these ***
                 logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Done! Processing any menu entries in the submenu with recursive call...")
 
                 #Call this function again with the contents of the submenu, and some arguments so everything works correctly.
-                MenuEntries, MenuIDs = self.ParseGRUB2MenuData(SubMenuData, MenuEntries=MenuEntries, MenuName=SubMenuName, MenuIDs=MenuIDs, MenuID=unicode(EntryCounter)+">")
+                MenuEntries, MenuIDs = self.ParseGRUB2MenuData(SubMenuData, MountPoint=MountPoint, MenuEntries=MenuEntries, MenuName=SubMenuName, MenuIDs=MenuIDs, MenuID=unicode(EntryCounter)+">")[1:]
 
                 logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Done! Jumping past the submenu data to avoid duplicating menu entries...")
 
@@ -120,7 +140,7 @@ class Main(): #*** Refactor all of these ***
                 SkipUntil = LineCounter+len(SubMenuData)
 
         logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finished!")
-        return MenuEntries, MenuIDs
+        return GRUBDir, MenuEntries, MenuIDs
 
     def AssembleGRUB2MenuEntry(self, MenuEntries, MenuIDs, MenuEntriesFileContents, Menu, Line, EntryCounter):
         """Assemble a menu entry in the dictionary for GRUB2 (BIOS and UEFI)"""

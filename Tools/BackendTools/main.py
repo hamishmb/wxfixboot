@@ -417,22 +417,10 @@ class Main():
 
                 return False
 
-        #On GRUB2, get the new menuentries so we can set the default OS. *** Remove some of this soon when finding + reading grub.cfg is done in ParseGRUB2MenuData. ***
-        logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Reading GRUB2's menu entries tyo set default OS...")
+        #On GRUB2, get the new menuentries so we can set the default OS.
+        logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Reading GRUB2's menu entries to set default OS...")
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
-            #Find grub.cfg. (different place on Fedora)
-            if os.path.isdir(MountPoint+"/boot/grub"):
-                GRUBDir = MountPoint+"/boot/grub"
-
-            elif os.path.isdir(MountPoint+"/boot/grub2"):
-                GRUBDir = MountPoint+"/boot/grub2"
-
-            #Process menu entries, and pass the entire contents of the menu entries file to the parser.
-            MenuEntriesFile = open(GRUBDir+"/grub.cfg", "r")
-            MenuData = MenuEntriesFile.readlines()
-            MenuEntriesFile.close()
-
-            BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData)
+            BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)[1:]
 
         #Look for the configuration file, based on which SetConfig() function we're about to run.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2": #*** Reduce duplication with GRUB-UEFI bit ***

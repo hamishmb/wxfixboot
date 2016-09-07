@@ -351,19 +351,7 @@ class Main():
                 BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
-                #Find grub.cfg. (different place on Fedora) *** Move this into ParseGRUB2MenuData ***
-                if os.path.isdir(MountPoint+"/boot/grub"):
-                    GRUBDir = MountPoint+"/boot/grub"
-
-                elif os.path.isdir(MountPoint+"/boot/grub2"):
-                    GRUBDir = MountPoint+"/boot/grub2"
-
-                #Process menu entries, and pass the entire contents of the menu entries file to the parser.
-                MenuEntriesFile = open(GRUBDir+"/grub.cfg", "r")
-                MenuData = MenuEntriesFile.readlines()
-                MenuEntriesFile.close()
-
-                BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData)
+                GRUBDir, BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)
 
                 #Get GRUB2's config.
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", GRUBDir+"/grubenv", BootloaderInfo[OS]["MenuEntries"])
