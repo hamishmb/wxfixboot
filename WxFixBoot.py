@@ -1456,6 +1456,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Buttons.
         self.Bind(wx.EVT_BUTTON, self.OnClose, self.SaveButton)
+        self.Bind(wx.EVT_BUTTON, self.SystemInfo, self.SystemInfoButton)
 
         #Choiceboxes.
         self.Bind(wx.EVT_CHOICE, self.OnOSChoiceChange, self.OSChoice)
@@ -1509,6 +1510,11 @@ class BootloaderOptionsWindow(wx.Frame):
                 self.RestoreBootloaderChoice.SetStringSelection("-- Please Select --")
 
             Dlg.Destroy()
+
+    def SystemInfo(self, Event=None):
+        """Start SystemInfoWindow"""
+        logger.debug("BootloaderOptionsWindow().SystemInfo(): Starting System Info Window...")
+        SystemInfoWindow(self).Show()
 
     def OnBackupBootloaderChoice(self, Event=None):
         """Allow the user to select a config file to backup the bootloader to"""
