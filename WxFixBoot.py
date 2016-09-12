@@ -52,7 +52,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "7/9/2016"
+ReleaseDate = "12/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1189,7 +1189,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Set up the previous OS choice.
         if SystemInfo["PreviousOSChoice"] == "":
-            SystemInfo["PreviousOSChoice"] = SystemInfo["ModifyableOSs"][0]
+            SystemInfo["PreviousOSChoice"] = OSInfo.keys()[0]
 
         self.CreateText()
         self.CreateChoiceBoxes()
@@ -1225,7 +1225,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.OSChoice.SetStringSelection(SystemInfo["PreviousOSChoice"])
 
         #Basic Options.
-        self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=SystemInfo["ModifyableOSs"])
+        self.DefaultOSChoice = wx.Choice(self.Panel, -1, choices=OSInfo.keys())
 
         #Advanced Options.
         self.NewBootloaderChoice = wx.Choice(self.Panel, -1, choices=[])
@@ -1595,8 +1595,13 @@ class BootloaderOptionsWindow(wx.Frame):
         self.OnTimeoutCheckBox()
         self.BootloaderTimeoutSpinner.SetValue(Config["Timeout"])
 
-        #Use default OS used when the backup was taken. *** What if this option isn't available any more when the new bootloader is configured? Manual user selection or auto select 1st option? ***
-        self.DefaultOSChoice.SetStringSelection(Config["DefaultOS"])
+        #Use default OS used when the backup was taken.
+        if Config["DefaultOS"] in OSInfo.keys():
+            self.DefaultOSChoice.SetStringSelection(Config["DefaultOS"])
+
+        else:
+            Dlg = wx.MessageDialog(self.Panel, "This default OS used when this config was backed up was not detected by WxFixBoot. Instead, "+OS+" will be used, or you can make a custom selection.")
+            self.DefaultOSChoice.SetStringSelection(OS)
 
         logger.debug("BootloaderOptionsWindow().SetupForRestoringBootloader(): Finished loading config from file...")
 
