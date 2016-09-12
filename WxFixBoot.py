@@ -1412,8 +1412,6 @@ class BootloaderOptionsWindow(wx.Frame):
         self.RestoreBootloaderChoice.SetStringSelection(BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"])
         self.OnTimeoutCheckBox()
 
-        print(OS, BootloaderInfo[OS]["Settings"]["NewBootloader"])
-
     def SetGUIState(self, Event=None):
         """Set all the GUI element's states (enabled/disabled) for this OS"""
         OS = self.OSChoice.GetStringSelection()
@@ -1614,13 +1612,6 @@ class BootloaderOptionsWindow(wx.Frame):
             self.SaveGUIState(OS=SystemInfo["PreviousOSChoice"])
             SystemInfo["PreviousOSChoice"] = self.OSChoice.GetStringSelection()
 
-        self.LoadSettings()
-        self.SetGUIState()
-        self.SetTextLabels()
-
-        #Default OS choice.
-        self.DefaultOSChoice.SetStringSelection(BootloaderInfo[self.OSChoice.GetStringSelection()]["DefaultOS"])
-
         #Set up NewBootloaderChoice.
         if OSInfo[self.OSChoice.GetStringSelection()]["EFIPartition"] == "Unknown":
             Choices = ["GRUB2", "LILO"]
@@ -1645,6 +1636,13 @@ class BootloaderOptionsWindow(wx.Frame):
         #Set the choices.
         self.NewBootloaderChoice.SetItems(["-- Please Select --"]+Choices)
         self.NewBootloaderChoice.SetStringSelection("-- Please Select --")
+
+        self.LoadSettings()
+        self.SetGUIState()
+        self.SetTextLabels()
+
+        #Default OS choice.
+        self.DefaultOSChoice.SetStringSelection(BootloaderInfo[self.OSChoice.GetStringSelection()]["DefaultOS"])
 
         #Make sure the window displays properly.
         self.MainSizer.SetSizeHints(self)
@@ -1934,8 +1932,6 @@ class BootloaderOptionsWindow(wx.Frame):
         BootloaderInfo[OS]["Settings"]["BootloaderBackupTarget"] = self.BackupBootloaderChoice.GetStringSelection()
         BootloaderInfo[OS]["Settings"]["RestoreBootloader"] = self.RestoreBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = self.RestoreBootloaderChoice.GetStringSelection()
-
-        print(OS, BootloaderInfo[OS]["Settings"]["NewBootloader"])
 
         if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["Update"] or BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] or BootloaderInfo[OS]["Settings"]["RestoreBootloader"]:
             logger.debug("BootloaderOptionsWindow().SaveSettings(): "+OS+" is being modified...")
