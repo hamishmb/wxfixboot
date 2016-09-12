@@ -16,12 +16,10 @@
 
 #*** Check if the way we config LILO and ELILO means it always boots same kernel for different OSs or not ***
 #*** Check setting default OS is working ***
-#*** Figure out what to do in each instance where something might fail ***
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Enable menu in ELILO ***
 #*** ELILO Kernel options not detected CHECK THIS IS TRUE/UNFIXED ***
 #*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? If so do what it does ***
-#*** Use OS short name (e.g. 16.04 instead of Xenial Xerus) for LILO + ELILO ***
 #*** Is /etc/default/grub created after switching to grub if it was purged before? ***
 #*** Test disabling bootloader operations, as if a filesystem check failed ***
 
@@ -1644,7 +1642,7 @@ class BootloaderOptionsWindow(wx.Frame):
         Choices.remove(BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"])
 
         #Set the choices.
-        self.NewBootloaderChoice.Set(["-- Please Select --"]+Choices)
+        self.NewBootloaderChoice.SetItems(["-- Please Select --"]+Choices)
         self.NewBootloaderChoice.SetStringSelection("-- Please Select --")
 
         #Make sure the window displays properly.
