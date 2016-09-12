@@ -69,7 +69,7 @@ class Main(): #*** Refactor all of these ***
                 GRUBDir = MountPoint+"/boot/grub2"
 
             #(Fedora, EFI)
-            elif os.path.isdir(MountPoint+"/boot/efi/EFI/fedora"):
+            if os.path.isfile(GRUBDir+"/grub.cfg") == False and os.path.isdir(MountPoint+"/boot/efi/EFI/fedora"):
                 GRUBDir = MountPoint+"/boot/efi/EFI/fedora"
 
             #Process menu entries, and pass the entire contents of the menu entries file to the parser.
