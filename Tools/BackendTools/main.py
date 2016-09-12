@@ -519,7 +519,7 @@ class Main():
             if os.path.isfile(MountPoint+"/etc/elilo.conf"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting ELILO Configuration...")
-                BootloaderConfigSettingTools.SetELILOConfig(OS=OS, filetoopen=MountPoint+"/etc/elilo.conf")
+                BootloaderConfigSettingTools.SetLILOConfig(OS=OS, filetoopen=MountPoint+"/etc/elilo.conf")
 
                 #Also, set the OS entries.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Creating ELILO OS Entries...")
