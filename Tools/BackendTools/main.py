@@ -55,19 +55,8 @@ class Main():
 
                 Success = Function(OS)
 
-                #Update progress if successful.
-                if Success:
-                    if Operation == "remove":
-                        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 33)
-
-                    elif Operation == "install":
-                        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 66)
-
-                    else:
-                        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-
                 #Warn user if an error occured.
-                else:
+                if Success == False:
                     logger.error("MainBackendTools(): Main().ManageBootloader(): Failed to "+Operation+" "+OS+"'s old bootloader! Asking user whether to try again or skip this OS...")
 
                     #Drop a leading 'e' for correct English.
