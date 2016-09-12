@@ -72,13 +72,13 @@ class Main():
 
         Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
 
-        #Look for them in a specific order (grub2 before legacy) to be as fast a possible and to avoid false positives.
+        #Look for them in a specific order to be as fast a possible and to avoid false positives.
         if PackageManager == "apt-get":
             BootloaderPackages = ("grub-efi", "elilo", "grub-pc", "lilo", "grub")
             PackageDict = {"grub-efi": "GRUB-UEFI", "elilo": "ELILO", "grub-pc": "GRUB2", "lilo": "LILO", "grub": "GRUB-LEGACY"}
 
         else:
-            BootloaderPackages = ("grub2", "grub2-efi", "grub")
+            BootloaderPackages = ("grub2-efi", "grub2", "grub")
             PackageDict = {"grub2-efi": "GRUB-UEFI", "grub2": "GRUB2", "grub": "GRUB-LEGACY"}
 
         for Package in BootloaderPackages:
