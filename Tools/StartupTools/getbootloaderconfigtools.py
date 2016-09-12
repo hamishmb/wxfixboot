@@ -60,12 +60,17 @@ class Main(): #*** Refactor all of these ***
         else:
             logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and opening GRUB config file...")
 
-            #Find grub.cfg. (different place on Fedora).
+            #Find grub.cfg. (Ubuntu).
             if os.path.isdir(MountPoint+"/boot/grub"):
                 GRUBDir = MountPoint+"/boot/grub"
 
-            elif os.path.isdir(MountPoint+"/boot/grub2"): #*** What about Fedora with EFI? Is it in the EFI partition? ***
+            #(Fedora, BIOS)
+            elif os.path.isdir(MountPoint+"/boot/grub2"):
                 GRUBDir = MountPoint+"/boot/grub2"
+
+            #(Fedora, EFI)
+            elif os.path.isdir(MountPoint+"/boot/efi/EFI/fedora"):
+                GRUBDir = MountPoint+"/boot/efi/EFI/fedora"
 
             #Process menu entries, and pass the entire contents of the menu entries file to the parser.
             MenuEntriesFile = open(GRUBDir+"/grub.cfg", "r")

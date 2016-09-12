@@ -339,6 +339,17 @@ class Main():
 
                     continue
 
+            #Mount a /boot/efi partition if it exists.
+            if OSInfo[OS]["EFIPartition"] != "Unknown":
+                if CoreTools.MountPartition(OSInfo[OS]["EFIPartition"], MountPoint+"/boot/efi") != 0:
+                    logger.error("MainStartupTools: Main().GetBootloaders(): Failed to mount "+OS+"'s /boot/efi partition! Skipping bootloader detection for this OS.")
+
+                    if not OSInfo[OS]["IsCurrentOS"]:
+                        CoreTools.TearDownChroot(MountPoint)
+                        CoreTools.Unmount(MountPoint)
+
+                    continue
+
             #Look for bootloaders.
             BootloaderInfo[OS] = {}
             BootloaderInfo[OS]["OSName"] = OS
@@ -354,6 +365,10 @@ class Main():
                 GRUBDir, BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)
 
                 #Get GRUB2's config.
+                #If GRUBDir is in EFI partition (Fedora wih EFI), ignore that because grubenv is still in /boot/grub2.
+                if "EFI" in GRUBDir:
+                    GRUBDir = MountPoint+"/boot/grub2"
+
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", GRUBDir+"/grubenv", BootloaderInfo[OS]["MenuEntries"])
 
                 #Try to find GRUB's location if this is GRUB2.
