@@ -14,10 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#*** Check if the way we config LILO and ELILO means it always boots same kernel for different OSs or not ***
 #*** Check setting default OS is working ***
 #*** Remove grub's .efi files after installing elilo and vice versa ***
-#*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? It does. Do what it does ***
+#*** Warn user about LILO + ELILO's rubbish multi-OS support (always boot the same kernel, regrardless of OS) if needed ***
 #*** Is /etc/default/grub created after switching to grub if it was purged before? ***
 #*** Test disabling bootloader operations, as if a filesystem check failed ***
 #*** Elilo not available in Ubuntu 16.04 + ***
@@ -1611,6 +1610,7 @@ class BootloaderOptionsWindow(wx.Frame):
         if Startup == False:
             self.SaveSettings(OS=SystemInfo["PreviousOSChoice"])
             self.SaveGUIState(OS=SystemInfo["PreviousOSChoice"])
+            SystemInfo["PreviousOSChoice"] = self.OSChoice.GetStringSelection()
 
         self.LoadSettings()
         self.SetGUIState()
@@ -1629,7 +1629,7 @@ class BootloaderOptionsWindow(wx.Frame):
         else:
             Choices = ["GRUB-UEFI", "GRUB2", "ELILO", "LILO"]
 
-        #Disable ELILO and LILO on Fedora systems.
+        #Disable ELILO and LILO on Fedora systems. *** Check if ELILO is present on newer ubuntu systems ***
         if "Fedora" in self.OSChoice.GetStringSelection():
             if "ELILO" in Choices:
                 Choices.remove("ELILO")
