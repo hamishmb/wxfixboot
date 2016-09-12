@@ -1600,7 +1600,9 @@ class BootloaderOptionsWindow(wx.Frame):
             self.DefaultOSChoice.SetStringSelection(Config["DefaultOS"])
 
         else:
-            Dlg = wx.MessageDialog(self.Panel, "This default OS used when this config was backed up was not detected by WxFixBoot. Instead, "+OS+" will be used, or you can make a custom selection.")
+            Dlg = wx.MessageDialog(self.Panel, "This default OS used when this config was backed up was not detected by WxFixBoot. Instead, "+OS+" will be used, or you can make a custom selection.", "WxFixBoot - Information", wx.OK | wx.ICON_INFORMATION)
+            Dlg.ShowModal()
+            Dlg.Destroy()
             self.DefaultOSChoice.SetStringSelection(OS)
 
         logger.debug("BootloaderOptionsWindow().SetupForRestoringBootloader(): Finished loading config from file...")
@@ -2218,20 +2220,35 @@ class ProgressWindow(wx.Frame):
         self.RestartButton.Enable()
         self.ExitButton.Enable()
 
-    def RestartWxFixBoot(self, Event=None):
+    def RestartWxFixBoot(self, Event=None): #*** Check this works *** *** Spits out some unimportant errors just after GUI has restarted cos is still using ProgressWindow.pdateOutputBox, not InitialWindow.UpdateOutputBox for unknown reasons ***
         """Restart WxFixBoot"""
         logger.debug("ProgressWindow().RestartWxFixBoot(): Restarting WxFixBoot...")
+        logger.debug("ProgressWindow().RestartWxFixBoot(): Checking no filesystems are mounted in the temporary directory, and unmounting them if they are...")
+
+        for Dir in os.listdir("/tmp/wxfixboot/mountpoints/dev"):
+            #Call CoreTools.Unmount() on each directory to make sure that nothing is mounted there after this point.
+            if CoreTools.Unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
+                #If we errored try removing chroot and trying again, this time ignoring the return value.
+                logger.warning("ProgressWindow().RestartWxFixBoot(): Failed to unmount /tmp/wxfixboot/muntpoints/dev/"+Dir+"! Trying to remove chroot first then trying again...")
+                CoreTools.TearDownChoot("/tmp/wxfixboot/mountpoints/dev/"+Dir)
+
+                if CoreTools.Unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
+                    logger.error("ProgressWindow().RestartWxFixBoot(): Couldn't unmount /tmp/wxfixboot/mountpoints/dev/"+Dir+"! Giving up, warning user, and aborting restart...")
+                    Dlg = wx.MessageDialog(self.Panel, "Couldn't restart WxFixBoot because there are mounted filesystems in the temporary directory! Please try restarting your system and then try again.", "WxFixBoot - Error!", wx.OK | wx,ICON_ERROR)
+                    Dlg.ShowModal()
+                    Dlg.Destroy()
+                    return False
+
         self.Hide()
 
-        #*** Double check at runtime that no filesystems are mounted in /tmp/wxfixbootmountpoints after all operations, especially if errors occured. ***
+        logger.debug("ProgressWindow().RestartWxFixBoot(): WxFixBoot has been reset and restarted, returning to MainWindow().")
 
         InitialFrame = InitialWindow()
         app.SetTopWindow(InitialFrame)
         InitialFrame.Show(True)
 
-        #Destroy Progress Window.
-        logger.debug("ProgressWindow().RestartWxFixBoot(): WxFixBoot has been reset and restarted, returning to MainWindow()")
-        self.Destroy()
+        #Destroy ProgressWindow.                
+        wx.CallLater(100, self.Destroy)
 
     def OnExit(self, Event=None):
         """Exits the programs, and sorts out log file saving/deleting stuff"""
