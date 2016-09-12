@@ -263,7 +263,7 @@ class Main():
         #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             #We need to copy both elilo.efi, and elilo.conf to UEFIBootDir.
-            logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Copying elilo.efi and elilo.conf to "+UEFIBootDir+"...")
+            logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Copying elilo.efi, elilo.conf and elilomenu.msg to "+UEFIBootDir+"...")
             Retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False)
 
             if Retval != 0:
@@ -274,6 +274,12 @@ class Main():
 
             if Retval != 0:
                 logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilo.conf to "+UEFIBootDir+"/! Attempting to continue anyway...")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
+
+            Retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilomenu.msg "+UEFIBootDir+"/", ShowOutput=False)
+
+            if Retval != 0:
+                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilomenu.msg to "+UEFIBootDir+"! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
