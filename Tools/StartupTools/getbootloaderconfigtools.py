@@ -105,8 +105,12 @@ class Main(): #*** Refactor all of these ***
             elif "submenu " in Line:
                 logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Found submenu...")
                 #Get the submenu's name, create a sub-dictionary for it, save its ID, and change the Value of "MenuName" to the submenu's name.
-                print(Line)
-                SubMenuName = Line.split("'")[1].replace("\"", "").replace("\'", "")
+                #Keep compatibility with older versions of GRUB2.
+                try:
+                    SubMenuName = Line.split("'")[1].replace("\"", "").replace("\'", "")
+
+                except IndexError:
+                    SubMenuName = Line.split("\"")[1].replace("\"", "").replace("\'", "")
 
                 #Get the entire contents of the submenu.
                 logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Getting the entire text content of the submenu...")
