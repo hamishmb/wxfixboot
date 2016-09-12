@@ -194,10 +194,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
                 logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting up ELILO's text menu...")
                 NewFileContents.append("prompt\n")
                 NewFileContents.append("chooser=textmenu\n")
-                NewFileContents.append("message=/boot/elilomenu.msg\n")
-
-                #Copy the text menu to /boot/elilomenu.msg.
-                CoreTools.StartProcess("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg /boot/elilomenu.msg", ShowOutput=False)
+                NewFileContents.append("message=elilomenu.msg\n")
 
                 line = "delay="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"]*10)+"\n"
 
@@ -228,6 +225,13 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
         #Check that everything was set. If not, write that config now.
         if BootloaderInfo[OS]["Bootloader"] == "ELILO" and SetTimeout == False:
             logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
+
+            #Also set prompt to use the text menu, chooser to textmenu, and the text menu file.
+            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Setting up ELILO's text menu...")
+            NewFileContents.append("prompt\n")
+            NewFileContents.append("chooser=textmenu\n")
+            NewFileContents.append("message=elilomenu.msg\n")
+
             NewFileContents.append("delay="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"\n")
 
         elif BootloaderInfo[OS]["Bootloader"] == "LILO" and SetTimeout == False:

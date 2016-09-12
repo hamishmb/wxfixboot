@@ -248,7 +248,7 @@ class Main():
             DialogTools.ShowMsgDlg(Kind="error", Message="Warning: WxFixBoot failed to backup Windows's UEFI boot files! This probably isn't very important. Click okay to continue.")
 
     def CopyUEFIFiles(self, OS, MountPoint):
-        """Copy the new UEFI bootloader's files to default places in case of buggy firmware.""" #*** The error messages here aren't very helpful ***
+        """Copy the new UEFI bootloader's files to default places in case of buggy firmware.""" #*** The error messages here aren't very helpful *** *** Does this work on Fedora? ***
         logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Copying UEFI Files to UEFIBootDir...")
 
         #First, let's check if EFI/boot already exists. This is a fat32/fat16 filesystem, so case doesn't matter.
@@ -276,10 +276,16 @@ class Main():
                 logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilo.conf to "+UEFIBootDir+"/! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
-            Retval = CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilomenu.msg "+UEFIBootDir+"/", ShowOutput=False)
+            Retval = CoreTools.StartProcess("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+UEFIBootDir+"/", ShowOutput=False)
 
             if Retval != 0:
                 logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilomenu.msg to "+UEFIBootDir+"! Attempting to continue anyway...")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
+
+            Retval = CoreTools.StartProcess("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+UEFIBootDir+"/../ubuntu", ShowOutput=False)
+
+            if Retval != 0:
+                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilomenu.msg to "+UEFIBootDir+"/../ubuntu! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
