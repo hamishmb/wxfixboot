@@ -18,7 +18,6 @@
 #*** Check setting default OS is working ***
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Enable menu in ELILO ***
-#*** ELILO Kernel options not detected CHECK THIS IS TRUE/UNFIXED ***
 #*** Look at original LILO config, does it allow booting OSes with different vmlinuz/initrds? If so do what it does ***
 #*** Is /etc/default/grub created after switching to grub if it was purged before? ***
 #*** Test disabling bootloader operations, as if a filesystem check failed ***
