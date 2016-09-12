@@ -148,7 +148,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
             Cmd = "update-grub2"
 
         elif PackageManager == "yum":
-            Cmd = "grub2-mkconfig -o /boot/grub2/grub.cfg"
+            Cmd = "grub2-mkconfig -o /boot/grub2/grub.cfg" #*** Check if we're doing GRUB-EFI on fedora, in that case needs to be /boot/efi/EFI/fedora/grub.cfg ***
 
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd

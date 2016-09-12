@@ -438,7 +438,7 @@ class Main():
             if CoreTools.MountPartition(Partition=OSInfo[OS]["EFIPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
                 logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't mount EFI partition "+OSInfo[OS]["EFIPartition"]+" to install bootloader! *** TODO: Cancel bootloader operations *** Continuing for now...")
 
-            #Now Install GRUB-UEFI to the UEFI Partition. *** Is this necessary when updating it? ***
+            #Now Install GRUB-UEFI to the UEFI Partition. *** Don't do this when updating it, causes problems on Fedora with EFI (doesn't have grub efi modules by default, but they are installed by wxfixboot if needed) ***
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB-UEFI to "+OSInfo[OS]["EFIPartition"]+"...")
             BootloaderConfigSettingTools.InstallGRUB2ToEFIPartition(PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint, UseChroot=UseChroot, UEFISystemPartitionMountPoint="/boot/efi", Arch=OSInfo[OS]["Arch"])
 
