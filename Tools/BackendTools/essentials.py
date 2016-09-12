@@ -72,6 +72,10 @@ class Main():
                     logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
 
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished checking the Internet Connection...")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished checking the Internet Connection...###\n")
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+
     def FileSystemCheck(self, Type):
         """Quickly check all filesystems."""
         logger.debug("EssentialBackendTools: Main().FileSystemCheck(): Starting...")
