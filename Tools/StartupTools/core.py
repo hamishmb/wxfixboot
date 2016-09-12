@@ -65,7 +65,7 @@ class Main():
             Cmd = "dpkg --get-selections"
 
         else:
-            Cmd = "yum list installed"
+            Cmd = "yum -C list installed"
 
         if UsingChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
@@ -79,7 +79,7 @@ class Main():
 
         else:
             BootloaderPackages = ("grub2", "grub2-efi", "grub")
-            PackageDict = {"grub2": "GRUB2", "grub2-efi": "GRUB-UEFI", "grub": "GRUB-LEGACY"}
+            PackageDict = {"grub2-efi": "GRUB-UEFI", "grub2": "GRUB2", "grub": "GRUB-LEGACY"}
 
         for Package in BootloaderPackages:
             Found = False
