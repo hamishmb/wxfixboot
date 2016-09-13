@@ -47,7 +47,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "12/9/2016"
+ReleaseDate = "13/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")

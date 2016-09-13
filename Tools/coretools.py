@@ -40,11 +40,6 @@ class Main():
         logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds)
         cmd = subprocess.Popen(ExecCmds, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
-        #If we have any lines to write to stdin, do that now. *** Check this works *** *** Do we need this, and if not shall we keep it anyway for future-proofing? ***
-        if StdinLines != []:
-            for Line in StdinLines:
-                cmd.stdin.write(Line+"\n")
-
         #Close stdin (some programs wait for this before they will exit).
         cmd.stdin.close()
 
@@ -114,7 +109,7 @@ class Main():
             logger.debug("CoreTools: Main().IsMounted(): It isn't. Returning False...")
             return False
 
-    def GetPartitionMountedAt(self, MountPoint): #*** Is this used? ***
+    def GetPartitionMountedAt(self, MountPoint):
         """Returns the partition mounted at the given mountpoint, if any.
         Otherwise, return None"""
         logger.info("CoreTools: Main().GetPartitionMountedAt(): Trying to get partition mounted at "+MountPoint+"...")
@@ -300,7 +295,7 @@ class Main():
             Retval = Result[0]
 
             if Retval != 0:
-                logger.error("CoreTools: Main().SetUpChroot(): Error: Failed to run command: "+', '.join(ExecList)+"! Chroot may not be set up properly! Continuing anyway...") #*** Ignore this error, it happens on Fedora. Investigate to see if it messes anything up ***
+                logger.error("CoreTools: Main().SetUpChroot(): Error: Failed to run command: '"+ExecCmd+"'! Chroot may not be set up properly! Continuing anyway...") #*** Ignore this error, it happens on Fedora. Investigate to see if it messes anything up ***
                 Retval = 0
 
         self.UpdateChrootMtab(MountPoint=MountPoint)

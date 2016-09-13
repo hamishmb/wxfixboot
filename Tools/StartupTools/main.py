@@ -365,9 +365,9 @@ class Main():
                 GRUBDir, BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)
 
                 #Get GRUB2's config.
-                #If GRUBDir is in EFI partition (Fedora wih EFI), ignore that because grubenv is still in /boot/grub2.
-                if "EFI" in GRUBDir:
-                    GRUBDir = MountPoint+"/boot/grub2"
+                #If we're using fedora, always look for grubenv in the EFI partition (the grubenv symlink is in /boot/grub2 but it doesn't work when we're chrooting).
+                if OSInfo[OS]["PackageManager"] == "yum":
+                    GRUBDir = MountPoint+"/boot/efi/EFI/fedora"
 
                 BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", GRUBDir+"/grubenv", BootloaderInfo[OS]["MenuEntries"])
 
