@@ -450,6 +450,7 @@ class InitThread(threading.Thread):
         OSInfo, SystemInfo = MainStartupTools.GetOSs()
 
         Tools.StartupTools.main.OSInfo = OSInfo
+        Tools.StartupTools.core.OSInfo = OSInfo
 
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
         logger.info("InitThread(): Done...")
