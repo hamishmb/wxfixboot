@@ -25,6 +25,13 @@ from __future__ import unicode_literals
 class Main():
     def ManageBootloader(self, OS):
         """Manage the installation and removal of each bootloader."""
+        #Don't do anything if bootloader operations have been disabled.
+        if SystemInfo["DisableBootloaderOperations"]:
+            logger.info("MainBackendTools(): Main().ManageBootloader(): Bootloader operations have been disabled, skipping this operation...")
+            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Skipped bootloader operations for "+OS+"...###\n")
+            return True
+
         if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["Update"]:
             BootloaderInfo[OS]["Settings"]["NewBootloader"] = BootloaderInfo[OS]["Bootloader"]
 

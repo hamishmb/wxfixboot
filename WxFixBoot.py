@@ -17,7 +17,6 @@
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Warn user about LILO + ELILO's rubbish multi-OS support (always boot the same kernel, regrardless of OS) if needed ***
 #*** Is /etc/default/grub created after switching to grub if it was purged before? ***
-#*** Test disabling bootloader operations, as if a filesystem check failed ***
 #*** Elilo not available in Ubuntu 16.04 + ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
@@ -182,6 +181,7 @@ Tools.BackendTools.helpers.os = os
 Tools.BackendTools.helpers.CoreTools = CoreTools
 Tools.BackendTools.helpers.DialogTools = DialogTools
 Tools.BackendTools.helpers.LooseVersion = LooseVersion
+Tools.BackendTools.helpers.MainBackendTools = MainBackendTools
 
 #BackendTools Package (Essentials)
 Tools.BackendTools.essentials.wx = wx
@@ -396,8 +396,8 @@ class InitThread(threading.Thread):
         GetDevInfo.getdevinfo.DiskInfo = DiskInfo
 
         #Set variables used for checking whether bootloader operations have been disabled.
-        SystemInfo["DisabledBootloaderOperations"] = False
-        SystemInfo["DisabledBootloaderOperationsBecause"] = []
+        SystemInfo["DisableBootloaderOperations"] = False
+        SystemInfo["DisableBootloaderOperationsBecause"] = []
 
         #Initialise a variable for later.
         SystemInfo["PreviousOSChoice"] = ""
@@ -2338,6 +2338,7 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.helpers.DiskInfo = DiskInfo
         Tools.BackendTools.helpers.OSInfo = OSInfo
         Tools.BackendTools.helpers.SystemInfo = SystemInfo
+        Tools.BackendTools.helpers.Operations = Operations
 
         Tools.BackendTools.main.OSInfo = OSInfo
         Tools.BackendTools.main.DiskInfo = DiskInfo

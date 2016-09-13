@@ -269,7 +269,7 @@ class Main():
         retval = self.StartProcess("cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab", ShowOutput=False)
 
         if retval != 0:
-            logger.error("CoreTools: Main().UpdateChrootMtab(): Failed to run command: cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab! Chroot may not set up properly! This *probably* doesn't matter, but in rare situations it could cause problems.")
+            logger.warning("CoreTools: Main().UpdateChrootMtab(): Failed to run command: cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab! Chroot may not set up properly! This *probably* doesn't matter, but in rare situations it could cause problems. If the chrooted OS is Fedora-based, this is normal because /etc/mtab is a symlink to /proc/self/mounts.")
 
         logger.debug("CoreTools: Main().UpdateChrootMtab(): Finished updating /etc/mtab for chroot at: "+MountPoint+".")
 
@@ -295,7 +295,8 @@ class Main():
             Retval = Result[0]
 
             if Retval != 0:
-                logger.error("CoreTools: Main().SetUpChroot(): Error: Failed to run command: '"+ExecCmd+"'! Chroot may not be set up properly! Continuing anyway...") #*** Ignore this error, it happens on Fedora. Investigate to see if it messes anything up ***
+                logger.error("CoreTools: Main().SetUpChroot(): Error: Failed to run command: '"+ExecCmd+"'! Chroot may not be set up properly! On Fedora systems this probably doesn't matter. Continuing anyway...")
+                #Ignore these errors, the only happen on Fedora and they don't really matter.
                 Retval = 0
 
         self.UpdateChrootMtab(MountPoint=MountPoint)
