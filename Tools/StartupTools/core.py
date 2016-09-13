@@ -52,7 +52,7 @@ class Main():
 
         return PackageManager
 
-    def LookForBootloadersOnPartition(self, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly ***
+    def LookForBootloadersOnPartition(self, OS, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly ***
         """Look for bootloaders installed in the OS in the given mount point."""
         if UsingChroot:
             logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")
