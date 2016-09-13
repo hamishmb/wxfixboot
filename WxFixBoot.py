@@ -2223,7 +2223,7 @@ class ProgressWindow(wx.Frame):
         self.RestartButton.Enable()
         self.ExitButton.Enable()
 
-    def RestartWxFixBoot(self, Event=None): #*** Check this works *** *** Spits out some unimportant errors just after GUI has restarted cos is still using ProgressWindow.pdateOutputBox, not InitialWindow.UpdateOutputBox for unknown reasons ***
+    def RestartWxFixBoot(self, Event=None): #*** Check this works *** *** Spits out some unimportant errors just after GUI has restarted cos is still using ProgressWindow.UpdateOutputBox, not InitialWindow.UpdateOutputBox for unknown reasons ***
         """Restart WxFixBoot"""
         logger.debug("ProgressWindow().RestartWxFixBoot(): Restarting WxFixBoot...")
         logger.debug("ProgressWindow().RestartWxFixBoot(): Checking no filesystems are mounted in the temporary directory, and unmounting them if they are...")
@@ -2231,8 +2231,8 @@ class ProgressWindow(wx.Frame):
         for Dir in os.listdir("/tmp/wxfixboot/mountpoints/dev"):
             #Call CoreTools.Unmount() on each directory to make sure that nothing is mounted there after this point.
             if CoreTools.Unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
-                #If we errored try removing chroot and trying again, this time ignoring the return value.
-                logger.warning("ProgressWindow().RestartWxFixBoot(): Failed to unmount /tmp/wxfixboot/muntpoints/dev/"+Dir+"! Trying to remove chroot first then trying again...")
+                #If we errored try removing chroot and trying again.
+                logger.warning("ProgressWindow().RestartWxFixBoot(): Failed to unmount /tmp/wxfixboot/mountpoints/dev/"+Dir+"! Trying to remove chroot first then trying again...")
                 CoreTools.TearDownChoot("/tmp/wxfixboot/mountpoints/dev/"+Dir)
 
                 if CoreTools.Unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:

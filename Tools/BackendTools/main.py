@@ -108,7 +108,7 @@ class Main():
             if UnmountAfter:
                 #Mount the partition using the global mount function.
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["Partition"], MountPoint=MountPoint) != 0:
-                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
+                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warn the user and skip this OS.")
                     DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"! This OS will now be skipped.")
                     return False
 
@@ -119,7 +119,7 @@ class Main():
             #If there's a seperate /boot partition for this OS, make sure it's mounted.
             if OSInfo[OS]["BootPartition"] != "Unknown":
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["BootPartition"], MountPoint=MountPoint+"/boot") != 0:
-                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
+                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warn the user and skip this OS.")
                     DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! This OS will now be skipped.")
                     return False
 
@@ -135,11 +135,11 @@ class Main():
                 return False
 
         #Remove the bootloader.
-        if BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY":
+        if BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY": #*** Test this ***
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
-                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub grub-legacy-doc grub-common'" #*** Test this ***
+                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub grub-legacy-doc grub-common'"
 
             elif OSInfo[OS]["PackageManager"] == "yum":
                 Cmd = "yum -y remove grub"
@@ -245,7 +245,7 @@ class Main():
             if UnmountAfter:
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["Partition"], MountPoint=MountPoint) != 0:
                     logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warn the user and skip this OS.")
-                    DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. It is recommended to do a Bad Sector check, and then try again.") #*** Is this good advice? Try to determine the cause of the problem ***
+                    DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. Please close any open programs, then try again when prompted.")
                     return False
 
             #Set up chroot.
@@ -255,7 +255,7 @@ class Main():
             #If there's a seperate /boot partition for this OS, make sure it's mounted.
             if OSInfo[OS]["BootPartition"] != "Unknown":
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["BootPartition"], MountPoint=MountPoint+"/boot") != 0:
-                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["BootPartition"]+"! Warn the user and skip this OS.") #*** Shall we remove it from all bootloader operations? *** *** Ask the user to try again? ***
+                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["BootPartition"]+"! Warn the user and skip this OS.") 
                     DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! This OS will now be skipped.")
                     return False
 
@@ -426,7 +426,7 @@ class Main():
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
                 BootloaderConfigSettingTools.SetGRUB2Config(OS=OS, filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
 
-            #Now Install GRUB2 to the MBR. *** Is this necessary when updating it? ***
+            #Now Install GRUB2 to the MBR. *** Don't do this when updating it, causes problems on Fedora with EFI (doesn't have grub efi modules by default, but they are installed by wxfixboot if needed) ***
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to "+DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]+"...")
             BootloaderConfigSettingTools.InstallGRUB2ToMBR(PackageManager=OSInfo[OS]["PackageManager"], UseChroot=UseChroot, MountPoint=MountPoint, Device=DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"])
 
