@@ -47,7 +47,7 @@ class Main():
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
         return FailedList
 
-    def FindCheckableFileSystems(self): #*** Test this again ***
+    def FindCheckableFileSystems(self):
         """Find all checkable filesystems, and then return them to EssentialBackendTools().FileSystemCheck()"""
         logger.info("HelperBackendTools: Main().FindCheckableFileSystems(): Finding and returning all filesystems/partitions that can be checked...")
 
@@ -124,7 +124,7 @@ class Main():
         ExecList = ExecCmds.split()
 
         #Return values of 1,2 or 3 happen if errors were corrected.
-        if Retval in (1, 2, 3):
+        if Retval in (1, 2, 3) and ExecList[0] != "badblocks":
             if ExecList[0] == "xfs_repair":
                 #Fs Corruption Detected.
                 logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): xfs_repair detected filesystem corruption on FileSystem: "+Partition+". It's probably (and hopefully) been fixed, but we're logging this anyway.")

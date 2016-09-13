@@ -89,7 +89,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
             NewFileContents.append("GRUB_TIMEOUT="+unicode(BootloaderTimeout)+"\n")
 
         if SetKOpts == False:
-            Temp = KernelOptions.replace('\"', '').replace("\'", "").replace("\n", "") #*** Is this needed? ***
+            Temp = KernelOptions.replace('\"', '').replace("\'", "").replace("\n", "")
             logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Didn't find GRUB_CMDLINE_LINUX_DEFAULT in config file. Creating and setting it to '"+KernelOptions+"'...")
             NewFileContents.append("GRUB_CMDLINE_LINUX_DEFAULT='"+Temp+"'\n")
 
@@ -110,6 +110,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
         """Install GRUB2 (BIOS version) into the MBR of the hard drive"""
         #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the MBR.
         #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition.
+        #Can flag as a warning on Fedora systems when just updating, but ignore it.
         if PackageManager == "apt-get":
             Cmd = "grub-install --force "+Device
 
@@ -141,14 +142,17 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
         #Return the return value.
         return Retval
 
-    def UpdateGRUB2(self, PackageManager, UseChroot, MountPoint):
+    def UpdateGRUB2(self, OS, PackageManager, UseChroot, MountPoint):
         """Run 'update-grub' to update GRUB2's (BIOS and EFI/UEFI) configuration and bootloader menu"""
         #We need to update grub.
         if PackageManager == "apt-get":
             Cmd = "update-grub2"
 
+        elif PackageManager == "yum" and OSInfo[OS]["EFIPartition"] == "Unknown":
+            Cmd = "grub2-mkconfig -o /boot/grub2/grub.cfg"
+
         elif PackageManager == "yum":
-            Cmd = "grub2-mkconfig -o /boot/grub2/grub.cfg" #*** Check if we're doing GRUB-EFI on fedora, in that case needs to be /boot/efi/EFI/fedora/grub.cfg ***
+            Cmd = "grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg"
 
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
@@ -252,7 +256,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
 
         logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Done!")
 
-    def MakeLILOOSEntries(self, OS, filetoopen, MountPoint, KernelOptions): #*** Maybe set default OS in a separate function? *** *** Refactor ***
+    def MakeLILOOSEntries(self, OS, filetoopen, MountPoint, KernelOptions):
         """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS"""
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make OS entries for "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
         #Okay, we've saved the kopts, timeout, and the boot device in the list.
@@ -333,17 +337,17 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
             NewFileContents.append("\tinitrd=/initrd.img\n")
 
             #Set the root device.
-            #Use UUID's here if we can. *** Test this works ***
+            #Use UUID's here if we can.
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs as a UUID if possible...")
 
-            if DiskInfo[OSInfo[OS]["Partition"]]["UUID"] == "Unknown": #*** Warn user? ***
+            if DiskInfo[OSInfo[OS]["Partition"]]["UUID"] == "Unknown":
                 logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+OSInfo[OS]["Partition"]+"! This might not work cos it can change!")
                 NewFileContents.append("\troot="+OSInfo[OS]["Partition"]+"\n")
 
             else:
                 logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"...")
 
-                if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO": #*** Test this works ***
+                if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
                     NewFileContents.append("\troot=UUID="+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"\n")
 
                 else:
@@ -393,9 +397,9 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
             logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Default OS not in the Completed Entries List! Asking the user for a new one...")
 
             if len(CompletedEntriesList) <= 0:
-                #Something went wrong here! No OSs appear to have been added to the list. Warn the user. *** How about being helpful and trying to fix it right now? :D ***
+                #Something went wrong here! No OSs appear to have been added to the list. Warn the user.
                 logger.error("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): CompletedEntriesList is empty! This suggests that no OSs have been added to the list! Warn the user, and skip this part of the operation.")
-                DialogTools.ShowMsgDlg(Kind="error", Message="No Operating Systems have had entries created for them! If you canceled creating the entries, please reboot WxFixBoot and select only the option 'Update Bootloader Config'. If you didn't do that, and WxFixBoot either couldn't create them, or you see this error with no previous warnings, you may have to create your own bootloader config. Don't worry, this isn't too difficult, and you can search for tutorials for this on the internet. If WxFixBoot couldn't create your entries, or you are seeing this message with no previous warnings, please email me directly via my Launchpad page (www.launchpad.net/~hamishmb) with the contents of /tmp/wxfixboot.log and I'll try to help you.")
+                DialogTools.ShowMsgDlg(Kind="error", Message="No Operating Systems have had entries created for them! If you canceled creating the entries, please reboot WxFixBoot and select only the option 'Update Bootloader Config'. If you didn't do that, and WxFixBoot either couldn't create them, or you see this error with no previous warnings, you may have to create your own bootloader config. If you wish to, you can email me directly via my Launchpad page (www.launchpad.net/~hamishmb) with the contents of /tmp/wxfixboot.log and I'll help you do that.")
 
             else:
                 #Ask the user for a new default OS.

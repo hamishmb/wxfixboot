@@ -103,6 +103,7 @@ class Main():
             wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking Disk: "+Disk+"###\n")
             wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking Disk: "+Disk)
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30+((50//FileSystemsToCheckLength)*(Checked+1)))
+            RunBadBlocks = False
 
             #Create a command list that will work based on the fstype of this Disk and the type of check we're performing. If there aren't any use cases for the fstype, display a message to the user and skip it.
             if Type == "Quick":
@@ -130,25 +131,26 @@ class Main():
                     DialogTools.ShowMsgDlg(Kind="error", Message="The filesystem on Disk: "+Disk+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Disk+" will now be skipped.")
 
             else:
+                #For disks that doesn't do bad sector checks with the normal FS checker, run badblocks manually on them.
                 if DiskInfo[Disk]["FileSystem"] == "jfs":
-                    #No support for bad sector check in jfs. Notify the user and do a normal check instead. *** Run badblocks manually too? ***
-                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on Disk: "+Disk+" (jfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
                     ExecCmds = "fsck.jfs -vf "+Disk
+                    RunBadBlocks = True
 
                 elif DiskInfo[Disk]["FileSystem"] == "minix":
-                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on Disk: "+Disk+" (minix) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
                     ExecCmds = "fsck.minix -avf "+Disk
+                    RunBadBlocks = True
 
                 elif DiskInfo[Disk]["FileSystem"] == "reiserfs":
-                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on Disk: "+Disk+" (reiserfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
                     ExecCmds = "fsck.reiserfs -apf "+Disk
+                    RunBadBlocks = True
 
                 elif DiskInfo[Disk]["FileSystem"] == "xfs":
-                    DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem type on Disk: "+Disk+" (xfs) doesn't support checking for bad sectors. WxFixBoot will perform a normal filesystem check instead.")
                     ExecCmds = "xfs_repair -Pvd "+Disk
+                    RunBadBlocks = True
 
                 elif DiskInfo[Disk]["FileSystem"] == "vfat":
                     ExecCmds = "fsck.vfat -yvt "+Disk
+                    RunBadBlocks = True
 
                 elif DiskInfo[Disk]["FileSystem"] in ('ext2', 'ext3', 'ext4', 'ext4dev'):
                     ExecCmds = "fsck."+DiskInfo[Disk]["FileSystem"]+" -yvcf "+Disk
@@ -168,6 +170,18 @@ class Main():
 
                 else:
                     HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Disk)
+
+            #Run bad blocks if requested.
+            if RunBadBlocks:
+                Retval = CoreTools.StartProcess("badblocks -sv "+Disk)
+
+                #Check the return values, and run the handler if needed.
+                if retval == 0:
+                    #Success.
+                    logger.info("EssentialBackendTools: Main().FileSystemCheck(): Checked Disk: "+Disk+" for bad sectors. No Errors Found!")
+
+                else:
+                    HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds="badblocks -sv "+Disk, Retval=retval, Partition=Disk)
 
             if FileSystemsToCheck[Disk]["Remount"]:
                 logger.debug("EssentialBackendTools: Main().FileSystemCheck(): Remounting Disk: "+Disk+" Read-Write...")

@@ -393,7 +393,7 @@ class Main():
                 #Mount the partition.
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["Partition"], MountPoint=MountPoint) != 0:
                     #Ignore this partition.
-                    logger.warning("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount "+OSInfo[OS]["Partition"]+"! Ignoring this partition...")
+                    logger.warning("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to mount "+OSInfo[OS]["Partition"]+"! Giving up...")
                     return False
 
             #Set up chroot.
@@ -419,50 +419,44 @@ class Main():
             BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)[1:]
 
         #Look for the configuration file, based on which SetConfig() function we're about to run.
-        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2": #*** Reduce duplication with GRUB-UEFI bit ***
+        if BootloaderInfo[OS]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
             #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
                 BootloaderConfigSettingTools.SetGRUB2Config(OS=OS, filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
 
-            #Now Install GRUB2 to the MBR. *** Don't do this when updating it, causes problems on Fedora with EFI (doesn't have grub efi modules by default, but they are installed by wxfixboot if needed) ***
-            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to "+DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]+"...")
-            BootloaderConfigSettingTools.InstallGRUB2ToMBR(PackageManager=OSInfo[OS]["PackageManager"], UseChroot=UseChroot, MountPoint=MountPoint, Device=DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"])
+            if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+                #Mount the UEFI partition at MountPoint/boot/efi.
+                if CoreTools.MountPartition(Partition=OSInfo[OS]["EFIPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't mount EFI partition "+OSInfo[OS]["EFIPartition"]+" to install bootloader! Giving up and warning user...")
+                    DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount "+OS+"'s EFI partition! You will now be promtped to give up or try again.")
+                    return False
+
+                #Now Install GRUB-UEFI to the UEFI Partition.
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB-UEFI to "+OSInfo[OS]["EFIPartition"]+"...")
+                BootloaderConfigSettingTools.InstallGRUB2ToEFIPartition(PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint, UseChroot=UseChroot, UEFISystemPartitionMountPoint="/boot/efi", Arch=OSInfo[OS]["Arch"])
+
+            else:
+                #Now Install GRUB2 to the MBR.
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB2 to "+DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]+"...")
+                BootloaderConfigSettingTools.InstallGRUB2ToMBR(PackageManager=OSInfo[OS]["PackageManager"], UseChroot=UseChroot, MountPoint=MountPoint, Device=DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"])
 
             #Update GRUB.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
-            BootloaderConfigSettingTools.UpdateGRUB2(PackageManager=OSInfo[OS]["PackageManager"], UseChroot=UseChroot, MountPoint=MountPoint)
+            BootloaderConfigSettingTools.UpdateGRUB2(OS=OS, PackageManager=OSInfo[OS]["PackageManager"], UseChroot=UseChroot, MountPoint=MountPoint)
 
-        elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
-            #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
-            if os.path.isfile(MountPoint+"/etc/default/grub"):
-                #It does, we'll run the function to set the config now.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-UEFI Configuration...")
-                BootloaderConfigSettingTools.SetGRUB2Config(OS=OS, filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
+            if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+                #Make an entry in fstab for the UEFI Partition, if needed.
+                HelperBackendTools.WriteFSTABEntryForUEFIPartition(OS=OS, MountPoint=MountPoint)
 
-            #Mount the UEFI partition at MountPoint/boot/efi.
-            if CoreTools.MountPartition(Partition=OSInfo[OS]["EFIPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
-                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't mount EFI partition "+OSInfo[OS]["EFIPartition"]+" to install bootloader! *** TODO: Cancel bootloader operations *** Continuing for now...")
+                #Copy and backup EFI files where needed.
+                HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
+                HelperBackendTools.CopyUEFIFiles(OS=OS, MountPoint=MountPoint)
 
-            #Now Install GRUB-UEFI to the UEFI Partition. *** Don't do this when updating it, causes problems on Fedora with EFI (doesn't have grub efi modules by default, but they are installed by wxfixboot if needed) ***
-            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Installing GRUB-UEFI to "+OSInfo[OS]["EFIPartition"]+"...")
-            BootloaderConfigSettingTools.InstallGRUB2ToEFIPartition(PackageManager=OSInfo[OS]["PackageManager"], MountPoint=MountPoint, UseChroot=UseChroot, UEFISystemPartitionMountPoint="/boot/efi", Arch=OSInfo[OS]["Arch"])
-
-            #Update GRUB.
-            logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
-            BootloaderConfigSettingTools.UpdateGRUB2(PackageManager=OSInfo[OS]["PackageManager"], UseChroot=UseChroot, MountPoint=MountPoint)
-
-            #Make an entry in fstab for the UEFI Partition, if needed.
-            HelperBackendTools.WriteFSTABEntryForUEFIPartition(OS=OS, MountPoint=MountPoint)
-
-            #Copy and backup EFI files where needed.
-            HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
-            HelperBackendTools.CopyUEFIFiles(OS=OS, MountPoint=MountPoint)
-
-            #Unmount the EFI partition.
-            if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0: #*** Warn user? ***
-                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
+                #Unmount the EFI partition.
+                if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO":
             #Make LILO's config file.
@@ -546,7 +540,7 @@ class Main():
         if UseChroot:
             if CoreTools.TearDownChroot(MountPoint=MountPoint) != 0:
                 logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
-
+    
         #Unmount the partition if needed.
         if UnmountAfter:
             if CoreTools.Unmount(MountPoint) != 0:
