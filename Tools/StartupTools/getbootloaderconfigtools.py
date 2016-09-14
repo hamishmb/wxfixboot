@@ -166,6 +166,10 @@ class Main(): #*** Refactor all of these ***
 
         logger.debug("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Menu Entry name: "+MenuEntryName+"...")
 
+        #Handle duplicate names.
+        if MenuEntryName in MenuEntries[Menu]["Order"]:
+            MenuEntryName = MenuEntryName+" (ID "+MenuIDs[Menu]["ID"]+unicode(EntryCounter)+")"
+
         #Get the menu entry ID.
         MenuEntries[Menu]["Order"].append(MenuEntryName)
         MenuEntries[Menu][MenuEntryName] = {}
