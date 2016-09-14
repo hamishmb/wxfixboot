@@ -36,7 +36,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
         #Find the ID for the menu entry that correspondes to that OS (Main Menu only to avoid recovery options + misc).
         BLSpecificDefaultOS = "Unknown"
 
-        for Entry in BootloaderInfo[OS]["MenuEntries"]["MainMenu"]:
+        for Entry in BootloaderInfo[OS]["MenuEntries"]["MainMenu"]["Order"]:
             if BootloaderInfo[OS]["MenuEntries"]["MainMenu"][Entry]["Partition"] == DefaultBootDevice:
                 BLSpecificDefaultOS = BootloaderInfo[OS]["MenuEntries"]["MainMenu"][Entry]["ID"]
                 logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found Default OS's GRUB2 ID...")

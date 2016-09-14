@@ -429,24 +429,19 @@ class Main():
                 BootloaderInfo[OS]["DefaultOS"] = SystemInfo["ModifyableOSs"][0]
 
             #*****************
+            print("\n\n\n************ OS: "+OS+" ************\n\n\n")
             Keys = BootloaderInfo[OS]["MenuEntries"].keys()
-            Keys.sort()
 
             for Menu in Keys:
                 print("\n\n\nMenu Name: "+Menu+"\n\n\n")
 
-                MenuEntries = BootloaderInfo[OS]["MenuEntries"][Menu].keys()
-                MenuEntries.sort()
+                MenuEntries = BootloaderInfo[OS]["MenuEntries"][Menu]["Order"]
 
                 for MenuEntry in MenuEntries:
-                    print("\tMenu Entry Name: "+MenuEntry+"\n\n")
-                    print("\t\tID: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["ID"]+"\n\n")
-                    print("\t\tPartition: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["Partition"]+"\n\n")
-                    print("\t\tKernel Options: "+', '.join(BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["KernelOptions"])+"\n\n")
-                    print("\t\tMenu Entry Data:\n\n")
-
-                    for Thing in BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["RawMenuEntryData"]:
-                        print("\t\t\t"+Thing)
+                    print("\tMenu Entry Name: "+MenuEntry)
+                    print("\t\tID: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["ID"])
+                    print("\t\tPartition: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["Partition"])
+                    print("\t\tKernel Options: "+', '.join(BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["KernelOptions"])+"\n")
 
             #*****************
 

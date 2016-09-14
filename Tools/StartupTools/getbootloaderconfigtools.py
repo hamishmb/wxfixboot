@@ -82,9 +82,10 @@ class Main(): #*** Refactor all of these ***
         logger.debug("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Parsing menu data for menu: "+MenuName+"...")
 
         MenuEntries[MenuName] = {}
+        MenuEntries[MenuName]["Order"] = []
         MenuIDs[MenuName] = {}
         MenuIDs[MenuName]["ID"] = MenuID
-
+        
         EntryCounter = 0
         SkipUntil = 0
         LineCounter = 0
@@ -166,6 +167,7 @@ class Main(): #*** Refactor all of these ***
         logger.debug("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Menu Entry name: "+MenuEntryName+"...")
 
         #Get the menu entry ID.
+        MenuEntries[Menu]["Order"].append(MenuEntryName)
         MenuEntries[Menu][MenuEntryName] = {}
         MenuEntries[Menu][MenuEntryName]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
 
@@ -344,7 +346,7 @@ class Main(): #*** Refactor all of these ***
                     #Find the corresponding GRUB menuentry, matching by ID.
                     logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Matching default OS by ID...")
                     for Menu in MenuEntries.keys():
-                        for OS in MenuEntries[Menu].keys():
+                        for OS in MenuEntries[Menu]["Order"]:
                             if MenuEntries[Menu][OS]["ID"] == GRUBDefault:
                                 DefaultOS = OS
                                 break
@@ -355,7 +357,7 @@ class Main(): #*** Refactor all of these ***
                     Found = False
 
                     for Menu in MenuEntries.keys():
-                        for MenuEntry in MenuEntries[Menu].keys():
+                        for MenuEntry in MenuEntries[Menu]["Order"]:
                             if GRUBDefault == MenuEntry:
                                 DefaultOS = GRUBDefault
                                 Found = True
@@ -367,7 +369,7 @@ class Main(): #*** Refactor all of these ***
                         logger.warning("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Didn't find default OS by name, setting it to the 1st menu entry instead...")
 
                         #Find the 1st menu entry.
-                        for Entry in MenuEntries["MainMenu"]:
+                        for Entry in MenuEntries["MainMenu"]["Order"]:
                             if MenuEntries["MainMenu"][Entry]["ID"] == 0:
                                 DefaultOS = Entry
                                 logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Set default OS to "+Entry+" instead. Continuing...")
@@ -390,6 +392,7 @@ class Main(): #*** Refactor all of these ***
         MenuEntries = {}
         Menu = "MainMenu"
         MenuEntries[Menu] = {}
+        MenuEntries[Menu]["Order"] = []
         MenuIDs = {}
         MenuIDs[Menu] = {}
         MenuIDs[Menu]["ID"] = ""
@@ -419,6 +422,7 @@ class Main(): #*** Refactor all of these ***
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Preparing to get menu entry info...")
         MenuEntry = ' '.join(Line.split()[1:])
 
+        MenuEntries[Menu]["Order"].append(MenuEntry)
         MenuEntries[Menu][MenuEntry] = {}
         MenuEntries[Menu][MenuEntry]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
 
@@ -507,6 +511,7 @@ class Main(): #*** Refactor all of these ***
         MenuEntries = {}
         Menu = "MainMenu"
         MenuEntries[Menu] = {}
+        MenuEntries[Menu]["Order"] = []
         MenuIDs = {}
         MenuIDs[Menu] = {}
         MenuIDs[Menu]["ID"] = ""
@@ -551,6 +556,7 @@ class Main(): #*** Refactor all of these ***
                 break
 
         MenuEntries[Menu][MenuEntry] = {}
+        MenuEntries[Menu]["Order"].append(MenuEntry)
         MenuEntries[Menu][MenuEntry]["RawMenuEntryData"] = RawMenuEntryData
         MenuEntries[Menu][MenuEntry]["ID"] = MenuIDs[Menu]["ID"]+unicode(EntryCounter)
         MenuEntries[Menu][MenuEntry]["Partition"] = "Unknown"
@@ -651,7 +657,7 @@ class Main(): #*** Refactor all of these ***
 
         #Find the 1st menu entry and use that if we couldn't find the default OS.
         if DefaultOS == "Unknown":
-            for Entry in BootloaderInfo[OS]["MenuEntries"]["MainMenu"]:
+            for Entry in BootloaderInfo[OS]["MenuEntries"]["MainMenu"]["Order"]:
                 if BootloaderInfo[OS]["MenuEntries"]["MainMenu"][Entry]["ID"] == 0:
                     DefaultOS = Entry
                     logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Set default OS to "+Entry+" instead. Continuing...")
