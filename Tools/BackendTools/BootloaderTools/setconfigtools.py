@@ -81,6 +81,11 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
                 logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Commenting out GRUB_HIDDEN_TIMEOUT...")
                 line = "#"+line
 
+            #Comment out the GRUB_CMDLINE_LINUX line.
+            elif 'GRUB_CMDLINE_LINUX' in line and 'GRUB_CMDLINE_LINUX_DEFAULT' not in line and '=' in line and '#' not in line:
+                logger.debug("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Commenting out GRUB_CMDLINE_LINUX...")
+                line = "#"+line
+
             NewFileContents.append(line)
 
         #Check that everything was set. If not, write that config now.
