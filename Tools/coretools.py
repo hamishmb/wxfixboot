@@ -35,6 +35,8 @@ class Main():
         Counter = 0
         Line = str("")
         LineList = []
+        Hold = False
+        SendLine = False
 
         #Run the command(s).
         logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds)
@@ -51,7 +53,19 @@ class Main():
 
             Line += Char
 
-            if Char in ("\n", "\r", "\x08"):
+            if Hold:
+                #Check if this char is \n.
+                if Char == "\n":
+                    #Send the line as is but replace \r\n with \n.
+                    Line = str(Line.replace("\r\n", "\n"))
+
+                else:
+                    #Send the line as is.
+                    SendLine = True
+
+                Hold = False
+
+            if Char in ("\n", "\x08") or SendLine:
                 #Convert to unicode if needed and remove "NULL" characters.
                 if unicode(type(Line)) != type(""):
                     Line = unicode(Line, errors="replace").replace("\x00", "")
@@ -61,6 +75,11 @@ class Main():
 
                 #Reset Line.
                 Line = str("")
+                SendLine = False
+
+            elif Char == "\r":
+                #Take the next character too in case it's \n, so we can just handle \r\n as \n.
+                Hold = True
 
         #Save runcmd.returncode, as it tends to reset fairly quickly.
         Retval = int(cmd.returncode)

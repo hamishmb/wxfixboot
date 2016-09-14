@@ -18,6 +18,7 @@
 #*** Warn user about LILO + ELILO's rubbish multi-OS support (always boot the same kernel, regrardless of OS) if needed ***
 #*** Is /etc/default/grub created after switching to grub if it was purged before? ***
 #*** Elilo not available in Ubuntu 16.04 + ***
+#*** Check setting grub default is working correctly, seems to set wrong ID. ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -2376,7 +2377,7 @@ class BackendThread(threading.Thread):
 
         wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
-    def GenerateSystemReport(self): #*** Use dictionaries here *** *** Add SystemInfo["DisabledBootloaderOperations"] functionality to here, and warn at end of operations ***
+    def GenerateSystemReport(self): #*** Use dictionaries here *** *** Add SystemInfo["DisableBootloaderOperations"] functionality to here, and warn at end of operations ***
         """Create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary."""
         DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot will now create your system report. Click okay to continue.")
 
