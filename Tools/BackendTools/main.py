@@ -415,8 +415,31 @@ class Main():
 
         #On GRUB2, get the new menuentries so we can set the default OS.
         logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Reading GRUB2's menu entries to set default OS...")
+
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
             BootloaderInfo[OS]["MenuEntries"], BootloaderInfo[OS]["MenuIDs"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)[1:]
+
+            #*****************
+            Keys = BootloaderInfo[OS]["MenuEntries"].keys()
+            Keys.sort()
+
+            for Menu in Keys:
+                print("\n\n\nMenu Name: "+Menu+"\n\n\n")
+
+                MenuEntries = BootloaderInfo[OS]["MenuEntries"][Menu].keys()
+                MenuEntries.sort()
+
+                for MenuEntry in MenuEntries:
+                    print("\tMenu Entry Name: "+MenuEntry+"\n\n")
+                    print("\t\tID: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["ID"]+"\n\n")
+                    print("\t\tPartition: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["Partition"]+"\n\n")
+                    print("\t\tKernel Options: "+', '.join(BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["KernelOptions"])+"\n\n")
+                    print("\t\tMenu Entry Data:\n\n")
+
+                    for Thing in BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["RawMenuEntryData"]:
+                        print("\t\t\t"+Thing)
+
+            #*****************
 
         #Look for the configuration file, based on which SetConfig() function we're about to run.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
