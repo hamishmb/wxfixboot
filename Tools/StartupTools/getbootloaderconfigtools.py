@@ -485,7 +485,11 @@ class Main(): #*** Test these again ***
         for Line in ConfigFile:
             if 'timeout' in Line and 'sec' not in Line:
                 #Found it!
-                Timeout = Line.split()[1].replace('\n', '')
+                try:
+                    Timeout = Line.split()[1].replace('\n', '')
+
+                except IndexError:
+                    Timeout = Line.split("=")[1].replace('\n', '')
 
                 if Timeout.isdigit():
                     #Great! We got it.
