@@ -190,10 +190,11 @@ class Main():
 
             else:
                 #Look for Linux.
+                #The python command runs on python 2 and python 3.
                 logger.debug("MainStartupTools: Main().GetOSs(): Looking for Linux on "+Partition+"...")
 
                 if Partition == RootFS:
-                    Cmd = "python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
+                    Cmd =  "python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
                     APTCmd = "which apt-get"
                     YUMCmd = "which yum"
                     Chroot = False
@@ -202,7 +203,7 @@ class Main():
 
                 else:
                     MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
-                    Cmd = "chroot "+MountPoint+" python2 -c \"import platform; print ' '.join(platform.linux_distribution());\""
+                    Cmd = "chroot "+MountPoint+" python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
                     APTCmd = "chroot "+MountPoint+" which apt-get"
                     YUMCmd = "chroot "+MountPoint+" which yum"
                     Chroot = True

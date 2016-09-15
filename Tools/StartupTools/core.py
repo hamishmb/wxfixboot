@@ -172,20 +172,34 @@ class Main():
 
         #Do setup.
         OSArch = None
-
         Cmd = "arch"
 
-        if MountPoint != "":
-            Cmd = "chroot "+MountPoint+" "+Cmd
+        while Found == False:
+            if MountPoint != "":
+                Cmd = "chroot "+MountPoint+" "+Cmd
 
-        Retval, OSArch = CoreTools.StartProcess(Cmd, ReturnOutput=True)
+            Retval, OSArch = CoreTools.StartProcess(Cmd, ReturnOutput=True)
 
-        #If the command failed, give up.
-        if Retval != 0:
-            return None
+            #If the command failed, try a second approach.
+            if Retval != 0 and "arch" in Cmd:
+                Cmd = "file /sbin/init"
 
-        #Return the arch (or None, if we didn't find it).
-        return OSArch
+            else:
+                break
+
+        #If the command that worked was 'arch', or both failed, we can just return it.
+        if "arch" in Cmd or Retval != 0:
+            #Return the arch (or None, if we didn't find it).
+            return OSArch
+
+        else:
+            if "32-bit" in OSArch:
+                OSArch = "i386"
+
+            else:
+                OSArch = "x86_64"
+
+            return OSArch
 
     def AskForOSName(self, Partition, OSArch, IsCurrentOS):
         """Ask the user if an OS exists on the given partition."""
