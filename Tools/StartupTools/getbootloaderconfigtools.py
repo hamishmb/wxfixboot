@@ -454,6 +454,9 @@ class Main(): #*** Test these again ***
             except IndexError:
                 continue
 
+            if "vmlinuz" in Partition:
+                Partition = Line.split(" ")[2]
+
             #If we have a UUID, convert it into a device node.
             if "UUID=" in Partition:
                 UUID = Partition.split("=")[2]
