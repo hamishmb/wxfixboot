@@ -419,6 +419,7 @@ class Main(): #*** Test these again ***
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Preparing to get menu entry info...")
         MenuEntry = ' '.join(Line.split("\t")[1:])
 
+        #Make it work on Fedora.
         if MenuEntry == "":
             MenuEntry = ' '.join(Line.split(" ")[1:])
 
@@ -454,6 +455,7 @@ class Main(): #*** Test these again ***
             except IndexError:
                 continue
 
+            #Make it work on Fedora.
             if "vmlinuz" in Partition:
                 Partition = Line.split(" ")[3]
 
