@@ -174,7 +174,7 @@ class Main():
         OSArch = None
         Cmd = "arch"
 
-        while Found == False:
+        while True:
             if MountPoint != "":
                 Cmd = "chroot "+MountPoint+" "+Cmd
 
@@ -183,6 +183,10 @@ class Main():
             #If the command failed, try a second approach.
             if Retval != 0 and "arch" in Cmd:
                 Cmd = "file /sbin/init"
+
+            elif Retval != 0:
+                OSArch = None
+                break
 
             else:
                 break
