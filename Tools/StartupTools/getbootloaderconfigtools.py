@@ -455,7 +455,7 @@ class Main(): #*** Test these again ***
                 continue
 
             if "vmlinuz" in Partition:
-                Partition = Line.split(" ")[2]
+                Partition = Line.split(" ")[3]
 
             #If we have a UUID, convert it into a device node.
             if "UUID=" in Partition:
