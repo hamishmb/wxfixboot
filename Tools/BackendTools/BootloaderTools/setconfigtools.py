@@ -30,14 +30,14 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
         #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Attempting to match the WxFixBoot's default OS for this bootloader to any OS that GRUB2 detected...")
 
-        #Find the partition that WxFixBoot's default OS for this bootloader is on.
-        DefaultBootDevice = OSInfo[BootloaderInfo[OS]["Settings"]["DefaultOS"]]["Partition"]
+        #Find the partition that WxFixBoot's default OS for this bootloader is on. Also find the /boot partition, as grub may point there in the menu entries. *** Check this works on Fedora now ***
+        DefaultBootDevices = (OSInfo[BootloaderInfo[OS]["Settings"]["DefaultOS"]]["Partition"], OSInfo[BootloaderInfo[OS]["Settings"]["DefaultOS"]]["BootPartition"])
 
         #Find the ID for the menu entry that correspondes to that OS (Main Menu only to avoid recovery options + misc).
         BLSpecificDefaultOS = "Unknown"
 
         for Entry in BootloaderInfo[OS]["MenuEntries"]["MainMenu"]["Order"]:
-            if BootloaderInfo[OS]["MenuEntries"]["MainMenu"][Entry]["Partition"] == DefaultBootDevice:
+            if BootloaderInfo[OS]["MenuEntries"]["MainMenu"][Entry]["Partition"] in DefaultBootDevices:
                 BLSpecificDefaultOS = BootloaderInfo[OS]["MenuEntries"]["MainMenu"][Entry]["ID"]
                 logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found Default OS's GRUB2 ID...")
                 break

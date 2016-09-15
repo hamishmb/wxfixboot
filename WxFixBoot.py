@@ -18,7 +18,6 @@
 #*** Warn user about LILO + ELILO's rubbish multi-OS support (always boot the same kernel, regrardless of OS) if needed ***
 #*** Is /etc/default/grub created after switching to grub if it was purged before? ***
 #*** Elilo not available in Ubuntu 16.04 + ***
-#*** Setting GRUB2 default OS fails when setting to fedora, because fedora uses boot partition ***
 #*** Warn user about modifying non-EFI OS from EFI OS. Messes up linux and initrd commands on Fedora. They become intirdefi and linuxefi ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
