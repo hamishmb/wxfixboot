@@ -454,10 +454,9 @@ class Main(): #*** Test these again ***
             #If we have a UUID, convert it into a device node.
             if "UUID=" in Partition:
                 UUID = Partition.split("=")[2]
-                print(UUID)
 
                 for Disk in DiskInfo.keys():
-                    if DiskInfo[Disk]["UUID"] == Partition:
+                    if DiskInfo[Disk]["UUID"] == UUID:
                         MenuEntries["MainMenu"][MenuEntry]["Partition"] = Disk
 
             else:
