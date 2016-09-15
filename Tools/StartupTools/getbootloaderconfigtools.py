@@ -466,7 +466,7 @@ class Main(): #*** Test these again ***
                         MenuEntries["MainMenu"][MenuEntry]["Partition"] = Disk
 
             else:
-                MenuEntries["MainMenu"][MenuEntry]["Partition"] = Partition
+                MenuEntries["MainMenu"][MenuEntry]["Partition"] = Partition.split("=")[1]
 
             logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Found boot partition...")
 
