@@ -417,7 +417,7 @@ class Main(): #*** Test these again ***
     def AssembleGRUBLEGACYMenuEntry(self, MenuEntries, MenuEntriesFileContents, Line, EntryCounter):
         """Assemble a menu entry in the dictionary for GRUB LEGACY"""
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Preparing to get menu entry info...")
-        MenuEntry = ' '.join(Line.split()[1:])
+        MenuEntry = ' '.join(Line.split("\t")[1:])
 
         MenuEntries["MainMenu"]["Order"].append(MenuEntry)
         MenuEntries["MainMenu"][MenuEntry] = {}
@@ -427,8 +427,7 @@ class Main(): #*** Test these again ***
 
         #Get the full contents of the menuentry (keep adding lines to the list until we find "title").
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Getting menu entry data...")
-        for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
-            print(MenuEntryData)
+        for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line)+1:]:
             MenuEntries["MainMenu"][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
 
             if "title" in MenuEntryData:
@@ -446,7 +445,7 @@ class Main(): #*** Test these again ***
                 continue
 
             #Get the partition.
-            Partition = Line.split()[2]
+            Partition = Line.split(" ")[1]
 
             #If we have a UUID, convert it into a device node.
             if "UUID=" in Partition:
@@ -462,7 +461,7 @@ class Main(): #*** Test these again ***
             logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Found boot partition...")
 
             #Kernel Options.
-            MenuEntries["MainMenu"][MenuEntry]["KernelOptions"] = Line.split()[3:]
+            MenuEntries["MainMenu"][MenuEntry]["KernelOptions"] = Line.split(" ")[2:]
             logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Found kernel options...")
 
         return MenuEntries
