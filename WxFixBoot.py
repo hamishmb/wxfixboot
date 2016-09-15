@@ -17,6 +17,7 @@
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Elilo not available in Ubuntu 16.04 + ***
 #*** Warn user about modifying non-EFI OS from EFI OS. Messes up linux and initrd commands on Fedora. They become intirdefi and linuxefi. What about fixing this automatically in such circumstances? ***
+#*** Don't allow modifying GRUB-LEGACY ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -1499,7 +1500,7 @@ class BootloaderOptionsWindow(wx.Frame):
         else:
             Choices = ["GRUB-UEFI", "GRUB2", "ELILO", "LILO"]
 
-        #Disable ELILO and LILO on Fedora systems. *** Check if ELILO is present on newer ubuntu systems ***
+        #Disable ELILO and LILO on Fedora systems. *** Check each bootloader is present before offering them as choices ***
         if "Fedora" in self.OSChoice.GetStringSelection():
             if "ELILO" in Choices:
                 Choices.remove("ELILO")

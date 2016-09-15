@@ -404,7 +404,8 @@ class Main(): #*** Test these again ***
         #Read each line in the file.
         for Line in MenuEntriesFileContents:
             #Process all menu entries.
-            if "title " in Line:
+            print(Line)
+            if "title" in Line:
                 logger.info("BootloaderConfigObtainingTools: Main().ParseGRUBLEGACYMenuEntries(): Found a menu entry. Assembling into a dictionary with self.AssembleGRUBLEGACYMenuEntry()...")
                 MenuEntries = self.AssembleGRUBLEGACYMenuEntry(MenuEntries, MenuEntriesFileContents, Line, EntryCounter)
                 EntryCounter += 1
