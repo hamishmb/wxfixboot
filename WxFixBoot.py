@@ -1507,8 +1507,9 @@ class BootloaderOptionsWindow(wx.Frame):
             if "LILO" in Choices:
                 Choices.remove("LILO")
 
-        #Remove the current bootloader from the choices.
-        Choices.remove(BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"])
+        #Remove the current bootloader from the choices (if it's in there).
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] in Choices:
+            Choices.remove(BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"])
 
         #Set the choices.
         self.NewBootloaderChoice.SetItems(["-- Please Select --"]+Choices)
