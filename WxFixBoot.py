@@ -15,9 +15,8 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Remove grub's .efi files after installing elilo and vice versa ***
-#*** Is /etc/default/grub created after switching to grub if it was purged before? ***
 #*** Elilo not available in Ubuntu 16.04 + ***
-#*** Warn user about modifying non-EFI OS from EFI OS. Messes up linux and initrd commands on Fedora. They become intirdefi and linuxefi ***
+#*** Warn user about modifying non-EFI OS from EFI OS. Messes up linux and initrd commands on Fedora. They become intirdefi and linuxefi. What about fixing this automatically in such circumstances? ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -1173,7 +1172,7 @@ class SystemInfoWindow(wx.Frame):
         self.Destroy()
 
 #End System Info Window
-#Begin Bootloader Options Window. *** Reorganise functions here ***
+#Begin Bootloader Options Window.
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self, ParentWindow):
         """Initialise bootloader options window"""
@@ -1391,7 +1390,45 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Get the sizer set up for the frame.
         self.Panel.SetSizer(self.MainSizer)
-        #self.MainSizer.SetMinSize(wx.Size(936,360))
+        #self.MainSizer.SetMinSize(wx.Size(936,360)) *** Find size ***
+
+    def BindEvents(self):
+        """Bind all events for BootloaderOptionsWindow"""
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.Bind(wx.EVT_SIZE, self.OnSize)
+
+        #Text.
+        self.OSInfoText.Bind(wx.EVT_LEFT_DOWN, self.OnOSInfo)
+        self.BasicOptionsText.Bind(wx.EVT_LEFT_DOWN, self.OnBasicOptions)
+        self.AdvancedOptionsText.Bind(wx.EVT_LEFT_DOWN, self.OnAdvancedOptions)
+
+        #Images.
+        self.Arrow1.Bind(wx.EVT_LEFT_DOWN, self.OnOSInfo)
+        self.Arrow2.Bind(wx.EVT_LEFT_DOWN, self.OnBasicOptions)
+        self.Arrow3.Bind(wx.EVT_LEFT_DOWN, self.OnAdvancedOptions)
+
+        #Checkboxes.
+        self.Bind(wx.EVT_CHECKBOX, self.OnTimeoutCheckBox, self.KeepBootloaderTimeoutCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnUpdateOrReinstallCheckBox, self.ReinstallBootloaderCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnUpdateOrReinstallCheckBox, self.UpdateBootloaderCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnInstallNewBootloaderCheckBox, self.InstallNewBootloaderCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnBackupBootloaderCheckBox, self.BackupBootloaderCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnRestoreBootloaderCheckBox, self.RestoreBootloaderCheckBox)
+        self.Bind(wx.EVT_CHECKBOX, self.OnKernelOptionsCheckBox, self.KeepKernelOptionsCheckBox)
+
+        #Buttons.
+        self.Bind(wx.EVT_BUTTON, self.OnClose, self.SaveButton)
+        self.Bind(wx.EVT_BUTTON, self.SystemInfo, self.SystemInfoButton)
+
+        #Choiceboxes.
+        self.Bind(wx.EVT_CHOICE, self.OnOSChoiceChange, self.OSChoice)
+        self.Bind(wx.EVT_CHOICE, self.OnRestoreBootloaderChoice, self.RestoreBootloaderChoice)
+        self.Bind(wx.EVT_CHOICE, self.OnBackupBootloaderChoice, self.BackupBootloaderChoice)
+
+    def SystemInfo(self, Event=None):
+        """Start SystemInfoWindow"""
+        logger.debug("BootloaderOptionsWindow().SystemInfo(): Starting System Info Window...")
+        SystemInfoWindow(self).Show()
 
     def LoadSettings(self, Event=None):
         """Load all settings for this OS into the checkboxes and choice boxes"""
@@ -1432,38 +1469,225 @@ class BootloaderOptionsWindow(wx.Frame):
         self.RestoreBootloaderCheckBox.Enable(BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"])
         self.RestoreBootloaderChoice.Enable(BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"])
 
-    def BindEvents(self):
-        """Bind all events for BootloaderOptionsWindow"""
-        self.Bind(wx.EVT_CLOSE, self.OnClose)
-        self.Bind(wx.EVT_SIZE, self.OnSize)
+    def SetTextLabels(self):
+        """Set text labels for GUI elements"""
+        OS = self.OSChoice.GetStringSelection()
 
-        #Text.
-        self.OSInfoText.Bind(wx.EVT_LEFT_DOWN, self.OnOSInfo)
-        self.BasicOptionsText.Bind(wx.EVT_LEFT_DOWN, self.OnBasicOptions)
-        self.AdvancedOptionsText.Bind(wx.EVT_LEFT_DOWN, self.OnAdvancedOptions)
+        logger.debug("BootloaderOptionsWindow().SetTextLabels(): Setting text labels for "+OS+"...")
+        self.KeepKernelOptionsCheckBox.SetLabel("Keep "+BootloaderInfo[OS]["Bootloader"]+"'s existing kernel options")
+        self.InstallNewBootloaderCheckBox.SetLabel("Replace "+BootloaderInfo[OS]["Bootloader"]+" with:")
+        self.ReinstallBootloaderCheckBox.SetLabel("Fix/Reinstall "+BootloaderInfo[OS]["Bootloader"])
+        self.UpdateBootloaderCheckBox.SetLabel("Update "+BootloaderInfo[OS]["Bootloader"]+"'s Config")
+        self.KeepBootloaderTimeoutCheckBox.SetLabel("Keep "+BootloaderInfo[OS]["Bootloader"]+"'s existing menu timeout")
 
-        #Images.
-        self.Arrow1.Bind(wx.EVT_LEFT_DOWN, self.OnOSInfo)
-        self.Arrow2.Bind(wx.EVT_LEFT_DOWN, self.OnBasicOptions)
-        self.Arrow3.Bind(wx.EVT_LEFT_DOWN, self.OnAdvancedOptions)
+    def OnOSChoiceChange(self, Event=None, Startup=False):
+        """Save and load new GUI settings and states in accordance with the OS choice change"""
+        logger.debug("BootloaderOptionsWindow().OnOSChoiceChange(): OS choice has changed. Saving and then loading settings...")
+        #Save settings when selection a new choice, but not when this is called when the window is first opened.
+        if Startup == False:
+            self.SaveSettings(OS=SystemInfo["PreviousOSChoice"])
+            self.SaveGUIState(OS=SystemInfo["PreviousOSChoice"])
+            SystemInfo["PreviousOSChoice"] = self.OSChoice.GetStringSelection()
 
-        #Checkboxes.
-        self.Bind(wx.EVT_CHECKBOX, self.OnTimeoutCheckBox, self.KeepBootloaderTimeoutCheckBox)
-        self.Bind(wx.EVT_CHECKBOX, self.OnUpdateOrReinstallCheckBox, self.ReinstallBootloaderCheckBox)
-        self.Bind(wx.EVT_CHECKBOX, self.OnUpdateOrReinstallCheckBox, self.UpdateBootloaderCheckBox)
-        self.Bind(wx.EVT_CHECKBOX, self.OnInstallNewBootloaderCheckBox, self.InstallNewBootloaderCheckBox)
-        self.Bind(wx.EVT_CHECKBOX, self.OnBackupBootloaderCheckBox, self.BackupBootloaderCheckBox)
-        self.Bind(wx.EVT_CHECKBOX, self.OnRestoreBootloaderCheckBox, self.RestoreBootloaderCheckBox)
-        self.Bind(wx.EVT_CHECKBOX, self.OnKernelOptionsCheckBox, self.KeepKernelOptionsCheckBox)
+        #Set up NewBootloaderChoice.
+        if OSInfo[self.OSChoice.GetStringSelection()]["EFIPartition"] == "Unknown":
+            Choices = ["GRUB2", "LILO"]
+            dlg = wx.MessageDialog(self.Panel, "This OS has no UEFI partition, so you will be unable to select a UEFI bootloader to install.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
 
-        #Buttons.
-        self.Bind(wx.EVT_BUTTON, self.OnClose, self.SaveButton)
-        self.Bind(wx.EVT_BUTTON, self.SystemInfo, self.SystemInfoButton)
+        else:
+            Choices = ["GRUB-UEFI", "GRUB2", "ELILO", "LILO"]
 
-        #Choiceboxes.
-        self.Bind(wx.EVT_CHOICE, self.OnOSChoiceChange, self.OSChoice)
-        self.Bind(wx.EVT_CHOICE, self.OnRestoreBootloaderChoice, self.RestoreBootloaderChoice)
-        self.Bind(wx.EVT_CHOICE, self.OnBackupBootloaderChoice, self.BackupBootloaderChoice)
+        #Disable ELILO and LILO on Fedora systems. *** Check if ELILO is present on newer ubuntu systems ***
+        if "Fedora" in self.OSChoice.GetStringSelection():
+            if "ELILO" in Choices:
+                Choices.remove("ELILO")
+
+            if "LILO" in Choices:
+                Choices.remove("LILO")
+
+        #Remove the current bootloader from the choices.
+        Choices.remove(BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"])
+
+        #Set the choices.
+        self.NewBootloaderChoice.SetItems(["-- Please Select --"]+Choices)
+        self.NewBootloaderChoice.SetStringSelection("-- Please Select --")
+
+        self.LoadSettings()
+        self.SetGUIState()
+        self.SetTextLabels()
+
+        #Default OS choice.
+        self.DefaultOSChoice.SetStringSelection(BootloaderInfo[self.OSChoice.GetStringSelection()]["DefaultOS"])
+
+        #Make sure the window displays properly.
+        self.MainSizer.SetSizeHints(self)
+
+    def OnOSInfo(self, Event=None):
+        """Hide/Show the OS info, and rotate the arrow"""
+        if self.ListCtrl.IsShown():
+            logger.debug("BootloaderOptionsWindow().OnOSInfo(): Hiding OS Info...")
+            self.Arrow1.SetBitmap(self.RightArrowImage)
+
+            self.MainSizer.Detach(self.ListCtrl)
+            self.MainSizer.Detach(self.SystemInfoButton)
+            self.ListCtrl.Hide()
+            self.SystemInfoButton.Hide()
+
+        else:
+            logger.debug("BootloaderOptionsWindow().OnOSInfo(): Showing OS Info...")
+            self.Arrow1.SetBitmap(self.DownArrowImage)
+
+            self.MainSizer.Insert(4, self.ListCtrl, 5, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(5, self.SystemInfoButton, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.ListCtrl.Show()
+            self.SystemInfoButton.Show()
+
+        #Make sure the window is displayed properly.
+        self.MainSizer.SetSizeHints(self)
+
+    def OnBasicOptions(self, Event=None):
+        """Hide/Show the basic options, and rotate the arrow"""
+        if self.ReinstallBootloaderCheckBox.IsShown():
+            logger.debug("BootloaderOptionsWindow().OnBasicOptions(): Hiding Basic Options...")
+
+            #Refuse to collapse this section if Advanced Settings are shown.
+            if self.InstallNewBootloaderCheckBox.IsShown():
+                logger.debug("BootloaderOptionsWindow().OnBasicOptions(): Cancelling because Advanced Options are shown...")
+                return True
+
+            self.Arrow2.SetBitmap(self.RightArrowImage)
+
+            self.MainSizer.Detach(self.FixAndUpdateBootloaderSizer)
+            self.MainSizer.Detach(self.TimeoutSizer)
+            self.MainSizer.Detach(self.DefaultOSSizer)
+
+            self.ReinstallBootloaderCheckBox.Hide()
+            self.UpdateBootloaderCheckBox.Hide()
+            self.KeepBootloaderTimeoutCheckBox.Hide()
+            self.NewTimeoutText.Hide()
+            self.BootloaderTimeoutSpinner.Hide()
+            self.DefaultOSText.Hide()
+            self.DefaultOSChoice.Hide()
+
+        else:
+            logger.debug("BootloaderOptionsWindow().OnBasicOptions(): Showing Basic Options...")
+            self.Arrow2.SetBitmap(self.DownArrowImage)
+
+            #Find the first index to re-add items in MainSizer.
+            if self.ListCtrl.IsShown():
+                FirstNumber = 8
+
+            else:
+                FirstNumber = 6
+
+            self.MainSizer.Insert(FirstNumber, self.FixAndUpdateBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+1, self.TimeoutSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+2, self.DefaultOSSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+            self.ReinstallBootloaderCheckBox.Show()
+            self.UpdateBootloaderCheckBox.Show()
+            self.KeepBootloaderTimeoutCheckBox.Show()
+            self.NewTimeoutText.Show()
+            self.BootloaderTimeoutSpinner.Show()
+            self.DefaultOSText.Show()
+            self.DefaultOSChoice.Show()
+
+        #Make sure the window displays properly.
+        self.MainSizer.SetSizeHints(self)
+
+    def OnAdvancedOptions(self, Event=None):
+        """Show/Hide the advanced options, and rotate the arrow"""
+        if self.InstallNewBootloaderCheckBox.IsShown():
+            logger.debug("BootloaderOptionsWindow().OnAdvancedOptions(): Hiding Advanced Options...")
+            self.Arrow3.SetBitmap(self.RightArrowImage)
+
+            self.MainSizer.Detach(self.KernelOptionsSizer)
+            self.MainSizer.Detach(self.InstallNewBootloaderSizer)
+            self.MainSizer.Detach(self.BackupBootloaderSizer)
+            self.MainSizer.Detach(self.RestoreBootloaderSizer)
+
+            self.KeepKernelOptionsCheckBox.Hide()
+            self.NewKernelOptionsText.Hide()
+            self.NewKernelOptionsTextCtrl.Hide()
+            self.InstallNewBootloaderCheckBox.Hide()
+            self.NewBootloaderChoice.Hide()
+            self.BackupBootloaderCheckBox.Hide()
+            self.BackupBootloaderText.Hide()
+            self.BackupBootloaderChoice.Hide()
+            self.RestoreBootloaderCheckBox.Hide()
+            self.RestoreBootloaderText.Hide()
+            self.RestoreBootloaderChoice.Hide()
+
+        else:
+            logger.debug("BootloaderOptionsWindow().OnAdvancedOptions(): Showing Advanced Options...")
+
+            #If Basic Options are hidden, show them.
+            if self.ReinstallBootloaderCheckBox.IsShown() == False:
+                logger.debug("BootloaderOptionsWindow().OnAdvancedOptions(): Showing Basic Options first...")
+                self.OnBasicOptions()
+
+            self.Arrow3.SetBitmap(self.DownArrowImage)
+
+            if self.ListCtrl.IsShown():
+                FirstNumber = 13
+
+            else:
+                FirstNumber = 11
+
+            self.MainSizer.Insert(FirstNumber, self.KernelOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+1, self.InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+2, self.BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.MainSizer.Insert(FirstNumber+3, self.RestoreBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+            self.KeepKernelOptionsCheckBox.Show()
+            self.NewKernelOptionsText.Show()
+            self.NewKernelOptionsTextCtrl.Show()
+            self.InstallNewBootloaderCheckBox.Show()
+            self.NewBootloaderChoice.Show()
+            self.BackupBootloaderCheckBox.Show()
+            self.BackupBootloaderText.Show()
+            self.BackupBootloaderChoice.Show()
+            self.RestoreBootloaderCheckBox.Show()
+            self.RestoreBootloaderText.Show()
+            self.RestoreBootloaderChoice.Show()
+
+        #Make sure the window displays properly.
+        self.MainSizer.SetSizeHints(self)
+
+    def OnBackupBootloaderChoice(self, Event=None):
+        """Allow the user to select a config file to backup the bootloader to"""
+        logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Selecting bootloader config backup file...")
+
+        File = self.BackupBootloaderChoice.GetStringSelection()
+
+        #Determine what to do here.
+        if File == "Specify File Path...":
+            Dlg = wx.FileDialog(self.Panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.SAVE)
+
+            if Dlg.ShowModal() == wx.ID_OK:
+                File = Dlg.GetPath()
+                logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): File is "+File+"...")
+                logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Saving config to "+File+"...")
+                plistlib.writePlist(BootloaderInfo[self.OSChoice.GetStringSelection()], File)
+                logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Finished saving config to "+File+"...")
+
+                #Let the user know we were successful.
+                MsgDlg = wx.MessageDialog(self.Panel, "Finished backing up config to "+File+"!", "Config Backup Successful", wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+                MsgDlg.ShowModal()
+                MsgDlg.Destroy()
+
+                #Reset the choicebox and checkbox.
+                self.BackupBootloaderChoice.SetStringSelection("-- Please Select --")
+                self.BackupBootloaderCheckBox.SetValue(0)
+                self.OnBackupBootloaderCheckBox()
+
+            else:
+                #Reset choice box.
+                self.BackupBootloaderChoice.SetStringSelection("-- Please Select --")
+
+            Dlg.Destroy()
 
     def OnRestoreBootloaderChoice(self, Event=None):
         """Allow the user to select a config file to restore the bootloader from"""
@@ -1510,44 +1734,6 @@ class BootloaderOptionsWindow(wx.Frame):
             else:
                 #Reset choice box.
                 self.RestoreBootloaderChoice.SetStringSelection("-- Please Select --")
-
-            Dlg.Destroy()
-
-    def SystemInfo(self, Event=None):
-        """Start SystemInfoWindow"""
-        logger.debug("BootloaderOptionsWindow().SystemInfo(): Starting System Info Window...")
-        SystemInfoWindow(self).Show()
-
-    def OnBackupBootloaderChoice(self, Event=None):
-        """Allow the user to select a config file to backup the bootloader to"""
-        logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Selecting bootloader config backup file...")
-
-        File = self.BackupBootloaderChoice.GetStringSelection()
-
-        #Determine what to do here.
-        if File == "Specify File Path...":
-            Dlg = wx.FileDialog(self.Panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.SAVE)
-
-            if Dlg.ShowModal() == wx.ID_OK:
-                File = Dlg.GetPath()
-                logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): File is "+File+"...")
-                logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Saving config to "+File+"...")
-                plistlib.writePlist(BootloaderInfo[self.OSChoice.GetStringSelection()], File)
-                logger.debug("BootloaderOptionsWindow().OnBackupBootloaderChoice(): Finished saving config to "+File+"...")
-
-                #Let the user know we were successful.
-                MsgDlg = wx.MessageDialog(self.Panel, "Finished backing up config to "+File+"!", "Config Backup Successful", wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-                MsgDlg.ShowModal()
-                MsgDlg.Destroy()
-
-                #Reset the choicebox and checkbox.
-                self.BackupBootloaderChoice.SetStringSelection("-- Please Select --")
-                self.BackupBootloaderCheckBox.SetValue(0)
-                self.OnBackupBootloaderCheckBox()
-
-            else:
-                #Reset choice box.
-                self.BackupBootloaderChoice.SetStringSelection("-- Please Select --")
 
             Dlg.Destroy()
 
@@ -1609,61 +1795,6 @@ class BootloaderOptionsWindow(wx.Frame):
             self.DefaultOSChoice.SetStringSelection(OS)
 
         logger.debug("BootloaderOptionsWindow().SetupForRestoringBootloader(): Finished loading config from file...")
-
-    def OnOSChoiceChange(self, Event=None, Startup=False):
-        """Save and load new GUI settings and states in accordance with the OS choice change"""
-        logger.debug("BootloaderOptionsWindow().OnOSChoiceChange(): OS choice has changed. Saving and then loading settings...")
-        #Save settings when selection a new choice, but not when this is called when the window is first opened.
-        if Startup == False:
-            self.SaveSettings(OS=SystemInfo["PreviousOSChoice"])
-            self.SaveGUIState(OS=SystemInfo["PreviousOSChoice"])
-            SystemInfo["PreviousOSChoice"] = self.OSChoice.GetStringSelection()
-
-        #Set up NewBootloaderChoice.
-        if OSInfo[self.OSChoice.GetStringSelection()]["EFIPartition"] == "Unknown":
-            Choices = ["GRUB2", "LILO"]
-            dlg = wx.MessageDialog(self.Panel, "This OS has no UEFI partition, so you will be unable to select a UEFI bootloader to install.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-            dlg.Destroy()
-
-        else:
-            Choices = ["GRUB-UEFI", "GRUB2", "ELILO", "LILO"]
-
-        #Disable ELILO and LILO on Fedora systems. *** Check if ELILO is present on newer ubuntu systems ***
-        if "Fedora" in self.OSChoice.GetStringSelection():
-            if "ELILO" in Choices:
-                Choices.remove("ELILO")
-
-            if "LILO" in Choices:
-                Choices.remove("LILO")
-
-        #Remove the current bootloader from the choices.
-        Choices.remove(BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"])
-
-        #Set the choices.
-        self.NewBootloaderChoice.SetItems(["-- Please Select --"]+Choices)
-        self.NewBootloaderChoice.SetStringSelection("-- Please Select --")
-
-        self.LoadSettings()
-        self.SetGUIState()
-        self.SetTextLabels()
-
-        #Default OS choice.
-        self.DefaultOSChoice.SetStringSelection(BootloaderInfo[self.OSChoice.GetStringSelection()]["DefaultOS"])
-
-        #Make sure the window displays properly.
-        self.MainSizer.SetSizeHints(self)
-
-    def SetTextLabels(self):
-        """Set text labels for GUI elements"""
-        OS = self.OSChoice.GetStringSelection()
-
-        logger.debug("BootloaderOptionsWindow().SetTextLabels(): Setting text labels for "+OS+"...")
-        self.KeepKernelOptionsCheckBox.SetLabel("Keep "+BootloaderInfo[OS]["Bootloader"]+"'s existing kernel options")
-        self.InstallNewBootloaderCheckBox.SetLabel("Replace "+BootloaderInfo[OS]["Bootloader"]+" with:")
-        self.ReinstallBootloaderCheckBox.SetLabel("Fix/Reinstall "+BootloaderInfo[OS]["Bootloader"])
-        self.UpdateBootloaderCheckBox.SetLabel("Update "+BootloaderInfo[OS]["Bootloader"]+"'s Config")
-        self.KeepBootloaderTimeoutCheckBox.SetLabel("Keep "+BootloaderInfo[OS]["Bootloader"]+"'s existing menu timeout")
 
     def OnUpdateOrReinstallCheckBox(self, Event=None):
         """Enable/Disable options, based on the value of the update/reinstall checkboxes."""
@@ -1797,138 +1928,6 @@ class BootloaderOptionsWindow(wx.Frame):
             Dlg = wx.MessageDialog(self.Panel, "Installing "+self.NewBootloaderChoice.GetStringSelection() +" is discouraged because you have more than one Linux OS installed, and this bootloader has poor support for booting multiple Linux OSs. Click okay to continue.", "WxFixBoot - Warning", wx.OK | wx.ICON_WARNING)
             Dlg.ShowModal()
             Dlg.Destroy()
-
-    def OnOSInfo(self, Event=None):
-        """Hide/Show the OS info, and rotate the arrow"""
-        if self.ListCtrl.IsShown():
-            logger.debug("BootloaderOptionsWindow().OnOSInfo(): Hiding OS Info...")
-            self.Arrow1.SetBitmap(self.RightArrowImage)
-
-            self.MainSizer.Detach(self.ListCtrl)
-            self.MainSizer.Detach(self.SystemInfoButton)
-            self.ListCtrl.Hide()
-            self.SystemInfoButton.Hide()
-
-        else:
-            logger.debug("BootloaderOptionsWindow().OnOSInfo(): Showing OS Info...")
-            self.Arrow1.SetBitmap(self.DownArrowImage)
-
-            self.MainSizer.Insert(4, self.ListCtrl, 5, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.MainSizer.Insert(5, self.SystemInfoButton, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.ListCtrl.Show()
-            self.SystemInfoButton.Show()
-
-        #Make sure the window is displayed properly.
-        self.MainSizer.SetSizeHints(self)
-
-    def OnBasicOptions(self, Event=None):
-        """Hide/Show the basic options, and rotate the arrow"""
-        if self.ReinstallBootloaderCheckBox.IsShown():
-            logger.debug("BootloaderOptionsWindow().OnBasicOptions(): Hiding Basic Options...")
-
-            #Refuse to collapse this section if Advanced Settings are shown.
-            if self.InstallNewBootloaderCheckBox.IsShown():
-                logger.debug("BootloaderOptionsWindow().OnBasicOptions(): Cancelling because Advanced Options are shown...")
-                return True
-
-            self.Arrow2.SetBitmap(self.RightArrowImage)
-
-            self.MainSizer.Detach(self.FixAndUpdateBootloaderSizer)
-            self.MainSizer.Detach(self.TimeoutSizer)
-            self.MainSizer.Detach(self.DefaultOSSizer)
-
-            self.ReinstallBootloaderCheckBox.Hide()
-            self.UpdateBootloaderCheckBox.Hide()
-            self.KeepBootloaderTimeoutCheckBox.Hide()
-            self.NewTimeoutText.Hide()
-            self.BootloaderTimeoutSpinner.Hide()
-            self.DefaultOSText.Hide()
-            self.DefaultOSChoice.Hide()
-
-        else:
-            logger.debug("BootloaderOptionsWindow().OnBasicOptions(): Showing Basic Options...")
-            self.Arrow2.SetBitmap(self.DownArrowImage)
-
-            #Find the first index to re-add items in MainSizer.
-            if self.ListCtrl.IsShown():
-                FirstNumber = 8
-
-            else:
-                FirstNumber = 6
-
-            self.MainSizer.Insert(FirstNumber, self.FixAndUpdateBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.MainSizer.Insert(FirstNumber+1, self.TimeoutSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.MainSizer.Insert(FirstNumber+2, self.DefaultOSSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-
-            self.ReinstallBootloaderCheckBox.Show()
-            self.UpdateBootloaderCheckBox.Show()
-            self.KeepBootloaderTimeoutCheckBox.Show()
-            self.NewTimeoutText.Show()
-            self.BootloaderTimeoutSpinner.Show()
-            self.DefaultOSText.Show()
-            self.DefaultOSChoice.Show()
-
-        #Make sure the window displays properly.
-        self.MainSizer.SetSizeHints(self)
-
-    def OnAdvancedOptions(self, Event=None):
-        """Show/Hide the advanced options, and rotate the arrow"""
-        if self.InstallNewBootloaderCheckBox.IsShown():
-            logger.debug("BootloaderOptionsWindow().OnAdvancedOptions(): Hiding Advanced Options...")
-            self.Arrow3.SetBitmap(self.RightArrowImage)
-
-            self.MainSizer.Detach(self.KernelOptionsSizer)
-            self.MainSizer.Detach(self.InstallNewBootloaderSizer)
-            self.MainSizer.Detach(self.BackupBootloaderSizer)
-            self.MainSizer.Detach(self.RestoreBootloaderSizer)
-
-            self.KeepKernelOptionsCheckBox.Hide()
-            self.NewKernelOptionsText.Hide()
-            self.NewKernelOptionsTextCtrl.Hide()
-            self.InstallNewBootloaderCheckBox.Hide()
-            self.NewBootloaderChoice.Hide()
-            self.BackupBootloaderCheckBox.Hide()
-            self.BackupBootloaderText.Hide()
-            self.BackupBootloaderChoice.Hide()
-            self.RestoreBootloaderCheckBox.Hide()
-            self.RestoreBootloaderText.Hide()
-            self.RestoreBootloaderChoice.Hide()
-
-        else:
-            logger.debug("BootloaderOptionsWindow().OnAdvancedOptions(): Showing Advanced Options...")
-
-            #If Basic Options are hidden, show them.
-            if self.ReinstallBootloaderCheckBox.IsShown() == False:
-                logger.debug("BootloaderOptionsWindow().OnAdvancedOptions(): Showing Basic Options first...")
-                self.OnBasicOptions()
-
-            self.Arrow3.SetBitmap(self.DownArrowImage)
-
-            if self.ListCtrl.IsShown():
-                FirstNumber = 13
-
-            else:
-                FirstNumber = 11
-
-            self.MainSizer.Insert(FirstNumber, self.KernelOptionsSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.MainSizer.Insert(FirstNumber+1, self.InstallNewBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.MainSizer.Insert(FirstNumber+2, self.BackupBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.MainSizer.Insert(FirstNumber+3, self.RestoreBootloaderSizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-
-            self.KeepKernelOptionsCheckBox.Show()
-            self.NewKernelOptionsText.Show()
-            self.NewKernelOptionsTextCtrl.Show()
-            self.InstallNewBootloaderCheckBox.Show()
-            self.NewBootloaderChoice.Show()
-            self.BackupBootloaderCheckBox.Show()
-            self.BackupBootloaderText.Show()
-            self.BackupBootloaderChoice.Show()
-            self.RestoreBootloaderCheckBox.Show()
-            self.RestoreBootloaderText.Show()
-            self.RestoreBootloaderChoice.Show()
-
-        #Make sure the window displays properly.
-        self.MainSizer.SetSizeHints(self)
 
     def SaveSettings(self, Event=None, OS=None):
         """Save all settings for this OS from the checkboxes and choice boxes"""
