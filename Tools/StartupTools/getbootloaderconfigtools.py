@@ -427,7 +427,7 @@ class Main(): #*** Test these again ***
 
         #Get the full contents of the menuentry (keep adding lines to the list until we find "title").
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Getting menu entry data...")
-
+        print(MenuEntriesFileContents[MenuEntriesFileContents.index(Line):])
         for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
             MenuEntries["MainMenu"][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
 
