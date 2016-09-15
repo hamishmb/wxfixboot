@@ -419,6 +419,9 @@ class Main(): #*** Test these again ***
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Preparing to get menu entry info...")
         MenuEntry = ' '.join(Line.split("\t")[1:])
 
+        if MenuEntry == "":
+            MenuEntry = ' '.join(Line.split(" ")[1:])
+
         MenuEntries["MainMenu"]["Order"].append(MenuEntry)
         MenuEntries["MainMenu"][MenuEntry] = {}
         MenuEntries["MainMenu"][MenuEntry]["ID"] = unicode(EntryCounter)
