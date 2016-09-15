@@ -1172,7 +1172,7 @@ class SystemInfoWindow(wx.Frame):
         self.Destroy()
 
 #End System Info Window
-#Begin Bootloader Options Window.
+#Begin Bootloader Options Window. *** Make revert buttons work ***
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self, ParentWindow):
         """Initialise bootloader options window"""

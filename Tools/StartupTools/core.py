@@ -44,11 +44,13 @@ class Main():
                     #Found APT!
                     logger.info("MainStartupTools: Main().DeterminePackageManager(): Found apt...")
                     PackageManager = "apt-get"
+                    break
 
                 else:
                     #Found YUM!
                     logger.info("MainStartupTools: Main().DeterminePackageManager(): Found yum...")
                     PackageManager = "yum"
+                    break
 
         return PackageManager
 
