@@ -444,9 +444,12 @@ class Main(): #*** Test these again ***
             if "kernel" not in Line:
                 continue
 
-            print(Line.split(" "))
             #Get the partition.
-            Partition = Line.split(" ")[1]
+            try:
+                Partition = Line.split(" ")[1]
+
+            except IndexError:
+                continue
 
             #If we have a UUID, convert it into a device node.
             if "UUID=" in Partition:
