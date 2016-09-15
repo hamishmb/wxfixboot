@@ -15,7 +15,6 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Remove grub's .efi files after installing elilo and vice versa ***
-#*** Warn user about LILO + ELILO's rubbish multi-OS support (always boot the same kernel, regrardless of OS) if needed ***
 #*** Is /etc/default/grub created after switching to grub if it was purged before? ***
 #*** Elilo not available in Ubuntu 16.04 + ***
 #*** Warn user about modifying non-EFI OS from EFI OS. Messes up linux and initrd commands on Fedora. They become intirdefi and linuxefi ***
@@ -47,7 +46,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "13/9/2016"
+ReleaseDate = "14/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1174,7 +1173,7 @@ class SystemInfoWindow(wx.Frame):
         self.Destroy()
 
 #End System Info Window
-#Begin Bootloader Options Window.
+#Begin Bootloader Options Window. *** Reorganise functions here ***
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self, ParentWindow):
         """Initialise bootloader options window"""
@@ -1197,6 +1196,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.BindEvents()
 
         self.OnOSChoiceChange(Startup=True)
+        self.OnAdvancedOptions()
 
         logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Window Started.")
 
@@ -1778,6 +1778,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         else:
             self.NewBootloaderChoice.Disable()
+            self.NewBootloaderChoice.SetStringSelection("-- Please Select --")
             self.ReinstallBootloaderCheckBox.Enable()
             self.UpdateBootloaderCheckBox.Enable()
             self.KeepBootloaderTimeoutCheckBox.SetValue(0)
@@ -1789,6 +1790,13 @@ class BootloaderOptionsWindow(wx.Frame):
             self.DefaultOSChoice.Disable()
             self.RestoreBootloaderCheckBox.Enable()
             self.RestoreBootloaderChoice.Disable()
+
+    def OnNewBootloaderChoice(self, Event=None):
+        """Warn user about LILO's/ELILO's rubbish multi OS support if needed"""
+        if len(SystemInfo["ModifyableOSs"]) > 1 and self.NewBootloaderChoice.GetStringSelection() in ("LILO, ELILO"):
+            Dlg = wx.MessageDialog(self.Panel, "Installing "+self.NewBootloaderChoice.GetStringSelection() +" is discouraged because you have more than one Linux OS installed, and this bootloader has poor support for booting multiple Linux OSs. Click okay to continue.", "WxFixBoot - Warning", wx.OK | wx.ICON_WARNING)
+            Dlg.ShowModal()
+            Dlg.Destroy()
 
     def OnOSInfo(self, Event=None):
         """Hide/Show the OS info, and rotate the arrow"""
