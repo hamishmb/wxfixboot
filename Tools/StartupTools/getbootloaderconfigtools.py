@@ -444,6 +444,7 @@ class Main(): #*** Test these again ***
             if "kernel" not in Line:
                 continue
 
+            print(Line.split(" "))
             #Get the partition.
             Partition = Line.split(" ")[1]
 
