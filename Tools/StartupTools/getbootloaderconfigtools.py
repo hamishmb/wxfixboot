@@ -460,7 +460,7 @@ class Main(): #*** Test these again ***
                         MenuEntries["MainMenu"][MenuEntry]["Partition"] = Disk
 
             else:
-                MenuEntries["MainMenu"][MenuEntry]["Partition"] = Temp
+                MenuEntries["MainMenu"][MenuEntry]["Partition"] = Partition
 
             logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Found boot partition...")
 
