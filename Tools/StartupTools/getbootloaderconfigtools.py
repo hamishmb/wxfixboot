@@ -427,16 +427,14 @@ class Main(): #*** Test these again ***
 
         #Get the full contents of the menuentry (keep adding lines to the list until we find "title").
         logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUBLEGACYMenuEntry(): Getting menu entry data...")
-        print(MenuEntriesFileContents[MenuEntriesFileContents.index(Line):])
         for MenuEntryData in MenuEntriesFileContents[MenuEntriesFileContents.index(Line):]:
+            print(MenuEntryData)
             MenuEntries["MainMenu"][MenuEntry]["RawMenuEntryData"].append(MenuEntryData)
 
             if "title" in MenuEntryData:
                 #Remove the last line.
                 MenuEntries["MainMenu"][MenuEntry]["RawMenuEntryData"].pop()
                 break
-
-        print(MenuEntries["MainMenu"][MenuEntry]["RawMenuEntryData"])
 
         MenuEntries["MainMenu"][MenuEntry]["Partition"] = "Unknown"
         MenuEntries["MainMenu"][MenuEntry]["KernelOptions"] = ["Unknown"]
