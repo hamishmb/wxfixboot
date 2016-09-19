@@ -266,8 +266,6 @@ class InitialWindow(wx.Frame):
         self.Panel = InitialPanel(self)
         self.SetClientSize(wx.Size(600,420))
 
-        Tools.coretools.ParentWindow = self
-        
         if Restarting == False:
             print("WxFixBoot Version "+Version+" Starting...")
             logger.info("WxFixBoot Version "+Version+" Starting...")
@@ -356,8 +354,9 @@ class InitThread(threading.Thread):
         threading.Thread.__init__(self)
         self.ParentWindow = ParentWindow
 
-        #Set up dialog tools.
+        #Set up dialog tools and core tools.
         Tools.dialogtools.ParentWindow = ParentWindow
+        Tools.coretools.ParentWindow = ParentWindow
 
         #Start the thread.
         self.start()
@@ -365,16 +364,6 @@ class InitThread(threading.Thread):
     def run(self):
         """Create the temporary mount point folder and set some default settings."""
         logger.debug("InitThread(): Starting...")
-
-        #Remove the temporary directory if it exists.
-        if os.path.isdir("/tmp/wxfixboot/mountpoints"):
-            #Check nothing is using it.
-            if "/tmp/wxfixboot/mountpoints" in CoreTools.StartProcess("mount", ReturnOutput=True)[1]:
-                CoreTools.EmergencyExit("There are mounted filesystems in /tmp/wxfixboot/mountpoints, WxFixBoot's temporary mountpoints directory! Please unmount any filesystems there and try again.")
-
-            shutil.rmtree("/tmp/wxfixboot/mountpoints")
-
-        os.makedirs("/tmp/wxfixboot/mountpoints")
 
         #Define dictionaries.
         global SystemInfo
@@ -408,6 +397,16 @@ class InitThread(threading.Thread):
 
         #Initialise a variable for later.
         SystemInfo["PreviousOSChoice"] = ""
+
+        #Remove the temporary directory if it exists.
+        if os.path.isdir("/tmp/wxfixboot/mountpoints"):
+            #Check nothing is using it.
+            if "/tmp/wxfixboot/mountpoints" in CoreTools.StartProcess("mount", ReturnOutput=True)[1]:
+                CoreTools.EmergencyExit("There are mounted filesystems in /tmp/wxfixboot/mountpoints, WxFixBoot's temporary mountpoints directory! Please unmount any filesystems there and try again.")
+
+            shutil.rmtree("/tmp/wxfixboot/mountpoints")
+
+        os.makedirs("/tmp/wxfixboot/mountpoints")
 
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
@@ -2203,6 +2202,7 @@ class ProgressWindow(wx.Frame):
 
         #Silence annoying errors on restart (still need to figure out why this ahppens, but not of critical importance ***).
         if "FullVerbosity" not in Settings.keys():
+            print("bob3")
             return True
 
         if ShowOutput or Settings["FullVerbosity"]:
@@ -2292,12 +2292,7 @@ class ProgressWindow(wx.Frame):
         #Destroy ProgressWindow.                
         self.Destroy()
 
-        #Redefine self.UpdateOutputBox as an empty function.
-        self.UpdateOutputBox = lambda: None
-        self.UpdateOutputBox()
-        InitialFrame = InitialWindow()
-        app.SetTopWindow(InitialFrame)
-        InitialFrame.Show(True)
+        InitialWindow().Show()
 
     def OnExit(self, Event=None):
         """Exits the programs, and sorts out log file saving/deleting stuff"""
