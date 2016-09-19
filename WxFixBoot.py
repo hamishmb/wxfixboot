@@ -2200,11 +2200,6 @@ class ProgressWindow(wx.Frame):
         global OutputLog
         OutputLog.append(Line)
 
-        #Silence annoying errors on restart (still need to figure out why this ahppens, but not of critical importance ***).
-        if "FullVerbosity" not in Settings.keys():
-            print("bob3")
-            return True
-
         if ShowOutput or Settings["FullVerbosity"]:
             TempLine = ""
 
@@ -2288,6 +2283,9 @@ class ProgressWindow(wx.Frame):
 
         global Restarting
         Restarting = True
+
+        #Make sure any pending output box events are processed now, to avoid errors later.
+        wx.Yield()
 
         #Destroy ProgressWindow.                
         self.Destroy()
