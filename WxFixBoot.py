@@ -17,7 +17,6 @@
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Elilo not available in Ubuntu 16.04 + ***
 #*** Warn user about modifying non-EFI OS from EFI OS. Messes up linux and initrd commands on Fedora. They become intirdefi and linuxefi. What about fixing this automatically in such circumstances? ***
-#*** Don't allow modifying GRUB-LEGACY ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -46,7 +45,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "14/9/2016"
+ReleaseDate = "19/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1516,6 +1515,11 @@ class BootloaderOptionsWindow(wx.Frame):
         self.NewBootloaderChoice.SetItems(["-- Please Select --"]+Choices)
         self.NewBootloaderChoice.SetStringSelection("-- Please Select --")
 
+        #Don't allow the user to attempt to modify GRUB-LEGACY.
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
+            self.ReinstallBootloaderCheckBox.Disable()
+            self.UpdateBootloaderCheckBox.Disable()
+
         self.LoadSettings()
         self.SetGUIState()
         self.SetTextLabels()
@@ -1763,18 +1767,23 @@ class BootloaderOptionsWindow(wx.Frame):
         self.OnRestoreBootloaderCheckBox()
 
         #Determine if the current bootloader is the same as the backed up one. 
-        if Config["Bootloader"] == BootloaderInfo[OS]["Bootloader"]:
+        if Config["Bootloader"] == BootloaderInfo[OS]["Bootloader"] and Config["Bootloader"] != "GRUB-LEGACY":
             #Set up to reinstall the current bootloader.
             self.ReinstallBootloaderCheckBox.Enable()
             self.ReinstallBootloaderCheckBox.SetValue(1)
             self.OnUpdateOrReinstallCheckBox()
 
-        else:
+        elif Config["Bootloader"] != "GRUB-LEGACY":
             #Set up to replace the current bootloader with the old one.
             self.InstallNewBootloaderCheckBox.Enable()
             self.InstallNewBootloaderCheckBox.SetValue(1)
             self.OnInstallNewBootloaderCheckBox()
             self.NewBootloaderChoice.SetStringSelection(Config["Bootloader"])
+
+        else:
+            #Don't allow the user to attempt to modify GRUB-LEGACY.
+            self.ReinstallBootloaderCheckBox.Disable()
+            self.UpdateBootloaderCheckBox.Disable()
 
         #Use kernel options used when the backup was taken.
         self.KeepKernelOptionsCheckBox.SetValue(0)
@@ -1893,6 +1902,11 @@ class BootloaderOptionsWindow(wx.Frame):
             self.InstallNewBootloaderCheckBox.Enable()
             self.NewBootloaderChoice.Disable()
 
+        #Don't allow the user to attempt to modify GRUB-LEGACY.
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
+            self.ReinstallBootloaderCheckBox.Disable()
+            self.UpdateBootloaderCheckBox.Disable()
+
     def OnInstallNewBootloaderCheckBox(self, Event=None):
         """Enable/Disable options, based on the value of the new bootloader checkbox."""
         logger.debug("BootloaderOptionsWindow().OnInstallNewBootloaderCheckBox(): Enabling and disabling options as needed...")
@@ -1923,6 +1937,12 @@ class BootloaderOptionsWindow(wx.Frame):
             self.DefaultOSChoice.Disable()
             self.RestoreBootloaderCheckBox.Enable()
             self.RestoreBootloaderChoice.Disable()
+
+        #Don't allow the user to attempt to modify GRUB-LEGACY.
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
+            self.ReinstallBootloaderCheckBox.Disable()
+            self.UpdateBootloaderCheckBox.Disable()
+
 
     def OnNewBootloaderChoice(self, Event=None):
         """Warn user about LILO's/ELILO's rubbish multi OS support if needed"""
