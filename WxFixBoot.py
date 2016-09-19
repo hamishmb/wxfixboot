@@ -1515,14 +1515,14 @@ class BootloaderOptionsWindow(wx.Frame):
         self.NewBootloaderChoice.SetItems(["-- Please Select --"]+Choices)
         self.NewBootloaderChoice.SetStringSelection("-- Please Select --")
 
+        self.LoadSettings()
+        self.SetGUIState()
+        self.SetTextLabels()
+
         #Don't allow the user to attempt to modify GRUB-LEGACY.
         if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
             self.ReinstallBootloaderCheckBox.Disable()
             self.UpdateBootloaderCheckBox.Disable()
-
-        self.LoadSettings()
-        self.SetGUIState()
-        self.SetTextLabels()
 
         #Default OS choice.
         self.DefaultOSChoice.SetStringSelection(BootloaderInfo[self.OSChoice.GetStringSelection()]["DefaultOS"])
