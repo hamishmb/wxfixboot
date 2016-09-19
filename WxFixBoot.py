@@ -79,6 +79,9 @@ logger = logging.getLogger('WxFixBoot '+Version)
 logging.basicConfig(filename='/tmp/wxfixboot.log', format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
 logger.setLevel(logging.DEBUG)
 
+#Set restarting to false.
+Restarting = False
+
 #Determine the option(s) given, and change the level of logging based on cmdline options.
 for o, a in opts:
     if o in ("-q", "--quiet"):
@@ -264,9 +267,14 @@ class InitialWindow(wx.Frame):
         self.SetClientSize(wx.Size(600,420))
 
         Tools.coretools.ParentWindow = self
+        
+        if Restarting == False:
+            print("WxFixBoot Version "+Version+" Starting...")
+            logger.info("WxFixBoot Version "+Version+" Starting...")
 
-        print("WxFixBoot Version "+Version+" Starting...")
-        logger.info("WxFixBoot Version "+Version+" Starting...")
+        else:
+            print("WxFixBoot Version "+Version+" Restarting...")
+            logger.info("WxFixBoot Version "+Version+" Restarting...")
 
         #Set the frame's icon.
         global AppIcon
@@ -2193,6 +2201,10 @@ class ProgressWindow(wx.Frame):
         global OutputLog
         OutputLog.append(Line)
 
+        #Silence annoying errors on restart (still need to figure out why this ahppens, but not of critical importance ***).
+        if "FullVerbosity" not in Settings.keys():
+            return True
+
         if ShowOutput or Settings["FullVerbosity"]:
             TempLine = ""
 
@@ -2253,7 +2265,7 @@ class ProgressWindow(wx.Frame):
         self.RestartButton.Enable()
         self.ExitButton.Enable()
 
-    def RestartWxFixBoot(self, Event=None): #*** Check this works *** *** Spits out some unimportant errors just after GUI has restarted cos is still using ProgressWindow.UpdateOutputBox, not InitialWindow.UpdateOutputBox for unknown reasons ***
+    def RestartWxFixBoot(self, Event=None):
         """Restart WxFixBoot"""
         logger.debug("ProgressWindow().RestartWxFixBoot(): Restarting WxFixBoot...")
         logger.debug("ProgressWindow().RestartWxFixBoot(): Checking no filesystems are mounted in the temporary directory, and unmounting them if they are...")
@@ -2274,14 +2286,18 @@ class ProgressWindow(wx.Frame):
 
         self.Hide()
 
-        logger.debug("ProgressWindow().RestartWxFixBoot(): WxFixBoot has been reset and restarted, returning to MainWindow().")
+        global Restarting
+        Restarting = True
 
+        #Destroy ProgressWindow.                
+        self.Destroy()
+
+        #Redefine self.UpdateOutputBox as an empty function.
+        self.UpdateOutputBox = lambda: None
+        self.UpdateOutputBox()
         InitialFrame = InitialWindow()
         app.SetTopWindow(InitialFrame)
         InitialFrame.Show(True)
-
-        #Destroy ProgressWindow.                
-        wx.CallLater(100, self.Destroy)
 
     def OnExit(self, Event=None):
         """Exits the programs, and sorts out log file saving/deleting stuff"""
