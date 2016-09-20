@@ -396,7 +396,6 @@ class ProgressTextHandlerThread(threading.Thread):
 
                 else:
                     HalfSecondCounter == 0
-                    print("r")
 
                 if Message[-3:] == "...":
                     Message = Message[0:-3]
