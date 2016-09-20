@@ -146,11 +146,11 @@ class Main():
                         AvailableBootloaders.append("LILO")
 
             elif PackageManager == "yum":
-                if "grub2-efi" in CorrectSection:
+                if "grub2-efi" in Line:
                     if "GRUB-UEFI" not in AvailableBootloaders:
                         AvailableBootloaders.append("GRUB-UEFI")
 
-                elif "grub2" in CorrectSection:
+                elif "grub2" in Line:
                     if "GRUB2" not in AvailableBootloaders:
                         AvailableBootloaders.append("GRUB2")
 
