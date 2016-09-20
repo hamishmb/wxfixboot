@@ -289,7 +289,7 @@ class InitialWindow(wx.Frame):
         #Start the Initalization Thread, which performs all necessary startup scripts and checks, and let it know this is the first start.
         logger.debug("Starting InitThread()...")
 
-        InitThread(self)       
+        InitThread(self)
 
     def CreateProgressBarAndText(self):
         """Create a progressbar and some progress text"""
@@ -363,9 +363,19 @@ class InitThread(threading.Thread):
         self.start()
 
     def run(self):
-        """Create the temporary mount point folder and set some default settings."""
+        """Handle errors in the main thread code"""
         logger.debug("InitThread(): Starting...")
 
+        #Handle any unexpected errors.
+        try:
+            self.MainCode()
+
+        except:
+            logger.critical("Unexpected error while starting WxFixBoot. Warning user and exiting.")
+            CoreTools.EmergencyExit("There was an unexpected error while starting up!")
+
+    def MainCode(self):
+        """Create the temporary mount point folder and set some default settings."""
         #Define dictionaries.
         global SystemInfo
         global DiskInfo
@@ -2368,7 +2378,13 @@ class BackendThread(threading.Thread):
         #Log the BackendThread start event (in debug mode).
         logger.debug("BackendThread().run(): Started. Calling self.StartOperations()...")
 
-        self.StartOperations()
+        #Handle any unexpected errors.
+        try:
+            self.StartOperations()
+
+        except:
+            logger.critical("Unexpected error while running operations. Warning user and exiting.")
+            CoreTools.EmergencyExit("There was an unexpected error while running operations!")
 
     def StartOperations(self):
         """Start doing operations."""
