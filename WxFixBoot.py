@@ -380,7 +380,13 @@ class ProgressTextHandlerThread(threading.Thread):
             if StopProgressTextHandlerThread:
                 break
 
-            if HalfSecondCounter <= 20:
+            if HalfSecondCounter == 20:
+                Message = Message[0:-2]+" WxFixBoot is still starting up. Please be patient"
+                wx.CallAfter(self.ParentWindow.SetProgressText, Message)
+                time.sleep(0.5)
+                HalfSecondCounter += 1
+
+            else:
                 LastMessage = Message
 
                 Message = self.ParentWindow.ProgressText.GetLabel()
@@ -390,17 +396,14 @@ class ProgressTextHandlerThread(threading.Thread):
 
                 else:
                     HalfSecondCounter == 0
+                    print("r")
 
-                if Message[-3:] == "..." or Continue:
+                if Message[-3:] == "...":
                     Message = Message[0:-3]
 
                 Message = Message+"."
                 wx.CallAfter(self.ParentWindow.SetProgressText, Message)
                 time.sleep(0.5)
-
-            else:
-                Message = Message[0:-1]+"\nWxFixBoot is still starting up. Please be patient"
-                Continue = True
 
 #End Progress Text Handler Thread.
 #Begin Initialization Thread.
