@@ -62,6 +62,9 @@ class Main():
         else:
             logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in / (Current OS)...")
 
+        Bootloader = None
+        AvailableBootloaders = []
+
         #Okay, let's run a command in the chroot that was set up in self.FindBootloaderRemovalOSs(), depending on which package manager this OS uses, and which bootloader is currently installed.
         if PackageManager == "apt-get":
             Cmd = "dpkg --get-selections"
@@ -104,10 +107,59 @@ class Main():
 
                 Bootloader = PackageDict[Package]
                 logger.info("CoreStartupTools: Main().LookForBootloadersOnPartition(): Found "+Bootloader+"...")
-                return Bootloader
+                break
 
-        #If we get here, we didn't find anything.
-        return None
+        #Look for any other bootloaders that might be available for installation. Ignore GRUB-LEGACY.
+        if PackageManager == "apt-get":
+            Cmd = "dpkg -l '*'"
+
+        else:
+            Cmd = "yum -C list all"
+
+        if UsingChroot:
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
+
+        for Line in Output:
+            if PackageManager == "apt-get":
+                #Only look in the package name.
+                try:
+                    CorrectSection = Line.split()[1]
+
+                except IndexError: continue
+
+                if "grub-efi" in CorrectSection:
+                    if "GRUB-UEFI" not in AvailableBootloaders:
+                        AvailableBootloaders.append("GRUB-UEFI")
+
+                elif "elilo" in CorrectSection:
+                    if "ELILO" not in AvailableBootloaders:
+                        AvailableBootloaders.append("ELILO")
+
+                elif "grub-pc" in CorrectSection:
+                    if "GRUB2" not in AvailableBootloaders:
+                        AvailableBootloaders.append("GRUB2")
+
+                elif "lilo" in CorrectSection:
+                    if "LILO" not in AvailableBootloaders:
+                        AvailableBootloaders.append("LILO")
+
+            elif PackageManager == "yum":
+                if "grub2-efi" in CorrectSection:
+                    if "GRUB-UEFI" not in AvailableBootloaders:
+                        AvailableBootloaders.append("GRUB-UEFI")
+
+                elif "grub2" in CorrectSection:
+                    if "GRUB2" not in AvailableBootloaders:
+                        AvailableBootloaders.append("GRUB2")
+
+        #Log info.
+        AvailableBootloaders.sort()
+        logger.info("CoreStartupTools: Main().LookForBootloadersOnPartition(): Found available bootloaders: "+', '.join(AvailableBootloaders))
+
+        #Return info.
+        return Bootloader, AvailableBootloaders
 
     def GetFSTabInfo(self, MountPoint, OSName): #*** Test this thoroughly ***
         """Get /etc/fstab info and related info (EFI Partition, /boot partition) for the given OS at the given mountpoint."""

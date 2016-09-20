@@ -17,6 +17,7 @@
 #*** Remove grub's .efi files after installing elilo and vice versa ***
 #*** Elilo not available in Ubuntu 16.04 + ***
 #*** Warn user about modifying non-EFI OS from EFI OS. Messes up linux and initrd commands on Fedora. They become intirdefi and linuxefi. What about fixing this automatically in such circumstances? ***
+#*** Test restoring bootloader config ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -1491,6 +1492,7 @@ class BootloaderOptionsWindow(wx.Frame):
     def OnOSChoiceChange(self, Event=None, Startup=False):
         """Save and load new GUI settings and states in accordance with the OS choice change"""
         logger.debug("BootloaderOptionsWindow().OnOSChoiceChange(): OS choice has changed. Saving and then loading settings...")
+
         #Save settings when selection a new choice, but not when this is called when the window is first opened.
         if Startup == False:
             self.SaveSettings(OS=SystemInfo["PreviousOSChoice"])
@@ -1498,22 +1500,19 @@ class BootloaderOptionsWindow(wx.Frame):
             SystemInfo["PreviousOSChoice"] = self.OSChoice.GetStringSelection()
 
         #Set up NewBootloaderChoice.
+        Choices = BootloaderInfo[self.OSChoice.GetStringSelection()]["AvailableBootloaders"]
+
         if OSInfo[self.OSChoice.GetStringSelection()]["EFIPartition"] == "Unknown":
-            Choices = ["GRUB2", "LILO"]
-            dlg = wx.MessageDialog(self.Panel, "This OS has no UEFI partition, so you will be unable to select a UEFI bootloader to install.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-            dlg.Destroy()
+            #Remove GRUB-UEFI and ELILO if they are available for install.
+            if "GRUB-UEFI" in Choices:
+                Choices.remove("GRUB-UEFI")
 
-        else:
-            Choices = ["GRUB-UEFI", "GRUB2", "ELILO", "LILO"]
-
-        #Disable ELILO and LILO on Fedora systems. *** Check each bootloader is present before offering them as choices ***
-        if "Fedora" in self.OSChoice.GetStringSelection():
             if "ELILO" in Choices:
                 Choices.remove("ELILO")
 
-            if "LILO" in Choices:
-                Choices.remove("LILO")
+            dlg = wx.MessageDialog(self.Panel, "This OS has no UEFI partition, so you will be unable to select a UEFI bootloader to install.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
 
         #Remove the current bootloader from the choices (if it's in there).
         if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] in Choices:
@@ -1961,6 +1960,14 @@ class BootloaderOptionsWindow(wx.Frame):
     def SaveSettings(self, Event=None, OS=None):
         """Save all settings for this OS from the checkboxes and choice boxes"""
         logger.debug("BootloaderOptionsWindow().SaveSettings(): Saving settings for "+OS+"...")
+
+        #Check that the settings are valid.
+        if self.InstallNewBootloaderCheckBox.IsChecked() and self.NewBootloaderChoice.GetStringSelection() == "-- Please Select --":
+            logger.warning("BootloaderOptionsWindow().SaveSettings(): Aborting saving settings because bootloader is being replaced, but its replacement is unspecified...")
+            Dlg = wx.MessageDialog(self.Panel, "If you're going to replace "+BootloaderInfo[OS]["Bootloader"]+", you must select a new bootloader to replace it with!", "WxFixBoot - Warning", wx.OK | wx.ICON_WARNING)
+            Dlg.ShowModal()
+            Dlg.Destroy()
+            raise RuntimeError
 
         BootloaderInfo[OS]["Settings"]["Reinstall"] = self.ReinstallBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["Update"] = self.UpdateBootloaderCheckBox.GetValue()

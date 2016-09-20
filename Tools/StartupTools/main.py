@@ -354,7 +354,7 @@ class Main():
             #Look for bootloaders.
             BootloaderInfo[OS] = {}
             BootloaderInfo[OS]["OSName"] = OS
-            BootloaderInfo[OS]["Bootloader"] = CoreStartupTools.LookForBootloadersOnPartition(OS, OSInfo[OS]["PackageManager"], MountPoint, not OSInfo[OS]["IsCurrentOS"])
+            BootloaderInfo[OS]["Bootloader"], BootloaderInfo[OS]["AvailableBootloaders"] = CoreStartupTools.LookForBootloadersOnPartition(OS, OSInfo[OS]["PackageManager"], MountPoint, not OSInfo[OS]["IsCurrentOS"])
 
             BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"], BootloaderInfo[OS]["DefaultOS"] = (10, "Unknown", "Unknown", "Unknown", "Unknown")
 
