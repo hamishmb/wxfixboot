@@ -369,18 +369,27 @@ class ProgressTextHandlerThread(threading.Thread):
 
     def run(self):
         """Distract the user with some text effects on the Initial Window.
-        For 10 seconds, make dots build up to 3 dots and back in front of the text.
-        After 10 seconds, state that WxFixBoot is still starting up, and to be patient."""
+        For 10 seconds of the same message, make dots build up to 3 dots and back in front of the text.
+        After 10 seconds of same message, state that WxFixBoot is still starting up, and to be patient."""
 
         HalfSecondCounter = 0
         Continue = False
+        Message = ""
 
         while True:
             if StopProgressTextHandlerThread:
                 break
 
             if HalfSecondCounter <= 20:
+                LastMessage = Message
+
                 Message = self.ParentWindow.ProgressText.GetLabel()
+
+                if Message == LastMessage:
+                    HalfSecondCounter += 1
+
+                else:
+                    HalfSecondCounter == 0
 
                 if Message[-3:] == "..." or Continue:
                     Message = Message[0:-3]
