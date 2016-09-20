@@ -54,7 +54,7 @@ class Main():
 
         return PackageManager
 
-    def LookForBootloadersOnPartition(self, OS, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly ***
+    def LookForBootloadersOnPartition(self, OS, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly *** *** This NEEDS to be faster! On Fedora it takes 16 seconds to run yum list all and process it here. Maybe we can distract the user with other info. ***
         """Look for bootloaders installed in the OS in the given mount point."""
         if UsingChroot:
             logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")

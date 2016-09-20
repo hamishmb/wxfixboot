@@ -48,7 +48,7 @@ class Main():
         while cmd.poll() == None or Counter < 100:
             Char = cmd.stdout.read(1)
 
-            if cmd.poll() != None and Char == "":
+            if Char == "":
                 Counter += 1
 
             Line += Char
