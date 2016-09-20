@@ -45,7 +45,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "19/9/2016"
+ReleaseDate = "20/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1179,7 +1179,7 @@ class SystemInfoWindow(wx.Frame):
         self.Destroy()
 
 #End System Info Window
-#Begin Bootloader Options Window. *** Make revert buttons work ***
+#Begin Bootloader Options Window.
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self, ParentWindow):
         """Initialise bootloader options window"""
@@ -1252,7 +1252,6 @@ class BootloaderOptionsWindow(wx.Frame):
         """Create the buttons"""
         self.SystemInfoButton = wx.Button(self.Panel, -1, "View More Details")
         self.RevertOSChangesButton = wx.Button(self.Panel, -1, "Revert Changes for this OS")
-        self.RevertAllChangesButton = wx.Button(self.Panel, -1, "Revert All Changes")
         self.SaveButton = wx.Button(self.Panel, -1, "Save All Changes And Close")
 
     def CreateOtherWidgets(self):
@@ -1371,7 +1370,6 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Add items to BottomButtonSizer.
         BottomButtonSizer.Add(self.RevertOSChangesButton, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        BottomButtonSizer.Add(self.RevertAllChangesButton, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
         BottomButtonSizer.Add(self.SaveButton, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         #Add items to MainSizer.
@@ -1426,6 +1424,7 @@ class BootloaderOptionsWindow(wx.Frame):
         #Buttons.
         self.Bind(wx.EVT_BUTTON, self.OnClose, self.SaveButton)
         self.Bind(wx.EVT_BUTTON, self.SystemInfo, self.SystemInfoButton)
+        self.Bind(wx.EVT_BUTTON, self.LoadSettings, self.RevertOSChangesButton)
 
         #Choiceboxes.
         self.Bind(wx.EVT_CHOICE, self.OnOSChoiceChange, self.OSChoice)
@@ -1456,6 +1455,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.RestoreBootloaderCheckBox.SetValue(BootloaderInfo[OS]["Settings"]["RestoreBootloader"])
         self.RestoreBootloaderChoice.SetStringSelection(BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"])
         self.OnTimeoutCheckBox()
+        self.SetGUIState()
 
     def SetGUIState(self, Event=None):
         """Set all the GUI element's states (enabled/disabled) for this OS"""
@@ -1486,6 +1486,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.ReinstallBootloaderCheckBox.SetLabel("Fix/Reinstall "+BootloaderInfo[OS]["Bootloader"])
         self.UpdateBootloaderCheckBox.SetLabel("Update "+BootloaderInfo[OS]["Bootloader"]+"'s Config")
         self.KeepBootloaderTimeoutCheckBox.SetLabel("Keep "+BootloaderInfo[OS]["Bootloader"]+"'s existing menu timeout")
+        self.RevertOSChangesButton.SetLabel("Revert Changes for "+OS)
 
     def OnOSChoiceChange(self, Event=None, Startup=False):
         """Save and load new GUI settings and states in accordance with the OS choice change"""
@@ -1523,7 +1524,6 @@ class BootloaderOptionsWindow(wx.Frame):
         self.NewBootloaderChoice.SetStringSelection("-- Please Select --")
 
         self.LoadSettings()
-        self.SetGUIState()
         self.SetTextLabels()
 
         #Don't allow the user to attempt to modify GRUB-LEGACY.

@@ -38,8 +38,6 @@ class Main():
         Hold = False
         SendLine = False
 
-        print(ExecCmds)
-
         #Run the command(s).
         logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds)
         cmd = subprocess.Popen(ExecCmds, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
