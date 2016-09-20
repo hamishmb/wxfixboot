@@ -381,7 +381,7 @@ class ProgressTextHandlerThread(threading.Thread):
                 break
 
             if HalfSecondCounter == 20:
-                Message = Message.replace(".", "")+". WxFixBoot is still starting up. Please be patient"
+                Message = Message.replace(".", "")+". WxFixBoot is still starting up. Please be patient."
                 wx.CallAfter(self.ParentWindow.SetProgressText, Message)
                 time.sleep(0.5)
                 HalfSecondCounter += 1
