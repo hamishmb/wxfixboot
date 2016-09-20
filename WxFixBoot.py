@@ -289,6 +289,7 @@ class InitialWindow(wx.Frame):
         #Start the Initalization Thread, which performs all necessary startup scripts and checks, and let it know this is the first start.
         logger.debug("Starting InitThread()...")
 
+        ProgressTextHandlerThread(self)
         InitThread(self)
 
     def CreateProgressBarAndText(self):
@@ -319,9 +320,16 @@ class InitialWindow(wx.Frame):
         self.ProgressBar.SetValue(int(Value))
 
         if int(Value) == 100:
+            global StopProgressTextHandlerThread
+            StopProgressTextHandlerThread = True
             self.FinishedInit()
 
     def UpdateProgressText(self, Message):
+        """Call the text handler thread to distract the user"""
+        self.ProgressText.SetLabel(Message)
+        self.Panel.Layout()
+
+    def SetProgressText(self, Message):
         """Update the progress text with the given string"""
         self.ProgressText.SetLabel(Message)
         self.Panel.Layout()
@@ -346,8 +354,47 @@ class InitialWindow(wx.Frame):
         #Start MainFrame.
         MainGUI.Show(True)    
 
-#End Initalization Frame.
-#Begin Initaization Thread.
+#End Initialization Frame.
+#Begin Progress Text Handler Thread.
+class ProgressTextHandlerThread(threading.Thread):
+    def __init__(self, ParentWindow):
+        """Start the Thread"""
+        threading.Thread.__init__(self)
+        self.ParentWindow = ParentWindow
+
+        global StopProgressTextHandlerThread
+        StopProgressTextHandlerThread = False
+
+        self.start()
+
+    def run(self):
+        """Distract the user with some text effects on the Initial Window.
+        For 10 seconds, make dots build up to 3 dots and back in front of the text.
+        After 10 seconds, state that WxFixBoot is still starting up, and to be patient."""
+
+        HalfSecondCounter = 0
+        Continue = False
+
+        while True:
+            if StopProgressTextHandlerThread:
+                break
+
+            if HalfSecondCounter <= 20:
+                Message = self.ParentWindow.ProgressText.GetLabel()
+
+                if Message[-3:] == "..." or Continue:
+                    Message = Message[0:-3]
+
+                Message = Message+"."
+                wx.CallAfter(self.ParentWindow.SetProgressText, Message)
+                time.sleep(0.5)
+
+            else:
+                Message = Message[0:-1]+"\nWxFixBoot is still starting up. Please be patient"
+                Continue = True
+
+#End Progress Text Handler Thread.
+#Begin Initialization Thread.
 class InitThread(threading.Thread):
     def __init__(self, ParentWindow):
         """Start the thread."""
