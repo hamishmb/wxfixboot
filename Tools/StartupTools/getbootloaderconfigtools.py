@@ -482,16 +482,36 @@ class Main(): #*** Test these again ***
         """Get important bits of config from grub-legacy"""
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Getting config at "+ConfigFilePath+"...")
 
-        #In this case, the only useful info is the timeout, so just get this.
         #Set temporary vars
-        Timeout = "Unknown"
+        Timeout, DefaultOS = ("Unknown", "Unknown")
 
         #Open the file in read mode, so we can save the important bits of config.
         ConfigFile = open(ConfigFilePath, 'r')
 
-        #Look for the timeout setting.
         for Line in ConfigFile:
-            if 'timeout' in Line and 'sec' not in Line:
+            #Look for the default setting.
+            if "default" in Line and "#" not in Line:
+                #Handle different versions of GRUB-LEGACY.
+                if "=" in Line:
+                    GRUBDefault = Line.split("=")[1].replace("\n", "")
+
+                else:
+                    GRUBDefault = Line.split()[1].replace("\n", "")
+
+                if DefaultOS.isdigit() == False:
+                    #Ignore it.
+                    continue
+
+                #Find the corresponding GRUB menuentry, matching by ID.
+                logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Matching default OS by ID...")
+                for Menu in MenuEntries.keys():
+                    for OS in MenuEntries[Menu]["Order"]:
+                        if MenuEntries[Menu][OS]["ID"] == GRUBDefault:
+                            DefaultOS = OS
+                            break
+
+            #Look for the timeout setting.
+            if 'timeout' in Line and 'sec' not in Line and "#" not in Line:
                 #Found it!
                 try:
                     Timeout = Line.split()[1].replace('\n', '')
@@ -511,7 +531,7 @@ class Main(): #*** Test these again ***
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Done! Returning Information...")
         ConfigFile.close()
 
-        return Timeout
+        return Timeout, DefaultOS
 
     def ParseLILOMenuEntries(self, MenuEntriesFilePath):
         """Find and parse LILO and ELILO menu entries."""

@@ -244,14 +244,14 @@ class Main():
 
                 if Chroot:
                     #Unmount the filesystem.
-                    if CoreTools.Unmount(MountPoint) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again, or remove chroot again? ***
+                    if CoreTools.Unmount(MountPoint) != 0:
                         logger.error("MainStartupTools: Main().GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
                         CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
                     #Remove the temporary mountpoint
                     os.rmdir(MountPoint)
 
-        #Check that at least one OS was detected. *** Is this needed here? ***
+        #Check that at least one OS was detected.
         if len(OSInfo) >= 1:
             logger.debug("MainStartupTools: Main().GetOSs(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
             return OSInfo, SystemInfo
@@ -387,9 +387,13 @@ class Main():
 
             elif BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY" and os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
                 BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUBLEGACYMenuEntries(MountPoint+"/boot/grub/menu.lst")
-                BootloaderInfo[OS]["Timeout"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst")
                 BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB-LEGACY")
-                #*** Guess Kernel Options from menu entries? *** *** Default OS? ***
+
+                #Use safe default kernel options.
+                logger.info("MainStartupTools: Main().GetBootloaders(): "+OS+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\"...")
+                DialogTools.ShowMsgDlg(Message=OS+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\" Click okay to continue.", Kind="info")
+                BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
 
             #If we didn't find the kernel options, set some defaults here, and warn the user.
             if BootloaderInfo[OS]["GlobalKernelOptions"] == "Unknown":
