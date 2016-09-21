@@ -543,6 +543,7 @@ class Main(): #*** Test these again ***
         MenuEntries = {}
         MenuEntries["MainMenu"] = {}
         MenuEntries["MainMenu"]["Order"] = []
+        EntryCounter = 0
 
         #Read each line.
         for Line in MenuEntriesFileContents:
