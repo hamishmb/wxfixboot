@@ -500,7 +500,7 @@ class Main(): #*** Test these again ***
                 else:
                     GRUBDefault = Line.split()[1].replace("\n", "")
 
-                if DefaultOS.isdigit() == False:
+                if GRUBDefault.isdigit() == False:
                     #Ignore it.
                     logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Default OS is not a digit (probably set to \"saved\"), ignoring it...")
                     continue
