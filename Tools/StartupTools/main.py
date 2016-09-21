@@ -387,12 +387,11 @@ class Main():
 
             elif BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY" and os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
                 BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUBLEGACYMenuEntries(MountPoint+"/boot/grub/menu.lst")
-                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst", BootloaderInfo[OS]["MenuEntries"])
                 BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB-LEGACY")
 
                 #Use safe default kernel options.
                 logger.info("MainStartupTools: Main().GetBootloaders(): "+OS+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\"...")
-                DialogTools.ShowMsgDlg(Message=OS+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\" Click okay to continue.", Kind="info")
                 BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
 
             #If we didn't find the kernel options, set some defaults here, and warn the user.

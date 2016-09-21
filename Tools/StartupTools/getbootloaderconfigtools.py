@@ -478,7 +478,7 @@ class Main(): #*** Test these again ***
 
         return MenuEntries
 
-    def GetGRUBLEGACYConfig(self, ConfigFilePath):
+    def GetGRUBLEGACYConfig(self, ConfigFilePath, MenuEntries):
         """Get important bits of config from grub-legacy"""
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Getting config at "+ConfigFilePath+"...")
 
