@@ -491,6 +491,8 @@ class Main(): #*** Test these again ***
         for Line in ConfigFile:
             #Look for the default setting.
             if "default" in Line and "#" not in Line:
+                logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Getting default OS...")
+
                 #Handle different versions of GRUB-LEGACY.
                 if "=" in Line:
                     GRUBDefault = Line.split("=")[1].replace("\n", "")
@@ -500,6 +502,7 @@ class Main(): #*** Test these again ***
 
                 if DefaultOS.isdigit() == False:
                     #Ignore it.
+                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Default OS is not a digit (probably set to \"saved\"), ignoring it...")
                     continue
 
                 #Find the corresponding GRUB menuentry, matching by ID.
