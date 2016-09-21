@@ -46,7 +46,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "20/9/2016"
+ReleaseDate = "21/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -528,14 +528,7 @@ class InitThread(threading.Thread):
         Tools.StartupTools.core.OSInfo = OSInfo
 
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "65")
-        logger.info("InitThread(): Done...")
-
-        #Check if any Linux installations were found.
-        if len(OSInfo) == 0:
-            logger.critical("InitThread(): No Linux installations found! If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
-
-            #Exit.
-            CoreTools.EmergencyExit("You don't appear to have any Linux installations on your hard disks. If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
+        logger.info("InitThread(): Done Finding OSs...")
 
         #Get the firmware type.
         logger.info("InitThread(): Determining Firmware Type...")

@@ -128,7 +128,6 @@ class Main():
 
     def GetOSs(self):
         """Get the names of all OSs on the HDDs."""
-        #*** Crashes at log line in InitThread().run() if we couldn't detect the current OS ***
         logger.info("MainStartupTools: Main().GetOSs(): Finding Linux operating systems...")
         RootFS = CoreTools.GetPartitionMountedAt("/")
         OSInfo = {}
@@ -258,8 +257,10 @@ class Main():
             return OSInfo, SystemInfo
 
         else:
-            logger.critical("MainStartupTools: Main().GetOSs(): Couldn't find any linux operating systems! Linux partitions were detected, but don't appear to contain any OSs! WxFixBoot will now exit, and warn the user...")
-            CoreTools.EmergencyExit("Linux partitions were found on your computer, but no Linux operating systems were found! Perhaps you need to recover data from your hard drive, or restore an image first? If you're using Parted Magic, you'll have access to tools that can do that for you now. Otherwise, you may need to install them.")
+            logger.critical("MainStartupTools: Main().GetOSs(): No Linux installations found! If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
+
+            #Exit.
+            CoreTools.EmergencyExit("You don't appear to have any Linux installations on your hard disks. If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
 
     def GetFirmwareType(self):
         """Get the firmware type"""
