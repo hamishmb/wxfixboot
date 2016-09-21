@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class.
+#Begin Main Class. *** Improve error handling by trying to de-setup everything before giving up if giving up is required ***
 class Main():
     def ManageBootloader(self, OS):
         """Manage the installation and removal of each bootloader."""
@@ -85,7 +85,7 @@ class Main():
 
         logger.info("MainBackendTools(): Main().ManageBootloader(): Done!")
 
-    def RemoveOldBootloader(self, OS): #*** Give more information to user when there are errors ***
+    def RemoveOldBootloader(self, OS):
         """Remove the currently installed bootloader."""
         logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27)
@@ -108,25 +108,21 @@ class Main():
             if UnmountAfter:
                 #Mount the partition using the global mount function.
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["Partition"], MountPoint=MountPoint) != 0:
-                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warn the user and skip this OS.")
-                    DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"! This OS will now be skipped.")
+                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warning the user and giving up...")
+                    DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"! Giving up. You will be prompted to try again if you wish.")
                     return False
 
             #Set up chroot.
             if CoreTools.SetUpChroot(MountPoint) != 0:
-                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
-
-            #If there's a seperate /boot partition for this OS, make sure it's mounted.
-            if OSInfo[OS]["BootPartition"] != "Unknown":
-                if CoreTools.MountPartition(Partition=OSInfo[OS]["BootPartition"], MountPoint=MountPoint+"/boot") != 0:
-                    logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warn the user and skip this OS.")
-                    DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! This OS will now be skipped.")
-                    return False
+                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to set up chroot at "+MountPoint+"! Giving up...")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set up a chroot for "+OS+"! Giving up. You will be prompted to try again if you wish.")
+                return False
 
         #Mount a /boot partition if it exists.
         if OSInfo[OS]["BootPartition"] != "Unknown":
             if CoreTools.MountPartition(OSInfo[OS]["BootPartition"], MountPoint+"/boot") != 0:
                 logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OS+"'s /boot partition! Skipping bootloader removal for this OS.")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! Giving up. You will be prompted to try again if you wish.")
 
                 if not OSInfo[OS]["IsCurrentOS"]:
                     CoreTools.TearDownChroot(MountPoint)
@@ -198,7 +194,7 @@ class Main():
         #Tear down chroot if needed.
         if UseChroot:
             if CoreTools.TearDownChroot(MountPoint=MountPoint) != 0:
-                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...")
 
         #Unmount partition if needed.
         if UnmountAfter:
@@ -219,14 +215,12 @@ class Main():
         DialogTools.ShowMsgDlg(Kind="info", Message="Finished removing "+BootloaderInfo[OS]["Bootloader"]+"! WxFixBoot will now install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" to "+OS+".")
         return True
 
-    def InstallNewBootloader(self, OS): #*** Give more info to user when there are errors ***
+    def InstallNewBootloader(self, OS):
         """Install a new bootloader."""
         logger.info("MainBackendTools: Main().InstallNewBootloader(): Preparing to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 52)  
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...###\n")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...")
-
-        BootloaderInstallSucceded = True #*** Get rid of this? ***
 
         #If this is the current OS, let the installer functions know that we aren't using chroot.
         if OSInfo[OS]["IsCurrentOS"]:
@@ -250,13 +244,15 @@ class Main():
 
             #Set up chroot.
             if CoreTools.SetUpChroot(MountPoint=MountPoint) != 0:
-                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to set up chroot at "+MountPoint+"! Warning user and giving up...")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set up a chroot for "+OS+"! Giving up. You will be prompted to try again if you wish.")
+                return False
 
             #If there's a seperate /boot partition for this OS, make sure it's mounted.
             if OSInfo[OS]["BootPartition"] != "Unknown":
                 if CoreTools.MountPartition(Partition=OSInfo[OS]["BootPartition"], MountPoint=MountPoint+"/boot") != 0:
                     logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["BootPartition"]+"! Warn the user and skip this OS.") 
-                    DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! This OS will now be skipped.")
+                    DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! Giving up. You will be prompted to try again if you wish.")
                     return False
 
         #Update the package lists.
@@ -301,7 +297,7 @@ class Main():
             #Mount the UEFI partition at MountPoint/boot/efi.
             if CoreTools.MountPartition(Partition=OSInfo[OS]["EFIPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
                 logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to mount "+OSInfo[OS]["EFIPartition"]+"! to "+MountPoint+"/boot/efi! Aborting bootloader installation and warning user...")
-                DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to mount the partition containing "+OS+"'s EFI partition! This OS will now be skipped.")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to mount the partition containing "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
                 return False
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
@@ -316,7 +312,7 @@ class Main():
             #Unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
             if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
                 logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount the EFI partition! Giving up and warning user...")
-                DialogTools.ShowMsgDlg(Message="Couldn't unmount "+OS+"'s EFI partition! Click okay to continue.", Kind="error")
+                DialogTools.ShowMsgDlg(Message="Couldn't unmount "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.", Kind="error")
                 return False
 
             if UseChroot:
@@ -340,14 +336,14 @@ class Main():
         #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot.
         if OSInfo[OS]["BootPartition"] != "Unknown":
             if CoreTools.Unmount(MountPoint+"/boot") != 0:
-                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot! This probably doesn't matter...") #*** What should we do here? ***
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot! This probably doesn't matter...")
 
         if UseChroot:
             logger.debug("MainBackendTools: Main().InstallNewBootloader(): Removing chroot...")
 
             #Tear down chroot.
             if CoreTools.TearDownChroot(MountPoint=MountPoint) != 0:
-                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...")
 
         if UnmountAfter:
             if CoreTools.Unmount(MountPoint) != 0:
@@ -355,7 +351,6 @@ class Main():
 
         if Retval != 0:
             #Something went wrong! Log it and notify the user.
-            BootloaderInstallSucceded = False
             logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"! This may mean the system (or this OS) is now unbootable! Warning the user and asking to try again.")
             DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"! This may leave this OS, or your system, in an unbootable state. You will now be prompted to try again.")
             return False
@@ -366,7 +361,7 @@ class Main():
         logger.info("MainBackendTools: Main().InstallNewBootloader(): Finished installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
-        return BootloaderInstallSucceded
+        return True
 
     def SetNewBootloaderConfig(self, OS): #*** Only set e.g. Timeout and Kernel Options if they are being changed ***
         """Manage setting new bootloader config."""
@@ -398,7 +393,9 @@ class Main():
 
             #Set up chroot.
             if CoreTools.SetUpChroot(MountPoint=MountPoint) != 0:
-                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to set up chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to set up chroot at "+MountPoint+"! Giving up...")
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set up a chroot for "+OS+"! Giving up. You will be prompted to try again if you wish.")
+                return False
 
             wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
 
@@ -489,7 +486,7 @@ class Main():
                 Cmd = "chroot "+MountPoint+" "+Cmd
 
             if CoreTools.StartProcess(Cmd, ShowOutput=False) != 0:
-                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): '"+Cmd+"' didn't run successfully! Attempting to continue anyway...") #*** What do we do here? ***
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): '"+Cmd+"' didn't run successfully! Attempting to continue anyway...")
 
             #Check the config file exists for lilo. *** What do we do if it doesn't? Have a template one to put there? ***
             if os.path.isfile(MountPoint+"/etc/lilo.conf"):
@@ -509,7 +506,7 @@ class Main():
             #Unmount the UEFI Partition now, and update mtab in the chroot.
             if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
                 logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount "+OS+"'s EFI partition! Waning user and prompting to try again...")
-                DialogTools.ShowMsgDlg(Message="Couldn't unmount "+OS+"'s EFI partition! Click okay to continue.", Kind="error")
+                DialogTools.ShowMsgDlg(Message="Couldn't unmount "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.", Kind="error")
                 return False
 
             #Update chroot mtab if needed.
@@ -550,7 +547,7 @@ class Main():
             HelperBackendTools.CopyUEFIFiles(OS=OS, MountPoint=MountPoint)
 
             #Unmount the EFI partition.
-            if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0: #*** Warn user? ***
+            if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
                 logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
 
         #Unmount a /boot partition if it exists.
@@ -561,7 +558,7 @@ class Main():
         #Tear down chroot if needed.
         if UseChroot:
             if CoreTools.TearDownChroot(MountPoint=MountPoint) != 0:
-                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to remove chroot at "+MountPoint+"! Attempting to continue anyway...")
     
         #Unmount the partition if needed.
         if UnmountAfter:

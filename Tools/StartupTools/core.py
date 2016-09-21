@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. *** Optimise/Reorganise this again later ***
+#Begin Main Class.
 class Main():
     def DeterminePackageManager(self, APTCmd, YUMCmd):
         """Determine and return the package manager using the given command strings."""
@@ -54,7 +54,7 @@ class Main():
 
         return PackageManager
 
-    def LookForBootloadersOnPartition(self, OS, PackageManager, MountPoint, UsingChroot): #*** Test this thoroughly ***
+    def LookForBootloadersOnPartition(self, OS, PackageManager, MountPoint, UsingChroot):
         """Look for bootloaders installed in the OS in the given mount point."""
         if UsingChroot:
             logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")
@@ -161,7 +161,7 @@ class Main():
         #Return info.
         return Bootloader, AvailableBootloaders
 
-    def GetFSTabInfo(self, MountPoint, OSName): #*** Test this thoroughly ***
+    def GetFSTabInfo(self, MountPoint, OSName):
         """Get /etc/fstab info and related info (EFI Partition, /boot partition) for the given OS at the given mountpoint."""
         logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Getting FSTab info in "+MountPoint+"/etc/fstab for "+OSName+"...")
 

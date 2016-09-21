@@ -201,7 +201,7 @@ class Main(): #*** Test these again ***
 
         except IndexError: pass
 
-        #If this fails, try finding the UUID in the menu-entry data and converting that to a device name. *** Check this works ***
+        #If this fails, try finding the UUID in the menu-entry data and converting that to a device name.
         if MenuEntries[Menu][MenuEntryName]["Partition"] == "Unknown" or "/dev/" not in MenuEntries[Menu][MenuEntryName]["Partition"]:
             logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry's boot partition with UUID...")
             UUID = ""
@@ -386,7 +386,7 @@ class Main(): #*** Test these again ***
 
         return (Timeout, KernelOptions, DefaultOS)
 
-    def ParseGRUBLEGACYMenuEntries(self, MenuEntriesFilePath): #*** Test this ***
+    def ParseGRUBLEGACYMenuEntries(self, MenuEntriesFilePath):
         """Find and parse GRUB LEGACY menu entries."""
         logger.info("BootloaderConfigObtainingTools: Main().ParseGRUBLEGACYMenuEntries(): Finding and parsing menu entries...")
 

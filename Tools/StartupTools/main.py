@@ -491,10 +491,8 @@ class Main():
             #Clean up if needed.
             if not OSInfo[OS]["IsCurrentOS"]:
                 #Remove chroot.
-                Retval = CoreTools.TearDownChroot(MountPoint)
-
-                if Retval != 0:
-                    logger.error("MainStartupTools: Main().GetBootloaders(): Failed to remove chroot from "+MountPoint+"! Attempting to continue anyway...") #*** What should we do here? ***
+                if CoreTools.TearDownChroot(MountPoint) != 0:
+                    logger.error("MainStartupTools: Main().GetBootloaders(): Failed to remove chroot from "+MountPoint+"! Attempting to continue anyway...")
 
                 #Unmount the OS's partition.
                 if CoreTools.Unmount(MountPoint) != 0:
