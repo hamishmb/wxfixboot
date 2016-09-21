@@ -429,8 +429,9 @@ class InitThread(threading.Thread):
             self.MainCode()
 
         except:
-            logger.critical("Unexpected error while starting WxFixBoot. Warning user and exiting.")
-            CoreTools.EmergencyExit("There was an unexpected error while starting up!")
+            Error = sys.exc_info()[0]
+            logger.critical("Unexpected error "+Error+" while starting WxFixBoot. Warning user and exiting.")
+            CoreTools.EmergencyExit("There was an unexpected error "+Error+" while starting up!")
 
     def MainCode(self):
         """Create the temporary mount point folder and set some default settings."""
@@ -2434,8 +2435,9 @@ class BackendThread(threading.Thread):
             self.StartOperations()
 
         except:
-            logger.critical("Unexpected error while running operations. Warning user and exiting.")
-            CoreTools.EmergencyExit("There was an unexpected error while running operations!")
+            Error = sys.exc_info()[0]
+            logger.critical("Unexpected error "+Error+" while running operations. Warning user and exiting.")
+            CoreTools.EmergencyExit("There was an unexpected error "+Error+" while running operations!")
 
     def StartOperations(self):
         """Start doing operations."""
