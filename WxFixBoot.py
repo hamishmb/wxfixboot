@@ -15,10 +15,8 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Remove grub's .efi files after installing elilo and vice versa ***
-#*** Elilo not available in Ubuntu 16.04 + ***
 #*** Warn user about modifying non-EFI OS from EFI OS. Messes up linux and initrd commands on Fedora. They become intirdefi and linuxefi. What about fixing this automatically in such circumstances? ***
 #*** Test restoring bootloader config ***
-#*** BootloaderOptionsWindow: Make sure windows is visible before giving out warnings to user ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -1267,8 +1265,8 @@ class BootloaderOptionsWindow(wx.Frame):
         self.SetupSizers()
         self.BindEvents()
 
-        self.OnOSChoiceChange(Startup=True)
         self.OnAdvancedOptions()
+        wx.CallLater(500, self.OnOSChoiceChange, Startup=True)
 
         logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Window Started.")
 
