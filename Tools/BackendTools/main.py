@@ -442,7 +442,7 @@ class Main():
             #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2-BIOS Configuration...")
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Configuration...")
                 BootloaderConfigSettingTools.SetGRUB2Config(OS=OS, filetoopen=MountPoint+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[OS]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[OS]["Settings"]["NewKernelOptions"])
 
             if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
@@ -477,6 +477,37 @@ class Main():
                 if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
                     logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
 
+            elif SystemInfo["FirmwareType"] == "UEFI":
+                #If the firmware type is EFI it can mess up GRUB2 and change the boot com mands to linuxefi and initrdefi instead of linux and initrd, preventing boot.
+                #Fix this. The next time GRUB is updated from within the OS it will fix itself.
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Fixing GRUB2-BIOS config (when booted with EFI, it can go wrong)...")
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Finding and opening GRUB config file...")
+
+                #Find grub.cfg. (Ubuntu).
+                if os.path.isdir(MountPoint+"/boot/grub"):
+                    GRUBDir = MountPoint+"/boot/grub"
+
+                #(Fedora, BIOS)
+                elif os.path.isdir(MountPoint+"/boot/grub2"):
+                    GRUBDir = MountPoint+"/boot/grub2"
+
+                #Correct the commands if needed.
+                ConfigFile = open(GRUBDir+"/grub.cfg", "r")
+                Config = MenuEntriesFile.readlines()
+                ConfigFile.close()
+
+                NewConfig = []
+
+                for Line in Config:
+                    NewConfig.append(Line.replace("linuxefi", "linux").replace("initrdefi", "initrd"))
+
+                #Write the fixed config.
+                ConfigFile = open(GRUBDir+"/grub.cfg", "w")
+                ConfigFile.write(''.join(NewConfig))
+                ConfigFile.close()
+
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Done!")
+                
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO":
             #Make LILO's config file.
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Making LILO's configuration file...")
