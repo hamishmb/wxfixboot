@@ -2432,13 +2432,13 @@ class BackendThread(threading.Thread):
         logger.debug("BackendThread().run(): Started. Calling self.StartOperations()...")
 
         #Handle any unexpected errors.
-        try:
-            self.StartOperations()
+        #try:
+        self.StartOperations()
 
-        except:
-            Error = sys.exc_info()[0]
-            logger.critical("Unexpected error "+unicode(Error)+" while running operations. Warning user and exiting.")
-            CoreTools.EmergencyExit("There was an unexpected error ("+unicode(Error)+") while running operations!")
+        #except:
+        #    Error = sys.exc_info()[0]
+        #    logger.critical("Unexpected error "+unicode(Error)+" while running operations. Warning user and exiting.")
+        #    CoreTools.EmergencyExit("There was an unexpected error ("+unicode(Error)+") while running operations!")
 
     def StartOperations(self):
         """Start doing operations."""
