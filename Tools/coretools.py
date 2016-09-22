@@ -68,15 +68,16 @@ class Main():
 
             if Char == "":
                 Counter += 1
+                continue
 
             Line += Char
 
-            if Char in ("\n", "\x08", "\r"):
+            if Char in ("\n", "\r"):
                 #Convert to unicode if needed and remove "NULL" characters.
                 if unicode(type(Line)) != type(""):
                     Line = unicode(Line, errors="replace").replace("\x00", "")
 
-                LineList.append(Line.replace("\n", "").replace("\r", "").replace("\x08", ""))
+                LineList.append(Line.replace("\n", "").replace("\r", ""))
 
                 #Reset Line.
                 Line = str("")
@@ -97,6 +98,7 @@ class Main():
 
             if Char == "":
                 Counter += 1
+                continue
 
             Line += Char
 
