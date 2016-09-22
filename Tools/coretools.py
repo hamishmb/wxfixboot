@@ -386,7 +386,7 @@ class Main():
         logger.critical("CoreTools: Main().EmergencyExit(): The error is: "+Message)
 
         #Warn the user.
-        DialogTools.ShowMsgDlg(Message="Emergency exit triggered.\n\n"+Message+"\n\nYou'll now be asked for a location to save the log file.\nIf you email me at hamishmb@live.co.uk with the contents of that file I'll be willing to help you fix this problem.", Kind="error")
+        DialogTools.ShowMsgDlg(Message="Emergency exit triggered.\n\n"+Message+"\n\nYou'll now be asked for a location to save the log file.\nIf you email me at hamishmb@live.co.uk with the contents of that file I'll be happy to help you fix this problem.", Kind="error")
 
         #Shut down the logger.
         logging.shutdown()
@@ -394,6 +394,9 @@ class Main():
         #Save the log file.
         LogFile = DialogTools.ShowSaveFileDlg(Wildcard="Log Files|*.log")
         self.StartProcess("mv -v /tmp/wxfixboot.log "+LogFile, ShowOutput=False)
+
+        #Delete the log file, and don't bother handling any errors, because this is run as root.
+        os.remove('/tmp/wxfixboot.log')
 
         #Exit.
         DialogTools.ShowMsgDlg(Message="Done. WxFixBoot will now exit.")

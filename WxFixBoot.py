@@ -15,7 +15,6 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Remove grub's .efi files after installing elilo and vice versa ***
-#*** Warn user about modifying non-EFI OS from EFI OS. Messes up linux and initrd commands on Fedora. They become intirdefi and linuxefi. What about fixing this automatically in such circumstances? ***
 #*** Test restoring bootloader config ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
@@ -2432,13 +2431,13 @@ class BackendThread(threading.Thread):
         logger.debug("BackendThread().run(): Started. Calling self.StartOperations()...")
 
         #Handle any unexpected errors.
-        #try:
-        self.StartOperations()
+        try:
+            self.StartOperations()
 
-        #except:
-        #    Error = sys.exc_info()[0]
-        #    logger.critical("Unexpected error "+unicode(Error)+" while running operations. Warning user and exiting.")
-        #    CoreTools.EmergencyExit("There was an unexpected error ("+unicode(Error)+") while running operations!")
+        except:
+            Error = sys.exc_info()[0]
+            logger.critical("Unexpected error "+unicode(Error)+" while running operations. Warning user and exiting.")
+            CoreTools.EmergencyExit("There was an unexpected error ("+unicode(Error)+") while running operations!")
 
     def StartOperations(self):
         """Start doing operations."""
