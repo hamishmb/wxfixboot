@@ -31,19 +31,66 @@ class Main():
         #Make sure output is always in English.
         ExecCmds = "LC_ALL=C "+ExecCmds
 
+        #Run the command(s).
+        logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds)
+        cmd = subprocess.Popen(ExecCmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
+        #Use a simpler output reader on startup to improve performance.
+        if Startup:
+            LineList = self.Read(cmd)
+
+        else:
+            LineList = self.ReadAndSendOutput(cmd, ShowOutput)
+
+        #Save runcmd.returncode, as it tends to reset fairly quickly.
+        Retval = int(cmd.returncode)
+
+        #Log this info in a debug message.
+        logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+'\n'.join(LineList)+"\"\n")
+
+        if ReturnOutput == False:
+            #Return the return code back to whichever function ran this process, so it can handle any errors.
+            return Retval
+
+        else:
+            #Return the return code, as well as the output.
+            return (Retval, '\n'.join(LineList))
+
+    def Read(self, cmd):
+        """Read the cmd's output char by char, but do as little processing as possible to improve startup performance"""
+        #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
+        Counter = 0
+        Line = str("")
+        LineList = []
+
+        while cmd.poll() == None or Counter < 100:
+            Char = cmd.stdout.read(1)
+
+            if Char == "":
+                Counter += 1
+
+            Line += Char
+
+            if Char in ("\n", "\x08", "\r"):
+                #Convert to unicode if needed and remove "NULL" characters.
+                if unicode(type(Line)) != type(""):
+                    Line = unicode(Line, errors="replace").replace("\x00", "")
+
+                LineList.append(Line.replace("\n", "").replace("\r", "").replace("\x08", ""))
+
+                #Reset Line.
+                Line = str("")
+
+        return LineList
+        
+    def ReadAndSendOutput(self, cmd, ShowOutput):
+        """Read the cmd's output char by char, and send the output to the output box"""
         #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
         Counter = 0
         Line = str("")
         LineList = []
         Hold = False
         SendLine = False
-
-        #Run the command(s).
-        logger.debug("CoreTools: Main().StartProcess(): Starting process: "+ExecCmds)
-        cmd = subprocess.Popen(ExecCmds, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-
-        #Close stdin (some programs wait for this before they will exit).
-        cmd.stdin.close()
 
         while cmd.poll() == None or Counter < 100:
             Char = cmd.stdout.read(1)
@@ -81,19 +128,7 @@ class Main():
                 #Take the next character too in case it's \n, so we can just handle \r\n as \n.
                 Hold = True
 
-        #Save runcmd.returncode, as it tends to reset fairly quickly.
-        Retval = int(cmd.returncode)
-
-        #Log this info in a debug message.
-        logger.debug("CoreTools: Main().StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+'\n'.join(LineList)+"\"\n")
-
-        if ReturnOutput == False:
-            #Return the return code back to whichever function ran this process, so it can handle any errors.
-            return Retval
-
-        else:
-            #Return the return code, as well as the output.
-            return (Retval, '\n'.join(LineList))
+        return LineList
 
     def IsMounted(self, Partition, MountPoint=None):
         """Checks if the given partition is mounted.

@@ -47,7 +47,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "21/9/2016"
+ReleaseDate = "22/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -335,10 +335,6 @@ class InitialWindow(wx.Frame):
         self.ProgressText.SetLabel(Message)
         self.Panel.Layout()
 
-    def UpdateOutputBox(self, Line, ShowOutput):
-        """Dummy function, accepts 'Line' and 'ShowOutput' arguments but ignores them. Allows CoreTools.StartProcess to work during startup."""
-        pass
-
     def FinishedInit(self, Event=None):
         """Starts MainWindow, called when StartupScripts are finished"""
         logger.info("Closing Initial Window and Starting Main Window...")
@@ -461,6 +457,9 @@ class InitThread(threading.Thread):
         Tools.StartupTools.getbootloaderconfigtools.DiskInfo = DiskInfo
         Tools.StartupTools.getbootloaderconfigtools.BootloaderInfo = BootloaderInfo
         GetDevInfo.getdevinfo.DiskInfo = DiskInfo
+
+        #Let CoreTools know we're starting up.
+        Tools.coretools.Startup = True
 
         #Set variables used for checking whether bootloader operations have been disabled.
         SystemInfo["DisableBootloaderOperations"] = False
@@ -604,6 +603,9 @@ class InitThread(threading.Thread):
             print(Var)
 
         #***************************
+
+        #Let CoreTools know we're finished starting up.
+        Tools.coretools.Startup = False
 
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")
