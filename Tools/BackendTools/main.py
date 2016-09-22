@@ -493,7 +493,7 @@ class Main():
 
                 #Correct the commands if needed.
                 ConfigFile = open(GRUBDir+"/grub.cfg", "r")
-                Config = MenuEntriesFile.readlines()
+                Config = ConfigFile.readlines()
                 ConfigFile.close()
 
                 NewConfig = []
