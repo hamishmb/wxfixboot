@@ -330,8 +330,8 @@ class Main():
         Retval = CoreTools.StartProcess(Cmd)
 
         if Retval != 0:
-            logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to uninstall old bootloader. Warn user...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to uninstall "+OS+"'s old bootloader! Continuing anyway...")
+            logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to install new bootloader. Warn user...")
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to install "+OS+"'s new bootloader! Continuing anyway...")
 
         #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot.
         if OSInfo[OS]["BootPartition"] != "Unknown":

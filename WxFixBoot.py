@@ -15,7 +15,7 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #*** Remove grub's .efi files after installing elilo and vice versa ***
-#*** Test restoring bootloader config ***
+#*** dpkg -l '*' lists packages that aren't available any more ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -44,7 +44,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "22/9/2016"
+ReleaseDate = "23/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1847,6 +1847,8 @@ class BootloaderOptionsWindow(wx.Frame):
             self.InstallNewBootloaderCheckBox.SetValue(1)
             self.OnInstallNewBootloaderCheckBox()
             self.NewBootloaderChoice.SetStringSelection(Config["Bootloader"])
+            self.ReinstallBootloaderCheckBox.Disable()
+            self.UpdateBootloaderCheckBox.Disable()
 
         else:
             #Don't allow the user to attempt to modify GRUB-LEGACY.
