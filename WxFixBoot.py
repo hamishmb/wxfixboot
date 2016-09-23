@@ -1803,7 +1803,6 @@ class BootloaderOptionsWindow(wx.Frame):
                     #Reset the choicebox and checkbox.
                     self.RestoreBootloaderChoice.SetStringSelection("-- Please Select --")
                     self.RestoreBootloaderCheckBox.SetValue(0)
-                    self.OnRestoreBootloaderCheckBox()
 
             else:
                 #Reset choice box.
@@ -2009,7 +2008,6 @@ class BootloaderOptionsWindow(wx.Frame):
         if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
             self.ReinstallBootloaderCheckBox.Disable()
             self.UpdateBootloaderCheckBox.Disable()
-
 
     def OnNewBootloaderChoice(self, Event=None):
         """Warn user about LILO's/ELILO's rubbish multi OS support if needed"""
