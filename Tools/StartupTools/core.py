@@ -110,49 +110,32 @@ class Main():
                 break
 
         #Look for any other bootloaders that might be available for installation. Ignore GRUB-LEGACY.
-        if PackageManager == "apt-get":
-            Cmd = "dpkg -l '*'"
-
-        else:
-            Cmd = "yum -C list all"
-
-        if UsingChroot:
-            Cmd = "chroot "+MountPoint+" "+Cmd
-
-        Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
-
-        for Line in Output:
+        for Package in BootloaderPackages:
             if PackageManager == "apt-get":
-                #Only look in the package name.
+                Cmd = "apt-cache search "+Package
+
+            else:
+                Cmd = "yum search "+Package
+
+            if UsingChroot: 
+                Cmd = "chroot "+MountPoint+" "+Cmd
+
+            Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
+
+            #Only look in the package name.
+            for Line in Output:
                 try:
-                    CorrectSection = Line.split()[1]
+                    if PackageManager == "apt-get":
+                        CorrectSection = Line.split()[0]
+
+                    else:
+                        CorrectSection = Line.split()[0].split(".")[0]
 
                 except IndexError: continue
 
-                if "grub-efi" in CorrectSection:
-                    if "GRUB-UEFI" not in AvailableBootloaders:
-                        AvailableBootloaders.append("GRUB-UEFI")
-
-                elif "elilo" in CorrectSection:
-                    if "ELILO" not in AvailableBootloaders:
-                        AvailableBootloaders.append("ELILO")
-
-                elif "grub-pc" in CorrectSection:
-                    if "GRUB2" not in AvailableBootloaders:
-                        AvailableBootloaders.append("GRUB2")
-
-                elif "lilo" in CorrectSection:
-                    if "LILO" not in AvailableBootloaders:
-                        AvailableBootloaders.append("LILO")
-
-            elif PackageManager == "yum":
-                if "grub2-efi" in Line:
-                    if "GRUB-UEFI" not in AvailableBootloaders:
-                        AvailableBootloaders.append("GRUB-UEFI")
-
-                elif "grub2" in Line:
-                    if "GRUB2" not in AvailableBootloaders:
-                        AvailableBootloaders.append("GRUB2")
+                if Package == CorrectSection:
+                    if PackageDict[Package] not in AvailableBootloaders and PackageDict[Package] != "GRUB-LEGACY":
+                        AvailableBootloaders.append(PackageDict[Package])
 
         #Log info.
         AvailableBootloaders.sort()
