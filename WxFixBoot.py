@@ -1847,13 +1847,10 @@ class BootloaderOptionsWindow(wx.Frame):
             self.InstallNewBootloaderCheckBox.SetValue(1)
             self.NewBootloaderChoice.SetStringSelection(Config["Bootloader"])
             self.OnInstallNewBootloaderCheckBox()
-            self.ReinstallBootloaderCheckBox.Disable()
-            self.UpdateBootloaderCheckBox.Disable()
 
         else:
-            #Don't allow the user to attempt to modify GRUB-LEGACY.
-            self.ReinstallBootloaderCheckBox.Disable()
-            self.UpdateBootloaderCheckBox.Disable()
+            #Don't allow the user to attempt to switch back to GRUB-LEGACY.
+            raise RuntimeError
 
         #Use kernel options used when the backup was taken.
         self.KeepKernelOptionsCheckBox.SetValue(0)
