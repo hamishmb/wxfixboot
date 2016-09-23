@@ -129,9 +129,6 @@ class Main():
                         CorrectSection = Line.split()[0]
 
                     else:
-                        print(Line.split())
-                        print(Line.split()[0])
-                        print(Line.split()[0].split(".")[0])
                         CorrectSection = Line.split()[0].split(".")[0]
 
                 except IndexError: continue
