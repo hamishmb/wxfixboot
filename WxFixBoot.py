@@ -1845,8 +1845,8 @@ class BootloaderOptionsWindow(wx.Frame):
             #Set up to replace the current bootloader with the old one.
             self.InstallNewBootloaderCheckBox.Enable()
             self.InstallNewBootloaderCheckBox.SetValue(1)
-            self.OnInstallNewBootloaderCheckBox()
             self.NewBootloaderChoice.SetStringSelection(Config["Bootloader"])
+            self.OnInstallNewBootloaderCheckBox()
             self.ReinstallBootloaderCheckBox.Disable()
             self.UpdateBootloaderCheckBox.Disable()
 
