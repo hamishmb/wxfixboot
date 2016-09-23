@@ -129,9 +129,11 @@ class Main():
                         CorrectSection = Line.split()[0]
 
                     else:
+                        print(Line.split())
+                        print(Line.split()[0])
                         CorrectSection = Line.split()[0].split(".")[0]
 
-                except IndexError: print("e")
+                except IndexError: continue
 
                 if Package == CorrectSection:
                     if PackageDict[Package] not in AvailableBootloaders and PackageDict[Package] != "GRUB-LEGACY":
