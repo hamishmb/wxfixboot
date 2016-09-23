@@ -115,7 +115,7 @@ class Main():
                 Cmd = "apt-cache search "+Package
 
             else:
-                Cmd = "yum search "+Package
+                Cmd = "yum -C search "+Package
 
             if UsingChroot: 
                 Cmd = "chroot "+MountPoint+" "+Cmd
@@ -131,7 +131,7 @@ class Main():
                     else:
                         CorrectSection = Line.split()[0].split(".")[0]
 
-                except IndexError: continue
+                except IndexError: print("e")
 
                 if Package == CorrectSection:
                     if PackageDict[Package] not in AvailableBootloaders and PackageDict[Package] != "GRUB-LEGACY":
