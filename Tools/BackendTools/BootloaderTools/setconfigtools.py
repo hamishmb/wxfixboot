@@ -45,7 +45,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
         #Log if we couldn't match them.
         if BLSpecificDefaultOS == "Unknown":
             logger.warning("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Couldn't match! We will instead pick the 1st menu entry. Warning user...")
-            DialogTools.ShowMsgDlg(Message="Couldn't match the default OS you picked to any that "+BootloaderInfo[OS]["NewBootloader"]+" has detected! This doesn't matter, so instead, the first menu entry will be the default. Click okay to continue...")
+            DialogTools.ShowMsgDlg(Message="Couldn't match the default OS you picked to any that "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" has detected! This doesn't matter, so instead, the first menu entry will be the default. Click okay to continue...")
             BLSpecificDefaultOS = "0"
 
         #Open the file in read mode, so we can find the new config that needs setting. Also, use a list to temporarily store the modified lines.
@@ -194,7 +194,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
         #Loop through each line in the file, paying attention only to the important ones.
         for line in ConfigFile:
             #Look for the timeout setting (ELILO).
-            if BootloaderInfo[OS]["NewBootloader"] == "ELILO" and 'delay' in line and '=' in line and '#' not in line and SetTimeout == False:
+            if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO" and 'delay' in line and '=' in line and '#' not in line and SetTimeout == False:
                 #Found it! Set it to our value.
                 logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found timeout setting, setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...") 
                 SetTimeout = True
@@ -208,7 +208,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
                 line = "delay="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"]*10)+"\n"
 
             #Look for the timeout setting (LILO).
-            elif BootloaderInfo[OS]["NewBootloader"] == "LILO" and 'timeout' in line and '=' in line and '#' not in line and SetTimeout == False:
+            elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO" and 'timeout' in line and '=' in line and '#' not in line and SetTimeout == False:
                 #Found it! Set it to our value.
                 logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found timeout setting, setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
                 SetTimeout = True
@@ -232,7 +232,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
             NewFileContents.append(line)
 
         #Check that everything was set. If not, write that config now.
-        if BootloaderInfo[OS]["NewBootloader"] == "ELILO" and SetTimeout == False:
+        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO" and SetTimeout == False:
             logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
 
             #Also set prompt to use the text menu, chooser to textmenu, and the text menu file.
@@ -243,7 +243,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
 
             NewFileContents.append("delay="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"\n")
 
-        elif BootloaderInfo[OS]["NewBootloader"] == "LILO" and SetTimeout == False:
+        elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO" and SetTimeout == False:
             logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
             NewFileContents.append("timeout="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"\n")
 
