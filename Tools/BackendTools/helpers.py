@@ -280,7 +280,7 @@ class Main():
             #If we were previously using GRUB-EFI, remove its EFI files.
             if BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
                 if CoreTools.StartProcess("rm -v "+SourceDir+"/grub*.efi", ShowOutput=False) != 0:
-                    logger.error("HelperBackendTools: Main().ManageUEFIFiles(): Failed to remove "+GRUBEFIDir+"/grub*.efi! Attempting to continue anyway...")
+                    logger.warning("HelperBackendTools: Main().ManageUEFIFiles(): Failed to remove "+SourceDir+"/grub*.efi! Attempting to continue anyway...")
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #We need to copy grub*.efi to UEFIBootDir.
@@ -293,6 +293,6 @@ class Main():
             #If we were previously using ELILO, remove its EFI files.
             if BootloaderInfo[OS]["Bootloader"] == "ELILO":
                 if CoreTools.StartProcess("rm -v "+SourceDir+"/elilo*", ShowOutput=False) != 0:
-                    logger.error("HelperBackendTools: Main().ManageUEFIFiles(): Failed to remove "+GRUBEFIDir+"/elilo*! Attempting to continue anyway...")
+                    logger.warning("HelperBackendTools: Main().ManageUEFIFiles(): Failed to remove "+SourceDir+"/elilo*! Attempting to continue anyway...")
 
         logger.info("HelperBackendTools: Main().ManageUEFIFiles(): Done!")
