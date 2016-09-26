@@ -45,7 +45,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
         #Log if we couldn't match them.
         if BLSpecificDefaultOS == "Unknown":
             logger.warning("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Couldn't match! We will instead pick the 1st menu entry. Warning user...")
-            DialogTools.ShowMsgDlg(Message="Couldn't match the default OS you picked to any that "+BootloaderInfo[OS]["Bootloader"]+" has detected! This doesn't matter, so instead, the first menu entry will be the default. Click okay to continue...")
+            DialogTools.ShowMsgDlg(Message="Couldn't match the default OS you picked to any that "+BootloaderInfo[OS]["NewBootloader"]+" has detected! This doesn't matter, so instead, the first menu entry will be the default. Click okay to continue...")
             BLSpecificDefaultOS = "0"
 
         #Open the file in read mode, so we can find the new config that needs setting. Also, use a list to temporarily store the modified lines.
