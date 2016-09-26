@@ -471,7 +471,7 @@ class Main():
 
                 #Copy and backup EFI files where needed.
                 HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
-                HelperBackendTools.CopyUEFIFiles(OS=OS, MountPoint=MountPoint)
+                HelperBackendTools.ManageUEFIFiles(OS=OS, MountPoint=MountPoint)
 
                 #Unmount the EFI partition.
                 if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
@@ -575,7 +575,7 @@ class Main():
 
             #Copy and backup UEFI files where needed.
             HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
-            HelperBackendTools.CopyUEFIFiles(OS=OS, MountPoint=MountPoint)
+            HelperBackendTools.ManageUEFIFiles(OS=OS, MountPoint=MountPoint)
 
             #Unmount the EFI partition.
             if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:

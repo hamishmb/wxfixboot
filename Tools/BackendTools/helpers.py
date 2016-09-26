@@ -236,9 +236,9 @@ class Main():
 
         logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Done!")
 
-    def CopyUEFIFiles(self, OS, MountPoint):
-        """Copy the new UEFI bootloader's files to default places in case of buggy firmware.""" #*** Test this again ***
-        logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Copying UEFI Files to UEFIBootDir...")
+    def ManageUEFIFiles(self, OS, MountPoint):
+        """Manage UEFI bootloader files.""" #*** Test this again ***
+        logger.info("HelperBackendTools: Main().ManageUEFIFiles(): Copying UEFI Files to UEFIBootDir...")
 
         #First, let's check if EFI/boot already exists. This is a fat32/fat16 filesystem, so case doesn't matter.
         if os.path.isdir(MountPoint+"/boot/efi/EFI/boot"):
@@ -259,30 +259,40 @@ class Main():
         #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             #We need to copy both elilo.efi, and elilo.conf to UEFIBootDir.
-            logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Copying elilo.efi, elilo.conf and elilomenu.msg to "+UEFIBootDir+"...")
+            logger.info("HelperBackendTools: Main().ManageUEFIFiles(): Copying elilo.efi, elilo.conf and elilomenu.msg to "+UEFIBootDir+"...")
 
             if CoreTools.StartProcess("cp -v "+SourceDir+"/elilo.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False) != 0:
-                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy "+SourceDir+"/elilo.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
+                logger.error("HelperBackendTools: Main().ManageUEFIFiles(): Failed to copy "+SourceDir+"/elilo.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
             if CoreTools.StartProcess("cp -v "+SourceDir+"/elilo.conf "+UEFIBootDir+"/", ShowOutput=False) != 0:
-                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy "+SourceDir+"/elilo.conf to "+UEFIBootDir+"/! Attempting to continue anyway...")
+                logger.error("HelperBackendTools: Main().ManageUEFIFiles(): Failed to copy "+SourceDir+"/elilo.conf to "+UEFIBootDir+"/! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
             if CoreTools.StartProcess("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+UEFIBootDir+"/", ShowOutput=False) != 0:
-                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilomenu.msg to "+UEFIBootDir+"! Attempting to continue anyway...")
+                logger.error("HelperBackendTools: Main().ManageUEFIFiles(): Failed to copy elilomenu.msg to "+UEFIBootDir+"! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
             if CoreTools.StartProcess("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+SourceDir+"/", ShowOutput=False) != 0:
-                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilomenu.msg to "+SourceDir+"/! Attempting to continue anyway...")
+                logger.error("HelperBackendTools: Main().ManageUEFIFiles(): Failed to copy elilomenu.msg to "+SourceDir+"/! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
+
+            #If we were previously using GRUB-EFI, remove its EFI files.
+            if BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
+                if CoreTools.StartProcess("rm -v "+SourceDir+"/grub*.efi", ShowOutput=False) != 0:
+                    logger.error("HelperBackendTools: Main().ManageUEFIFiles(): Failed to remove "+GRUBEFIDir+"/grub*.efi! Attempting to continue anyway...")
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #We need to copy grub*.efi to UEFIBootDir.
-            logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Copying grub*.efi to "+UEFIBootDir+"...")
+            logger.info("HelperBackendTools: Main().ManageUEFIFiles(): Copying grub*.efi to "+UEFIBootDir+"...")
 
             if CoreTools.StartProcess("cp -v "+SourceDir+"/grub*.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False) != 0:
-                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy "+GRUBEFIDir+"/grub*.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
+                logger.error("HelperBackendTools: Main().ManageUEFIFiles(): Failed to copy "+SourceDir+"/grub*.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
-        logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Done!")
+            #If we were previously using ELILO, remove its EFI files.
+            if BootloaderInfo[OS]["Bootloader"] == "ELILO":
+                if CoreTools.StartProcess("rm -v "+SourceDir+"/elilo*", ShowOutput=False) != 0:
+                    logger.error("HelperBackendTools: Main().ManageUEFIFiles(): Failed to remove "+GRUBEFIDir+"/elilo*! Attempting to continue anyway...")
+
+        logger.info("HelperBackendTools: Main().ManageUEFIFiles(): Done!")
