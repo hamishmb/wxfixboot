@@ -249,39 +249,39 @@ class Main():
             UEFIBootDir = MountPoint+"/boot/efi/EFI/boot"
             os.mkdir(UEFIBootDir)
 
+        #Do this different depending on whether the OS is ubuntu or fedora-based.
+        if OSInfo[OS]["PackageManager"] == "apt-get":
+            SourceDir = MountPoint+"/boot/efi/EFI/ubuntu"
+
+        elif OSInfo[OS]["PackageManager"] == "yum":
+            SourceDir = MountPoint+"/boot/efi/EFI/fedora"
+            
         #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             #We need to copy both elilo.efi, and elilo.conf to UEFIBootDir.
             logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Copying elilo.efi, elilo.conf and elilomenu.msg to "+UEFIBootDir+"...")
 
-            if CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False) != 0:
-                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilo.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
+            if CoreTools.StartProcess("cp -v "+SourceDir+"/elilo.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False) != 0:
+                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy "+SourceDir+"/elilo.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
-            if CoreTools.StartProcess("cp -v "+MountPoint+"/boot/efi/EFI/ubuntu/elilo.conf "+UEFIBootDir+"/", ShowOutput=False) != 0:
-                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilo.conf to "+UEFIBootDir+"/! Attempting to continue anyway...")
+            if CoreTools.StartProcess("cp -v "+SourceDir+"/elilo.conf "+UEFIBootDir+"/", ShowOutput=False) != 0:
+                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy "+SourceDir+"/elilo.conf to "+UEFIBootDir+"/! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
             if CoreTools.StartProcess("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+UEFIBootDir+"/", ShowOutput=False) != 0:
                 logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilomenu.msg to "+UEFIBootDir+"! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
-            if CoreTools.StartProcess("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+UEFIBootDir+"/../ubuntu", ShowOutput=False) != 0:
-                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilomenu.msg to "+UEFIBootDir+"/../ubuntu! Attempting to continue anyway...")
+            if CoreTools.StartProcess("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+SourceDir+"/", ShowOutput=False) != 0:
+                logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy elilomenu.msg to "+SourceDir+"/! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #We need to copy grub*.efi to UEFIBootDir.
-            #Do this different depending on whether the OS is ubuntu or fedora-based.
-            if OSInfo[OS]["PackageManager"] == "apt-get":
-                GRUBEFIDir = MountPoint+"/boot/efi/EFI/ubuntu"
-
-            elif OSInfo[OS]["PackageManager"] == "yum":
-                GRUBEFIDir = MountPoint+"/boot/efi/EFI/fedora"
-
             logger.info("HelperBackendTools: Main().CopyUEFIFiles(): Copying grub*.efi to "+UEFIBootDir+"...")
 
-            if CoreTools.StartProcess("cp -v "+GRUBEFIDir+"/grub*.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False) != 0:
+            if CoreTools.StartProcess("cp -v "+SourceDir+"/grub*.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False) != 0:
                 logger.error("HelperBackendTools: Main().CopyUEFIFiles(): Failed to copy "+GRUBEFIDir+"/grub*.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
