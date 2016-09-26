@@ -363,7 +363,7 @@ class Main():
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
         return True
 
-    def SetNewBootloaderConfig(self, OS): #*** Only set e.g. Timeout and Kernel Options if they are being changed ***
+    def SetNewBootloaderConfig(self, OS):
         """Manage setting new bootloader config."""
         logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config for "+OS+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" config...")
@@ -422,7 +422,7 @@ class Main():
 
         #Look for the configuration file, based on which SetConfig() function we're about to run.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
-            #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
+            #Check MountPoint/etc/default/grub exists.
             if os.path.isfile(MountPoint+"/etc/default/grub"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting GRUB2 Configuration...")
@@ -502,7 +502,7 @@ class Main():
             if CoreTools.StartProcess(Cmd, ShowOutput=False) != 0:
                 logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): '"+Cmd+"' didn't run successfully! Attempting to continue anyway...")
 
-            #Check the config file exists for lilo. *** What do we do if it doesn't? Have a template one to put there? ***
+            #Check the config file exists for lilo.
             if os.path.isfile(MountPoint+"/etc/lilo.conf"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting LILO Configuration...")
@@ -538,7 +538,7 @@ class Main():
             if CoreTools.StartProcess(Cmd, ShowOutput=False) != 0:
                 logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): '"+Cmd+"' didn't run successfully! Attempting to continue anyway...")
 
-            #Check elilo's config file exists. *** What do we do if it doesn't? Have a template to put there? ***
+            #Check elilo's config file exists.
             if os.path.isfile(MountPoint+"/etc/elilo.conf"):
                 #It does, we'll run the function to set the config now.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting ELILO Configuration...")

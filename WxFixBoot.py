@@ -2451,15 +2451,59 @@ class BackendThread(threading.Thread):
         ReportList = open(ReportFile, 'w')
         ReportList.write("This system report was created with WxFixBoot version "+Version+". It can be used like a bootinfo summary.\n\n")
 
+        #Do Disk Information
+        ReportList.write("\n##########Disk Information##########\n")
+        DiskList = DiskInfo.keys()
+        DiskList.sort()
+
+        ReportList.write("All Disks: "+', '.join(DiskList)+"\n")
+        ReportList.write("Per Disk Info:\n")
+
+        for Disk in DiskList:
+            ReportList.write("\tName: "+Disk+"\n")
+            ReportList.write("\tType: "+DiskInfo[Disk]["Type"]+"\n")
+            ReportList.write("\tHost Device: "+DiskInfo[Disk]["HostDevice"]+"\n")
+            ReportList.write("\tPartitions: "+', '.join(DiskInfo[Disk]["Partitions"])+"\n")
+            ReportList.write("\tVendor: "+DiskInfo[Disk]["Vendor"]+"\n")
+            ReportList.write("\tProduct: "+DiskInfo[Disk]["Product"]+"\n")
+            ReportList.write("\tRaw Capacity: "+DiskInfo[Disk]["RawCapacity"]+"\n")
+            ReportList.write("\tHuman-readable Capacity: "+DiskInfo[Disk]["Capacity"]+"\n")
+            ReportList.write("\tDescription: "+DiskInfo[Disk]["Description"]+"\n")
+            ReportList.write("\tFlags: "+', '.join(DiskInfo[Disk]["Flags"])+"\n")
+            ReportList.write("\tPartitioning: "+DiskInfo[Disk]["Partitioning"]+"\n")
+            ReportList.write("\tFilesystem: "+DiskInfo[Disk]["FileSystem"]+"\n")
+            ReportList.write("\tUUID: "+DiskInfo[Disk]["UUID"]+"\n")
+            ReportList.write("\tID: "+DiskInfo[Disk]["ID"]+"\n")
+            ReportList.write("\tBoot Record Strings: "+', '.join(DiskInfo[Disk]["BootRecordStrings"])+"\n")
+
         #Do OS Information.
         ReportList.write("\n##########OS Information##########\n")
-        ReportList.write("Detected Operating Systems: "+', '.join(OSList)+"\n")
+        OSList = OSInfo.keys()
+        OSList.sort()
+
+        ReportList.write("Detected Operating Systems: "+', '.join(OSInfo.keys())+"\n")
+        ReportList.write("Modifyable Operating Systems: "+', '.join(SystemInfo["ModifyableOSs"])+"\n")
+        ReportList.write("Currently running OS architecture: "+SystemInfo["CurrentOSArch"]+"\n")
         ReportList.write("Currently running OS is on Live Disk: "+unicode(SystemInfo["IsLiveDisk"])+"\n")
+
+        if SystemInfo["IsLiveDisk"]:
+            ReportList.write("Currently running OS is Parted Magic: "+unicode(SystemInfo["IsPartedMagic"])+"\n")
+
+        ReportList.write("Per OS Info:\n")
+
+        for OS in OSList:
+            ReportList.write("\tOS Name: "+OS+"\n")
+            ReportList.write("\t\tIs Current OS: "+unicode(OSInfo[OS]["IsCurrentOS"])+"\n")
+            ReportList.write("\t\tArchitecture: "+OSInfo[OS]["Arch"]+"\n")
+            ReportList.write("\t\tInstalled On: "+OSInfo[OS]["Partition"]+"\n")
+            ReportList.write("\t\tPackage Manager: "+OSInfo[OS]["PackageManager"]+"\n")
+            ReportList.write("\t\tBoot Partition: "+OSInfo[OS]["BootPartition"]+"\n")
+            ReportList.write("\t\tEFI Partition: "+OSInfo[OS]["EFIPartition"]+"\n")
+            ReportList.write("\t\tContents of /etc/fstab: "+'\n'.join(OSInfo[OS]["RawFSTabInfo"])+"\n")
 
         #Do Firmware Information.
         ReportList.write("\n##########Firmware Information##########\n")
         ReportList.write("Detected firmware type: "+SystemInfo["FirmwareType"]+"\n")
-        #ReportList.write("UEFI System Partition (UEFI Bootloader target): "+SystemInfo["UEFISystemPartition"]+"\n")
 
         #Do Bootloader information
         ReportList.write("\n##########BootLoader Information##########\n")
@@ -2496,24 +2540,6 @@ class BackendThread(threading.Thread):
                     #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
                     #ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
 
-        #Do Disk Information
-        ReportList.write("\n##########Disk Information##########\n")
-        #ReportList.write("Detected Linux Partitions: "+', '.join(SystemInfo["LinuxPartitions"])+"\n")
-
-        #Do Boot Sector Information.
-        ReportList.write("\n##########Boot Sector Information##########\n")
-        #ReportList.write("Backup Boot Sector: "+unicode(BackupBootSector)+"\n")
-
-        #if BackupBootSector: *** global var not used any more ***
-            #ReportList.write("\n\tBacked up Boot Sector From: "+SystemInfo["RootDevice"]+"\n")
-        #    ReportList.write("\tTarget Boot Sector File: (*** Disabled as no way of saving this until switch to dictionaries ***)\n\n") #*** +BootSectorBackupFile+"\n\n")
-
-        #ReportList.write("Restore Boot Sector: "+unicode(RestoreBootSector)+"\n")
-        #if RestoreBootSector:
-        #    ReportList.write("\n\tBoot Sector Backup File: "+BootSectorFile+"\n")
-        #    ReportList.write("\tBoot Sector Target Device: "+BootSectorTargetDevice+"\n")
-        #    ReportList.write("\tBoot Sector Backup Type: "+BootSectorBackupType+"\n") 
-
         #Do WxFixBoot's settings.
         ReportList.write("\n##########Other WxFixBoot Settings##########\n")
         ReportList.write("Do Quick Filesystem Check: "+unicode(Settings["QuickFSCheck"])+"\n")
@@ -2536,6 +2562,7 @@ class BackendThread(threading.Thread):
         ReportList.write("\n##########WxFixBoot's Log File##########\n")
 
         logfile = open("/tmp/wxfixboot.log", "r")
+
         for line in logfile:
             ReportList.write(line)
 
