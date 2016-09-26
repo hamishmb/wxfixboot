@@ -553,51 +553,6 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
-        #***************************
-        print("\n\nSystemInfo:")
-        Keys = SystemInfo.keys()
-        Keys.sort()
-
-        for Key in Keys:
-            print(Key)
-
-        print("\n\nOSInfo:")
-        Keys = OSInfo.keys()
-        Keys.sort()
-
-        for Key in Keys:
-            print(Key)
-
-        print("\n\nDiskInfo:")
-        Keys = DiskInfo.keys()
-        Keys.sort()
-
-        for Key in Keys:
-            print(Key)
-
-        print("\n\nBootloaderInfo:")
-        Keys = BootloaderInfo.keys()
-        Keys.sort()
-
-        for Key in Keys:
-            print(Key)
-
-        print("\n\nSettings:")
-        Keys = Settings.keys()
-        Keys.sort()
-
-        for Key in Keys:
-            print(Key)
-
-        print("\n\nGlobals:")
-        Vars = globals().keys()
-        Vars.sort()
-
-        for Var in Vars:
-            print(Var)
-
-        #***************************
-
         #Let CoreTools know we're finished starting up.
         Tools.coretools.Startup = False
 

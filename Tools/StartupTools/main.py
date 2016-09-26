@@ -433,23 +433,6 @@ class Main():
                 logger.warning("MainStartupTools: Main().GetBootloaders(): Couldn't match! We will instead use the first OS in the list as the default OS, which is "+SystemInfo["ModifyableOSs"][0]+"...")
                 BootloaderInfo[OS]["DefaultOS"] = SystemInfo["ModifyableOSs"][0]
 
-            #*****************
-            print("\n\n\n************ OS: "+OS+" ************\n\n\n")
-            Keys = BootloaderInfo[OS]["MenuEntries"].keys()
-
-            for Menu in Keys:
-                print("\n\n\nMenu Name: "+Menu+"\n\n\n")
-
-                MenuEntries = BootloaderInfo[OS]["MenuEntries"][Menu]["Order"]
-
-                for MenuEntry in MenuEntries:
-                    print("\tMenu Entry Name: "+MenuEntry)
-                    print("\t\tID: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["ID"])
-                    print("\t\tPartition: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["Partition"])
-                    print("\t\tKernel Options: "+', '.join(BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["KernelOptions"])+"\n")
-
-            #*****************
-
             #Initialise some default no-action settings.
             BootloaderInfo[OS]["Settings"] = {}
             BootloaderInfo[OS]["Settings"]["Reinstall"] = False

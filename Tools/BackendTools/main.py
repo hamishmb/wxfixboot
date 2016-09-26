@@ -420,23 +420,6 @@ class Main():
 
             BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)[1]
 
-            #*****************
-            print("\n\n\n************ OS: "+OS+" ************\n\n\n")
-            Keys = BootloaderInfo[OS]["MenuEntries"].keys()
-
-            for Menu in Keys:
-                print("\n\n\nMenu Name: "+Menu+"\n\n\n")
-
-                MenuEntries = BootloaderInfo[OS]["MenuEntries"][Menu]["Order"]
-
-                for MenuEntry in MenuEntries:
-                    print("\tMenu Entry Name: "+MenuEntry)
-                    print("\t\tID: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["ID"])
-                    print("\t\tPartition: "+BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["Partition"])
-                    print("\t\tKernel Options: "+', '.join(BootloaderInfo[OS]["MenuEntries"][Menu][MenuEntry]["KernelOptions"])+"\n")
-
-            #*****************
-
         #Look for the configuration file, based on which SetConfig() function we're about to run.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
             #Check MountPoint/etc/default/grub exists. *** What do we do if it doesn't? Maybe have a template to put there ***
