@@ -194,6 +194,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
         #Loop through each line in the file, paying attention only to the important ones.
         for line in ConfigFile:
             #Look for the timeout setting (ELILO).
+            print('delay' in line and '=' in line and '#' not in line and SetTimeout == False)
             if BootloaderInfo[OS]["Bootloader"] == "ELILO" and 'delay' in line and '=' in line and '#' not in line and SetTimeout == False:
                 #Found it! Set it to our value.
                 logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found timeout setting, setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...") 
