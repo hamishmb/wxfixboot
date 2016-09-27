@@ -296,28 +296,6 @@ class Main():
         #Return the return value
         return Retval
 
-    def Find(self, RegExp, TopLevelDirectory):
-        """Finds the given file, somewhere in or below the given directory, and returns True or False depending on if it was found or not"""
-        logger.info("CoreTools: Main().Find(): Looking in "+TopLevelDirectory+" with regular expression "+RegExp+"...")
-        FilesFound = []
-        for Root, Directory, Files in os.walk(TopLevelDirectory):
-            #Convert unicode strings in a list with one element.
-            if unicode(type(Files)) == type(""):
-                Files = [Files]
-
-            #Check each file.
-            for File in Files:
-                if re.match(RegExp, File, re.M|re.I) is not None:
-                    FilesFound.append(os.path.join(Root, File))
-
-        if FilesFound != []:
-            logger.info("CoreTools: Main().Find(): Found files "+' '.join(FilesFound)+"...")
-
-        else:
-            logger.info("CoreTools: Main().Find() Didn't find any files...")
-
-        return FilesFound
-
     def UpdateChrootMtab(self, MountPoint):
         """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right."""
         logger.debug("CoreTools: Main().UpdateChrootMtab(): Updating /etc/mtab for chroot at: "+MountPoint+"...")

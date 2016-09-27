@@ -32,9 +32,7 @@ import logging
 import os
 import shutil
 import time
-import re
 import plistlib
-from distutils.version import LooseVersion
 from wx.animate import AnimationCtrl
 from wx.animate import Animation
 from bs4 import BeautifulSoup
@@ -134,11 +132,10 @@ MainBackendTools = MainBackendToolsCallable()
 BootloaderConfigObtainingTools = BootloaderConfigObtainingToolsCallable()
 BootloaderConfigSettingTools = BootloaderConfigSettingToolsCallable()
 
-#Setup custom-made modules (make global variables accessible inside the packages). *** Minimise if possible ***
+#Setup custom-made modules (make global variables accessible inside the packages).
 #GetDevInfo Package.
 GetDevInfo.getdevinfo.subprocess = subprocess
 GetDevInfo.getdevinfo.logger = logger
-GetDevInfo.getdevinfo.re = re
 GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
 #CoreTools Module.
@@ -148,7 +145,6 @@ Tools.coretools.sys = sys
 Tools.coretools.logger = logger
 Tools.coretools.logging = logging
 Tools.coretools.os = os
-Tools.coretools.re = re
 Tools.coretools.DialogTools = DialogTools
 
 #DialogTools Module.
@@ -178,7 +174,6 @@ Tools.BackendTools.helpers.logger = logger
 Tools.BackendTools.helpers.os = os
 Tools.BackendTools.helpers.CoreTools = CoreTools
 Tools.BackendTools.helpers.DialogTools = DialogTools
-Tools.BackendTools.helpers.LooseVersion = LooseVersion
 Tools.BackendTools.helpers.MainBackendTools = MainBackendTools
 
 #BackendTools Package (Essentials)
@@ -205,7 +200,6 @@ Tools.StartupTools.getbootloaderconfigtools.logger = logger
 Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
 Tools.BackendTools.BootloaderTools.setconfigtools.os = os
 Tools.BackendTools.BootloaderTools.setconfigtools.CoreTools = CoreTools
-Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
 
 #NoteBookSharedFunctions module.
