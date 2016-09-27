@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#*** Make privacy policy and window to go with it ***
+#*** Make privacy policy ***
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -643,6 +643,7 @@ class MainWindow(wx.Frame):
         self.menuAbout = helpmenu.Append(wx.ID_ABOUT, "&About", "Information about this program")
         self.menuExit = filemenu.Append(wx.ID_EXIT,"&Exit", "Terminate this program")
         self.menuSystemInfo = viewmenu.Append(wx.ID_ANY,"&System Information", "Information about all detected disks, OSs, and Bootloaders")
+        self.menuPrivacyPolicy = viewmenu.Append(wx.ID_ANY,"&Privacy Policy", "View WxFixBoot's privacy policy")
         self.menuBootloaderOpts = editmenu.Append(wx.ID_PREFERENCES, "&Bootloader Options", "All Bootloader Options used to modify/fix your system")
 
         #Creating the menubar.
@@ -687,6 +688,7 @@ class MainWindow(wx.Frame):
         self.SaveMainOpts()
 
     def BootloaderOptions(self, Event=None):
+        """Show the Bootloader Options Window"""
         #Safeguard program reliability (and continuity) by saving the settings first.
         logger.debug("MainWindow().BootloaderOptions(): Calling self.SaveMainOpts()...")
         self.SaveMainOpts()
@@ -700,6 +702,10 @@ class MainWindow(wx.Frame):
         """Start SystemInfoWindow"""
         logger.debug("MainWindow().SystemInfo(): Starting System Info Window...")
         SystemInfoWindow(self).Show()
+
+    def ShowPrivacyPolicy(self, Event=None):
+        """Show PrivPolWindow"""
+        PrivPolWindow(self).Show()
 
     def ProgressWindow(self, Event=None):
         """Starts Progress Window"""
@@ -793,6 +799,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnAbout, self.AboutButton)
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.ExitButton)
         self.Bind(wx.EVT_MENU, self.SystemInfo, self.menuSystemInfo)
+        self.Bind(wx.EVT_MENU, self.ShowPrivacyPolicy, self.menuPrivacyPolicy)
         self.Bind(wx.EVT_MENU, self.BootloaderOptions, self.menuBootloaderOpts)
         self.Bind(wx.EVT_BUTTON, self.BootloaderOptions, self.BootloaderOptionsButton)
         self.Bind(wx.EVT_BUTTON, self.ProgressWindow, self.ApplyOperationsButton)
@@ -1192,6 +1199,68 @@ class SystemInfoWindow(wx.Frame):
         self.Destroy()
 
 #End System Info Window
+#Begin Privacy Policy Window.
+class PrivPolWindow(wx.Frame):
+    def __init__(self, ParentWindow):
+        """Initialize PrivPolWindow"""
+        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Privacy Policy", size=(400,310), style=wx.DEFAULT_FRAME_STYLE)
+        self.Panel = wx.Panel(self)
+        self.SetClientSize(wx.Size(400,310))
+        self.ParentWindow = ParentWindow
+        wx.Frame.SetIcon(self, AppIcon)
+
+        logger.debug("PrivPolWindow().__init__(): Creating widgets...")
+        self.CreateWidgets()
+
+        logger.debug("PrivPolWindow().__init__(): Setting up sizers...")
+        self.SetupSizers()
+
+        logger.debug("PrivPolWindow().__init__(): Binding Events...")
+        self.BindEvents()
+
+        #Call Layout() on self.Panel() to ensure it displays properly.
+        self.Panel.Layout()
+
+        logger.debug("PrivPolWindow().__init__(): Ready. Waiting for events...")
+
+    def CreateWidgets(self):
+        """Create all widgets for PrivPolWindow"""
+        #Make a text box to contain the policy's text.
+        self.TextBox = wx.TextCtrl(self.Panel, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_WORDWRAP)
+
+        #Populate the text box.
+        self.TextBox.LoadFile("/usr/share/wxfixboot/other/privacypolicy.txt")
+
+        #Scroll the text box back up to the top.
+        self.TextBox.SetInsertionPoint(0)
+
+        #Make a button to close the dialog.
+        self.CloseButton = wx.Button(self.Panel, -1, "Okay")
+
+    def SetupSizers(self):
+        """Set up sizers for PrivPolWindow"""
+        #Make a boxsizer.
+        MainSizer = wx.BoxSizer(wx.VERTICAL)
+
+        #Add each object to the main sizer.
+        MainSizer.Add(self.TextBox, 1, wx.EXPAND|wx.ALL, 10)
+        MainSizer.Add(self.CloseButton, 0, wx.BOTTOM|wx.CENTER, 10)
+
+        #Get the sizer set up for the frame.
+        self.Panel.SetSizer(MainSizer)
+        MainSizer.SetMinSize(wx.Size(400,310))
+        MainSizer.SetSizeHints(self)
+
+    def BindEvents(self):
+        """Bind events so we can close this window."""
+        self.Bind(wx.EVT_BUTTON, self.OnClose, self.CloseButton)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+
+    def OnClose(self,Event=None):
+        """Close PrivPolWindow"""
+        self.Destroy()
+
+#End Privacy Policy Window.
 #Begin Bootloader Options Window.
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self, ParentWindow):
