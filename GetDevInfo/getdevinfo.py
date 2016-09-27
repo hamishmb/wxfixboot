@@ -180,7 +180,7 @@ class Main():
 
         if Retval != 0:
             logger.error("GetDevInfo: Main().GetBootRecord(): Couldn't read boot record from "+Disk+"! Returning 'Unknown' for all boot record information for this disk...")
-            return ("Unknown", "Unknown")
+            return ("Unknown", ["Unknown"])
 
         #Get the readable strings in the boot record.
         logger.info("GetDevInfo: Main().GetBootRecord(): Finding strings in boot record...")
@@ -191,7 +191,7 @@ class Main():
 
         if Retval != 0:
             logger.error("GetDevInfo: Main().GetBootRecord(): Couldn't find strings in boot record of "+Disk+"! Returning boot record, but no boot record strings...")
-            return (BootRecord, "Unknown")
+            return (BootRecord, ["Unknown"])
 
         logger.info("GetDevInfo: Main().GetBootRecord(): Done! Returning information...")
         return (BootRecord, BootRecordStrings)
@@ -231,7 +231,7 @@ class Main():
 
         #Don't try to get Boot Records for optical drives.
         if "/dev/cdrom" in HostDisk or "/dev/sr" in HostDisk or "/dev/dvd" in HostDisk:
-             DiskInfo[HostDisk]["BootRecord"], DiskInfo[HostDisk]["BootRecordStrings"] = ("N/A", "N/A")
+             DiskInfo[HostDisk]["BootRecord"], DiskInfo[HostDisk]["BootRecordStrings"] = ("N/A", ["N/A"])
 
         else:
             DiskInfo[HostDisk]["BootRecord"], DiskInfo[HostDisk]["BootRecordStrings"] = self.GetBootRecord(HostDisk)
