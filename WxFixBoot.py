@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+#*** Make privacy policy and window to go with it ***
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
@@ -2390,7 +2392,7 @@ class BackendThread(threading.Thread):
 
         DialogTools.ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
 
-        #Make dictionaries accessible. *** Minimise these if possible ***
+        #Make dictionaries accessible.
         Tools.BackendTools.essentials.SystemInfo = SystemInfo
         Tools.BackendTools.essentials.DiskInfo = DiskInfo
 
@@ -2398,7 +2400,7 @@ class BackendThread(threading.Thread):
         Tools.BackendTools.helpers.DiskInfo = DiskInfo
         Tools.BackendTools.helpers.OSInfo = OSInfo
         Tools.BackendTools.helpers.SystemInfo = SystemInfo
-        Tools.BackendTools.helpers.Operations = Operations
+        Tools.BackendTools.helpers.Operations = Operations #Also make the list of operations avalable so bootloader operations can be disabled if necessary.
 
         Tools.BackendTools.main.OSInfo = OSInfo
         Tools.BackendTools.main.DiskInfo = DiskInfo
@@ -2407,7 +2409,6 @@ class BackendThread(threading.Thread):
 
         Tools.BackendTools.BootloaderTools.setconfigtools.BootloaderInfo = BootloaderInfo
         Tools.BackendTools.BootloaderTools.setconfigtools.DiskInfo = DiskInfo
-        Tools.BackendTools.BootloaderTools.setconfigtools.SystemInfo = SystemInfo
         Tools.BackendTools.BootloaderTools.setconfigtools.OSInfo = OSInfo
 
         #Run functions to do operations.
@@ -2480,7 +2481,7 @@ class BackendThread(threading.Thread):
             ReportList.write("\t\tFilesystem: "+DiskInfo[Disk]["FileSystem"]+"\n")
             ReportList.write("\t\tUUID: "+DiskInfo[Disk]["UUID"]+"\n")
             ReportList.write("\t\tID: "+DiskInfo[Disk]["ID"]+"\n")
-            ReportList.write("\t\tBoot Record Strings: "+', '.join(DiskInfo[Disk]["BootRecordStrings"])+"\n\n") #*** Check these are always saved as a list even if not found ***
+            ReportList.write("\t\tBoot Record Strings: "+', '.join(DiskInfo[Disk]["BootRecordStrings"])+"\n\n")
 
         #Do OS Information.
         ReportList.write("\n##########OS Information##########\n")
