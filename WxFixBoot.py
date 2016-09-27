@@ -857,10 +857,6 @@ class MainWindow(wx.Frame):
                 Operations.append((MainBackendTools.ManageBootloader, OS))
                 logger.info("MainWindow().CountOperations(): Added (MainBackendTools.ManageBootloader, "+OS+") to Operations...")
 
-        if Settings["MakeSystemSummary"]:
-            Operations.append(BackendThread.GenerateSystemReport)
-            logger.info("MainWindow().CountOperations(): Added BackendThread.GenerateSystemReport to Operations...")
-
         #Check if we need to check the internet connection, and do so first if needed.
         for Function in Operations:
             if type(Function) == type(()) and Function[0] == MainBackendTools.ManageBootloader:
@@ -2379,13 +2375,13 @@ class BackendThread(threading.Thread):
         logger.debug("BackendThread().run(): Started. Calling self.StartOperations()...")
 
         #Handle any unexpected errors.
-        try:
-            self.StartOperations()
+        #try:
+        self.StartOperations()
 
-        except:
-            Error = sys.exc_info()[0]
-            logger.critical("Unexpected error "+unicode(Error)+" while running operations. Warning user and exiting.")
-            CoreTools.EmergencyExit("There was an unexpected error ("+unicode(Error)+") while running operations!")
+        #except:
+        #    Error = sys.exc_info()[0]
+        #    logger.critical("Unexpected error "+unicode(Error)+" while running operations. Warning user and exiting.")
+        #    CoreTools.EmergencyExit("There was an unexpected error ("+unicode(Error)+") while running operations!")
 
     def StartOperations(self):
         """Start doing operations."""
@@ -2421,6 +2417,9 @@ class BackendThread(threading.Thread):
 
             else:
                 function[0](function[1])
+
+        if Settings["MakeSystemSummary"]:
+            self.GenerateSystemReport()
 
         logger.info("BackendThread().StartOperations(): Finished Operation Running Code.")
 
@@ -2459,25 +2458,25 @@ class BackendThread(threading.Thread):
         DiskList = DiskInfo.keys()
         DiskList.sort()
 
-        ReportList.write("All Disks: "+', '.join(DiskList)+"\n")
+        ReportList.write("All Disks: "+', '.join(DiskList)+"\n\n")
         ReportList.write("Per Disk Info:\n")
 
         for Disk in DiskList:
             ReportList.write("\tName: "+Disk+"\n")
-            ReportList.write("\tType: "+DiskInfo[Disk]["Type"]+"\n")
-            ReportList.write("\tHost Device: "+DiskInfo[Disk]["HostDevice"]+"\n")
-            ReportList.write("\tPartitions: "+', '.join(DiskInfo[Disk]["Partitions"])+"\n")
-            ReportList.write("\tVendor: "+DiskInfo[Disk]["Vendor"]+"\n")
-            ReportList.write("\tProduct: "+DiskInfo[Disk]["Product"]+"\n")
-            ReportList.write("\tRaw Capacity: "+DiskInfo[Disk]["RawCapacity"]+"\n")
-            ReportList.write("\tHuman-readable Capacity: "+DiskInfo[Disk]["Capacity"]+"\n")
-            ReportList.write("\tDescription: "+DiskInfo[Disk]["Description"]+"\n")
-            ReportList.write("\tFlags: "+', '.join(DiskInfo[Disk]["Flags"])+"\n")
-            ReportList.write("\tPartitioning: "+DiskInfo[Disk]["Partitioning"]+"\n")
-            ReportList.write("\tFilesystem: "+DiskInfo[Disk]["FileSystem"]+"\n")
-            ReportList.write("\tUUID: "+DiskInfo[Disk]["UUID"]+"\n")
-            ReportList.write("\tID: "+DiskInfo[Disk]["ID"]+"\n")
-            ReportList.write("\tBoot Record Strings: "+', '.join(DiskInfo[Disk]["BootRecordStrings"])+"\n\n") #*** Check these are always saved as a list even if not found ***
+            ReportList.write("\t\tType: "+DiskInfo[Disk]["Type"]+"\n")
+            ReportList.write("\t\tHost Device: "+DiskInfo[Disk]["HostDevice"]+"\n")
+            ReportList.write("\t\tPartitions: "+', '.join(DiskInfo[Disk]["Partitions"])+"\n")
+            ReportList.write("\t\tVendor: "+DiskInfo[Disk]["Vendor"]+"\n")
+            ReportList.write("\t\tProduct: "+DiskInfo[Disk]["Product"]+"\n")
+            ReportList.write("\t\tRaw Capacity: "+DiskInfo[Disk]["RawCapacity"]+"\n")
+            ReportList.write("\t\tHuman-readable Capacity: "+DiskInfo[Disk]["Capacity"]+"\n")
+            ReportList.write("\t\tDescription: "+DiskInfo[Disk]["Description"]+"\n")
+            ReportList.write("\t\tFlags: "+', '.join(DiskInfo[Disk]["Flags"])+"\n")
+            ReportList.write("\t\tPartitioning: "+DiskInfo[Disk]["Partitioning"]+"\n")
+            ReportList.write("\t\tFilesystem: "+DiskInfo[Disk]["FileSystem"]+"\n")
+            ReportList.write("\t\tUUID: "+DiskInfo[Disk]["UUID"]+"\n")
+            ReportList.write("\t\tID: "+DiskInfo[Disk]["ID"]+"\n")
+            ReportList.write("\t\tBoot Record Strings: "+', '.join(DiskInfo[Disk]["BootRecordStrings"])+"\n\n") #*** Check these are always saved as a list even if not found ***
 
         #Do OS Information.
         ReportList.write("\n##########OS Information##########\n")
@@ -2502,7 +2501,7 @@ class BackendThread(threading.Thread):
             ReportList.write("\t\tPackage Manager: "+OSInfo[OS]["PackageManager"]+"\n")
             ReportList.write("\t\tBoot Partition: "+OSInfo[OS]["BootPartition"]+"\n")
             ReportList.write("\t\tEFI Partition: "+OSInfo[OS]["EFIPartition"]+"\n")
-            ReportList.write("\t\tContents of /etc/fstab: "+'\n'.join(OSInfo[OS]["RawFSTabInfo"])+"\n\n")
+            ReportList.write("\t\tContents of /etc/fstab:\n\t\t\t"+'\n\t\t\t'.join(OSInfo[OS]["RawFSTabInfo"])+"\n\n")
 
         #Do Bootloader information
         ReportList.write("\n##########Bootloader Information##########\n")
@@ -2522,16 +2521,15 @@ class BackendThread(threading.Thread):
             ReportList.write("\tBootloader (at time of startup): "+BootloaderInfo[OS]["Bootloader"]+"\n")
             ReportList.write("\tBootloaders that can be installed: "+', '.join(BootloaderInfo[OS]["AvailableBootloaders"])+"\n")
             ReportList.write("\t\tBootloader Timeout: "+unicode(BootloaderInfo[OS]["Timeout"])+"\n")
-            ReportList.write("\t\tGlobal Kernel Options: "+', '.join(BootloaderInfo[OS]["GlobalKernelOptions"])+"\n")
+            ReportList.write("\t\tGlobal Kernel Options: "+BootloaderInfo[OS]["GlobalKernelOptions"]+"\n")
             ReportList.write("\t\tBootloader-Specific Default OS: "+BootloaderInfo[OS]["BLSpecificDefaultOS"]+"\n")
             ReportList.write("\t\tDefault OS: "+BootloaderInfo[OS]["DefaultOS"]+"\n")
             ReportList.write("\t\tInstalled on: "+BootloaderInfo[OS]["BootDisk"]+"\n")
-            ReportList.write("\t\tCan be modified: "+unicode(BootloaderInfo[OS]["IsModifyable"]+"\n")
+            ReportList.write("\t\tCan be modified: "+unicode(BootloaderInfo[OS]["IsModifyable"])+"\n")
             ReportList.write("\t\tReason for modifyability: "+BootloaderInfo[OS]["Comments"]+"\n") 
-            ReportList.write("\t\tMenu Entries: "+'\n'.join(BootloaderInfo[OS]["MenuEntries"]+"\n\n")
             ReportList.write("\t\tBootloader was modified: "+unicode(BootloaderInfo[OS]["Settings"]["ChangeThisOS"])+"\n\n")
 
-            if BootloaderInfo[OS]["ChangeThisOS"]:
+            if BootloaderInfo[OS]["Settings"]["ChangeThisOS"]:
                 ReportList.pop()
                 ReportList.write("\t\t\tBootloader was reinstalled: "+unicode(BootloaderInfo[OS]["Settings"]["Reinstall"])+"\n")
                 ReportList.write("\t\t\tBootloader was updated: "+unicode(BootloaderInfo[OS]["Settings"]["Update"])+"\n")
@@ -2569,7 +2567,10 @@ class BackendThread(threading.Thread):
         #Save terminal output.
         if Settings["SaveOutput"]:
             ReportList.write("\n##########Terminal Output##########\n")
-            ReportList.write(OutputLog)
+
+            for Line in OutputLog:
+                ReportList.write(Line)
+
             ReportList.write("\n")
 
         #Save Log File.
@@ -2582,7 +2583,8 @@ class BackendThread(threading.Thread):
 
         logfile.close()
 
-        ReportList.write("\n")
+        ReportList.write("\n\n")
+        ReportList.write("\n##########End Of System Report##########\n")
         ReportList.close()
  
 #End Backend Thread
