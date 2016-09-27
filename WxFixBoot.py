@@ -462,6 +462,13 @@ class InitThread(threading.Thread):
         #Initialise a variable for later.
         SystemInfo["PreviousOSChoice"] = ""
 
+        #Set initial settings for MainWindow.
+        Settings["QuickFSCheck"] = False
+        Settings["BadSectorCheck"] = False
+        Settings["FullVerbosity"] = False
+        Settings["MakeSystemSummary"] = True
+        Settings["SaveOutput"] = True
+
         #Remove the temporary directory if it exists.
         if os.path.isdir("/tmp/wxfixboot/mountpoints"):
             #Check nothing is using it.
@@ -587,7 +594,7 @@ class MainWindow(wx.Frame):
         self.CreateMenus()
 
         #Set up checkboxes
-        self.OnCheckBox()
+        self.RefreshMainWindow()
 
         #Setup Sizers.
         self.SetupSizers()
@@ -707,7 +714,7 @@ class MainWindow(wx.Frame):
         ProgressFrame.Show(True)
         self.Destroy()
 
-    def RefreshMainWindow(self,msg):
+    def RefreshMainWindow(self, msg=""):
         """Refresh the main window to reflect changes in the options, or after a restart."""
         logger.debug("MainWindow().RefreshMainWindow(): Refreshing MainWindow...")
 
@@ -2421,6 +2428,9 @@ class BackendThread(threading.Thread):
         if Settings["MakeSystemSummary"]:
             self.GenerateSystemReport()
 
+        if SystemInfo["DisableBootloaderOperations"]:
+            DialogTools.ShowMsgDlg(Kind="warning", Message="Bootloader Operations were disabled. This is because "+SystemInfo["DisableBootloaderOperationsBecause"]+". Click okay to continue.")
+
         logger.info("BackendThread().StartOperations(): Finished Operation Running Code.")
 
         wx.CallAfter(self.ParentWindow.UpdateCurrentOpText, Message="Finished!")
@@ -2438,7 +2448,7 @@ class BackendThread(threading.Thread):
 
         wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
-    def GenerateSystemReport(self): #*** Warn about disabled bootloader operations if needed at end of operations ***
+    def GenerateSystemReport(self):
         """Create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary."""
         DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot will now create your system report. Click okay to continue.")
 
@@ -2447,7 +2457,7 @@ class BackendThread(threading.Thread):
 
         #Write everything directly to the file.
         ReportList = open(ReportFile, 'w')
-        ReportList.write("This system report was created with WxFixBoot version "+Version+". It can be used to diagnose problems with your system, and can help if you wish to make a support request..\n\n")
+        ReportList.write("This system report was created with WxFixBoot version "+Version+". It can be used to diagnose problems with your system, and can help if you wish to make a support request.\n\n")
 
         #Do Firmware Information.
         ReportList.write("\n##########Firmware Information##########\n")
@@ -2511,7 +2521,7 @@ class BackendThread(threading.Thread):
         if SystemInfo["DisableBootloaderOperations"]:
             ReportList.write("Bootloader operations have been disabled. The operations that were going to be done are still detailed below,\n")
             ReportList.write("but they weren't actually done.\n")
-            ReportList.write("Bootloader Operations were disabled because: "+SystemInfo["DisabledBootloaderOperationsBecause"]+"\n\n")
+            ReportList.write("Bootloader Operations were disabled because: "+SystemInfo["DisableBootloaderOperationsBecause"]+"\n\n")
 
         BootloaderOSs = BootloaderInfo.keys()
         BootloaderOSs.sort()
