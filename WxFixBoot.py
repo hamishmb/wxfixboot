@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "26/9/2016"
+ReleaseDate = "27/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -857,10 +857,9 @@ class MainWindow(wx.Frame):
                 Operations.append((MainBackendTools.ManageBootloader, OS))
                 logger.info("MainWindow().CountOperations(): Added (MainBackendTools.ManageBootloader, "+OS+") to Operations...")
 
-        #*** Disabled temporarily ***
-        #if Settings["MakeSystemSummary"]:
-        #    Operations.append(BackendThread(self).GenerateSystemReport)
-        #    logger.info("MainWindow().CountOperations(): Added BackendThread().GenerateSystemReport to Operations...")
+        if Settings["MakeSystemSummary"]:
+            Operations.append(BackendThread.GenerateSystemReport)
+            logger.info("MainWindow().CountOperations(): Added BackendThread.GenerateSystemReport to Operations...")
 
         #Check if we need to check the internet connection, and do so first if needed.
         for Function in Operations:
@@ -2440,7 +2439,7 @@ class BackendThread(threading.Thread):
 
         wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
-    def GenerateSystemReport(self): #*** Use dictionaries here *** *** Add SystemInfo["DisableBootloaderOperations"] functionality to here, and warn at end of operations ***
+    def GenerateSystemReport(self): #*** Warn about disabled bootloader operations if needed at end of operations ***
         """Create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary."""
         DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot will now create your system report. Click okay to continue.")
 
@@ -2449,7 +2448,11 @@ class BackendThread(threading.Thread):
 
         #Write everything directly to the file.
         ReportList = open(ReportFile, 'w')
-        ReportList.write("This system report was created with WxFixBoot version "+Version+". It can be used like a bootinfo summary.\n\n")
+        ReportList.write("This system report was created with WxFixBoot version "+Version+". It can be used to diagnose problems with your system, and can help if you wish to make a support request..\n\n")
+
+        #Do Firmware Information.
+        ReportList.write("\n##########Firmware Information##########\n")
+        ReportList.write("Detected firmware type: "+SystemInfo["FirmwareType"]+"\n")
 
         #Do Disk Information
         ReportList.write("\n##########Disk Information##########\n")
@@ -2474,7 +2477,7 @@ class BackendThread(threading.Thread):
             ReportList.write("\tFilesystem: "+DiskInfo[Disk]["FileSystem"]+"\n")
             ReportList.write("\tUUID: "+DiskInfo[Disk]["UUID"]+"\n")
             ReportList.write("\tID: "+DiskInfo[Disk]["ID"]+"\n")
-            ReportList.write("\tBoot Record Strings: "+', '.join(DiskInfo[Disk]["BootRecordStrings"])+"\n")
+            ReportList.write("\tBoot Record Strings: "+', '.join(DiskInfo[Disk]["BootRecordStrings"])+"\n\n") #*** Check these are always saved as a list even if not found ***
 
         #Do OS Information.
         ReportList.write("\n##########OS Information##########\n")
@@ -2499,46 +2502,56 @@ class BackendThread(threading.Thread):
             ReportList.write("\t\tPackage Manager: "+OSInfo[OS]["PackageManager"]+"\n")
             ReportList.write("\t\tBoot Partition: "+OSInfo[OS]["BootPartition"]+"\n")
             ReportList.write("\t\tEFI Partition: "+OSInfo[OS]["EFIPartition"]+"\n")
-            ReportList.write("\t\tContents of /etc/fstab: "+'\n'.join(OSInfo[OS]["RawFSTabInfo"])+"\n")
-
-        #Do Firmware Information.
-        ReportList.write("\n##########Firmware Information##########\n")
-        ReportList.write("Detected firmware type: "+SystemInfo["FirmwareType"]+"\n")
+            ReportList.write("\t\tContents of /etc/fstab: "+'\n'.join(OSInfo[OS]["RawFSTabInfo"])+"\n\n")
 
         #Do Bootloader information
-        ReportList.write("\n##########BootLoader Information##########\n")
-        if True: #*** Needs rewriting for new bootloader options ***
-            #Display specific information depending on the operation to be done (if we're update/reinstalling bootloaders, don't make it look like we're doing something else). *** Show what we would do if they weren't disabled too ***
-            ReportList.write("Disabled Bootloader Operations: "+unicode(SystemInfo["DisableBootloaderOperations"])+"\n")
+        ReportList.write("\n##########Bootloader Information##########\n")
 
-            if SystemInfo["DisableBootloaderOperations"] == False: #*** Adapt to using dictionary-based system ***
-                if ReinstallBootloader:
-                    ReportList.write("Reinstall/Fix The Current BootLoader: "+unicode(ReinstallBootloader)+"\n")
-                    #ReportList.write("Selected Bootloader To Reinstall/Fix: "+SystemInfo["BootloaderToInstall"]+"\n")
-                    #ReportList.write("Reinstall/Fix bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
-                    ReportList.write("\nBootloader's New Configuration:"+"\n")
-                    #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
-                    #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
-                    #ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
+        ReportList.write("Disabled Bootloader Operations: "+unicode(SystemInfo["DisableBootloaderOperations"])+"\n")
 
-                elif UpdateBootloader:
-                    ReportList.write("Update The Current BootLoader's Config: "+unicode(UpdateBootloader)+"\n")
-                    #ReportList.write("Selected Bootloader To Update: "+SystemInfo["BootloaderToInstall"]+"\n")
-                    #ReportList.write("Update Bootloader in: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
-                    ReportList.write("\nBootloader's New Configuration:"+"\n")
-                    #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
-                    #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
-                    #ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
+        if SystemInfo["DisableBootloaderOperations"]:
+            ReportList.write("Bootloader operations have been disabled. The operations that were going to be done are still detailed below,\n")
+            ReportList.write("but they weren't actually done.\n")
+            ReportList.write("Bootloader Operations were disabled because: "+SystemInfo["DisabledBootloaderOperationsBecause"]+"\n\n")
 
-                else:
-                    #We must be installing a new bootloader.
-                    #ReportList.write("Selected Bootloader To Install: "+SystemInfo["BootloaderToInstall"]+"\n")
-                    #ReportList.write("Remove Old Bootloader from: "+', '.join(SystemInfo["OSsForBootloaderRemoval"])+"\n")
-                    #ReportList.write("Install New Bootloader to: "+', '.join(SystemInfo["OSsForBootloaderInstallation"])+"\n")
-                    ReportList.write("\nNew Bootloader's Configuration:"+"\n")
-                    #ReportList.write("\tDefault OS: "+SystemInfo["DefaultOS"]+"\n")
-                    #ReportList.write("\tTimeout: "+unicode(BootloaderTimeout)+" seconds"+"\n")
-                    #ReportList.write("\tGlobal Kernel Options: "+KernelOptions+"\n")
+        BootloaderOSs = BootloaderInfo.keys()
+        BootloaderOSs.sort()
+
+        for OS in BootloaderOSs:
+            ReportList.write("\tControlling OS: "+OS+"\n")
+            ReportList.write("\tBootloader (at time of startup): "+BootloaderInfo[OS]["Bootloader"]+"\n")
+            ReportList.write("\tBootloaders that can be installed: "+', '.join(BootloaderInfo[OS]["AvailableBootloaders"])+"\n")
+            ReportList.write("\t\tBootloader Timeout: "+unicode(BootloaderInfo[OS]["Timeout"])+"\n")
+            ReportList.write("\t\tGlobal Kernel Options: "+', '.join(BootloaderInfo[OS]["GlobalKernelOptions"])+"\n")
+            ReportList.write("\t\tBootloader-Specific Default OS: "+BootloaderInfo[OS]["BLSpecificDefaultOS"]+"\n")
+            ReportList.write("\t\tDefault OS: "+BootloaderInfo[OS]["DefaultOS"]+"\n")
+            ReportList.write("\t\tInstalled on: "+BootloaderInfo[OS]["BootDisk"]+"\n")
+            ReportList.write("\t\tCan be modified: "+unicode(BootloaderInfo[OS]["IsModifyable"]+"\n")
+            ReportList.write("\t\tReason for modifyability: "+BootloaderInfo[OS]["Comments"]+"\n") 
+            ReportList.write("\t\tMenu Entries: "+'\n'.join(BootloaderInfo[OS]["MenuEntries"]+"\n\n")
+            ReportList.write("\t\tBootloader was modified: "+unicode(BootloaderInfo[OS]["Settings"]["ChangeThisOS"])+"\n\n")
+
+            if BootloaderInfo[OS]["ChangeThisOS"]:
+                ReportList.pop()
+                ReportList.write("\t\t\tBootloader was reinstalled: "+unicode(BootloaderInfo[OS]["Settings"]["Reinstall"])+"\n")
+                ReportList.write("\t\t\tBootloader was updated: "+unicode(BootloaderInfo[OS]["Settings"]["Update"])+"\n")
+                ReportList.write("\t\t\tBootloader was replaced with another bootloader: "+unicode(BootloaderInfo[OS]["Settings"]["InstallNewBootloader"])+"\n\n")
+
+                if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["Update"] or BootloaderInfo[OS]["Settings"]["InstallNewBootloader"]:
+                    ReportList.pop()
+                    ReportList.write("\t\t\tNew Bootloader: "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"\n")
+                    ReportList.write("\t\t\tKept Existing Bootloader Timeout: "+unicode(BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"])+"\n")
+
+                    if BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] == False:
+                        ReportList.write("\t\t\tNew Bootloader Timeout: "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"\n")
+
+                    ReportList.write("\t\t\tKept Existing Kernel Options: "+unicode(BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"])+"\n")
+
+                    if BootloaderInfo[OS]["Settings"]["Reinstall"]:
+                        ReportList.write("\t\t\tNew Kernel Options: "+', '.join(BootloaderInfo[OS]["Settings"]["NewKernelOptions"])+"\n")
+
+                    ReportList.write("\t\t\tNew Default OS: "+BootloaderInfo[OS]["Settings"]["DefaultOS"]+"\n\n")
+
 
         #Do WxFixBoot's settings.
         ReportList.write("\n##########Other WxFixBoot Settings##########\n")
@@ -2557,6 +2570,7 @@ class BackendThread(threading.Thread):
         if Settings["SaveOutput"]:
             ReportList.write("\n##########Terminal Output##########\n")
             ReportList.write(OutputLog)
+            ReportList.write("\n")
 
         #Save Log File.
         ReportList.write("\n##########WxFixBoot's Log File##########\n")
@@ -2567,6 +2581,9 @@ class BackendThread(threading.Thread):
             ReportList.write(line)
 
         logfile.close()
+
+        ReportList.write("\n")
+        ReportList.close()
  
 #End Backend Thread
 app = WxFixBoot(False)
