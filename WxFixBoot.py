@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "27/9/2016"
+ReleaseDate = "28/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -265,6 +265,10 @@ class InitialWindow(wx.Frame):
         else:
             print("WxFixBoot Version "+Version+" Restarting...")
             logger.info("WxFixBoot Version "+Version+" Restarting...")
+
+        logger.info("Release date: "+ReleaseDate)
+        logger.info("Running on Python version: "+unicode(sys.version_info)+"...")
+        logger.info("Running on wxPython version: "+wx.version()+"...")
 
         #Set the frame's icon.
         global AppIcon
