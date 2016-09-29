@@ -145,16 +145,7 @@ class Main():
                 return False
 
         #Remove the bootloader.
-        if BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY": #*** Test this ***
-            logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
-
-            if OSInfo[OS]["PackageManager"] == "apt-get":
-                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub grub-common'"
-
-            elif OSInfo[OS]["PackageManager"] == "yum":
-                Cmd = "yum -y remove grub"
-
-        elif BootloaderInfo[OS]["Bootloader"] == "GRUB2":
+        if BootloaderInfo[OS]["Bootloader"] == "GRUB2":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":

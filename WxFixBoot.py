@@ -1604,10 +1604,11 @@ class BootloaderOptionsWindow(wx.Frame):
         self.LoadSettings()
         self.SetTextLabels()
 
-        #Don't allow the user to attempt to modify GRUB-LEGACY.
+        #Don't allow the user to attempt to modify or remove GRUB-LEGACY.
         if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
             self.ReinstallBootloaderCheckBox.Disable()
             self.UpdateBootloaderCheckBox.Disable()
+            self.InstallNewBootloaderCheckBox.Disable()
 
         #Default OS choice.
         self.DefaultOSChoice.SetStringSelection(BootloaderInfo[self.OSChoice.GetStringSelection()]["DefaultOS"])
@@ -1857,7 +1858,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.ReinstallBootloaderCheckBox.SetValue(1)
             self.OnUpdateOrReinstallCheckBox()
 
-        elif Config["Bootloader"] != "GRUB-LEGACY":
+        elif Config["Bootloader"] != "GRUB-LEGACY" and BootloaderInfo[OS]["Bootloader"] != "GRUB-LEGACY":
             #Set up to replace the current bootloader with the old one.
             self.InstallNewBootloaderCheckBox.Enable()
             self.InstallNewBootloaderCheckBox.SetValue(1)
@@ -1865,7 +1866,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.OnInstallNewBootloaderCheckBox()
 
         else:
-            #Don't allow the user to attempt to switch back to GRUB-LEGACY.
+            #Don't allow the user to attempt to switch back to GRUB-LEGACY, or replace it.
             raise RuntimeError
 
         #Use kernel options used when the backup was taken.
@@ -1989,6 +1990,7 @@ class BootloaderOptionsWindow(wx.Frame):
         if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
             self.ReinstallBootloaderCheckBox.Disable()
             self.UpdateBootloaderCheckBox.Disable()
+            self.InstallNewBootloaderCheckBox.Disable()
 
     def OnInstallNewBootloaderCheckBox(self, Event=None):
         """Enable/Disable options, based on the value of the new bootloader checkbox."""
@@ -2025,6 +2027,7 @@ class BootloaderOptionsWindow(wx.Frame):
         if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
             self.ReinstallBootloaderCheckBox.Disable()
             self.UpdateBootloaderCheckBox.Disable()
+            self.InstallNewBootloaderCheckBox.Disable()
 
     def OnNewBootloaderChoice(self, Event=None):
         """Warn user about LILO's/ELILO's rubbish multi OS support if needed"""
@@ -2615,7 +2618,7 @@ class BackendThread(threading.Thread):
 
                     ReportList.write("\t\t\tKept Existing Kernel Options: "+unicode(BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"])+"\n")
 
-                    if BootloaderInfo[OS]["Settings"]["Reinstall"]:
+                    if BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"] == False:
                         ReportList.write("\t\t\tNew Kernel Options: "+BootloaderInfo[OS]["Settings"]["NewKernelOptions"]+"\n")
 
                     ReportList.write("\t\t\tNew Default OS: "+BootloaderInfo[OS]["Settings"]["DefaultOS"]+"\n\n")
