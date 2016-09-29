@@ -2602,13 +2602,11 @@ class BackendThread(threading.Thread):
             ReportList.write("\t\tBootloader was modified: "+unicode(BootloaderInfo[OS]["Settings"]["ChangeThisOS"])+"\n\n")
 
             if BootloaderInfo[OS]["Settings"]["ChangeThisOS"]:
-                ReportList.pop()
                 ReportList.write("\t\t\tBootloader was reinstalled: "+unicode(BootloaderInfo[OS]["Settings"]["Reinstall"])+"\n")
                 ReportList.write("\t\t\tBootloader was updated: "+unicode(BootloaderInfo[OS]["Settings"]["Update"])+"\n")
                 ReportList.write("\t\t\tBootloader was replaced with another bootloader: "+unicode(BootloaderInfo[OS]["Settings"]["InstallNewBootloader"])+"\n\n")
 
                 if BootloaderInfo[OS]["Settings"]["Reinstall"] or BootloaderInfo[OS]["Settings"]["Update"] or BootloaderInfo[OS]["Settings"]["InstallNewBootloader"]:
-                    ReportList.pop()
                     ReportList.write("\t\t\tNew Bootloader: "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"\n")
                     ReportList.write("\t\t\tKept Existing Bootloader Timeout: "+unicode(BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"])+"\n")
 
