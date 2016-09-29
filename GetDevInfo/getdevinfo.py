@@ -316,6 +316,7 @@ class Main():
 
             elif "LV Size" in Line:
                 DiskInfo[Volume]["Capacity"] = ' '.join(Line.split()[-2:])
+                DiskInfo[Volume]["RawCapacity"] = DiskInfo[Volume]["Capacity"]
 
             elif "Physical volume" in Line:
                 DiskInfo[Volume]["HostPartition"] = Line.split()[-1]

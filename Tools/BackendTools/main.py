@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Class. *** Improve error handling by trying to de-setup everything before giving up if giving up is required ***
+#Begin Main Class.
 class Main():
     def ManageBootloader(self, OS):
         """Manage the installation and removal of each bootloader."""
@@ -79,7 +79,7 @@ class Main():
                     if Operation[-1] == "e":
                         Operation = Operation[0:-1]
 
-                    Result = DialogTools.ShowYesNoDlg(Message="An error occured while "+Operation+"ing "+OS+"'s old bootloader! This operating system may currently be in an unbootable state. What do you want to do? Click Yes to try again, and click No to cancel bootloader operations for this OS.", Title="WxFixBoot - Error Removing Bootloader!", Buttons=("Try Again", "Skip Bootloader Operations For This OS"))
+                    Result = DialogTools.ShowYesNoDlg(Message="An error occured while "+Operation+"ing "+OS+"'s bootloader! This operating system may currently be in an unbootable state. What do you want to do? Click Yes to try again, and click No to cancel bootloader operations for this OS.", Title="WxFixBoot - Error Removing Bootloader!", Buttons=("Try Again", "Skip Bootloader Operations For This OS"))
 
                     if Result:
                         logger.info("MainBackendTools(): Main().ManageBootloader(): Trying again and checking internet connection again...")
@@ -279,7 +279,7 @@ class Main():
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        if CoreTools.StartProcess(Cmd) != 0:
+        if CoreTools.StartProcess(Cmd) not in (0,100):
             logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to Update the Package Information! Continuing anyway...")
             DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to update "+OS+"'s package information! Giving up. You will be prompted to try again if you wish.")
             return False
