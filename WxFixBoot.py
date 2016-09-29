@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "28/9/2016"
+ReleaseDate = "29/9/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -1481,7 +1481,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Get the sizer set up for the frame.
         self.Panel.SetSizer(self.MainSizer)
-        #self.MainSizer.SetMinSize(wx.Size(936,360)) *** Find size ***
+        self.MainSizer.SetMinSize(wx.Size(749,673))
 
     def BindEvents(self):
         """Bind all events for BootloaderOptionsWindow"""

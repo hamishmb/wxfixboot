@@ -140,8 +140,8 @@ class Main():
             if DiskInfo[Partition]["Type"] == "Device":
                 continue
 
-            if DiskInfo[Partition]["FileSystem"] in ("vfat", "ntfs", "exfat"): pass #*** Not fully implemented, will implement for v2.1. Disabled for now ***
-                #Look for Windows. *** NTFS can't be mounted twice ***
+            if DiskInfo[Partition]["FileSystem"] in ("vfat", "ntfs", "exfat"): pass #NOTE: Not fully implemented, will implement for v2.1. Disabled for now.
+                #Look for Windows. NOTE: NTFS can't be mounted twice.
                 #logger.debug("MainStartupTools: Main().GetOSs(): Looking for Windows on "+Partition+"...")
 
                 #Mount the partition and check if anything went wrong.
@@ -164,7 +164,7 @@ class Main():
                 #    OSInfo[OSName]["Partition"] = Partition
                 #    OSInfo[OSName]["PackageManager"] = "Windows Installer"
                 #    OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
-                    #OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName) *** TODO ***
+                    #OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName) #TODO
 
                 #Windows Vista/7/8/8.1/10.
                 #elif os.path.isdir(MountPoint+"/Windows"):
@@ -177,13 +177,13 @@ class Main():
                 #    OSInfo[OSName]["Partition"] = Partition
                 #    OSInfo[OSName]["PackageManager"] = "Windows Installer"
                 #    OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
-                    #OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName) *** TODO ***
+                    #OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName) #TODO
 
                 #else:
                 #    logger.debug("MainStartupTools: Main().GetOSs(): Didn't find Windows...")
 
                 #Unmount the filesystem.
-                #if CoreTools.Unmount(MountPoint) != 0: #*** What shall we do if this doesn't work? Is emergency exit okay, or try again? ***
+                #if CoreTools.Unmount(MountPoint) != 0:
                 #    logger.error("MainStartupTools: Main().GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
                 #    CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
@@ -483,7 +483,7 @@ class Main():
 
     def FinalCheck(self):
         """Check for any conflicting options, and warn the user of any potential pitfalls."""
-        #Check and warn about conflicting settings. *** TODO ***
+        #Check and warn about conflicting settings.
         #Warn if any OSs aren't modifyable.
         UnmodifyableOSs = []
 

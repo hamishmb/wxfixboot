@@ -76,7 +76,15 @@ class Main():
                     Result = DialogTools.ShowYesNoDlg(Message="An error occured while "+Operation+"ing "+OS+"'s old bootloader! This operating system may currently be in an unbootable state. What do you want to do? Click Yes to try again, and click No to cancel bootloader operations for this OS.", Title="WxFixBoot - Error Removing Bootloader!", Buttons=("Try Again", "Skip Bootloader Operations For This OS"))
 
                     if Result:
-                        logger.info("MainBackendTools(): Main().ManageBootloader(): Trying again...")
+                        logger.info("MainBackendTools(): Main().ManageBootloader(): Trying again and checking internet connection again...")
+                        EssentialBackendTools.CheckInternetConnection() #*** Test this is working ***
+
+                        #Don't do anything if bootloader operations have been disabled.
+                        if SystemInfo["DisableBootloaderOperations"]:
+                            logger.info("MainBackendTools(): Main().ManageBootloader(): Bootloader operations have been disabled, skipping this operation...")
+                            wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+                            wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Skipped bootloader operations for "+OS+"...###\n")
+                            return True 
 
                     else:
                         logger.error("MainBackendTools(): Main().ManageBootloader(): Skipping the rest of the bootloader operations for "+OS+"! Other operations will continue as normal. Returning False...")
@@ -266,8 +274,10 @@ class Main():
             Cmd = "chroot "+MountPoint+" "+Cmd
 
         if CoreTools.StartProcess(Cmd) != 0:
-            logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to Update the Package Information! Continuing anyway...") #*** Stop here? Check Internet Connection Again? ***
-    
+            logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to Update the Package Information! Continuing anyway...")
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to update "+OS+"'s package information! Giving up. You will be prompted to try again if you wish.")
+            return False
+
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)       
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...###\n")
@@ -418,7 +428,7 @@ class Main():
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
             BootloaderConfigSettingTools.UpdateGRUB2(OS=OS, PackageManager=OSInfo[OS]["PackageManager"], UseChroot=UseChroot, MountPoint=MountPoint)
 
-            BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)[1] #*** Don't overwrite old menuentries ***
+            BootloaderInfo[OS]["NewMenuEntries"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)[1]
 
         #Look for the configuration file, based on which SetConfig() function we're about to run.
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):

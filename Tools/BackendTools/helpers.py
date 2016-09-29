@@ -212,7 +212,7 @@ class Main():
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Done!")
 
     def BackupUEFIFiles(self, MountPoint):
-        """Backup some .efi files, just in case something goes wrong.""" #*** v2.1: Make this smarter when we detect Windows ***
+        """Backup some .efi files, just in case something goes wrong.""" #NOTE: v2.1: Make this smarter when we detect Windows.
         logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Backing up UEFI Files...")
 
         #We'll backup /EFI/boot/bootx64.efi if it exists, and we'll also backup Windows's uefi files, if they exist.
