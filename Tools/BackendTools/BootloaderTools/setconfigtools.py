@@ -391,7 +391,7 @@ class Main():
 
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Done!")
 
-    def AssembleLILOMenuEntry(self, OS, OSName, KernelOptions, NewFileContents):
+    def AssembleLILOMenuEntry(self, OSName, OS, KernelOptions, NewFileContents):
         """Create a LILO menu entry in the config file, and return it"""
         #Set kernel and initrd.
         logger.info("BootloaderConfigSettingTools: Main().AssembleLILOMenuEntry(): Adding /vmlinuz to the config file...")
