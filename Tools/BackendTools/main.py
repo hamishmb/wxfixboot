@@ -25,6 +25,15 @@ from __future__ import unicode_literals
 class Main():
     def ManageBootloader(self, OS):
         """Manage the installation and removal of each bootloader."""
+        #Test the internet connection.
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking the Internet Connection...")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking the Internet Connection...###\n")
+
+        EssentialBackendTools.CheckInternetConnection()
+
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished checking the Internet Connection...")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished checking the Internet Connection...###\n")
+
         #Don't do anything if bootloader operations have been disabled.
         if SystemInfo["DisableBootloaderOperations"]:
             logger.info("MainBackendTools(): Main().ManageBootloader(): Bootloader operations have been disabled, skipping this operation...")
@@ -42,7 +51,7 @@ class Main():
             #Add more stuff to the list.
             FunctionList = [self.RemoveOldBootloader, self.InstallNewBootloader, self.SetNewBootloaderConfig]
 
-        #Safegaurd operations usiang a loop.
+        #Safegaurd operations using a loop.
         for Function in FunctionList:
             logger.info("MainBackendTools(): Main().ManageBootloader(): Calling "+unicode(Function)+"...")
 
@@ -68,16 +77,13 @@ class Main():
 
                     #Drop a leading 'e' for correct English.
                     if Operation[-1] == "e":
-                        Text = Operation[0:-1]
-
-                    else:
-                        Text = Operation
+                        Operation = Operation[0:-1]
 
                     Result = DialogTools.ShowYesNoDlg(Message="An error occured while "+Operation+"ing "+OS+"'s old bootloader! This operating system may currently be in an unbootable state. What do you want to do? Click Yes to try again, and click No to cancel bootloader operations for this OS.", Title="WxFixBoot - Error Removing Bootloader!", Buttons=("Try Again", "Skip Bootloader Operations For This OS"))
 
                     if Result:
                         logger.info("MainBackendTools(): Main().ManageBootloader(): Trying again and checking internet connection again...")
-                        EssentialBackendTools.CheckInternetConnection() #*** Test this is working ***
+                        EssentialBackendTools.CheckInternetConnection()
 
                         #Don't do anything if bootloader operations have been disabled.
                         if SystemInfo["DisableBootloaderOperations"]:

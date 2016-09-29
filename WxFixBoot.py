@@ -190,6 +190,7 @@ Tools.BackendTools.main.wx = wx
 Tools.BackendTools.main.logger = logger
 Tools.BackendTools.main.os = os
 Tools.BackendTools.main.CoreTools = CoreTools
+Tools.BackendTools.main.EssentialBackendTools = EssentialBackendTools
 Tools.BackendTools.main.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
 Tools.BackendTools.main.BootloaderConfigSettingTools = BootloaderConfigSettingTools
@@ -870,13 +871,6 @@ class MainWindow(wx.Frame):
             if BootloaderInfo[OS]["Settings"]["ChangeThisOS"]:
                 Operations.append((MainBackendTools.ManageBootloader, OS))
                 logger.info("MainWindow().CountOperations(): Added (MainBackendTools.ManageBootloader, "+OS+") to Operations...")
-
-        #Check if we need to check the internet connection, and do so first if needed.
-        for Function in Operations:
-            if type(Function) == type(()) and Function[0] == MainBackendTools.ManageBootloader:
-                logger.info("MainWindow().CountOperations(): Doing bootloader operations. Adding EssentialBackendTools.CheckInternetConnection()...")
-                Operations.insert(0, EssentialBackendTools.CheckInternetConnection)
-                break
 
         NumberOfOperations = len(Operations)
 

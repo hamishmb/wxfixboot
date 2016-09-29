@@ -29,9 +29,6 @@ class Main():
         Retry = True
 
         logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Checking the Internet Connection...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking the Internet Connection...")
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking the Internet Connection...###\n")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 5)
         SystemInfo["DisableBootloaderOperations"] = False
 
         while True:
@@ -72,10 +69,6 @@ class Main():
                     #We'll just run the loop again
                     logger.info("EssentialBackendTools: Main().CheckInternetConnection(): Testing the internet connection again...")
                     pass
-
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished checking the Internet Connection...")
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished checking the Internet Connection...###\n")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
 
     def FileSystemCheck(self, Type):
         """Quickly check all filesystems."""

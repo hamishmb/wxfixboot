@@ -302,7 +302,7 @@ class Main():
                 SystemInfo["FirmwareType"] = "UEFI"
                 DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
 
-    def GetBootloaders(self): #*** Test this thoroughly ***
+    def GetBootloaders(self):
         """Find all bootloaders (for each OS), and gather some information about them"""
         SystemInfo["ModifyableOSs"] = []
 

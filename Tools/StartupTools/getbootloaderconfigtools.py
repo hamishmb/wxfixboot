@@ -21,8 +21,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Test these again ***
-    def FindGRUB(self, OSPartition, GRUBVersion): #*** Test this thoroughly ***
+class Main():
+    def FindGRUB(self, OSPartition, GRUBVersion):
         """Find GRUB for the given OS."""
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking for "+GRUBVersion+"...")
 
@@ -31,7 +31,7 @@ class Main(): #*** Test these again ***
 
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Looking in "+', '.join(LikelyGRUBInstallDisks)+"...")
 
-        #Look for the right string for each boot loader. *** Test this ***
+        #Look for the right string for each boot loader.
         if GRUBVersion == "GRUB2":
             LookFor = ("ZRr=", "TCPAf")
 
@@ -219,7 +219,7 @@ class Main(): #*** Test these again ***
                     if DiskInfo[Disk]["UUID"] == UUID:
                         MenuEntries[Menu][MenuEntryName]["Partition"] = Disk
 
-        #If THAT fails, try to use the "set root=" line to find the device name. *** Check this works right ***
+        #If THAT fails, try to use the "set root=" line to find the device name.
         if MenuEntries[Menu][MenuEntryName]["Partition"] == "Unknown" or "/dev/" not in MenuEntries[Menu][MenuEntryName]["Partition"]:
             logger.info("BootloaderConfigObtainingTools: Main().AssembleGRUB2MenuEntry(): Getting menu entry's boot partition with GRUB2's 'set root=' line...")
             RootLine = ""
