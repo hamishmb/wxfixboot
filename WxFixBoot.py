@@ -417,13 +417,13 @@ class InitThread(threading.Thread):
         logger.debug("InitThread(): Starting...")
 
         #Handle any unexpected errors.
-        try:
-            self.MainCode()
+        #try: *** Re-enable after testing completes ***
+        self.MainCode()
 
-        except:
-            Error = sys.exc_info()[0]
-            logger.critical("Unexpected error "+unicode(Error)+" while starting WxFixBoot. Warning user and exiting.")
-            CoreTools.EmergencyExit("There was an unexpected error ("+unicode(Error)+") while starting up!")
+        #except:
+        #    Error = sys.exc_info()[0]
+        #    logger.critical("Unexpected error "+unicode(Error)+" while starting WxFixBoot. Warning user and exiting.")
+        #    CoreTools.EmergencyExit("There was an unexpected error ("+unicode(Error)+") while starting up!")
 
     def MainCode(self):
         """Create the temporary mount point folder and set some default settings."""
@@ -2445,7 +2445,7 @@ class BackendThread(threading.Thread):
         logger.debug("BackendThread().run(): Started. Calling self.StartOperations()...")
 
         #Handle any unexpected errors.
-        #try:
+        #try: *** Re-enable after testing completes ***
         self.StartOperations()
 
         #except:
@@ -2616,7 +2616,7 @@ class BackendThread(threading.Thread):
                     ReportList.write("\t\t\tKept Existing Kernel Options: "+unicode(BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"])+"\n")
 
                     if BootloaderInfo[OS]["Settings"]["Reinstall"]:
-                        ReportList.write("\t\t\tNew Kernel Options: "+', '.join(BootloaderInfo[OS]["Settings"]["NewKernelOptions"])+"\n")
+                        ReportList.write("\t\t\tNew Kernel Options: "+BootloaderInfo[OS]["Settings"]["NewKernelOptions"]+"\n")
 
                     ReportList.write("\t\t\tNew Default OS: "+BootloaderInfo[OS]["Settings"]["DefaultOS"]+"\n\n")
 

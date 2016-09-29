@@ -149,7 +149,7 @@ class Main():
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-LEGACY...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
-                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub grub-legacy-doc grub-common'"
+                Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub grub-common'"
 
             elif OSInfo[OS]["PackageManager"] == "yum":
                 Cmd = "yum -y remove grub"
@@ -172,7 +172,7 @@ class Main():
             elif OSInfo[OS]["PackageManager"] == "yum":
                 Cmd = "echo 'ERROR: LILO not available on Fedora or derivatives. Continuing anyway...'"
 
-        elif BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI": #*** Test this on Fedora ***
+        elif BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB-UEFI...")
 
             if OSInfo[OS]["PackageManager"] == "apt-get":
