@@ -237,7 +237,7 @@ class Main():
         logger.info("HelperBackendTools: Main().BackupUEFIFiles(): Done!")
 
     def ManageUEFIFiles(self, OS, MountPoint):
-        """Manage UEFI bootloader files.""" #*** Test this again ***
+        """Manage UEFI bootloader files."""
         logger.info("HelperBackendTools: Main().ManageUEFIFiles(): Copying UEFI Files to UEFIBootDir...")
 
         #First, let's check if EFI/boot already exists. This is a fat32/fat16 filesystem, so case doesn't matter.
