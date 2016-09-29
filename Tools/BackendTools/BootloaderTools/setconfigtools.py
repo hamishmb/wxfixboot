@@ -261,7 +261,7 @@ class Main():
 
         logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Done!")
 
-    def MakeLILOOSEntries(self, OS, filetoopen, MountPoint, KernelOptions): #*** Test this again ***
+    def MakeLILOOSEntries(self, OS, filetoopen, MountPoint, KernelOptions):
         """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS"""
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make OS entries for "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
         #Okay, we've saved the kopts, timeout, and the boot device in the list.
