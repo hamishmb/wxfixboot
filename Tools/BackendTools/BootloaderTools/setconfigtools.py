@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class Main(): #*** Add recovery boot options for LILO/ELILO ***
+class Main():
     def SetGRUB2Config(self, OS, filetoopen, BootloaderTimeout, KernelOptions):
         """Set GRUB2 config."""
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Setting GRUB2 Config in "+filetoopen+"...")
@@ -261,7 +261,7 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
 
         logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Done!")
 
-    def MakeLILOOSEntries(self, OS, filetoopen, MountPoint, KernelOptions):
+    def MakeLILOOSEntries(self, OS, filetoopen, MountPoint, KernelOptions): #*** Test this again ***
         """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS"""
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Preparing to make OS entries for "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
         #Okay, we've saved the kopts, timeout, and the boot device in the list.
@@ -320,55 +320,15 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
             #Names in LILO are not allowed to have spaces, so let's remove the spaces from them.
             OSName = OS.replace(' ','')
 
-            #Grab the OS's partition.
-            Partition = OSInfo[OS]["Partition"]
-
             #Check that the name is no longer than 15 characters.
             if len(OSName) > 15:
                 #The name is too long! Truncate it to 15 characters.
                 logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Truncating OS Name: "+OSName+" to 15 characters...")
                 OSName = OSName[0:15]
 
-            #Now let's make the entries.
-            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Checking for /vmlinuz and /initrd.img...")
-
-            CurrentOS = OSInfo[OS]["IsCurrentOS"]
-
-            #Set kernel and initrd.
-            logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Adding /vmlinuz to the config file...")
-            NewFileContents.append("\nimage=/vmlinuz\n")
-
-            logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Adding /initrd.img to the config file...")
-            NewFileContents.append("\tinitrd=/initrd.img\n")
-
-            #Set the root device.
-            #Use UUID's here if we can.
-            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs as a UUID if possible...")
-
-            if DiskInfo[OSInfo[OS]["Partition"]]["UUID"] == "Unknown":
-                logger.warning("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+OSInfo[OS]["Partition"]+"! This might not work cos it can change!")
-                NewFileContents.append("\troot="+OSInfo[OS]["Partition"]+"\n")
-
-            else:
-                logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS rootfs to "+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"...")
-
-                if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
-                    NewFileContents.append("\troot=UUID="+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"\n")
-
-                else:
-                    NewFileContents.append("\troot=\"UUID="+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"\"\n")
-
-            #Set the label.
-            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS label to "+OSName+"...")
-            NewFileContents.append("\tlabel="+OSName+"\n")
-
-            #Set the kernel options.
-            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Setting OS Kernel Options to "+KernelOptions+"...")
-            NewFileContents.append("\tappend=\""+KernelOptions+"\"\n")
-
-            #Set one other necessary boot option.
-            logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Adding 'read-only' to mount rootfs in ro mode on startup...")
-            NewFileContents.append("\tread-only\n")
+            #Now let's make the entries (both standard and recovery).
+            self.AssembleLILOMenuEntry(OSName, KernelOptions, NewFileContents)
+            self.AssembleLILOMenuEntry(OSName[0:-4]+"recv", KernelOptions+" recovery", NewFileContents)
 
             #Add this OS to the Completed Entries List, because if we got this far it's done and added.
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): OS Entry for "+OS+" is done!")
@@ -430,6 +390,46 @@ class Main(): #*** Add recovery boot options for LILO/ELILO ***
         ConfigFile.close()
 
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Done!")
+
+    def AssembleLILOMenuEntry(self, OSName, KernelOptions, NewFileContents):
+        """Create a LILO menu entry in the config file, and return it"""
+        #Set kernel and initrd.
+        logger.info("BootloaderConfigSettingTools: Main().AssembleLILOMenuEntry(): Adding /vmlinuz to the config file...")
+        NewFileContents.append("\nimage=/vmlinuz\n")
+
+        logger.info("BootloaderConfigSettingTools: Main().AssembleLILOMenuEntry(): Adding /initrd.img to the config file...")
+        NewFileContents.append("\tinitrd=/initrd.img\n")
+
+        #Set the root device.
+        #Use UUID's here if we can.
+        logger.debug("BootloaderConfigSettingTools: Main().AssembleLILOMenuEntry(): Setting OS rootfs as a UUID if possible...")
+
+        if DiskInfo[OSInfo[OS]["Partition"]]["UUID"] == "Unknown":
+            logger.warning("BootloaderConfigSettingTools: Main().AssembleLILOMenuEntry(): Setting OS rootfs to "+OSInfo[OS]["Partition"]+"! This might not work cos it can change!")
+            NewFileContents.append("\troot="+OSInfo[OS]["Partition"]+"\n")
+
+        else:
+            logger.debug("BootloaderConfigSettingTools: Main().AssembleLILOMenuEntry(): Setting OS rootfs to "+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"...")
+
+            if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
+                NewFileContents.append("\troot=UUID="+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"\n")
+
+            else:
+                NewFileContents.append("\troot=\"UUID="+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"\"\n")
+
+        #Set the label.
+        logger.debug("BootloaderConfigSettingTools: Main().AssembleLILOMenuEntry(): Setting OS label to "+OSName+"...")
+        NewFileContents.append("\tlabel="+OSName+"\n")
+
+        #Set the kernel options.
+        logger.debug("BootloaderConfigSettingTools: Main().AssembleLILOMenuEntry(): Setting OS Kernel Options to "+KernelOptions+"...")
+        NewFileContents.append("\tappend=\""+KernelOptions+"\"\n")
+
+        #Set one other necessary boot option.
+        logger.debug("BootloaderConfigSettingTools: Main().AssembleLILOMenuEntry(): Adding 'read-only' to mount rootfs in ro mode on startup...")
+        NewFileContents.append("\tread-only\n")
+
+        return NewFileContents
 
     def InstallLILOToMBR(self, PackageManager, UseChroot, MountPoint):
         """Install LILO into the MBR."""
