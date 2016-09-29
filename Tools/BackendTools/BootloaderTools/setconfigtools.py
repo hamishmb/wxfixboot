@@ -327,8 +327,8 @@ class Main():
                 OSName = OSName[0:15]
 
             #Now let's make the entries (both standard and recovery).
-            self.AssembleLILOMenuEntry(OSName, KernelOptions, NewFileContents)
-            self.AssembleLILOMenuEntry(OSName[0:-4]+"recv", KernelOptions+" recovery", NewFileContents)
+            self.AssembleLILOMenuEntry(OSName, OS, KernelOptions, NewFileContents)
+            self.AssembleLILOMenuEntry(OSName[0:-4]+"recv", OS, KernelOptions+" recovery", NewFileContents)
 
             #Add this OS to the Completed Entries List, because if we got this far it's done and added.
             logger.debug("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): OS Entry for "+OS+" is done!")
@@ -391,7 +391,7 @@ class Main():
 
         logger.info("BootloaderConfigSettingTools: Main().MakeLILOOSEntries(): Done!")
 
-    def AssembleLILOMenuEntry(self, OSName, KernelOptions, NewFileContents):
+    def AssembleLILOMenuEntry(self, OS, OSName, KernelOptions, NewFileContents):
         """Create a LILO menu entry in the config file, and return it"""
         #Set kernel and initrd.
         logger.info("BootloaderConfigSettingTools: Main().AssembleLILOMenuEntry(): Adding /vmlinuz to the config file...")
