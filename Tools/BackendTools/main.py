@@ -340,6 +340,11 @@ class Main():
             logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to install new bootloader. Warn user...")
             DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to install "+OS+"'s new bootloader! Continuing anyway...")
 
+        #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
+        if OSInfo[OS]["EFIPartition"] != "Unknown":
+            if CoreTools.Unmount(MountPoint+"/boot/efi") != 0:
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot/efi! This probably doesn't matter...")
+
         #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot.
         if OSInfo[OS]["BootPartition"] != "Unknown":
             if CoreTools.Unmount(MountPoint+"/boot") != 0:
@@ -570,6 +575,11 @@ class Main():
             #Unmount the EFI partition.
             if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
                 logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
+
+        #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
+        if OSInfo[OS]["EFIPartition"] != "Unknown":
+            if CoreTools.Unmount(MountPoint+"/boot/efi") != 0:
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot/efi! This probably doesn't matter...")
 
         #Unmount a /boot partition if it exists.
         if OSInfo[OS]["BootPartition"] != "Unknown":
