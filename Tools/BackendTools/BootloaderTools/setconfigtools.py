@@ -153,7 +153,7 @@ class Main():
         if PackageManager == "apt-get":
             Cmd = "update-grub2"
 
-        elif PackageManager == "yum" and OSInfo[OS]["EFIPartition"] == "Unknown":
+        elif PackageManager == "yum" and BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
             Cmd = "grub2-mkconfig -o /boot/grub2/grub.cfg"
 
         elif PackageManager == "yum":
