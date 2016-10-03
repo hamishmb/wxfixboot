@@ -41,6 +41,8 @@ class AuthWindow(wx.Frame):
         AppIcon = wx.Icon("/usr/share/wxfixboot/images/Logo.png", wx.BITMAP_TYPE_PNG)
         wx.Frame.SetIcon(self, AppIcon)
 
+        self.Started = False
+
         self.CreateText()
         self.CreateButtons()
         self.CreateOtherWidgets()
@@ -199,20 +201,23 @@ class AuthWindow(wx.Frame):
 
     def StartWxFixBoot(self, Password):
         """Start WxFixBoot and exit"""
-        Cmd = subprocess.Popen("sudo -SH /usr/share/wxfixboot/WxFixBoot.py", stdin=subprocess.PIPE, stdout=sys.stdout, stderr=subprocess.PIPE, shell=True)
+        #Stop the user from starting wxfixboot twice at once.
+        if self.Started == False:
+            self.Started = True
+            Cmd = subprocess.Popen("sudo -SH /usr/share/wxfixboot/WxFixBoot.py", stdin=subprocess.PIPE, stdout=sys.stdout, stderr=subprocess.PIPE, shell=True)
 
-        #Send the password to sudo through stdin, to avoid showing the user's password in the system/activity monitor.
-        Cmd.stdin.write(Password+"\n")
-        Cmd.stdin.close()
+            #Send the password to sudo through stdin, to avoid showing the user's password in the system/activity monitor.
+            Cmd.stdin.write(Password+"\n")
+            Cmd.stdin.close()
 
-        #Remove any cached credentials, so we don't create a security problem.
-        subprocess.Popen("sudo -k", shell=True).wait()
+            #Remove any cached credentials, so we don't create a security problem.
+            subprocess.Popen("sudo -k", shell=True).wait()
 
-        #Overwrite the password with a string of nonsense characters before deleting it, so the password cannot be read from memory when this script closes.
-        Password = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!£$%^&*()_+"
-        del Password
-        time.sleep(1)
-        self.OnExit()
+            #Overwrite the password with a string of nonsense characters before deleting it, so the password cannot be read from memory when this script closes.
+            Password = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!£$%^&*()_+"
+            del Password
+            time.sleep(1)
+            self.OnExit()
 
     def OnExit(self, Event=None):
         """Close AuthWindow() and exit"""
