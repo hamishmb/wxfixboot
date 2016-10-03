@@ -144,6 +144,12 @@ class Main():
 
                 return False
 
+        #Mount the UEFI partition at MountPoint/boot/efi.
+        if CoreTools.MountPartition(Partition=OSInfo[OS]["EFIPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
+            logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["EFIPartition"]+"! to "+MountPoint+"/boot/efi! Aborting bootloader installation and warning user...")
+            DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to mount the partition containing "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
+            return False
+
         #Remove the bootloader.
         if BootloaderInfo[OS]["Bootloader"] == "GRUB2":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")
@@ -194,7 +200,7 @@ class Main():
         #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
         if OSInfo[OS]["EFIPartition"] != "Unknown":
             if CoreTools.Unmount(MountPoint+"/boot/efi") != 0:
-                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot/efi! This probably doesn't matter...")
+                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to unmount "+MountPoint+"/boot/efi! This probably doesn't matter...")
 
         #Unmount a /boot partition if it exists.
         if OSInfo[OS]["BootPartition"] != "Unknown":
@@ -584,7 +590,7 @@ class Main():
         #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
         if OSInfo[OS]["EFIPartition"] != "Unknown":
             if CoreTools.Unmount(MountPoint+"/boot/efi") != 0:
-                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot/efi! This probably doesn't matter...")
+                logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount "+MountPoint+"/boot/efi! This probably doesn't matter...")
 
         #Unmount a /boot partition if it exists.
         if OSInfo[OS]["BootPartition"] != "Unknown":
