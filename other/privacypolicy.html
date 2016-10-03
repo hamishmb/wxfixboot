@@ -11,9 +11,9 @@
         <p>
         Hence, WxFixBoot collects only information it requires to run, or is of significant importance to the user, and it won't report any information it collects at all, to anybody. WxFixBoot does also not collect any personal, or personally identifiable information.
         </p>
-        <p style="text-decoration: underline;">It has never done, and it never will</p>
+        <p><u>It has never done, and it never will.</u></p>
 
-        <h2 style="text-align: center;">Disk Information</h2>
+        <h2><center>Disk Information</center></h2>
 
         <p>
         In order to run, WxFixBoot needs to gain detailed information about disks. The information collected for this purpose is as follows.
@@ -43,7 +43,7 @@
             <li>The Disk's Description (if any).</li>
         </ul>
 
-        <h2 style="text-align: center;">Operating System Information</h2>
+        <h2><center>Operating System Information</center></h2>
 
         <p>
         A smaller amount of information needs to be collected on each Linux Operating System installed on your machine as well. This is as follows.
@@ -60,7 +60,7 @@
             <li>Determine this OS’s Boot partition, if any (where the OS’s Linux kernel and initrd are stored, if not on /).</li>
         </ul>
 
-        <h2 style="text-align: center;">Firmware Information</h2>
+        <h2><center>Firmware Information</center></h2>
 
         <p>
         Your firmware type needs to be determined to check which bootloaders can be installed. For example, if you have EFI firmware, you (usually) need an EFI bootloader to start your Operating System, and installing a BIOS bootloader will not work, and vice versa. To collect this information, WxFixBoot will:
@@ -71,7 +71,7 @@
             <li>If not, run “dmidecode -q -t BIOS” to get firmware information. If UEFI is mentioned here, you have UEFI firmware. If not, you have BIOS firmware.</li>
         </ul>
 
-        <h2 style="text-align: center;">Bootloader Information</h2>
+        <h2><center>Bootloader Information</center></h2>
 
         <p>
         WxFixBoot also needs to gather information about the bootloaders on your system. This information is gathered for each OS, and is as follows:
@@ -94,7 +94,7 @@
             <li>The bootloader’s default OS, if any. As above.</li>
         </ul>
 
-        <h2 style="text-align: center;">Other Information</h2>
+        <h2><center>Other Information</center></h2>
 
         <p>
         A basic dependency check is done to ensure that WxFixBoot can function on this system. This is worth doing because crashing while halfway through an operation is not what any user would want.<br>
@@ -111,7 +111,7 @@
         Finally, WxFixBoot spits the version of itself and that of python and wxpython into the log file on startup to aid debugging if the log file is later needed to resolve a problem, for example in a support request from a user.
         </p>
 
-        <h2 style="text-align: center;">Conclusion</h2>
+        <h2><center>Conclusion</center></h2>
 
         <p>
         The only collected information that cannot be viewed in the GUI, is the firmware type, live disk, Parted Magic information, Lvm information, /etc/fstab contents, and boot record. This information is not visible because it would be confusing to the user, and is difficult to display. If you wish to see it, instead save the log file when you exit WxFixBoot.
@@ -122,7 +122,7 @@
         </p>
 
         <p>
-        For debugging reasons, all of this information is temporarily saved in a log file (/tmp/wxfixboot.log). It does <strong style="text-decoration: underline;">NOT</strong> include any personal, or personally identifiable information such as serial numbers or IP addresses.
+        For debugging reasons, all of this information is temporarily saved in a log file (/tmp/wxfixboot.log). It does <strong><u>NOT</u></strong> include any personal, or personally identifiable information such as serial numbers or IP addresses.
         </p>
 
         <p>
