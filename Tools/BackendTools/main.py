@@ -483,8 +483,8 @@ class Main():
                 if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
                     logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
 
-            elif SystemInfo["FirmwareType"] == "UEFI" or BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
-                #If the firmware type is EFI or if we're switching to GRUB2 from UEFI it can mess up GRUB2 and change the boot commands to linuxefi and initrdefi instead of linux and initrd, preventing boot.
+            elif SystemInfo["FirmwareType"] == "UEFI" and BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
+                #If we're switching to GRUB2 from UEFI it can mess up GRUB2 and change the boot commands to linuxefi and initrdefi instead of linux and initrd, preventing boot.
                 #Fix this. The next time GRUB is updated from within the OS it will fix itself.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Fixing GRUB2-BIOS config (when booted with EFI, it can go wrong)...")
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Finding and opening GRUB config file...")
