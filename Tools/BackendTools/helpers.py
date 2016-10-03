@@ -165,7 +165,7 @@ class Main():
 
     def WriteFSTABEntryForUEFIPartition(self, OS, MountPoint):
         """Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one."""
-        logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Preparing to write an fstab entry for the UEFI partition ("+BootloaderInfo[OS]["BootDisk"]+")...")
+        logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Preparing to write an fstab entry for the UEFI partition ("+BootloaderInfo[OS]["EFIPartition"]+")...")
 
         WriteEntry = True
 
@@ -178,7 +178,7 @@ class Main():
         NewFileContents = []
 
         for line in fstab:
-            if BootloaderInfo[OS]["BootDisk"] in line or "UUID="+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["UUID"] in line:
+            if BootloaderInfo[OS]["EFIPartition"] in line or "UUID="+DiskInfo[BootloaderInfo[OS]["EFIPartition"]]["UUID"] in line:
                 #This fstab already has an entry for the UEFI System Partition!
                 WriteEntry = False
 
@@ -193,15 +193,15 @@ class Main():
         else:
             #We do. If we can use the UUID, then we will, but otherwise we'll use the standard device name.
             logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Writing fstab entry...")
-            NewFileContents.append("\n#fstab entry for UEFI System Partition ("+BootloaderInfo[OS]["BootDisk"]+"), written by WxFixBoot.\n")
+            NewFileContents.append("\n#fstab entry for UEFI System Partition ("+BootloaderInfo[OS]["EFIPartition"]+"), written by WxFixBoot.\n")
 
-            if DiskInfo[BootloaderInfo[OS]["BootDisk"]]["UUID"] != "Unknown":
+            if DiskInfo[BootloaderInfo[OS]["EFIPartition"]]["UUID"] != "Unknown":
                 logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Using UUID to prevent problems down the line...")
-                NewFileContents.append("UUID="+UUID+" /boot/efi vfat defaults 0 2\n")
+                NewFileContents.append("UUID="+DiskInfo[BootloaderInfo[OS]["EFIPartition"]]["UUID"]+" /boot/efi vfat defaults 0 2\n")
 
             else:
-                logger.warning("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): We have no UUID for the UEFI Partition: "+BootloaderInfo[OS]["BootDisk"]+"! This isn't good, and may cause problems down the line. Continuing anyway, using device name instead...")
-                NewFileContents.append(BootloaderInfo[OS]["BootDisk"]+" /boot/efi vfat defaults 0 2\n")
+                logger.warning("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): We have no UUID for the UEFI Partition: "+BootloaderInfo[OS]["EFIPartition"]+"! This isn't good, and may cause problems down the line. Continuing anyway, using device name instead...")
+                NewFileContents.append(BootloaderInfo[OS]["EFIPartition"]+" /boot/efi vfat defaults 0 2\n")
 
             #Write the finished lines to the file.
             fstab.close()
