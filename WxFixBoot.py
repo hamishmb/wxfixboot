@@ -25,6 +25,7 @@ from __future__ import unicode_literals
 #Import other modules
 import traceback
 import wx
+import wx.html
 import wx.lib.statbmp
 import wx.lib.stattext
 import threading
@@ -440,7 +441,6 @@ class InitThread(threading.Thread):
         BootloaderInfo = {}
         Settings = {}
 
-        Bobert.sdfghrd = dfref
         #Make dictionaries available to modules.
         Tools.coretools.DiskInfo = DiskInfo
         Tools.StartupTools.core.DiskInfo = DiskInfo
@@ -1204,12 +1204,15 @@ class PrivPolWindow(wx.Frame):
         """Initialize PrivPolWindow"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Privacy Policy", size=(400,310), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
-        self.SetClientSize(wx.Size(400,310))
+        self.SetClientSize(wx.Size(550,400))
         self.ParentWindow = ParentWindow
         wx.Frame.SetIcon(self, AppIcon)
 
-        logger.debug("PrivPolWindow().__init__(): Creating widgets...")
-        self.CreateWidgets()
+        logger.debug("PrivPolWindow().__init__(): Creating button...")
+        self.CreateButton()
+
+        logger.debug("PrivPolWindow().__init__(): Loading page...")
+        self.LoadPage()
 
         logger.debug("PrivPolWindow().__init__(): Setting up sizers...")
         self.SetupSizers()
@@ -1222,19 +1225,18 @@ class PrivPolWindow(wx.Frame):
 
         logger.debug("PrivPolWindow().__init__(): Ready. Waiting for events...")
 
-    def CreateWidgets(self):
-        """Create all widgets for PrivPolWindow"""
-        #Make a text box to contain the policy's text.
-        self.TextBox = wx.TextCtrl(self.Panel, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_WORDWRAP)
+    def CreateButton(self):
+        """Create the close buton."""
+        self.CloseButton = wx.Button(self.Panel, -1, "Close")
 
-        #Populate the text box.
-        self.TextBox.LoadFile("/usr/share/wxfixboot/other/privacypolicy.txt")
+    def LoadPage(self):
+        """Load the privacy policy web page (locally stored)"""
+        File = open("/usr/share/wxfixboot/other/privacypolicy.html", "r")
+        Text = File.read()
+        File.close()
 
-        #Scroll the text box back up to the top.
-        self.TextBox.SetInsertionPoint(0)
-
-        #Make a button to close the dialog.
-        self.CloseButton = wx.Button(self.Panel, -1, "Okay")
+        self.html = wx.html.HtmlWindow(self.Panel)
+        self.html.SetPage(Text)
 
     def SetupSizers(self):
         """Set up sizers for PrivPolWindow"""
@@ -1242,12 +1244,12 @@ class PrivPolWindow(wx.Frame):
         MainSizer = wx.BoxSizer(wx.VERTICAL)
 
         #Add each object to the main sizer.
-        MainSizer.Add(self.TextBox, 1, wx.EXPAND|wx.ALL, 10)
+        MainSizer.Add(self.html, 1, wx.EXPAND|wx.ALL, 10)
         MainSizer.Add(self.CloseButton, 0, wx.BOTTOM|wx.CENTER, 10)
 
         #Get the sizer set up for the frame.
         self.Panel.SetSizer(MainSizer)
-        MainSizer.SetMinSize(wx.Size(400,310))
+        MainSizer.SetMinSize(wx.Size(550,400))
         MainSizer.SetSizeHints(self)
 
     def BindEvents(self):
