@@ -276,7 +276,11 @@ class Main():
 
         elif os.path.isdir("/proc/efi/vars") and CoreTools.StartProcess("ls /proc/efi/vars", ReturnOutput=True)[1] != "":
             UEFIVariables = True
-            logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /proc/efi/efivars...")
+            logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /proc/efi/vars...")
+
+        elif os.path.isdir("/sys/firmware/efi/efivars") and CoreTools.StartProcess("ls /sys/firmware/efi/efivars", ReturnOutput=True)[1] != "":
+            UEFIVariables = True
+            logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /proc/efi/efi/efivars...")
 
         else:
             logger.info("MainStartupTools: Main().GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars or /sys/firmware/efi/efivars. This is normal if running on a BIOS system. Determining firmware type a different way...")

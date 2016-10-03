@@ -79,7 +79,7 @@ class Main():
                     if Operation[-1] == "e":
                         Operation = Operation[0:-1]
 
-                    Result = DialogTools.ShowYesNoDlg(Message="An error occured while "+Operation+"ing "+OS+"'s bootloader! This operating system may currently be in an unbootable state. What do you want to do? Click Yes to try again, and click No to cancel bootloader operations for this OS.", Title="WxFixBoot - Error Removing Bootloader!", Buttons=("Try Again", "Skip Bootloader Operations For This OS"))
+                    Result = DialogTools.ShowYesNoDlg(Message="An error occured while "+Operation+"ing "+OS+"'s bootloader! This operating system may currently be in an unbootable state. What do you want to do? Click Yes to try again, and click No to cancel bootloader operations for this OS.", Title="WxFixBoot - Error "+Operation+"ing Bootloader!", Buttons=("Try Again", "Skip Bootloader Operations For This OS"))
 
                     if Result:
                         logger.info("MainBackendTools(): Main().ManageBootloader(): Trying again and checking internet connection again...")
