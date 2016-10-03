@@ -373,9 +373,6 @@ class Main():
         LogFile = DialogTools.ShowSaveFileDlg(Wildcard="Log Files|*.log")
         self.StartProcess("mv -v /tmp/wxfixboot.log "+LogFile, ShowOutput=False)
 
-        #Delete the log file, and don't bother handling any errors, because this is run as root.
-        os.remove('/tmp/wxfixboot.log')
-
         #Exit.
         DialogTools.ShowMsgDlg(Message="Done. WxFixBoot will now exit.")
         wx.Exit()
