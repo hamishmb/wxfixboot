@@ -417,12 +417,12 @@ class InitThread(threading.Thread):
         logger.debug("InitThread(): Starting...")
 
         #Handle any unexpected errors.
-        #try: #*** Re-enable after testing completes ***
+        try:
         self.MainCode()
 
-        #except:
-        #    logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while starting WxFixBoot. Warning user and exiting.")
-        #    CoreTools.EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile starting up!")
+        except:
+            logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while starting WxFixBoot. Warning user and exiting.")
+            CoreTools.EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile starting up!")
 
     def MainCode(self):
         """Create the temporary mount point folder and set some default settings."""
@@ -2454,12 +2454,12 @@ class BackendThread(threading.Thread):
         logger.debug("BackendThread().run(): Started. Calling self.StartOperations()...")
 
         #Handle any unexpected errors.
-        #try: *** Re-enable after testing completes ***
+        try:
         self.StartOperations()
 
-        #except:
-        #    logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while running operations. Warning user and exiting.")
-        #    CoreTools.EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile running operations!")
+        except:
+            logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while running operations. Warning user and exiting.")
+            CoreTools.EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile running operations!")
 
     def StartOperations(self):
         """Start doing operations."""
