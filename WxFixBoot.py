@@ -23,6 +23,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Import other modules
+import traceback
 import wx
 import wx.lib.statbmp
 import wx.lib.stattext
@@ -41,7 +42,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "29/9/2016"
+ReleaseDate = "3/10/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -417,13 +418,12 @@ class InitThread(threading.Thread):
         logger.debug("InitThread(): Starting...")
 
         #Handle any unexpected errors.
-        #try: *** Re-enable after testing completes ***
+        #try: #*** Re-enable after testing completes ***
         self.MainCode()
 
         #except:
-        #    Error = sys.exc_info()[0]
-        #    logger.critical("Unexpected error "+unicode(Error)+" while starting WxFixBoot. Warning user and exiting.")
-        #    CoreTools.EmergencyExit("There was an unexpected error ("+unicode(Error)+") while starting up!")
+        #    logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while starting WxFixBoot. Warning user and exiting.")
+        #    CoreTools.EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile starting up!")
 
     def MainCode(self):
         """Create the temporary mount point folder and set some default settings."""
@@ -440,6 +440,7 @@ class InitThread(threading.Thread):
         BootloaderInfo = {}
         Settings = {}
 
+        Bobert.sdfghrd = dfref
         #Make dictionaries available to modules.
         Tools.coretools.DiskInfo = DiskInfo
         Tools.StartupTools.core.DiskInfo = DiskInfo
@@ -2452,9 +2453,8 @@ class BackendThread(threading.Thread):
         self.StartOperations()
 
         #except:
-        #    Error = sys.exc_info()[0]
-        #    logger.critical("Unexpected error "+unicode(Error)+" while running operations. Warning user and exiting.")
-        #    CoreTools.EmergencyExit("There was an unexpected error ("+unicode(Error)+") while running operations!")
+        #    logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while running operations. Warning user and exiting.")
+        #    CoreTools.EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile running operations!")
 
     def StartOperations(self):
         """Start doing operations."""
