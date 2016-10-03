@@ -191,6 +191,11 @@ class Main():
             DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"!")
             return False
 
+        #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
+        if OSInfo[OS]["EFIPartition"] != "Unknown":
+            if CoreTools.Unmount(MountPoint+"/boot/efi") != 0:
+                logger.error("MainBackendTools: Main().InstallNewBootloader(): Failed to unmount "+MountPoint+"/boot/efi! This probably doesn't matter...")
+
         #Unmount a /boot partition if it exists.
         if OSInfo[OS]["BootPartition"] != "Unknown":
             if CoreTools.Unmount(MountPoint+"/boot") != 0:
