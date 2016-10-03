@@ -418,7 +418,7 @@ class InitThread(threading.Thread):
 
         #Handle any unexpected errors.
         try:
-        self.MainCode()
+            self.MainCode()
 
         except:
             logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while starting WxFixBoot. Warning user and exiting.")
@@ -2455,7 +2455,7 @@ class BackendThread(threading.Thread):
 
         #Handle any unexpected errors.
         try:
-        self.StartOperations()
+            self.StartOperations()
 
         except:
             logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while running operations. Warning user and exiting.")
