@@ -1692,6 +1692,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Make sure the window displays properly.
         self.MainSizer.SetSizeHints(self)
+        self.Panel.Layout()
 
     def OnAdvancedOptions(self, Event=None):
         """Show/Hide the advanced options, and rotate the arrow"""
@@ -1751,6 +1752,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Make sure the window displays properly.
         self.MainSizer.SetSizeHints(self)
+        self.Panel.Layout()
 
     def OnBackupBootloaderChoice(self, Event=None):
         """Allow the user to select a config file to backup the bootloader to"""
