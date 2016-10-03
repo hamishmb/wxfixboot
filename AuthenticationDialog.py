@@ -161,8 +161,9 @@ class AuthWindow(wx.Frame):
         Output = Cmd.stdout.read()
 
         if "Authentication Succeeded" in Output:
-            #Set the password field colour to green.
+            #Set the password field colour to green and disable the auth button.
             self.PasswordField.SetBackgroundColour((192,255,192))
+            self.AuthButton.Disable()
 
             #Play the green pulse for one second.
             self.Throbber.SetAnimation(self.GreenPulse)
