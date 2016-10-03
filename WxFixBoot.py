@@ -1283,6 +1283,8 @@ class BootloaderOptionsWindow(wx.Frame):
         self.BindEvents()
 
         self.OnAdvancedOptions()
+        self.OnOSInfo()
+
         wx.CallLater(500, self.OnOSChoiceChange, Startup=True)
 
         logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Window Started.")
@@ -1639,6 +1641,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Make sure the window is displayed properly.
         self.MainSizer.SetSizeHints(self)
+        self.Panel.Layout()
 
     def OnBasicOptions(self, Event=None):
         """Hide/Show the basic options, and rotate the arrow"""
