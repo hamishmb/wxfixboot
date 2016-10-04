@@ -479,7 +479,7 @@ class Main():
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
             BootloaderConfigSettingTools.UpdateGRUB2(OS=OS, PackageManager=OSInfo[OS]["PackageManager"], UseChroot=UseChroot, MountPoint=MountPoint)
 
-            if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+            if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI" and OSInfo[OS]["PackageManager"] == "yum":
                 #Make an entry in fstab for the UEFI Partition, if needed.
                 HelperBackendTools.WriteFSTABEntryForUEFIPartition(OS=OS, MountPoint=MountPoint)
 
@@ -489,7 +489,7 @@ class Main():
 
                 #If we're switching to GRUB-UEFI from BIOS it can mess up GRUB2 and change the boot commands to linux and initrd instead of linuxefi and initrdefi, preventing boot.
                 #Fix this. The next time GRUB is updated from within the OS it will fix itself.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Fixing GRUB2-UEFI config (when booted with BIOS, it can go wrong)...")
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Fixing Fedora's GRUB2-UEFI config (when booted with BIOS, it can go wrong)...")
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Finding and opening GRUB config file...")
 
                 #Find grub.cfg. (Ubuntu).
@@ -534,10 +534,10 @@ class Main():
 
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Done!")
 
-            elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
+            elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2" and OSInfo[OS]["PackageManager"] == "yum":
                 #If we're switching to GRUB2 from UEFI it can mess up GRUB2 and change the boot commands to linuxefi and initrdefi instead of linux and initrd, preventing boot.
                 #Fix this. The next time GRUB is updated from within the OS it will fix itself.
-                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Fixing GRUB2-BIOS config (when booted with EFI, it can go wrong)...")
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Fixing Fedora's GRUB2-BIOS config (when booted with EFI, it can go wrong)...")
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Finding and opening GRUB config file...")
 
                 #Find grub.cfg. (Ubuntu).
