@@ -499,12 +499,8 @@ class Main():
                 if os.path.isdir(MountPoint+"/boot/grub"):
                     GRUBDir = MountPoint+"/boot/grub"
 
-                #(Fedora, BIOS)
-                elif os.path.isdir(MountPoint+"/boot/grub2"):
-                    GRUBDir = MountPoint+"/boot/grub2"
-
                 #(Fedora, EFI)
-                if os.path.isfile(GRUBDir+"/grub.cfg") == False and os.path.isdir(MountPoint+"/boot/efi/EFI/fedora"):
+                elif os.path.isdir(MountPoint+"/boot/efi/EFI/fedora"):
                     GRUBDir = MountPoint+"/boot/efi/EFI/fedora"
 
                 #Correct the commands if needed.
@@ -518,8 +514,14 @@ class Main():
                     if "linux16" in Line:
                         NewConfig.append(Line.replace("linux16", "linuxefi"))
 
+                    elif "linux" in Line and "linuxefi" not in Line:
+                        NewConfig.append(Line.replace("linux", "linuxefi"))
+
                     elif "initrd16" in Line:
                         NewConfig.append(Line.replace("initrd16", "initrdefi"))
+
+                    elif "initrd" in Line and "initrdefi" not in Line:
+                        NewConfig.append(Line.replace("initrd", "initrdefi"))
 
                 #Write the fixed config.
                 ConfigFile = open(GRUBDir+"/grub.cfg", "w")
