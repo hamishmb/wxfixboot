@@ -427,8 +427,7 @@ class Main():
 
             #We have the partition, so now find the OS that resides on that partition.
             for OSName in OSInfo:
-                print(OSInfo[OSName]["Partition"], DefaultBootDevice)
-                if OSInfo[OSName]["Partition"] == DefaultBootDevice:
+                if DefaultBootDevice in (OSInfo[OSName]["Partition"], OSInfo[OSName]["BootPartition"], OSInfo[OSName]["EFIPartition"]):
                     #Set it.
                     BootloaderInfo[OS]["DefaultOS"] = OSName
                     logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched. The Default OS is "+OSName+"...")

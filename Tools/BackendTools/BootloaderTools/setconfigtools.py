@@ -30,8 +30,8 @@ class Main():
         #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
         logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Attempting to match the WxFixBoot's default OS for this bootloader to any OS that GRUB2 detected...")
 
-        #Find the partition that WxFixBoot's default OS for this bootloader is on. Also find the /boot partition, as grub may point there in the menu entries.
-        DefaultBootDevices = (OSInfo[BootloaderInfo[OS]["Settings"]["DefaultOS"]]["Partition"], OSInfo[BootloaderInfo[OS]["Settings"]["DefaultOS"]]["BootPartition"])
+        #Find the partition that WxFixBoot's default OS for this bootloader is on. Also find the /boot and /boot/efi partitions, as grub may point there in the menu entries.
+        DefaultBootDevices = (OSInfo[BootloaderInfo[OS]["Settings"]["DefaultOS"]]["Partition"], OSInfo[BootloaderInfo[OS]["Settings"]["DefaultOS"]]["BootPartition"], OSInfo[BootloaderInfo[OS]["Settings"]["DefaultOS"]]["EFIPartition"])
 
         #Find the ID for the menu entry that correspondes to that OS (Main Menu only to avoid recovery options + misc).
         BLSpecificDefaultOS = "Unknown"
