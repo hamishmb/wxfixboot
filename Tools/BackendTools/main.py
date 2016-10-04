@@ -433,6 +433,13 @@ class Main():
 
                 return False
 
+        #If there's a seperate EFI partition for this OS, make sure it's mounted.
+        if OSInfo[OS]["EFIPartition"] != "Unknown":
+            if CoreTools.MountPartition(Partition=OSInfo[OS]["EFIPartition"], MountPoint=MountPoint+"/boot/efi") != 0:
+                logger.error("MainBackendTools: Main().RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["EFIPartition"]+"! Warn the user and skip this OS.") 
+                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
+                return False
+
         #On GRUB2, get the new menuentries so we can set the default OS.
         logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Reading GRUB2's menu entries to set default OS...")
 
