@@ -507,17 +507,20 @@ class Main():
                 NewConfig = []
 
                 for Line in Config:
-                    if "linux16" in Line:
+                    if "linux16" in Line and "/vmlinu" in Line:
                         NewConfig.append(Line.replace("linux16", "linuxefi"))
 
-                    elif "linux" in Line and "linuxefi" not in Line:
+                    elif "linux" in Line and "linuxefi" not in Line and "/vmlinu":
                         NewConfig.append(Line.replace("linux", "linuxefi"))
 
-                    elif "initrd16" in Line:
+                    elif "initrd16" in Line and ("/initrd" in Line or "/initramfs" in Line):
                         NewConfig.append(Line.replace("initrd16", "initrdefi"))
 
                     elif "initrd" in Line and "initrdefi" not in Line:
                         NewConfig.append(Line.replace("initrd", "initrdefi"))
+
+                    else:
+                        NewConfig.append(Line)
 
                 #Write the fixed config.
                 ConfigFile = open(GRUBDir+"/grub.cfg", "w")
