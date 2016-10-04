@@ -1809,7 +1809,7 @@ class BootloaderOptionsWindow(wx.Frame):
                     logger.error("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Error when loading config! Warning user and reloading previous settings...")
 
                     #Let the user know about the error.
-                    MsgDlg = wx.MessageDialog(self.Panel, "Couldn't restore config from "+File+"! Are you sure you selected the right file? WxFixBoot will revert back to the preious settings now.", "Config Restore Failed!", wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                    MsgDlg = wx.MessageDialog(self.Panel, "Couldn't load config from "+File+"! Are you sure you selected the right file? WxFixBoot will revert back to the previous settings now.", "Config Load Failed!", wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
                     MsgDlg.ShowModal()
                     MsgDlg.Destroy()
 
@@ -1820,7 +1820,7 @@ class BootloaderOptionsWindow(wx.Frame):
                     logger.debug("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Successfully loaded config from "+File+"...")
 
                     #Let the user know we were successful.
-                    MsgDlg = wx.MessageDialog(self.Panel, "The bootloader configuration was successfully restored. Please review the changes in this window, and then continue if you are satisfied.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+                    MsgDlg = wx.MessageDialog(self.Panel, "The bootloader configuration was successfully loaded. Please review the changes in this window, and then continue if you are satisfied.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
                     MsgDlg.ShowModal()
                     MsgDlg.Destroy()
 
