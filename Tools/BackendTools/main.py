@@ -486,10 +486,6 @@ class Main():
                 HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
                 HelperBackendTools.ManageUEFIFiles(OS=OS, MountPoint=MountPoint)
 
-                #Unmount the EFI partition.
-                if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
-                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
-
                 #If we're switching to GRUB-UEFI from BIOS it can mess up GRUB2 and change the boot commands to linux and initrd instead of linuxefi and initrdefi, preventing boot.
                 #Fix this. The next time GRUB is updated from within the OS it will fix itself.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Fixing GRUB2-UEFI config (when booted with BIOS, it can go wrong)...")
@@ -527,6 +523,10 @@ class Main():
                 ConfigFile = open(GRUBDir+"/grub.cfg", "w")
                 ConfigFile.write(''.join(NewConfig))
                 ConfigFile.close()
+
+                #Unmount the EFI partition.
+                if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
+                    logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
 
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Done!")
 
