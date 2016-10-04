@@ -490,6 +490,44 @@ class Main():
                 if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
                     logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
 
+                #If we're switching to GRUB-UEFI from BIOS it can mess up GRUB2 and change the boot commands to linux and initrd instead of linuxefi and initrdefi, preventing boot.
+                #Fix this. The next time GRUB is updated from within the OS it will fix itself.
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Fixing GRUB2-UEFI config (when booted with BIOS, it can go wrong)...")
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Finding and opening GRUB config file...")
+
+                #Find grub.cfg. (Ubuntu).
+                if os.path.isdir(MountPoint+"/boot/grub"):
+                    GRUBDir = MountPoint+"/boot/grub"
+
+                #(Fedora, BIOS)
+                elif os.path.isdir(MountPoint+"/boot/grub2"):
+                    GRUBDir = MountPoint+"/boot/grub2"
+
+                #(Fedora, EFI)
+                if os.path.isfile(GRUBDir+"/grub.cfg") == False and os.path.isdir(MountPoint+"/boot/efi/EFI/fedora"):
+                    GRUBDir = MountPoint+"/boot/efi/EFI/fedora"
+
+                #Correct the commands if needed.
+                ConfigFile = open(GRUBDir+"/grub.cfg", "r")
+                Config = ConfigFile.readlines()
+                ConfigFile.close()
+
+                NewConfig = []
+
+                for Line in Config:
+                    if "linux" in Line and "linuxefi" not in Line:
+                        NewConfig.append(Line.replace("linux", "linuxefi"))
+
+                    elif "initrd" in Line and "initrdefi" not in Line:
+                        NewConfig.append(Line.replace("initrd", "initrdefi"))
+
+                #Write the fixed config.
+                ConfigFile = open(GRUBDir+"/grub.cfg", "w")
+                ConfigFile.write(''.join(NewConfig))
+                ConfigFile.close()
+
+                logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Done!")
+
             elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
                 #If we're switching to GRUB2 from UEFI it can mess up GRUB2 and change the boot commands to linuxefi and initrdefi instead of linux and initrd, preventing boot.
                 #Fix this. The next time GRUB is updated from within the OS it will fix itself.
