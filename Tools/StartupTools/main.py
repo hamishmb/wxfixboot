@@ -280,10 +280,10 @@ class Main():
 
         elif os.path.isdir("/sys/firmware/efi/efivars") and CoreTools.StartProcess("ls /sys/firmware/efi/efivars", ReturnOutput=True)[1] != "":
             UEFIVariables = True
-            logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /proc/efi/efi/efivars...")
+            logger.info("MainStartupTools: Main().GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/efivars...")
 
         else:
-            logger.info("MainStartupTools: Main().GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars or /sys/firmware/efi/efivars. This is normal if running on a BIOS system. Determining firmware type a different way...")
+            logger.info("MainStartupTools: Main().GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars, /sys/firmware/efi/efivars, or /proc/efi/vars. This is normal if running on a BIOS system. Determining firmware type a different way...")
             UEFIVariables = False
 
         if UEFIVariables:
@@ -427,6 +427,7 @@ class Main():
 
             #We have the partition, so now find the OS that resides on that partition.
             for OSName in OSInfo:
+                print(OSInfo[OSName]["Partition"], DefaultBootDevice)
                 if OSInfo[OSName]["Partition"] == DefaultBootDevice:
                     #Set it.
                     BootloaderInfo[OS]["DefaultOS"] = OSName
