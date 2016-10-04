@@ -640,7 +640,7 @@ class Main():
                     logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found bootloader timeout...")
 
             #Look for kernel options used globally in all the boot options.
-            elif 'append' in Line and '=' in Line and "#" not in Line:
+            elif 'append' in Line and '=' in Line and "#" not in Line and KernelOptions == "Unknown":
                 #Found them! Save it to GlobalKernelOptions
                 KernelOptions = ' '.join(Line.split("=")[1:]).replace("\"", "").replace("\n", "")
                 logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Found global kernel options...")
