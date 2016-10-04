@@ -164,7 +164,9 @@ class Main():
                     logger.warning("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): User ignored the warning and went ahead with bootloader modifications (if any) anyway, even with possible HDD problems/Bad sectors! This is a REALLY bad idea, but we'll do it anyway, as requested...")
 
     def WriteFSTABEntryForUEFIPartition(self, OS, MountPoint):
-        """Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one."""
+        """Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one. DISABLED***"""
+        return True
+
         logger.info("HelperBackendTools: Main().WriteFSTABEntryForUEFIPartition(): Preparing to write an fstab entry for the UEFI partition ("+OSInfo[OS]["EFIPartition"]+")...")
 
         WriteEntry = True
