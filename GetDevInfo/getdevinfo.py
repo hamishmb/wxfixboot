@@ -385,6 +385,11 @@ class Main():
 
         self.ParseLVMOutput()
 
+        #Check we found some disks.
+        if len(DiskInfo) == 0:
+            logger.info("GetDevInfo: Main().GetInfo(): Didn't find any disks, throwing RuntimeError!")
+            raise RuntimeError("No Disks found!")
+
         logger.info("GetDevInfo: Main().GetInfo(): Finished!")
 
 #End Main Class.
