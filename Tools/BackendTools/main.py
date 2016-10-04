@@ -510,13 +510,13 @@ class Main():
                     if "linux16" in Line and "/vmlinu" in Line:
                         NewConfig.append(Line.replace("linux16", "linuxefi"))
 
-                    elif "linux" in Line and "linuxefi" not in Line and "/vmlinu":
+                    elif "linux" in Line and "linuxefi" not in Line and "/vmlinu" in Line:
                         NewConfig.append(Line.replace("linux", "linuxefi"))
 
                     elif "initrd16" in Line and ("/initrd" in Line or "/initramfs" in Line):
                         NewConfig.append(Line.replace("initrd16", "initrdefi"))
 
-                    elif "initrd" in Line and "initrdefi" not in Line:
+                    elif "initrd" in Line and "initrdefi" not in Line and ("/initrd" in Line or "/initramfs" in Line):
                         NewConfig.append(Line.replace("initrd", "initrdefi"))
 
                     else:
