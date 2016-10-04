@@ -117,7 +117,7 @@ class Main():
         #Use --force to make sure grub installs itself, even on a GPT disk with no bios boot partition.
         #Can flag as a warning on Fedora systems when just updating, but ignore it.
         if PackageManager == "apt-get":
-            Cmd = "grub-install --force --target=i386-pc "+Device
+            Cmd = "grub-install --force "+Device
 
         elif PackageManager == "yum":
             Cmd = "grub2-install --force --target=i386-pc "+Device
