@@ -137,7 +137,8 @@ class Main():
             Cmd = "grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi"
 
         elif PackageManager == "yum":
-            Cmd = "grub2-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi"
+            #Don't install on fedora, it messes stuff up.
+            Cmd = "echo 'Disabled on Fedora'"
 
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd

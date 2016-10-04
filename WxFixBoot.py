@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "3/10/2016"
+ReleaseDate = "4/10/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -2392,7 +2392,7 @@ class ProgressWindow(wx.Frame):
 
         if Answer == wx.ID_YES:
             #Run the exit sequence
-            logger.info("MainWindow().OnExit(): Exiting...")
+            logger.info("ProgressWindow().OnExit(): Exiting...")
 
             #Shutdown the logger.
             logging.shutdown()
