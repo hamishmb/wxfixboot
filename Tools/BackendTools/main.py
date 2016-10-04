@@ -592,6 +592,9 @@ class Main():
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             #Unmount the UEFI Partition now, and update mtab in the chroot.
+            #Pause for 0.5 secs.
+            time.sleep(0.5)
+
             if CoreTools.Unmount(OSInfo[OS]["EFIPartition"]) != 0:
                 logger.error("MainBackendTools: Main().SetNewBootloaderConfig(): Failed to unmount "+OS+"'s EFI partition! Waning user and prompting to try again...")
                 DialogTools.ShowMsgDlg(Message="Couldn't unmount "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.", Kind="error")

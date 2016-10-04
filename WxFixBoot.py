@@ -189,6 +189,7 @@ Tools.BackendTools.essentials.DialogTools = DialogTools
 Tools.BackendTools.main.wx = wx
 Tools.BackendTools.main.logger = logger
 Tools.BackendTools.main.os = os
+Tools.BackendTools.time = time
 Tools.BackendTools.main.CoreTools = CoreTools
 Tools.BackendTools.main.EssentialBackendTools = EssentialBackendTools
 Tools.BackendTools.main.HelperBackendTools = HelperBackendTools
