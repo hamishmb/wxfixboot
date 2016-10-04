@@ -515,11 +515,11 @@ class Main():
                 NewConfig = []
 
                 for Line in Config:
-                    if "linux" in Line and "linuxefi" not in Line:
-                        NewConfig.append(Line.replace("linux", "linuxefi"))
+                    if "linux16" in Line:
+                        NewConfig.append(Line.replace("linux16", "linuxefi"))
 
-                    elif "initrd" in Line and "initrdefi" not in Line:
-                        NewConfig.append(Line.replace("initrd", "initrdefi"))
+                    elif "initrd16" in Line:
+                        NewConfig.append(Line.replace("initrd16", "initrdefi"))
 
                 #Write the fixed config.
                 ConfigFile = open(GRUBDir+"/grub.cfg", "w")
