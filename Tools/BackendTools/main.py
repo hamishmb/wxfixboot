@@ -479,7 +479,7 @@ class Main():
             logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
             BootloaderConfigSettingTools.UpdateGRUB2(OS=OS, PackageManager=OSInfo[OS]["PackageManager"], UseChroot=UseChroot, MountPoint=MountPoint)
 
-            if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI" and OSInfo[OS]["PackageManager"] == "yum":
+            if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
                 #Make an entry in fstab for the UEFI Partition, if needed.
                 HelperBackendTools.WriteFSTABEntryForUEFIPartition(OS=OS, MountPoint=MountPoint)
 
@@ -487,6 +487,7 @@ class Main():
                 HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
                 HelperBackendTools.ManageUEFIFiles(OS=OS, MountPoint=MountPoint)
 
+            if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI" and OSInfo[OS]["PackageManager"] == "yum":
                 #If we're switching to GRUB-UEFI from BIOS it can mess up GRUB2 and change the boot commands to linux and initrd instead of linuxefi and initrdefi, preventing boot.
                 #Fix this. The next time GRUB is updated from within the OS it will fix itself.
                 logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Fixing Fedora's GRUB2-UEFI config (when booted with BIOS, it can go wrong)...")
