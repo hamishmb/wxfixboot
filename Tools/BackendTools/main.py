@@ -227,7 +227,7 @@ class Main():
 
         #Log and notify the user that we're finished removing bootloaders.
         logger.info("MainBackendTools: Main().RemoveOldBootloader(): Finished removing "+BootloaderInfo[OS]["Bootloader"]+"...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished removing "+BootloaderInfo[OS]["Bootloader"]+"...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished removing "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"......")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
         DialogTools.ShowMsgDlg(Kind="info", Message="Finished removing "+BootloaderInfo[OS]["Bootloader"]+"! WxFixBoot will now install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" to "+OS+".")
         return True
@@ -383,14 +383,14 @@ class Main():
 
         #Log and notify the user that we're finished installing the bootloader.
         logger.info("MainBackendTools: Main().InstallNewBootloader(): Finished installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finish installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
         return True
 
     def SetNewBootloaderConfig(self, OS):
         """Manage setting new bootloader config."""
         logger.info("MainBackendTools: Main().SetNewBootloaderConfig(): Setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config for "+OS+"...")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" config...")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" config for "+OS+"...")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 79)
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
 
@@ -664,7 +664,7 @@ class Main():
 
         logger.debug("MainBackendTools: Main().SetNewBootloaderConfig(): Finished setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config for "+OS+"...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config for "+OS+"...###\n")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config!")
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished setting "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s config for "+OS+"!")
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
         return True
 
