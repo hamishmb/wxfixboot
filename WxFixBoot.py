@@ -1514,7 +1514,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.Bind(wx.EVT_CHOICE, self.OnOSChoiceChange, self.OSChoice)
         self.Bind(wx.EVT_CHOICE, self.OnRestoreBootloaderChoice, self.RestoreBootloaderChoice)
         self.Bind(wx.EVT_CHOICE, self.OnBackupBootloaderChoice, self.BackupBootloaderChoice)
-        self.Bind(wx,EVT_CHOICE, self.OnNewBootloaderChoice, self.NewBootloaderChoice)
+        self.Bind(wx.EVT_CHOICE, self.OnNewBootloaderChoice, self.NewBootloaderChoice)
 
     def SystemInfo(self, Event=None):
         """Start SystemInfoWindow"""
