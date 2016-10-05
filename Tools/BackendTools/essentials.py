@@ -143,7 +143,6 @@ class Main():
 
                 elif DiskInfo[Disk]["FileSystem"] == "vfat":
                     ExecCmds = "fsck.vfat -yvt "+Disk
-                    RunBadBlocks = True
 
                 elif DiskInfo[Disk]["FileSystem"] in ('ext2', 'ext3', 'ext4', 'ext4dev'):
                     ExecCmds = "fsck."+DiskInfo[Disk]["FileSystem"]+" -yvcf "+Disk
