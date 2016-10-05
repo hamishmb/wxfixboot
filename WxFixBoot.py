@@ -2038,7 +2038,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def OnNewBootloaderChoice(self, Event=None):
         """Warn user about LILO's/ELILO's rubbish multi OS support if needed"""
-        if len(SystemInfo["ModifyableOSs"]) > 1 and self.NewBootloaderChoice.GetStringSelection() in ("LILO, ELILO"):
+        if len(SystemInfo["ModifyableOSs"]) > 1 and self.NewBootloaderChoice.GetStringSelection() in ("LILO", "ELILO"):
             Dlg = wx.MessageDialog(self.Panel, "Installing "+self.NewBootloaderChoice.GetStringSelection() +" is discouraged because you have more than one Linux OS installed, and this bootloader has poor support for booting multiple Linux OSs. Click okay to continue.", "WxFixBoot - Warning", wx.OK | wx.ICON_WARNING)
             Dlg.ShowModal()
             Dlg.Destroy()
