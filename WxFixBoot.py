@@ -1201,9 +1201,9 @@ class SystemInfoWindow(wx.Frame):
 class PrivPolWindow(wx.Frame):
     def __init__(self, ParentWindow):
         """Initialize PrivPolWindow"""
-        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Privacy Policy", size=(400,310), style=wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Privacy Policy", size=(750,400), style=wx.DEFAULT_FRAME_STYLE)
         self.Panel = wx.Panel(self)
-        self.SetClientSize(wx.Size(550,400))
+        self.SetClientSize(wx.Size(750,400))
         self.ParentWindow = ParentWindow
         wx.Frame.SetIcon(self, AppIcon)
 
@@ -1248,7 +1248,7 @@ class PrivPolWindow(wx.Frame):
 
         #Get the sizer set up for the frame.
         self.Panel.SetSizer(MainSizer)
-        MainSizer.SetMinSize(wx.Size(550,400))
+        MainSizer.SetMinSize(wx.Size(750,400))
         MainSizer.SetSizeHints(self)
 
     def BindEvents(self):
