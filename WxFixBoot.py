@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0~rc1"
-ReleaseDate = "4/10/2016"
+ReleaseDate = "5/10/2016"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -2570,7 +2570,7 @@ class BackendThread(threading.Thread):
         ReportList.write("Currently running OS is on Live Disk: "+unicode(SystemInfo["IsLiveDisk"])+"\n")
 
         if SystemInfo["IsLiveDisk"]:
-            ReportList.write("Currently running OS is Parted Magic: "+unicode(SystemInfo["IsPartedMagic"])+"\n")
+            ReportList.write("Currently running OS is Parted Magic: "+unicode(SystemInfo["OnPartedMagic"])+"\n")
 
         ReportList.write("Per OS Info:\n")
 
