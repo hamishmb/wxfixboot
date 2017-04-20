@@ -744,7 +744,7 @@ class MainWindow(wx.Frame):
         aboutbox.Name = "WxFixBoot"
         aboutbox.SetIcon(AppIcon)
         aboutbox.Version = Version
-        aboutbox.Copyright = "(C) 2013-2016 Hamish McIntyre-Bhatty"
+        aboutbox.Copyright = "(C) 2013-2017 Hamish McIntyre-Bhatty"
         aboutbox.Description = "Utility to fix the bootloader on a\ncomputer quickly"
         aboutbox.WebSite = ("https://launchpad.net/wxfixboot", "Launchpad page")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty"]
