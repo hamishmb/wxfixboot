@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # WxFixBoot Version 2.0
-# Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -40,8 +40,8 @@ from wx.animate import Animation
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "2.0"
-ReleaseDate = "5/10/2016"
+Version = "2.0.1"
+ReleaseDate = "20/4/2017"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -52,7 +52,7 @@ def usage():
     print("       -d, --debug:                  Log lots of boring debug messages, as well as information, warnings, errors and critical errors. Usually used for diagnostic purposes.")
     print("                                     The default, as it's very helpful if problems are encountered, and the user needs help\n")
     print("WxFixBoot "+Version+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2016")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2017")
 
 #If this isn't running as root, relaunch.
 if not os.geteuid() == 0:
@@ -2359,19 +2359,20 @@ class ProgressWindow(wx.Frame):
         logger.debug("ProgressWindow().RestartWxFixBoot(): Restarting WxFixBoot...")
         logger.debug("ProgressWindow().RestartWxFixBoot(): Checking no filesystems are mounted in the temporary directory, and unmounting them if they are...")
 
-        for Dir in os.listdir("/tmp/wxfixboot/mountpoints/dev"):
-            #Call CoreTools.Unmount() on each directory to make sure that nothing is mounted there after this point.
-            if CoreTools.Unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
-                #If we errored try removing chroot and trying again.
-                logger.warning("ProgressWindow().RestartWxFixBoot(): Failed to unmount /tmp/wxfixboot/mountpoints/dev/"+Dir+"! Trying to remove chroot first then trying again...")
-                CoreTools.TearDownChoot("/tmp/wxfixboot/mountpoints/dev/"+Dir)
-
+        if os.path.exists("/tmp/wxfixboot/mountpoints/dev"):
+            for Dir in os.listdir("/tmp/wxfixboot/mountpoints/dev"):
+                #Call CoreTools.Unmount() on each directory to make sure that nothing is mounted there after this point.
                 if CoreTools.Unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
-                    logger.error("ProgressWindow().RestartWxFixBoot(): Couldn't unmount /tmp/wxfixboot/mountpoints/dev/"+Dir+"! Giving up, warning user, and aborting restart...")
-                    Dlg = wx.MessageDialog(self.Panel, "Couldn't restart WxFixBoot because there are mounted filesystems in the temporary directory! Please try restarting your system and then try again.", "WxFixBoot - Error!", wx.OK | wx,ICON_ERROR)
-                    Dlg.ShowModal()
-                    Dlg.Destroy()
-                    return False
+                    #If we errored try removing chroot and trying again.
+                    logger.warning("ProgressWindow().RestartWxFixBoot(): Failed to unmount /tmp/wxfixboot/mountpoints/dev/"+Dir+"! Trying to remove chroot first then trying again...")
+                    CoreTools.TearDownChoot("/tmp/wxfixboot/mountpoints/dev/"+Dir)
+
+                    if CoreTools.Unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
+                        logger.error("ProgressWindow().RestartWxFixBoot(): Couldn't unmount /tmp/wxfixboot/mountpoints/dev/"+Dir+"! Giving up, warning user, and aborting restart...")
+                        Dlg = wx.MessageDialog(self.Panel, "Couldn't restart WxFixBoot because there are mounted filesystems in the temporary directory! Please try restarting your system and then try again.", "WxFixBoot - Error!", wx.OK | wx,ICON_ERROR)
+                        Dlg.ShowModal()
+                        Dlg.Destroy()
+                        return False
 
         self.Hide()
 
