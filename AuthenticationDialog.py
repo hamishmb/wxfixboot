@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# Authentication Dialog for WxFixboot Version 2.0
+# Authentication Dialog for WxFixboot Version 2.0.1
 # This file is part of WxFixboot.
-# Copyright (C) 2013-2016 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # WxFixboot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
