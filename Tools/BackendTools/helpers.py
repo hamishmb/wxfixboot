@@ -151,7 +151,7 @@ class Main():
             if BootloaderOperations:
                 logger.error("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): Asking the user whether to skip bootloader operations...")
 
-                Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(Retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, your system could become unstable or unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?", Buttons=("Disable Bootloader Operations", "Ignore and Continue Anyway"))
+                Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(Retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, your system could become unstable or unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?", Buttons=("Disable Bootloader Operations", "Ignore and Continue Anyway")) #*** Only ask if there are bootloader operations scheduled ***
 
                 if Result:
                     #A good choice. WxFixBoot will now disable any bootloader operations.

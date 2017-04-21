@@ -204,6 +204,20 @@ class Main():
 
         return Output.split("=")[-1].replace("\"", "").replace("\n", "")
 
+    def GetLVVolume(self, Temp):
+        """Obtain and verify the name of an LVM volume. Return it once found."""
+        if os.path.exists(Temp):
+            return Temp
+
+        elif os.path.exists("/dev/mapper/"+'-'.join(Temp.split("/")[2:])):
+            return "/dev/mapper/"+'-'.join(Temp.split("/")[2:])
+
+        elif os.path.exists("/dev/mapper/"+'--'.join(Temp.split("/")[2:])):
+            return "/dev/mapper/"+'--'.join(Temp.split("/")[2:])
+
+        else:
+            return "Unknown" #*** Handle this ***
+
     def GetDeviceInfo(self, Node):
         """Get Device Information"""
         HostDisk = unicode(Node.logicalname.string)
@@ -295,7 +309,7 @@ class Main():
         for Line in RawLVMInfo:
             if "LV Path" in Line:
                 Temp = Line.split()[-1]
-                Volume = "/dev/mapper/"+'-'.join(Temp.split("/")[2:])
+                Volume = self.GetLVVolume(Temp)
                 DiskInfo[Volume] = {}
                 DiskInfo[Volume]["Name"] = Volume
                 DiskInfo[Volume]["LVName"] = Volume.split("/")[-1]
