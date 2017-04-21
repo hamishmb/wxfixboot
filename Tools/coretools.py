@@ -73,9 +73,9 @@ class Main():
             Line += Char
 
             if Char in ("\n", "\r"):
-                #Convert to unicode if needed and remove "NULL" characters.
-                if unicode(type(Line)) != type(""):
-                    Line = unicode(Line, errors="replace").replace("\x00", "")
+                #Interpret as Unicode and remove "NULL" characters.
+                Line = Line.decode("UTF-8", errors="replace").replace("\x00", "")
+                #Line = unicode(Line, errors="replace").replace("\x00", "")
 
                 LineList.append(Line.replace("\n", "").replace("\r", ""))
 
@@ -115,9 +115,12 @@ class Main():
                 Hold = False
 
             if Char in ("\n", "\x08") or SendLine:
+                #Interpret as Unicode and remove "NULL" characters.
+                Line = Line.decode("UTF-8", errors="replace").replace("\x00", "")
+
                 #Convert to unicode if needed and remove "NULL" characters.
-                if unicode(type(Line)) != type(""):
-                    Line = unicode(Line, errors="replace").replace("\x00", "")
+                #if unicode(type(Line)) != type(""):
+                #    Line = unicode(Line, errors="replace").replace("\x00", "")
 
                 wx.CallAfter(ParentWindow.UpdateOutputBox, Line, ShowOutput)
                 LineList.append(Line.replace("\n", "").replace("\r", "").replace("\x08", ""))
