@@ -205,12 +205,14 @@ class Main():
         return Output.split("=")[-1].replace("\"", "").replace("\n", "")
 
     def GetLVVolume(self, Temp):
-        """Obtain and verify the name of an LVM volume. Return it once found."""
-        if os.path.exists(Temp):
-            return Temp
-
-        elif os.path.exists("/dev/mapper/"+'-'.join(Temp.split("/")[2:])):
+        """Obtain and verify the name of an LVM volume. Return it once found.""" #*** Store aliases as well to avoid mistaking the current OS for a different one ***
+        #Try this way first for better compatibility with most systems.
+        if os.path.exists("/dev/mapper/"+'-'.join(Temp.split("/")[2:])):
             return "/dev/mapper/"+'-'.join(Temp.split("/")[2:])
+
+        #Alternative ways of obtaining the info.
+        elif os.path.exists(Temp):
+            return Temp
 
         elif os.path.exists("/dev/mapper/"+'--'.join(Temp.split("/")[2:])):
             return "/dev/mapper/"+'--'.join(Temp.split("/")[2:])
