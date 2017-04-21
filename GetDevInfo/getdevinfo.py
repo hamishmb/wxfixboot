@@ -410,6 +410,7 @@ class Main():
 if __name__ == "__main__":
     #Import modules.
     import subprocess
+    import os
     import logging
     from bs4 import BeautifulSoup
 

@@ -137,6 +137,7 @@ BootloaderConfigSettingTools = BootloaderConfigSettingToolsCallable()
 #Setup custom-made modules (make global variables accessible inside the packages).
 #GetDevInfo Package.
 GetDevInfo.getdevinfo.subprocess = subprocess
+GetDevInfo.getdevinfo.os = os
 GetDevInfo.getdevinfo.logger = logger
 GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
