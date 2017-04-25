@@ -192,7 +192,15 @@ class Main():
                 #The python command runs on python 2 and python 3.
                 logger.debug("MainStartupTools: Main().GetOSs(): Looking for Linux on "+Partition+"...")
 
-                if Partition == RootFS:
+                #If there are aliases for Partition, check if the root FS is one of those too.
+                if "Aliases" in DiskInfo[Partition]:
+                    if RootFS in DiskInfo[Partition]["Aliases"]:
+                        RootFSIsAlias = True
+
+                    else:
+                        RootFSIsAlias = False
+
+                if Partition == RootFS or RootFSIsAlias:
                     Cmd =  "python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
                     APTCmd = "which apt-get"
                     YUMCmd = "which yum"
