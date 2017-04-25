@@ -230,7 +230,7 @@ class Main():
             VGName = VGName.replace("-", "--")
 
             #Check whether this works.
-            if os.path.exists("/dev/mapper/"+VGName+"-"+LVName)
+            if os.path.exists("/dev/mapper/"+VGName+"-"+LVName):
                 AliasList.append("/dev/mapper/"+VGName+"-"+LVName)
 
         if len(AliasList) >= 1:
