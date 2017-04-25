@@ -225,7 +225,7 @@ class Main():
             AliasList.append("/dev/mapper/"+'--'.join(Temp.split("/")[2:]))
 
         if len(AliasList) >= 1:
-            DefaultName = AliasList[1]
+            DefaultName = AliasList[0]
 
         return DefaultName, AliasList
 
