@@ -204,21 +204,30 @@ class Main():
 
         return Output.split("=")[-1].replace("\"", "").replace("\n", "")
 
-    def GetLVVolume(self, Temp):
-        """Obtain and verify the name of an LVM volume. Return it once found.""" #*** Store aliases as well to avoid mistaking the current OS for a different one ***
+    def GetLVAliases(self, Line):
+        """Obtain and verify the name of an LVM volume. Return it once found."""
+        AliasList = []
+        DefaultName = "Unknown"
+
+        #Get relevant part of the output line.
+        Temp = Line.split()[-1]
+
         #Try this way first for better compatibility with most systems.
         if os.path.exists("/dev/mapper/"+'-'.join(Temp.split("/")[2:])):
-            return "/dev/mapper/"+'-'.join(Temp.split("/")[2:])
+            AliasList.append("/dev/mapper/"+'-'.join(Temp.split("/")[2:]))
 
         #Alternative ways of obtaining the info.
-        elif os.path.exists(Temp):
-            return Temp
+        if os.path.exists(Temp):
+            AliasList.append(Temp)
 
-        elif os.path.exists("/dev/mapper/"+'--'.join(Temp.split("/")[2:])):
-            return "/dev/mapper/"+'--'.join(Temp.split("/")[2:])
+        #Weird one for Ubuntu.
+        if os.path.exists("/dev/mapper/"+'--'.join(Temp.split("/")[2:])):
+            AliasList.append("/dev/mapper/"+'--'.join(Temp.split("/")[2:]))
 
-        else:
-            return "Unknown" #*** Handle this ***
+        if len(AliasList) >= 1:
+            DefaultName = AliasList[0]
+
+        return DefaultName, AliasList
 
     def GetDeviceInfo(self, Node):
         """Get Device Information"""
@@ -310,10 +319,12 @@ class Main():
         #Start assembling the entry.
         for Line in RawLVMInfo:
             if "LV Path" in Line:
-                Temp = Line.split()[-1]
-                Volume = self.GetLVVolume(Temp)
+                #Get the volume name and a list of aliases it has.
+                Volume, AliasList = self.GetLVAliases(Line)
+
                 DiskInfo[Volume] = {}
                 DiskInfo[Volume]["Name"] = Volume
+                DiskInfo[Volume]["Aliases"] = AliasList
                 DiskInfo[Volume]["LVName"] = Volume.split("/")[-1]
                 DiskInfo[Volume]["VGName"] = Volume.split("/")[2]
                 DiskInfo[Volume]["Type"] = "Partition"
@@ -337,6 +348,10 @@ class Main():
             elif "Physical volume" in Line:
                 DiskInfo[Volume]["HostPartition"] = Line.split()[-1]
                 DiskInfo[Volume]["HostDevice"] = DiskInfo[DiskInfo[Volume]["HostPartition"]]["HostDevice"]
+
+        #If there are any entries called "Unknown" (disks that we couldn't get the name for), remove them now to prevent issues.
+        if "Unknown" in DiskInfo:
+            DiskInfo.pop("Unknown")
 
     def GetInfo(self, Standalone=False):
         """Get Disk Information."""
