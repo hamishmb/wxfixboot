@@ -1289,6 +1289,12 @@ class BootloaderOptionsWindow(wx.Frame):
 
         wx.CallLater(500, self.OnOSChoiceChange, Startup=True)
 
+        #Let user know they can specify a timeout of 0 seconds to hide the boot menu, if they have only 1 (detected) OS.
+        if len(OSInfo) == 1:
+            Dlg = wx.MessageDialog(self.Panel, "WxFixBoot only detected one Operating System on your computer, excluding any Windows or Mac installations. You can hide your boot menu entirely, if you wish, by selecting a bootloader timeout of 0 seconds.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION)
+            Dlg.ShowModal()
+            Dlg.Destroy()
+
         logger.debug("BootloaderOptionsWindow().__init__(): Bootloader Options Window Started.")
 
     def CreateText(self):
@@ -1343,7 +1349,7 @@ class BootloaderOptionsWindow(wx.Frame):
         """Create all other widgets"""
         #Bootloader timeout spinner.
         self.BootloaderTimeoutSpinner = wx.SpinCtrl(self.Panel, -1, "")
-        self.BootloaderTimeoutSpinner.SetRange(1,100)
+        self.BootloaderTimeoutSpinner.SetRange(0,100)
 
         #Arrows.
         img1 = wx.Image("/usr/share/wxfixboot/images/ArrowDown.png", wx.BITMAP_TYPE_PNG)

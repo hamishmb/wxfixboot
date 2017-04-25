@@ -193,11 +193,17 @@ class Main():
                 logger.debug("MainStartupTools: Main().GetOSs(): Looking for Linux on "+Partition+"...")
 
                 #If there are aliases for Partition, check if the root FS is one of those too.
+                RootFSIsAlias = False
+
                 if "Aliases" in DiskInfo[Partition]:
+                    logger.debug("MainStartupTools: Main().GetOSs(): Checking if RootFS is an alias for "+Partition+"...")
+
                     if RootFS in DiskInfo[Partition]["Aliases"]:
+                        logger.debug("MainStartupTools: Main().GetOSs(): RootFS is an alias...")
                         RootFSIsAlias = True
 
                     else:
+                        logger.debug("MainStartupTools: Main().GetOSs(): RootFS isn't an alias...")
                         RootFSIsAlias = False
 
                 if Partition == RootFS or RootFSIsAlias:
