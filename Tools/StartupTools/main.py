@@ -235,9 +235,13 @@ class Main():
                 #Run the function to get the architechure.
                 OSArch = CoreStartupTools.DetermineOSArchitecture(MountPoint=MountPoint)
 
-                #If the OS's name wasn't found, but its architecture was, there must be an OS here, so ask the user for its name.
-                if Retval != 0 and OSArch != None:
-                    OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch, IsCurrentOS=IsCurrentOS)
+                #If the OS's name wasn't found, but its architecture was, there must be an OS here, so try to use lsb_release if possible before asking the user. Catch if the name is just whitespace too.
+                if Retval != 0 and OSArch != None and OSName != "" and (not OSName.isspace()):
+                    OSName = CoreStartupTools.GetOSNameWithLSB(Partition=Partition, IsCurrentOS=IsCurrentOS)
+
+                    #If we really have to, ask the user.
+                    if OSName == None:
+                        OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch, IsCurrentOS=IsCurrentOS)
 
                 #Look for APT.
                 PackageManager = CoreStartupTools.DeterminePackageManager(APTCmd=APTCmd, YUMCmd=YUMCmd) 

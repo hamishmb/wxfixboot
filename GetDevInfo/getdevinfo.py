@@ -220,9 +220,18 @@ class Main():
         if os.path.exists(Temp):
             AliasList.append(Temp)
 
-        #Weird one for Ubuntu.
-        if os.path.exists("/dev/mapper/"+'--'.join(Temp.split("/")[2:])):
-            AliasList.append("/dev/mapper/"+'--'.join(Temp.split("/")[2:]))
+        #Weird one for Ubuntu with extra - in it.
+        if "-" in Temp:
+            #Get volume group name and logical volume name.
+            VGName = Temp.split("/")[2]
+            LVName = Temp.split("/")[3]
+
+            #Insert another "-" in the middle (if possible).
+            VGName = VGName.replace("-", "--")
+
+            #Check whether this works.
+            if os.path.exists("/dev/mapper/"+VGName+"-"+LVName)
+                AliasList.append("/dev/mapper/"+VGName+"-"+LVName)
 
         if len(AliasList) >= 1:
             DefaultName = AliasList[0]
