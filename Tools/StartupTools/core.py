@@ -240,6 +240,28 @@ class Main():
 
             return OSArch
 
+    def GetOSNameWithLSB(self, Partition, MountPoint, IsCurrentOS):
+        """Attempt to get an OS's name using lsb_release -sd as a fallback."""
+        logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): Attempting to get OS name for OS on "+Partition+"...")
+
+        if IsCurrentOS:
+            logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): OS is the currently running OS...")
+            Cmd = "lsb_release -sd"
+
+        else:
+            logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): OS isn't the currently running OS...")
+            Cmd = "chroot "+MountPoint+" lsb_release -sd"
+
+        Retval, Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)
+
+        if Retval != 0 or Output == "":
+            logger.error("CoreStartupTools: Main().GetOSNameWithLSB(): Couldn't get OS name! Returning 'Unknown'...")
+            return "Unknown"
+
+        else:
+            logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): Success. OS name is "+Output+". Returning it...")
+            return Output
+
     def AskForOSName(self, Partition, OSArch, IsCurrentOS):
         """Ask the user if an OS exists on the given partition."""
         logger.info("CoreStartupTools: Main().AskForOSName(): Asking the user for the name of the OS in "+Partition+"...")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# WxFixBoot Version 2.0.`
+# WxFixBoot Version 2.0.1
 # Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0.1"
-ReleaseDate = "25/4/2017"
+ReleaseDate = "26/4/2017"
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
