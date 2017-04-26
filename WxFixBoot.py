@@ -42,6 +42,7 @@ from bs4 import BeautifulSoup
 #Define the version number and the release date as global variables.
 Version = "2.0.1"
 ReleaseDate = "26/4/2017"
+SessionEnding = False
 
 def usage():
     print("\nUsage: WxFixBoot.py [OPTION]\n")
@@ -2150,6 +2151,8 @@ class ProgressWindow(wx.Frame):
         logger.debug("ProgressWindow().__init__(): Progress Window Started.")
         logger.debug("ProgressWindow().__init__(): Starting Backend Thread...")
 
+        self.RunningOperations = True
+
         BackendThread(self)
 
     def CreateText(self):
@@ -2228,6 +2231,7 @@ class ProgressWindow(wx.Frame):
         """Bind events for Progress Window"""
         self.Bind(wx.EVT_TOGGLEBUTTON, self.ShowOutput, self.ShowOutputButton)
         self.Bind(wx.EVT_BUTTON, self.RestartWxFixBoot, self.RestartButton)
+        self.Bind(wx.EVT_QUERY_END_SESSION, self.SessionEnding)
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.ExitButton)
         self.Bind(wx.EVT_CLOSE, self.OnExit)
 
@@ -2362,6 +2366,7 @@ class ProgressWindow(wx.Frame):
 
     def BackendThreadFinished(self):
         """Called when the BackendThread is finished, enables self.RestartButton and self.ExitButton"""
+        self.RunningOperations = False
         self.RestartButton.Enable()
         self.ExitButton.Enable()
 
@@ -2398,8 +2403,35 @@ class ProgressWindow(wx.Frame):
 
         InitialWindow().Show()
 
+    def SessionEnding(self, Event):
+        """Attempt to veto e.g. a shutdown/logout event if recovering data."""
+        #Check if we can veto the shutdown.
+        logger.warning("ProgressWindow().SessionEnding(): Attempting to veto system shutdown / logoff...")
+
+        if Event.CanVeto() and self.RunningOperations:
+            #Veto the shutdown and warn the user.
+            Event.Veto(True)
+            logger.info("ProgressWindow().SessionEnding(): Vetoed system shutdown / logoff...")
+            dlg = wx.MessageDialog(self.Panel, "You can't shutdown or logoff while recovering data!", "WxFixBoot - Error!", wx.OK | wx.ICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+
+        else:
+            #Set SessionEnding to True, call OnExit.
+            logger.critical("ProgressWindow().SessionEnding(): Cannot veto system shutdown / logoff! Cleaning up...")
+            global SessionEnding
+            SessionEnding = True
+            self.OnExit()
+
     def OnExit(self, Event=None):
         """Exits the programs, and sorts out log file saving/deleting stuff"""
+        #Check if the session is ending.
+        if SessionEnding:
+            #Delete the log file and exit ASAP.
+            logging.shutdown()
+            os.remove("/tmp/wxfixboot.log")
+            self.Destroy()
+
         dlg = wx.MessageDialog(self.Panel, 'Are you sure you want to exit?', 'WxFixBoot - Question!', wx.YES_NO | wx.ICON_QUESTION)
         Answer = dlg.ShowModal()
         dlg.Destroy()
