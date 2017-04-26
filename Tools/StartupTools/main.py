@@ -236,7 +236,7 @@ class Main():
                 OSArch = CoreStartupTools.DetermineOSArchitecture(MountPoint=MountPoint)
 
                 #If the OS's name wasn't found, but its architecture was, there must be an OS here, so try to use lsb_release if possible before asking the user. Catch if the name is just whitespace too.
-                if Retval != 0 and OSArch != None and OSName != "" and (not OSName.isspace()):
+                if (Retval != 0 or OSName == "" or OSName.isspace()) and OSArch != None:
                     OSName = CoreStartupTools.GetOSNameWithLSB(Partition=Partition, MountPoint=MountPoint, IsCurrentOS=IsCurrentOS)
 
                     #If we really have to, ask the user.
