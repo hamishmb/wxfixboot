@@ -23,6 +23,21 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
+    def WaitUntilPackageManagerNotInUse(self, MountPoint, PackageManager):
+        """Check if the package manager is in use, and if so, wait until it is no longer in use."""
+        if PackageManager == "apt-get":
+            Cmd = "apt-get check"
+
+        elif PackageManager == "yum":
+            Cmd = "yum -C history"
+
+        RetVal = 1
+
+        #Trap in while loop until package manager is free.
+        while RetVal != 0:
+            RetVal = CoreTools.StartProcess(Cmd, ShowOutput=False)
+            time.sleep(5)
+
     def FindMissingFSCKModules(self):
         """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc)."""
         logger.info("HelperBackendTools: Main().FindMissingFSCKModules(): Looking for missing FSCK modules to ignore...")

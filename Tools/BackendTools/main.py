@@ -151,6 +151,19 @@ class Main():
                 DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to mount the partition containing "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
                 return False
 
+        #Wait until no other application is using APT/YUM.
+        #Let user know what's happening.
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27)
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Waiting until "+OS+"'s package manager is free.\nClose any open applications if this message persists...")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Waiting until "+OS+"'s package manager is free...###\n")
+
+        logger.debug("MainBackendTools: Main().RemoveOldBootloader(): Waiting until "+OS+"'s package manager is free...")
+        HelperBackendTools.WaitUntilPackageManagerNotInUse(MountPoint=MountPoint, PackageManager=OSInfo[OS]["PackageManager"])
+
+        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27)
+        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Removing "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"...")
+        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"...###\n")
+
         #Remove the bootloader.
         if BootloaderInfo[OS]["Bootloader"] == "GRUB2":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing GRUB2...")

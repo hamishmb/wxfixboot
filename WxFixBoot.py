@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0.1"
-ReleaseDate = "26/4/2017"
+ReleaseDate = "8/5/2017"
 SessionEnding = False
 
 def usage():
@@ -176,6 +176,7 @@ Tools.StartupTools.getbootloaderconfigtools.os = os
 #BackendTools Package (Helpers)
 Tools.BackendTools.helpers.logger = logger
 Tools.BackendTools.helpers.os = os
+Tools.BackendTools.helpers.time = time
 Tools.BackendTools.helpers.CoreTools = CoreTools
 Tools.BackendTools.helpers.DialogTools = DialogTools
 Tools.BackendTools.helpers.MainBackendTools = MainBackendTools
