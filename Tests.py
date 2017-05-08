@@ -42,11 +42,13 @@ import GetDevInfo
 import Tools
 
 from GetDevInfo.getdevinfo import Main as DevInfoTools
+from Tools.coretools import Main as CoreTools
 
 #Import test modules.
 import Tests
 
 from Tests import GetDevInfoTests
+from Tests import CoreToolsTests
 
 def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
@@ -54,7 +56,7 @@ def usage():
     print("       -h, --help:                   Display this help text.")
     print("       -d, --debug:                  Set logging level to debug, to show all logging messages. Default: show only critical logging messages.")
     print("       -g, --getdevinfo:             Run tests for GetDevInfo module.")
-    #print("       -b, --backendtools:           Run tests for BackendTools module.")
+    print("       -c, --coretools:           Run tests for CoreTools module.")
     print("       -m, --main:                   Run tests for main file (WxFixBoot.py).")
     print("       -a, --all:                    Run all the tests. The default.\n")
     print("       -t, --tests:                  Ignored.")
@@ -77,7 +79,7 @@ except getopt.GetoptError as err:
     sys.exit(2)
 
 #Set up which tests to run based on options given.
-TestSuites = [GetDevInfoTests] #*** Set up full defaults when finished ***
+TestSuites = [GetDevInfoTests, CoreToolsTests] #*** Set up full defaults when finished ***
 
 #Log only critical message by default.
 loggerLevel = logging.CRITICAL
@@ -85,14 +87,14 @@ loggerLevel = logging.CRITICAL
 for o, a in opts:
     if o in ["-g", "--getdevinfo"]:
         TestSuites = [GetDevInfoTests]
-    elif o in ["-b", "--backendtools"]:
+    elif o in ["-c", "--coretools"]:
         assert False, "Not implemented yet"
-        #TestSuites = [BackendToolsTests]
+        TestSuites = [CoreToolsTests]
     elif o in ["-m", "--main"]:
         #TestSuites = [MainTests]
         assert False, "Not implemented yet"
     elif o in ["-a", "--all"]:
-        TestSuites = [GetDevInfoTests]
+        TestSuites = [GetDevInfoTests, CoreToolsTests]
         #TestSuites.append(MainTests)
     elif o in ["-t", "--tests"]:
         pass
@@ -116,9 +118,19 @@ GetDevInfo.getdevinfo.logger = logger
 GetDevInfo.getdevinfo.plistlib = plistlib
 GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
+Tools.coretools.wx = wx
+Tools.coretools.subprocess = subprocess
+Tools.coretools.sys = sys
+Tools.coretools.logger = logger
+Tools.coretools.logging = logging
+Tools.coretools.os = os
+#Tools.coretools.DialogTools = DialogTools
+
 #Setup test modules.
 GetDevInfoTests.DevInfoTools = DevInfoTools
 GetDevInfoTests.GetDevInfo = GetDevInfo
+
+CoreToolsTests.CoreTools = CoreTools
 
 if __name__ == "__main__":
     for SuiteModule in TestSuites:
