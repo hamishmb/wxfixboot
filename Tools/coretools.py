@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
-    def StartProcess(self, ExecCmds, StdinLines=[], ShowOutput=True, ReturnOutput=False):
+    def StartProcess(self, ExecCmds, StdinLines=[], ShowOutput=True, ReturnOutput=False, Testing=False):
         """Start a process given a string of commands to execute.
         ShowOutput is boolean and specifies whether to show output in the outputbox (if exists) or not.
         ReturnOutput is boolean and specifies whether to return the output back to the caller or not.
@@ -37,7 +37,7 @@ class Main():
 
         #Use a simpler output reader on startup to improve performance.
         if Startup:
-            LineList = self.Read(cmd)
+            LineList = self.Read(cmd, Testing=Testing)
 
         else:
             LineList = self.ReadAndSendOutput(cmd, ShowOutput)
@@ -52,11 +52,15 @@ class Main():
             #Return the return code back to whichever function ran this process, so it can handle any errors.
             return Retval
 
+        elif Testing:
+            #Return the return code, as well as the output.
+            return (Retval, ''.join(LineList))
+
         else:
             #Return the return code, as well as the output.
             return (Retval, '\n'.join(LineList))
 
-    def Read(self, cmd):
+    def Read(self, cmd, Testing=False):
         """Read the cmd's output char by char, but do as little processing as possible to improve startup performance"""
         #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
         Counter = 0
@@ -76,7 +80,11 @@ class Main():
                 #Interpret as Unicode and remove "NULL" characters.
                 Line = Line.decode("UTF-8", errors="replace").replace("\x00", "")
 
-                LineList.append(Line.replace("\n", "").replace("\r", ""))
+                if Testing:
+                    LineList.append(Line)
+
+                else:
+                    LineList.append(Line.replace("\n", "").replace("\r", ""))
 
                 #Reset Line.
                 Line = str("")

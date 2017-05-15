@@ -69,7 +69,7 @@ if os.geteuid() != 0:
 
 #Check all cmdline options are valid.
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hdgbmat", ["help", "debug", "getdevinfo", "backendtools", "main", "all", "tests"])
+    opts, args = getopt.getopt(sys.argv[1:], "hdgcmat", ["help", "debug", "getdevinfo", "coretools", "main", "all", "tests"])
 
 except getopt.GetoptError as err:
     #Invalid option. Show the help message and then exit.
@@ -88,7 +88,6 @@ for o, a in opts:
     if o in ["-g", "--getdevinfo"]:
         TestSuites = [GetDevInfoTests]
     elif o in ["-c", "--coretools"]:
-        assert False, "Not implemented yet"
         TestSuites = [CoreToolsTests]
     elif o in ["-m", "--main"]:
         #TestSuites = [MainTests]
@@ -127,10 +126,13 @@ Tools.coretools.os = os
 #Tools.coretools.DialogTools = DialogTools
 
 #Setup test modules.
+#GetDevInfo tests.
 GetDevInfoTests.DevInfoTools = DevInfoTools
 GetDevInfoTests.GetDevInfo = GetDevInfo
 
+#Core tools tests.
 CoreToolsTests.CoreTools = CoreTools
+CoreToolsTests.Tools = Tools
 
 if __name__ == "__main__":
     for SuiteModule in TestSuites:

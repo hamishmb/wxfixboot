@@ -44,13 +44,15 @@ PotentialPartitionPath = ""
 class TestStartProcess(unittest.TestCase):
     def setUp(self):
         self.Commands = Data.ReturnFakeCommands()
+        Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
 
     def tearDown(self):
         del self.Commands
+        del Tools.coretools.Startup
 
     def testStartProcess(self):
         for Command in self.Commands.keys():
-            Retval, Output = CoreTools().StartProcess(Command, ReturnOutput=True)
+            Retval, Output = CoreTools().StartProcess(Command, ReturnOutput=True, Testing=True)
             self.assertEqual(Retval, self.Commands[Command]["Retval"])
             self.assertEqual(Output, self.Commands[Command]["Output"])
 
@@ -68,6 +70,8 @@ class TestIsMounted(unittest.TestCase):
         global PotentialPartitionPath
         PotentialPartitionPath = self.Path
 
+        Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
+
     def tearDown(self):
         #Check if anything is mounted at our temporary mount point.
         if Functions.IsMounted(self.Path):
@@ -83,6 +87,7 @@ class TestIsMounted(unittest.TestCase):
         self.app.Destroy()
         del self.app
         del self.Path
+        del Tools.coretools.Startup
 
     def testIsMounted1(self):
         #If not mounted, mount it
@@ -112,10 +117,13 @@ class TestGetMountPointOf(unittest.TestCase):
         global PotentialPartitionPath
         PotentialPartitionPath = self.Path
 
+        Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
+
     def tearDown(self):
         self.app.Destroy()
         del self.app
         del self.Path
+        del Tools.coretools.Startup
 
     def testGetMountPointOf1(self):
         #Mount disk if not mounted.
@@ -145,20 +153,25 @@ class TestMountPartition(unittest.TestCase):
 
         if self.MountPoint == None:
             self.MountPoint = "/tmp/wxfixbootmtpt"
-            os.mkdir(self.MountPoint)
+
+            if not os.path.isdir(self.MountPoint):
+                os.mkdir(self.MountPoint)
 
         #Save it for autocomplete with other dialogs.
         global PotentialPartitionPath
         PotentialPartitionPath = self.Path
 
+        Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
+
     def tearDown(self):
         self.app.Destroy()
 
         #Unmount.
-        CoreTools().UnmountDisk(self.Path)
+        Functions.UnmountDisk(self.Path)
 
         del self.app
         del self.Path
+        del Tools.coretools.Startup
 
         if os.path.isdir("/tmp/wxfixbootmtpt"):
             if os.path.isdir("/tmp/wxfixbootmtpt/subdir"):
@@ -219,7 +232,7 @@ class TestMountPartition(unittest.TestCase):
         self.assertTrue(Functions.IsMounted(self.Path, self.MountPoint+"/subdir"))
 
         #Unmount.
-        CoreTools().UnmountDisk(self.Path)
+        Functions.UnmountDisk(self.Path)
 
         #Clean up.
         if os.path.isdir(self.MountPoint+"/subdir"):
