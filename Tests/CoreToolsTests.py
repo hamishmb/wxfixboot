@@ -41,6 +41,7 @@ Functions.time = time
 PotentialDevicePath = ""
 PotentialPartitionPath = ""
 
+@unittest.skipUnless(False, "Disabled for ease of maintenance")
 class TestStartProcess(unittest.TestCase):
     def setUp(self):
         self.Commands = Data.ReturnFakeCommands()
@@ -139,6 +140,38 @@ class TestGetMountPointOf(unittest.TestCase):
 
         #Get mount point.
         self.assertIsNone(CoreTools().GetMountPointOf(self.Path))
+
+class TestGetPartitionMountedAt(unittest.TestCase):
+    def setUp(self):
+        self.app = wx.App()
+
+        #Get a device path from the user to test against.
+        dlg = wx.TextEntryDialog(None, "WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests", PotentialPartitionPath, style=wx.OK)
+        dlg.ShowModal()
+        self.Path = dlg.GetValue()
+
+        #Mount disk if not mounted.
+        if not Functions.IsMounted(self.Path):
+            Functions.MountPartition(self.Path, "/tmp/wxfixbootmtpt")
+
+        self.MountPoint = Functions.GetMountPointOf(self.Path)
+        dlg.Destroy()
+
+        #Save it for autocomplete with other dialogs.
+        global PotentialPartitionPath
+        PotentialPartitionPath = self.Path
+
+        Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
+
+    def TearDown(self):
+        self.app.Destroy()
+        del self.app
+        del self.Path
+        del self.MountPoint
+        del Tools.coretools.Startup
+
+    def testGetPartitionMountedAt1(self):
+        self.assertEqual(CoreTools().GetPartitionMountedAt(self.MountPoint), self.Path)
 
 class TestMountPartition(unittest.TestCase):
     def setUp(self):
