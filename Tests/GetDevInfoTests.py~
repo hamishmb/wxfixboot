@@ -27,8 +27,9 @@ import wx
 import os
 import plistlib
 
-#import test data.
+#import test data and functions.
 from . import GetDevInfoTestData as Data
+from . import GetDevInfoTestFunctions as Functions
 
 class TestGetVendorProductCapacityDescription(unittest.TestCase):
     def setUp(self):
@@ -82,6 +83,7 @@ class TestParseLVMOutput(unittest.TestCase):
         GetDevInfo.getdevinfo.Main.LVMOutput = Data.ReturnFakeLVMOutput()
         GetDevInfo.getdevinfo.DiskInfo = Data.ReturnFakeDiskInfoLinux()
         self.CorrectDiskInfo = Data.ReturnFakeLVMDiskInfo()
+        GetDevInfo.getdevinfo.Main.GetLVAliasesTest = Functions.GetLVAliases
 
     def tearDown(self):
         del GetDevInfo.getdevinfo.Main.LVMOutput
@@ -89,20 +91,6 @@ class TestParseLVMOutput(unittest.TestCase):
         del self.CorrectDiskInfo
 
     def testParseAndAssembleLVMOutput(self):
-        DevInfoTools().ParseLVMOutput()
+        DevInfoTools().ParseLVMOutput(Testing=True)
+        print(GetDevInfo.getdevinfo.DiskInfo)
         self.assertEqual(GetDevInfo.getdevinfo.DiskInfo, self.CorrectDiskInfo)
-
-class TestComputeBlockSize(unittest.TestCase):
-    def setUp(self):
-        self.BlockSizes, self.CorrectResults = (Data.ReturnFakeBlockDevOutput(), [None, "512", "1024", "2048", "4096", "8192"])
-        
-        GetDevInfo.getdevinfo.plistlib = plistlib
-
-    def tearDown(self):
-        del self.BlockSizes
-        del self.CorrectResults
-        del GetDevInfo.getdevinfo.plistlib
-
-    def testComputeBlockSize(self):
-        for Data in self.BlockSizes:
-            self.assertEqual(DevInfoTools().ComputeBlockSize("FakeDisk", Data), self.CorrectResults[self.BlockSizes.index(Data)])

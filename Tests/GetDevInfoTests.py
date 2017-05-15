@@ -27,8 +27,9 @@ import wx
 import os
 import plistlib
 
-#import test data.
+#import test data and functions.
 from . import GetDevInfoTestData as Data
+from . import GetDevInfoTestFunctions as Functions
 
 class TestGetVendorProductCapacityDescription(unittest.TestCase):
     def setUp(self):
@@ -82,6 +83,7 @@ class TestParseLVMOutput(unittest.TestCase):
         GetDevInfo.getdevinfo.Main.LVMOutput = Data.ReturnFakeLVMOutput()
         GetDevInfo.getdevinfo.DiskInfo = Data.ReturnFakeDiskInfoLinux()
         self.CorrectDiskInfo = Data.ReturnFakeLVMDiskInfo()
+        GetDevInfo.getdevinfo.Main.GetLVAliasesTest = Functions.GetLVAliases
 
     def tearDown(self):
         del GetDevInfo.getdevinfo.Main.LVMOutput
@@ -89,5 +91,7 @@ class TestParseLVMOutput(unittest.TestCase):
         del self.CorrectDiskInfo
 
     def testParseAndAssembleLVMOutput(self):
-        DevInfoTools().ParseLVMOutput()
+        DevInfoTools().ParseLVMOutput(Testing=True)
+        print(GetDevInfo.getdevinfo.DiskInfo)
+        print("\n\n", self.CorrectDiskInfo)
         self.assertEqual(GetDevInfo.getdevinfo.DiskInfo, self.CorrectDiskInfo)

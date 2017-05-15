@@ -56,10 +56,14 @@ class Main():
         Unit = "B"
         HumanSize = int(RawCapacity)
 
-        while len(unicode(HumanSize)) > 3:
-            #Shift up one unit.
-            Unit = UnitList[UnitList.index(Unit)+1]
-            HumanSize = HumanSize//1000
+        try:
+            while len(unicode(HumanSize)) > 3:
+                #Shift up one unit.
+                Unit = UnitList[UnitList.index(Unit)+1]
+                HumanSize = HumanSize//1000
+
+        except IndexError:
+            return "Unknown", "Unknown"
 
         #Include the unit in the result for both exact and human-readable sizes.
         return RawCapacity, unicode(HumanSize)+" "+Unit
@@ -303,16 +307,16 @@ class Main():
         DiskInfo[Volume]["BootRecord"], DiskInfo[Volume]["BootRecordStrings"] = self.GetBootRecord(Volume)
         return Volume
 
-    def ParseLVMOutput(self):
+    def ParseLVMOutput(self, Testing=False):
         """Get LVM partition information"""
         LineCounter = 0
 
         for Line in self.LVMOutput:
             LineCounter += 1
             if "--- Logical volume ---" in Line:
-                self.AssembleLVMDiskInfo(LineCounter)
+                self.AssembleLVMDiskInfo(LineCounter, Testing=Testing)
 
-    def AssembleLVMDiskInfo(self, LineCounter):
+    def AssembleLVMDiskInfo(self, LineCounter, Testing=False):
         """Assemble LVM disk info into the dictionary"""
         #Get all the info related to this partition.
         RawLVMInfo = []
@@ -329,7 +333,12 @@ class Main():
         for Line in RawLVMInfo:
             if "LV Path" in Line:
                 #Get the volume name and a list of aliases it has.
-                Volume, AliasList = self.GetLVAliases(Line)
+                if Testing == False:
+                    Volume, AliasList = self.GetLVAliases(Line)
+
+                else:
+                    #Get them from the test data, overriding the check to see if they exist.
+                    Volume, AliasList = self.GetLVAliasesTest(Line)
 
                 DiskInfo[Volume] = {}
                 DiskInfo[Volume]["Name"] = Volume
