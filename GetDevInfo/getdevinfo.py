@@ -21,6 +21,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import subprocess
+import os
+from bs4 import BeautifulSoup
+
 #Begin Main Class.
 class Main():
     def GetVendor(self, Node):

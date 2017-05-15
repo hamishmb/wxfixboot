@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# GetDevInfo Tests Package for WxFixBoot Version 2.0.1
+# -*- coding: utf-8 -*- 
+# DialogTools test data for WxFixBoot Version 2.0.1
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -14,8 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
+
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
-from . import GetDevInfoTests
-from . import GetDevInfoTestData
-from . import CoreToolsTests
-from . import CoreToolsTestData
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+#Functions to return test data.

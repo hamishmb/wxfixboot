@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# BackendTools test functions for DDRescue-GUI Version 1.7
-# This file is part of DDRescue-GUI.
+# CoreTools test functions for WxFixBoot Version 2.0.1
+# This file is part of WxFixBoot.
 # Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
-# DDRescue-GUI is free software: you can redistribute it and/or modify it
+# WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
 #
-# DDRescue-GUI is distributed in the hope that it will be useful,
+# WxFixBoot is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
+# along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #If you're wondering why this is here, it's so that there are some known good/sane functions to aid testing the ones in BackendTools.
 
@@ -23,6 +23,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import subprocess
+i
 def StartProcess(Command, ReturnOutput=False):
     """Start a given process, and return output and return value if needed"""
     runcmd = subprocess.Popen("LC_ALL=C "+Command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -57,10 +59,6 @@ def IsMounted(Partition, MountPoint=None):
 
         Mounted = False
 
-        #OS X fix: Handle paths with /tmp in them, as paths with /private/tmp.
-        if not Linux and "/tmp" in Partition:
-            Partition = Partition.replace("/tmp", "/private/tmp")
-
         #Linux fix: Accept any mountpoint when called with just one argument.
         for Line in MountInfo.split("\n"):
             if len(Line) != 0:
@@ -71,10 +69,6 @@ def IsMounted(Partition, MountPoint=None):
     else:
         #Check where it's mounted to.
         Mounted = False
-
-        #OS X fix: Handle paths with /tmp in them, as paths with /private/tmp.
-        if not Linux and "/tmp" in MountPoint:
-            MountPoint = MountPoint.replace("/tmp", "/private/tmp")
 
         if GetMountPointOf(Partition) == MountPoint:
             Mounted = True
@@ -121,12 +115,7 @@ def MountPartition(Partition, MountPoint, Options=""):
         os.makedirs(MountPoint)
     
     #Mount the device to the mount point.
-    #Use diskutil on OS X.
-    if Linux:
-        Retval = StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
-
-    else:
-        Retval = StartProcess("diskutil mount "+Options+" "+Partition+" -mountPoint "+MountPoint)
+    Retval = StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
 
     return Retval
 
@@ -141,11 +130,7 @@ def UnmountDisk(Disk):
     else:
         #The disk is mounted.
         #Unmount it.
-        if Linux:
-            Retval = StartProcess(Command="umount "+Disk, ReturnOutput=False)
-
-        else:
-            Retval = StartProcess(Command="diskutil umount "+Disk, ReturnOutput=False)
+        Retval = StartProcess(Command="umount "+Disk, ReturnOutput=False)
             
     #Return the return value
     return Retval

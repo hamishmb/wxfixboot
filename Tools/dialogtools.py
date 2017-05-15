@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Core Tools in the Tools Package for WxFixBoot Version 2.0.1
+# Dialog Tools in the Tools Package for WxFixBoot Version 2.0.1
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -117,7 +117,7 @@ class Main():
         logger.debug("DialogTools: Main().ShowThreadChoiceDlg(): Result of Thread Choice Dialog was: "+unicode(self.DlgResult))
 
     def ShowChoiceDlg(self, Message, Title, Choices, AllowCancel=False):
-        """Handle showing thread choice dialogs, reducing code duplication and compilications and errors.
+        """Handle showing thread choice dialogs, reducing code duplication and complications and errors.
         It can be used like this: DialogTools().ShowChoiceDlg(Message=<message>, Title=<title>, Choices=<choices>)
         Message is whatever you want the dialog to say.
         Title sets the title bar text on the dialog.
