@@ -31,6 +31,9 @@ class Main():
         elif PackageManager == "yum":
             Cmd = "yum -C history"
 
+        if MountPoint != "":
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
         RetVal = 1
 
         #Trap in while loop until package manager is free.
@@ -157,7 +160,7 @@ class Main():
 
             for Function in Operations:
                 if type(Function) == type(()):
-                    if MainBackendTools.ManageBootloader in Function:
+                    if MainBackendTools.ManageBootloader == Function: #*** check again ***
                         BootloaderOperations = True
                         break
 
@@ -166,7 +169,7 @@ class Main():
             if BootloaderOperations:
                 logger.error("HelperBackendTools: Main().HandleFilesystemCheckReturnValues(): Asking the user whether to skip bootloader operations...")
 
-                Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(Retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, your system could become unstable or unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?", Buttons=("Disable Bootloader Operations", "Ignore and Continue Anyway")) #*** Only ask if there are bootloader operations scheduled ***
+                Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(Retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, your system could become unstable or unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?", Buttons=("Disable Bootloader Operations", "Ignore and Continue Anyway"))
 
                 if Result:
                     #A good choice. WxFixBoot will now disable any bootloader operations.

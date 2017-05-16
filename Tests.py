@@ -44,8 +44,8 @@ import Tools
 from GetDevInfo.getdevinfo import Main as DevInfoTools
 from Tools.coretools import Main as CoreTools
 from Tools.dialogtools import Main as DialogTools
-from Tools.BackendTools.essentials import Main as EssentialBackendTools
 from Tools.BackendTools.helpers import Main as HelperBackendTools
+from Tools.BackendTools.essentials import Main as EssentialBackendTools
 
 #Import test modules.
 import Tests
@@ -53,8 +53,8 @@ import Tests
 from Tests import GetDevInfoTests
 from Tests import CoreToolsTests
 from Tests import DialogToolsTests
+from Tests import HelperBackendToolsTests
 from Tests import EssentialBackendToolsTests
-#from Tests import HelperBackendToolsTests
 
 def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
@@ -88,7 +88,7 @@ except getopt.GetoptError as err:
     sys.exit(2)
 
 #Set up which tests to run based on options given.
-TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests] #*** Set up full defaults when finished ***
+TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests] #*** Set up full defaults when finished ***
 
 #Log only critical message by default.
 loggerLevel = logging.CRITICAL
@@ -104,13 +104,13 @@ for o, a in opts:
         #TestSuites = [...]
         assert False, "Not implemented yet"
     elif o in ["-b", "--backendtools"]:
-        TestSuites = [EssentialBackendToolsTests]
+        TestSuites = [HelperBackendToolsTests, EssentialBackendToolsTests]
         #Implementation isn't finished ***
     elif o in ["-m", "--main"]:
         #TestSuites = [MainTests]
         assert False, "Not implemented yet"
     elif o in ["-a", "--all"]:
-        TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests]
+        TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests]
         #TestSuites.append(MainTests)
     elif o in ["-t", "--tests"]:
         pass
@@ -145,6 +145,11 @@ Tools.dialogtools.wx = wx
 Tools.dialogtools.logger = logger
 Tools.dialogtools.time = time
 
+Tools.BackendTools.helpers.logger = logger
+Tools.BackendTools.helpers.os = os
+Tools.BackendTools.helpers.time = time
+Tools.BackendTools.helpers.CoreTools = CoreTools()
+
 Tools.BackendTools.essentials.wx = wx
 Tools.BackendTools.essentials.logger = logger
 Tools.BackendTools.essentials.CoreTools = CoreTools()
@@ -162,6 +167,10 @@ CoreToolsTests.Tools = Tools
 #Dialog tools tests.
 DialogToolsTests.DialogTools = DialogTools
 DialogToolsTests.Tools = Tools
+
+#Helper Backend tools tests.
+HelperBackendToolsTests.HelperBackendTools = HelperBackendTools
+HelperBackendToolsTests.Tools = Tools
 
 #Essential Backend tools tests.
 EssentialBackendToolsTests.EssentialBackendTools = EssentialBackendTools
