@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# DialogTools test data for WxFixBoot Version 2.0.1
+# EssentialBackendTools test data for WxFixBoot Version 2.0.1
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -22,3 +22,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Functions to return test data.
+def ReturnInitialSystemInfoDict():
+    return {"DisableBootloaderOperationsBecause": []}
+
+def ReturnSystemInfoDictWithDisabledBLOpts():
+    return {"DisableBootloaderOperations": True, "DisableBootloaderOperationsBecause": ["Internet Connection test failed."]}
+
+def ReturnSystemInfoDictWithEnabledBLOpts():
+    return {"DisableBootloaderOperations": False, "DisableBootloaderOperationsBecause": []}

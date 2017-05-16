@@ -26,8 +26,7 @@ import unittest
 import wx
 import time
 
-#Import test data and functions.
-from . import DialogToolsTestData as Data
+#Import test functions.
 from . import DialogToolsTestFunctions as Functions
 
 #Setup test functions.

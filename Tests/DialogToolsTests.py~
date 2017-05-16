@@ -26,8 +26,7 @@ import unittest
 import wx
 import time
 
-#Import test data and functions.
-from . import DialogToolsTestData as Data
+#Import test functions.
 from . import DialogToolsTestFunctions as Functions
 
 #Setup test functions.
@@ -47,8 +46,6 @@ class TestWindow(wx.Frame):
 class TestShowThreadDlgs(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
-        self.Frame = TestWindow()
-        self.Panel = TestPanel(self.Frame)
         Tools.dialogtools.ParentWindow = self
 
     def tearDown(self):
@@ -89,5 +86,5 @@ class TestShowThreadDlgs(unittest.TestCase):
         self.assertTrue(Functions.AskUserIfCorrect("\"Linux\""))
 
     def testSaveFileDlg(self):
-        DialogTools().ShowThreadSaveFileDlg("Test message from WxFixBoot. Enter a path and filename.")
+        DialogTools().ShowThreadSaveFiledlg("Test message from WxFixBoot. Enter a path and filename.")
         self.assertTrue(Functions.AskUserIfCorrect("\"Displayed Properly\""))

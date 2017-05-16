@@ -44,6 +44,8 @@ import Tools
 from GetDevInfo.getdevinfo import Main as DevInfoTools
 from Tools.coretools import Main as CoreTools
 from Tools.dialogtools import Main as DialogTools
+from Tools.BackendTools.essentials import Main as EssentialBackendTools
+from Tools.BackendTools.helpers import Main as HelperBackendTools
 
 #Import test modules.
 import Tests
@@ -51,12 +53,16 @@ import Tests
 from Tests import GetDevInfoTests
 from Tests import CoreToolsTests
 from Tests import DialogToolsTests
+from Tests import EssentialBackendToolsTests
+#from Tests import HelperBackendToolsTests
 
 def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
     print("Options:\n")
     print("       -h, --help:                   Display this help text.")
-    print("       -d, --debug:                  Set logging level to debug, to show all logging messages. Default: show only critical logging messages.")
+    print("       -D, --debug:                  Set logging level to debug, to show all logging messages. Default: show only critical logging messages.")
+    print("       -s, --startuptools            Run tests for all StartupTools modules.")
+    print("       -b, --backendtools            Run tests for all BackendTools modules.")
     print("       -g, --getdevinfo:             Run tests for GetDevInfo module.")
     print("       -c, --coretools:              Run tests for CoreTools module.")
     print("       -d, --dialogtools:            Run tests for DialogTools module.")
@@ -72,7 +78,7 @@ if os.geteuid() != 0:
 
 #Check all cmdline options are valid.
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hdgcmat", ["help", "debug", "getdevinfo", "coretools", "main", "all", "tests"])
+    opts, args = getopt.getopt(sys.argv[1:], "hDdsbgcmat", ["help", "debug", "startuptools", "backendtools", "getdevinfo", "coretools", "main", "all", "tests"])
 
 except getopt.GetoptError as err:
     #Invalid option. Show the help message and then exit.
@@ -94,6 +100,12 @@ for o, a in opts:
         TestSuites = [CoreToolsTests]
     elif o in ["-d", "--dialogtools"]:
         TestSuites = [DialogToolsTests]
+    elif o in ["-s", "--startuptools"]:
+        #TestSuites = [...]
+        assert False, "Not implemented yet"
+    elif o in ["-b", "--backendtools"]:
+        TestSuites = [EssentialBackendToolsTests]
+        #Implementation isn't finished ***
     elif o in ["-m", "--main"]:
         #TestSuites = [MainTests]
         assert False, "Not implemented yet"
@@ -102,7 +114,7 @@ for o, a in opts:
         #TestSuites.append(MainTests)
     elif o in ["-t", "--tests"]:
         pass
-    elif o in ["-d", "--debug"]:
+    elif o in ["-D", "--debug"]:
         loggerLevel = logging.DEBUG
     elif o in ["-h", "--help"]:
         usage()
@@ -133,6 +145,11 @@ Tools.dialogtools.wx = wx
 Tools.dialogtools.logger = logger
 Tools.dialogtools.time = time
 
+Tools.BackendTools.essentials.wx = wx
+Tools.BackendTools.essentials.logger = logger
+Tools.BackendTools.essentials.CoreTools = CoreTools()
+Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools()
+
 #Setup test modules.
 #GetDevInfo tests.
 GetDevInfoTests.DevInfoTools = DevInfoTools
@@ -145,6 +162,10 @@ CoreToolsTests.Tools = Tools
 #Dialog tools tests.
 DialogToolsTests.DialogTools = DialogTools
 DialogToolsTests.Tools = Tools
+
+#Essential Backend tools tests.
+EssentialBackendToolsTests.EssentialBackendTools = EssentialBackendTools
+EssentialBackendToolsTests.Tools = Tools
 
 if __name__ == "__main__":
     for SuiteModule in TestSuites:
