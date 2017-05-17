@@ -37,6 +37,7 @@ class TestWindow(wx.Frame):
         """Initialises TestWindow"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1,1), style=wx.SIMPLE_BORDER)
 
+#No need for assertions, we're just making sure the functions run without errors here.
 class TestShowThreadDlgs(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
@@ -58,29 +59,18 @@ class TestShowThreadDlgs(unittest.TestCase):
 
     def testMsgDlg(self):
         DialogTools().ShowThreadMsgDlg("Test message from WxFixBoot")
-        self.assertTrue(DialogFunctionsForTests.AskUserIfCorrect("\"Dialog Closed\""))
 
     def testYesNoDlg(self):
         DialogTools().ShowThreadYesNoDlg("Test message from WxFixBoot. Click Yes")
-        self.assertTrue(DialogFunctionsForTests.AskUserIfCorrect("\"Yes\""))
-
         DialogTools().ShowThreadYesNoDlg("Test message from WxFixBoot. Click No")
-        self.assertTrue(DialogFunctionsForTests.AskUserIfCorrect("\"No\""))
-
         DialogTools().ShowThreadYesNoDlg("Test message from WxFixBoot. Click either button. If you can see this part of the message, custom buttons aren't supported on your system", buttons=("Yay", "Nay"))
-        self.assertTrue(DialogFunctionsForTests.AskUserIfCorrect("\"Custom Buttons if supported\""))
 
     def testChoiceDlg(self):
         DialogTools().ShowThreadChoiceDlg("Test message from WxFixBoot. What do programmers convert into software? Select \"Pizza & Caffeine\"", choices=["Cheese & Milk", "Pizza & Caffeine", "Dry Bread & Water"])
-        self.assertTrue(DialogFunctionsForTests.AskUserIfCorrect("\"Pizza & Caffeine\""))
-
         DialogTools().ShowThreadChoiceDlg("Test message from WxFixBoot. Select \"Turtles\"", choices=["Turtles", "Tortoises", "Terrapins"])
-        self.assertTrue(DialogFunctionsForTests.AskUserIfCorrect("\"Turtles\""))
 
     def testTextEntryDlg(self):
         DialogTools().ShowThreadTextEntryDlg("Test message from WxFixBoot. Type \"Linux\"")
-        self.assertTrue(DialogFunctionsForTests.AskUserIfCorrect("\"Linux\""))
 
     def testSaveFileDlg(self):
         DialogTools().ShowThreadSaveFiledlg("Test message from WxFixBoot. Enter a path and filename.")
-        self.assertTrue(DialogFunctionsForTests.AskUserIfCorrect("\"Displayed Properly\""))

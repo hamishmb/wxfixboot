@@ -41,7 +41,6 @@ Functions.time = time
 PotentialDevicePath = ""
 PotentialPartitionPath = ""
 
-@unittest.skipUnless(False, "Disabled for ease of maintenance")
 class TestStartProcess(unittest.TestCase):
     def setUp(self):
         self.Commands = Data.ReturnFakeCommands()
@@ -61,15 +60,17 @@ class TestIsMounted(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
 
-        #Get a device path from the user to test against.
-        dlg = wx.TextEntryDialog(None, "WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests", PotentialPartitionPath, style=wx.OK)
-        dlg.ShowModal()
-        self.Path = dlg.GetValue()
-        dlg.Destroy()
-
-        #Save it for autocomplete with other dialogs.
         global PotentialPartitionPath
-        PotentialPartitionPath = self.Path
+
+        self.Path = PotentialPartitionPath
+
+        if PotentialPartitionPath == "":
+            #Get a device path from the user to test against.
+            DialogFunctionsForTests.ShowTextEntryDlg("WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests")
+            self.Path = DialogFunctionsForTests.TextEntryDlgResults[-1]
+
+            #Save it for autocomplete with other dialogs.
+            PotentialPartitionPath = self.Path
 
         Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
 
@@ -108,15 +109,17 @@ class TestGetMountPointOf(unittest.TestCase):
         self.app = wx.App()
 
         #Get a device path from the user to test against.
-        dlg = wx.TextEntryDialog(None, "WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests", PotentialPartitionPath, style=wx.OK)
-        dlg.ShowModal()
-        self.Path = dlg.GetValue()
-        self.MountPoint = Functions.GetMountPointOf(self.Path)
-        dlg.Destroy()
-
-        #Save it for autocomplete with other dialogs.
         global PotentialPartitionPath
-        PotentialPartitionPath = self.Path
+
+        self.Path = PotentialPartitionPath
+
+        if PotentialPartitionPath == "":
+            #Get a device path from the user to test against.
+            DialogFunctionsForTests.ShowTextEntryDlg("WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests")
+            self.Path = DialogFunctionsForTests.TextEntryDlgResults[-1]
+
+            #Save it for autocomplete with other dialogs.
+            PotentialPartitionPath = self.Path
 
         Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
 
@@ -146,20 +149,23 @@ class TestGetPartitionMountedAt(unittest.TestCase):
         self.app = wx.App()
 
         #Get a device path from the user to test against.
-        dlg = wx.TextEntryDialog(None, "WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests", PotentialPartitionPath, style=wx.OK)
-        dlg.ShowModal()
-        self.Path = dlg.GetValue()
+        global PotentialPartitionPath
+
+        self.Path = PotentialPartitionPath
+
+        if PotentialPartitionPath == "":
+            #Get a device path from the user to test against.
+            DialogFunctionsForTests.ShowTextEntryDlg("WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests")
+            self.Path = DialogFunctionsForTests.TextEntryDlgResults[-1]
+
+            #Save it for autocomplete with other dialogs.
+            PotentialPartitionPath = self.Path
 
         #Mount disk if not mounted.
         if not Functions.IsMounted(self.Path):
             Functions.MountPartition(self.Path, "/tmp/wxfixbootmtpt")
 
         self.MountPoint = Functions.GetMountPointOf(self.Path)
-        dlg.Destroy()
-
-        #Save it for autocomplete with other dialogs.
-        global PotentialPartitionPath
-        PotentialPartitionPath = self.Path
 
         Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
 
@@ -178,21 +184,25 @@ class TestMountPartition(unittest.TestCase):
         self.app = wx.App()
 
         #Get a device path from the user to test against.
-        dlg = wx.TextEntryDialog(None, "WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests", PotentialPartitionPath, style=wx.OK)
-        dlg.ShowModal()
-        self.Path = dlg.GetValue()
+        global PotentialPartitionPath
+
+        self.Path = PotentialPartitionPath
+
+        if PotentialPartitionPath == "":
+            #Get a device path from the user to test against.
+            DialogFunctionsForTests.ShowTextEntryDlg("WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests")
+            self.Path = DialogFunctionsForTests.TextEntryDlgResults[-1]
+
+            #Save it for autocomplete with other dialogs.
+            PotentialPartitionPath = self.Path
+
         self.MountPoint = Functions.GetMountPointOf(self.Path)
-        dlg.Destroy()
 
         if self.MountPoint == None:
             self.MountPoint = "/tmp/wxfixbootmtpt"
 
             if not os.path.isdir(self.MountPoint):
                 os.mkdir(self.MountPoint)
-
-        #Save it for autocomplete with other dialogs.
-        global PotentialPartitionPath
-        PotentialPartitionPath = self.Path
 
         Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
 
@@ -230,10 +240,8 @@ class TestMountPartition(unittest.TestCase):
 
     def testMountPartition3(self):
         #Get another device path from the user to test against.
-        dlg = wx.TextEntryDialog(None, "WxFixBoot needs a second (different) partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot Tests", "", style=wx.OK)
-        dlg.ShowModal()
-        self.Path2 = dlg.GetValue()
-        dlg.Destroy()
+        DialogFunctionsForTests.ShowTextEntryDlg("WxFixBoot needs a second (different) partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests")
+        self.Path2 = DialogFunctionsForTests.TextEntryDlgResults[-1]
 
         #Unmount both partitions.
         for Partition in [self.Path, self.Path2]:

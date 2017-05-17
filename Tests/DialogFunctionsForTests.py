@@ -25,7 +25,12 @@ from __future__ import unicode_literals
 
 import wx
 
+#These hold results from the dialog functions.
 MsgDlgMessages = []
+YesNoDlgResults = []
+ChoiceDlgResults = []
+TextEntryDlgResults = []
+SaveFileDlgResults = []
 
 def AskUserIfCorrect(Info):
     Dlg = wx.MessageDialog(None, "Was the correct dialog shown and displayed properly? Was your result "+unicode(Info)+"?", "WxFixBoot - Dialog Tests", wx.YES_NO | wx.ICON_QUESTION)
@@ -99,6 +104,8 @@ def ShowYesNoDlg(Message, Title="WxFixBoot - Question", Buttons=(None, None)):
         dlg.Destroy()
         DlgResult = False
 
+    YesNoDlgResults.append(DlgResult)
+
     return DlgResult
 
 def ShowChoiceDlg(Message, Choices, Title="WxFixBoot - Select an Option"):
@@ -113,6 +120,8 @@ def ShowChoiceDlg(Message, Choices, Title="WxFixBoot - Select an Option"):
     else:
         dlg.Destroy()
         DlgResult = False
+
+    ChoiceDlgResults.append(DlgResult)
 
     return DlgResult
 
@@ -129,6 +138,8 @@ def ShowTextEntryDlg(Message, Title="WxFixBoot - Text Entry"):
         dlg.Destroy()
         DlgResult = False
 
+    TextEntryDlgResults.append(DlgResult)
+
     return DlgResult
 
 def ShowSaveFiledlg(Title="WxFixBoot - Select A File", Wildcard="All Files/Devices (*)|*"):
@@ -143,6 +154,8 @@ def ShowSaveFiledlg(Title="WxFixBoot - Select A File", Wildcard="All Files/Devic
     else:
         dlg.Destroy()
         DlgResult = False
+
+    SaveFileDlgResults.append(DlgResult)
 
     return DlgResult
 
