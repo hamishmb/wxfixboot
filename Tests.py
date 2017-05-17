@@ -50,11 +50,11 @@ from Tools.BackendTools.essentials import Main as EssentialBackendTools
 #Import test modules.
 import Tests
 
-from Tests import GetDevInfoTests
-from Tests import CoreToolsTests
-from Tests import DialogToolsTests
-from Tests import HelperBackendToolsTests
-from Tests import EssentialBackendToolsTests
+from Tests.GetDevInfo import GetDevInfoTests
+from Tests.Tools import CoreToolsTests
+from Tests.Tools import DialogToolsTests
+from Tests.Tools.BackendTools import HelperBackendToolsTests
+from Tests.Tools.BackendTools import EssentialBackendToolsTests
 
 def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
