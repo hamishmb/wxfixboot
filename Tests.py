@@ -170,6 +170,7 @@ DialogToolsTests.Tools = Tools
 
 #Helper Backend tools tests.
 HelperBackendToolsTests.HelperBackendTools = HelperBackendTools
+HelperBackendToolsTests.CoreTools = CoreTools
 HelperBackendToolsTests.Tools = Tools
 
 #Essential Backend tools tests.

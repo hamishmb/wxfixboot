@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 #Import modules
 import unittest
 import wx
+import os
 
 #Import test functions & data.
 from . import HelperBackendToolsTestFunctions as Functions
@@ -31,6 +32,7 @@ from . import HelperBackendToolsTestData as Data
 
 #Setup test functions.
 Functions.wx = wx
+Functions.os = os
 
 class TestPanel(wx.Panel):
     def __init__(self, parent):
@@ -74,3 +76,23 @@ class TestWaitUntilPackageManagerNotInUse(unittest.TestCase):
         Functions.ShowMsgDlg("Please open Synaptic or similar to lock the package manager, then click ok. After a few seconds, close it.")
         HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="apt-get")
         self.assertTrue(Functions.ShowYesNoDlg("Is Synaptic/similar now closed?"))
+
+class TestFindMissingFSCKModules(unittest.TestCase):
+    def setUp(self):
+        Tools.coretools.Startup = True
+        Tools.BackendTools.helpers.DiskInfo = Data.ReturnFakeDiskInfo()
+        Functions.DiskInfo = Data.ReturnFakeDiskInfo()
+        Functions.CoreTools = CoreTools()
+
+    def tearDown(self):
+        del Tools.coretools.Startup
+        del Tools.BackendTools.helpers.DiskInfo
+        del Functions.DiskInfo
+        del Functions.CoreTools
+
+    @unittest.skipUnless(Functions.CanPerformFindMissingFSCKModulesTest1(), "FSCK modules not available on system.")
+    def testFindMissingFSCKModules1(self):
+        self.assertEqual(HelperBackendTools().FindMissingFSCKModules(), Data.ReturnExpectedResultFindingMissingFSCKModules())
+
+    def testFindMissingFSCKModules2(self):
+        self.assertEqual(HelperBackendTools().FindMissingFSCKModules(), Functions.FindMissingFSCKModules())

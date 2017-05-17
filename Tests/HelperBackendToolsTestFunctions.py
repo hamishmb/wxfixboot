@@ -23,7 +23,29 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#These all trick the EssentialBackendTools to calling a different function to those found in DialogTools without modifying the code.
+#For comparing to functions with same name in HelpersBackendTools.
+def FindMissingFSCKModules():
+    """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc)."""
+    FailedList = []
+
+    Keys = DiskInfo.keys()
+    Keys.sort()
+
+    for Disk in Keys:
+        #Check the FSType is known and isn't swap.
+        if DiskInfo[Disk]["FileSystem"] not in ("Unknown", "N/A"):
+            #Check if this module is present.
+            if CoreTools.StartProcess("which fsck."+DiskInfo[Disk]["FileSystem"], ShowOutput=False) != 0:
+                #Couldn't find it, add it to the failed list.
+                FailedList.append("fsck."+DiskInfo[Disk]["FileSystem"])
+
+            else:
+                pass
+
+    #Return the list, so FSCheck functions know which FSes to ignore.
+    return FailedList
+
+#These all trick the HelperBackendTools to calling a different function to those found in DialogTools without modifying the code.
 #Return DlgResult too so it behaves the same way.
 
 def ShowMsgDlg(Message, Kind="info"):
@@ -112,5 +134,9 @@ def ShowSaveFiledlg(Title="WxFixBoot - Select A File", Wildcard="All Files/Devic
         DlgResult = False
 
     return DlgResult
+
+#Checks if system can perform certain tests.
+def CanPerformFindMissingFSCKModulesTest1():
+    return (os.path.isfile("/sbin/fsck.jfs") and os.path.isfile("/sbin/fsck.ext4") and os.path.isfile("/sbin/fsck.ext3") and os.path.isfile("/sbin/fsck.vfat"))
 
 #End Main Class.
