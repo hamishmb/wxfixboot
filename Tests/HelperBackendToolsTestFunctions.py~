@@ -23,6 +23,21 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+MsgDlgMessages = []
+
+def AskUserIfCorrect(Info):
+    Dlg = wx.MessageDialog(None, "Was the correct dialog shown and displayed properly? Was your result "+unicode(Info)+"?", "WxFixBoot - Dialog Tests", wx.YES_NO | wx.ICON_QUESTION)
+
+    if Dlg.ShowModal() == wx.ID_YES:
+        Result = True
+
+    else:
+        Result = False
+
+    Dlg.Destroy()
+
+    return Result
+
 #For comparing to functions with same name in HelpersBackendTools.
 def FindMissingFSCKModules():
     """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc)."""
@@ -53,7 +68,7 @@ def FindCheckableFileSystems():
     RootFS = CoreTools.GetPartitionMountedAt("/")
 
     #Get a list of missing fsck modules (if any) based on the existing filesystems.
-    MissingFSCKModules = self.FindMissingFSCKModules()
+    MissingFSCKModules = FindMissingFSCKModules()
 
     Keys = DiskInfo.keys()
     Keys.sort()
@@ -117,7 +132,7 @@ def FindCheckableFileSystems():
 #Return DlgResult too so it behaves the same way.
 
 def ShowMsgDlg(Message, Kind="info"):
-    """Shows a message dialog from a thread upon instruction"""
+    """Shows a message dialog from a thread upon instruction. All of these windows are logged but silenced."""
     if Kind == "info":
         Title = "WxFixBoot - Information"
         style = wx.OK | wx.ICON_INFORMATION
@@ -130,9 +145,7 @@ def ShowMsgDlg(Message, Kind="info"):
         Title = "WxFixBoot - Error"
         style = wx.OK | wx.ICON_ERROR
 
-    dlg = wx.MessageDialog(ParentWindow.Panel, Message, Title, style, pos=wx.DefaultPosition)
-    dlg.ShowModal()
-    dlg.Destroy()
+    MsgDlgMessages.append(Message)
 
 def ShowYesNoDlg(Message, Title="WxFixBoot - Question", Buttons=(None, None)):
     """Shows a yes/no dialog from a thread upon instruction"""

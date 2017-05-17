@@ -23,6 +23,21 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+MsgDlgMessages = []
+
+def AskUserIfCorrect(Info):
+    Dlg = wx.MessageDialog(None, "Was the correct dialog shown and displayed properly? Was your result "+unicode(Info)+"?", "WxFixBoot - Dialog Tests", wx.YES_NO | wx.ICON_QUESTION)
+
+    if Dlg.ShowModal() == wx.ID_YES:
+        Result = True
+
+    else:
+        Result = False
+
+    Dlg.Destroy()
+
+    return Result
+
 #For comparing to functions with same name in HelpersBackendTools.
 def FindMissingFSCKModules():
     """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc)."""
@@ -117,6 +132,22 @@ def FindCheckableFileSystems():
 #Return DlgResult too so it behaves the same way.
 
 def ShowMsgDlg(Message, Kind="info"):
+    """Shows a message dialog from a thread upon instruction. All of these windows are logged but silenced."""
+    if Kind == "info":
+        Title = "WxFixBoot - Information"
+        style = wx.OK | wx.ICON_INFORMATION
+
+    elif Kind == "warning":
+        Title = "WxFixBoot - Warning"
+        style = wx.OK | wx.ICON_EXCLAMATION
+
+    elif Kind == "error":
+        Title = "WxFixBoot - Error"
+        style = wx.OK | wx.ICON_ERROR
+
+    MsgDlgMessages.append(Message)
+
+def ShowRealMsgDlg(Message, Kind="info"):
     """Shows a message dialog from a thread upon instruction"""
     if Kind == "info":
         Title = "WxFixBoot - Information"

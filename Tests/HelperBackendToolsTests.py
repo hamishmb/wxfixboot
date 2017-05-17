@@ -68,12 +68,12 @@ class TestWaitUntilPackageManagerNotInUse(unittest.TestCase):
         del self.app
 
     def testWaitUntilPackageManagerNotInUse1(self):
-        Functions.ShowMsgDlg("Please ensure the package manager is not in use.")
+        Functions.ShowRealMsgDlg("Please ensure the package manager is not in use.")
         HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="apt-get")
 
     def testWaitUntilPackageManagerNotInUse2(self):
         #Ask user to enable internet connection.
-        Functions.ShowMsgDlg("Please open Synaptic or similar to lock the package manager, then click ok. After a few seconds, close it.")
+        Functions.ShowRealMsgDlg("Please open Synaptic or similar to lock the package manager, then click ok. After a few seconds, close it.")
         HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="apt-get")
         self.assertTrue(Functions.ShowYesNoDlg("Is Synaptic/similar now closed?"))
 
@@ -142,3 +142,39 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         #More teardown.
         del Tools.BackendTools.helpers.SystemInfo
         del Functions.SystemInfo
+
+class TestHandleFilesystemCheckReturnValues(unittest.TestCase):
+    def setUp(self):
+        self.app = wx.App()
+        self.Frame = TestWindow()
+        self.Panel = TestPanel(self.Frame)
+        Functions.ParentWindow = self
+
+        self.SystemInfo = Data.ReturnInitialSystemInfoDict()
+        Tools.BackendTools.helpers.SystemInfo = self.SystemInfo
+        Tools.BackendTools.helpers.DialogTools = Functions
+
+    def tearDown(self):
+        del self.SystemInfo
+        del Tools.BackendTools.helpers.SystemInfo
+        del Tools.BackendTools.helpers.DialogTools
+
+        self.Panel.Destroy()
+        del self.Panel
+
+        self.Frame.Destroy()
+        del self.Frame
+
+        self.app.Destroy()
+        del self.app
+
+    def testHandleFilesystemCheckReturnValues1(self):
+        #All of these should behave in exactly the same way.
+        HelperBackendTools().HandleFilesystemCheckReturnValues(ExecCmds="xfs_repair -Pvd /dev/sda1", Retval=1, Partition="/dev/sda1")
+        self.assertEqual(Functions.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
+
+        HelperBackendTools().HandleFilesystemCheckReturnValues(ExecCmds="xfs_repair -Pvd /dev/sda1", Retval=2, Partition="/dev/sda1")
+        self.assertEqual(Functions.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
+
+        HelperBackendTools().HandleFilesystemCheckReturnValues(ExecCmds="xfs_repair -Pvd /dev/sda1", Retval=3, Partition="/dev/sda1")
+        self.assertEqual(Functions.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
