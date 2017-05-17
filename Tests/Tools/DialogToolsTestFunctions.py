@@ -22,16 +22,3 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-
-def AskUserIfCorrect(Info):
-    Dlg = wx.MessageDialog(None, "Was the correct dialog shown and displayed properly? Was your result "+unicode(Info)+"?", "WxFixBoot - Dialog Tests", wx.YES_NO | wx.ICON_QUESTION)
-
-    if Dlg.ShowModal() == wx.ID_YES:
-        Result = True
-
-    else:
-        Result = False
-
-    Dlg.Destroy()
-
-    return Result

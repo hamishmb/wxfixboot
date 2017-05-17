@@ -147,6 +147,24 @@ def ShowMsgDlg(Message, Kind="info"):
 
     MsgDlgMessages.append(Message)
 
+def ShowRealMsgDlg(Message, Kind="info"):
+    """Shows a message dialog from a thread upon instruction"""
+    if Kind == "info":
+        Title = "WxFixBoot - Information"
+        style = wx.OK | wx.ICON_INFORMATION
+
+    elif Kind == "warning":
+        Title = "WxFixBoot - Warning"
+        style = wx.OK | wx.ICON_EXCLAMATION
+
+    elif Kind == "error":
+        Title = "WxFixBoot - Error"
+        style = wx.OK | wx.ICON_ERROR
+
+    dlg = wx.MessageDialog(ParentWindow.Panel, Message, Title, style, pos=wx.DefaultPosition)
+    dlg.ShowModal()
+    dlg.Destroy()
+
 def ShowYesNoDlg(Message, Title="WxFixBoot - Question", Buttons=(None, None)):
     """Shows a yes/no dialog from a thread upon instruction"""
     dlg = wx.MessageDialog(ParentWindow.Panel, Message, Title, wx.YES_NO | wx.ICON_QUESTION)

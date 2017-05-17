@@ -50,6 +50,7 @@ from Tools.BackendTools.essentials import Main as EssentialBackendTools
 #Import test modules.
 import Tests
 
+from Tests import DialogFunctionsForTests
 from Tests.GetDevInfo import GetDevInfoTests
 from Tests.Tools import CoreToolsTests
 from Tests.Tools import DialogToolsTests
@@ -161,14 +162,17 @@ GetDevInfoTests.DevInfoTools = DevInfoTools
 GetDevInfoTests.GetDevInfo = GetDevInfo
 
 #Core tools tests.
+CoreToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
 CoreToolsTests.CoreTools = CoreTools
 CoreToolsTests.Tools = Tools
 
 #Dialog tools tests.
+DialogToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
 DialogToolsTests.DialogTools = DialogTools
 DialogToolsTests.Tools = Tools
 
 #Helper Backend tools tests.
+HelperBackendToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
 HelperBackendToolsTests.HelperBackendTools = HelperBackendTools
 HelperBackendToolsTests.CoreTools = CoreTools
 HelperBackendToolsTests.DevInfoTools = DevInfoTools
@@ -176,6 +180,7 @@ HelperBackendToolsTests.GetDevInfo = GetDevInfo
 HelperBackendToolsTests.Tools = Tools
 
 #Essential Backend tools tests.
+EssentialBackendToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
 EssentialBackendToolsTests.EssentialBackendTools = EssentialBackendTools
 EssentialBackendToolsTests.Tools = Tools
 
