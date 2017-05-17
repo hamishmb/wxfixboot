@@ -171,6 +171,8 @@ DialogToolsTests.Tools = Tools
 #Helper Backend tools tests.
 HelperBackendToolsTests.HelperBackendTools = HelperBackendTools
 HelperBackendToolsTests.CoreTools = CoreTools
+HelperBackendToolsTests.DevInfoTools = DevInfoTools
+HelperBackendToolsTests.GetDevInfo = GetDevInfo
 HelperBackendToolsTests.Tools = Tools
 
 #Essential Backend tools tests.

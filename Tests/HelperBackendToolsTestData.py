@@ -24,7 +24,10 @@ from __future__ import unicode_literals
 #Functions to return test data.
 #Return fake SystemInfo dictionary.
 def ReturnInitialSystemInfoDict():
-    return {"DisableBootloaderOperationsBecause": []}
+    return {"DisableBootloaderOperationsBecause": [], "IsLiveDisk": False}
+
+def ReturnInitialSystemInfoDict2():
+    return {"DisableBootloaderOperationsBecause": [], "IsLiveDisk": True}
 
 def ReturnSystemInfoDictWithDisabledBLOpts():
     return {"DisableBootloaderOperations": True, "DisableBootloaderOperationsBecause": ["Internet Connection test failed."]}

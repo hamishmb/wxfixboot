@@ -96,3 +96,49 @@ class TestFindMissingFSCKModules(unittest.TestCase):
 
     def testFindMissingFSCKModules2(self):
         self.assertEqual(HelperBackendTools().FindMissingFSCKModules(), Functions.FindMissingFSCKModules())
+
+class TestFindCheckableFileSystems(unittest.TestCase):
+    def setUp(self):
+        self.app = wx.App()
+        self.Frame = TestWindow()
+        self.Panel = TestPanel(self.Frame)
+        Functions.ParentWindow = self
+
+        Tools.coretools.Startup = True
+        DevInfoTools().GetInfo(Standalone=True) #We need real disk info for these ones.
+        self.DiskInfo = GetDevInfo.getdevinfo.DiskInfo
+        Functions.DiskInfo = self.DiskInfo
+        Functions.CoreTools = CoreTools()
+        Tools.BackendTools.helpers.DiskInfo = self.DiskInfo
+        Tools.BackendTools.helpers.DialogTools = Functions
+
+    def tearDown(self):
+        del Tools.coretools.Startup
+        del GetDevInfo.getdevinfo.DiskInfo
+        del self.DiskInfo
+        del Functions.DiskInfo
+        del Functions.CoreTools
+        del Tools.BackendTools.helpers.DiskInfo
+        del Tools.BackendTools.helpers.DialogTools
+        del Functions.ParentWindow
+
+        self.Panel.Destroy()
+        del self.Panel
+
+        self.Frame.Destroy()
+        del self.Frame
+
+        self.app.Destroy()
+        del self.app
+
+    def testFindCheckableFileSystems1(self):
+        #More setup.
+        Tools.BackendTools.helpers.SystemInfo = Data.ReturnInitialSystemInfoDict()
+        Functions.SystemInfo = Data.ReturnInitialSystemInfoDict()
+
+        #Test.
+        self.assertEqual(HelperBackendTools().FindCheckableFileSystems(), Functions.FindCheckableFileSystems())
+
+        #More teardown.
+        del Tools.BackendTools.helpers.SystemInfo
+        del Functions.SystemInfo
