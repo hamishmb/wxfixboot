@@ -31,7 +31,6 @@ from . import HelperBackendToolsTestFunctions as Functions
 from . import HelperBackendToolsTestData as Data
 
 #Setup test functions.
-Functions.wx = wx
 Functions.os = os
 
 class TestPanel(wx.Panel):
@@ -68,14 +67,13 @@ class TestWaitUntilPackageManagerNotInUse(unittest.TestCase):
         del self.app
 
     def testWaitUntilPackageManagerNotInUse1(self):
-        Functions.ShowRealMsgDlg("Please ensure the package manager is not in use.")
+        DialogFunctionsForTests.ShowRealMsgDlg("Please ensure the package manager is not in use.")
         HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="apt-get")
 
     def testWaitUntilPackageManagerNotInUse2(self):
         #Ask user to enable internet connection.
-        Functions.ShowRealMsgDlg("Please open Synaptic or similar to lock the package manager, then click ok. After a few seconds, close it.")
+        DialogFunctionsForTests.ShowRealMsgDlg("Please open Synaptic or similar to lock the package manager, then click ok. After a few seconds, close it.")
         HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="apt-get")
-        self.assertTrue(Functions.ShowYesNoDlg("Is Synaptic/similar now closed?"))
 
 class TestFindMissingFSCKModules(unittest.TestCase):
     def setUp(self):
@@ -110,7 +108,7 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         Functions.DiskInfo = self.DiskInfo
         Functions.CoreTools = CoreTools()
         Tools.BackendTools.helpers.DiskInfo = self.DiskInfo
-        Tools.BackendTools.helpers.DialogTools = Functions
+        Tools.BackendTools.helpers.DialogTools = DialogFunctionsForTests
 
     def tearDown(self):
         del Tools.coretools.Startup
@@ -152,7 +150,7 @@ class TestHandleFilesystemCheckReturnValues(unittest.TestCase):
 
         self.SystemInfo = Data.ReturnInitialSystemInfoDict()
         Tools.BackendTools.helpers.SystemInfo = self.SystemInfo
-        Tools.BackendTools.helpers.DialogTools = Functions
+        Tools.BackendTools.helpers.DialogTools = DialogFunctionsForTests
 
     def tearDown(self):
         del self.SystemInfo
@@ -171,10 +169,10 @@ class TestHandleFilesystemCheckReturnValues(unittest.TestCase):
     def testHandleFilesystemCheckReturnValues1(self):
         #All of these should behave in exactly the same way.
         HelperBackendTools().HandleFilesystemCheckReturnValues(ExecCmds="xfs_repair -Pvd /dev/sda1", Retval=1, Partition="/dev/sda1")
-        self.assertEqual(Functions.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
+        self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
 
         HelperBackendTools().HandleFilesystemCheckReturnValues(ExecCmds="xfs_repair -Pvd /dev/sda1", Retval=2, Partition="/dev/sda1")
-        self.assertEqual(Functions.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
+        self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
 
         HelperBackendTools().HandleFilesystemCheckReturnValues(ExecCmds="xfs_repair -Pvd /dev/sda1", Retval=3, Partition="/dev/sda1")
-        self.assertEqual(Functions.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
+        self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
