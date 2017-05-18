@@ -44,8 +44,11 @@ import Tools
 from GetDevInfo.getdevinfo import Main as DevInfoTools
 from Tools.coretools import Main as CoreTools
 from Tools.dialogtools import Main as DialogTools
+
 from Tools.BackendTools.helpers import Main as HelperBackendTools
 from Tools.BackendTools.essentials import Main as EssentialBackendTools
+
+from Tools.StartupTools.core import Main as CoreStartupTools
 
 #Import test modules.
 import Tests
@@ -54,8 +57,11 @@ from Tests import DialogFunctionsForTests
 from Tests.GetDevInfo import GetDevInfoTests
 from Tests.Tools import CoreToolsTests
 from Tests.Tools import DialogToolsTests
+
 from Tests.Tools.BackendTools import HelperBackendToolsTests
 from Tests.Tools.BackendTools import EssentialBackendToolsTests
+
+from Tests.Tools.StartupTools import CoreStartupToolsTests
 
 def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
@@ -89,7 +95,7 @@ except getopt.GetoptError as err:
     sys.exit(2)
 
 #Set up which tests to run based on options given.
-TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests] #*** Set up full defaults when finished ***
+TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests] #*** Set up full defaults when finished ***
 
 #Log only critical message by default.
 loggerLevel = logging.CRITICAL
@@ -102,8 +108,8 @@ for o, a in opts:
     elif o in ["-d", "--dialogtools"]:
         TestSuites = [DialogToolsTests]
     elif o in ["-s", "--startuptools"]:
-        #TestSuites = [...]
-        assert False, "Not implemented yet"
+        TestSuites = [CoreStartupToolsTests]
+        #Implementation isn't finished ***
     elif o in ["-b", "--backendtools"]:
         TestSuites = [HelperBackendToolsTests, EssentialBackendToolsTests]
         #Implementation isn't finished ***
@@ -111,7 +117,7 @@ for o, a in opts:
         #TestSuites = [MainTests]
         assert False, "Not implemented yet"
     elif o in ["-a", "--all"]:
-        TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests]
+        TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests]
         #TestSuites.append(MainTests)
     elif o in ["-t", "--tests"]:
         pass
@@ -128,6 +134,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 logger = logging
 
 #Setup custom-made modules (make global variables accessible inside the packages).
+#*DialogTools is defined in the test suite files in an as-needed basis.*
+#* ^ They are modified versions that log messages and results to enable better test automation without needing user intervention as much.*
+
 GetDevInfo.getdevinfo.subprocess = subprocess
 GetDevInfo.getdevinfo.re = re
 GetDevInfo.getdevinfo.os = os
@@ -156,6 +165,9 @@ Tools.BackendTools.essentials.logger = logger
 Tools.BackendTools.essentials.CoreTools = CoreTools()
 Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools()
 
+Tools.StartupTools.core.logger = logger
+Tools.StartupTools.core.CoreTools = CoreTools()
+
 #Setup test modules.
 #GetDevInfo tests.
 GetDevInfoTests.DevInfoTools = DevInfoTools
@@ -183,6 +195,12 @@ HelperBackendToolsTests.Tools = Tools
 EssentialBackendToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
 EssentialBackendToolsTests.EssentialBackendTools = EssentialBackendTools
 EssentialBackendToolsTests.Tools = Tools
+
+#Core Startup tools tests.
+CoreStartupToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
+CoreStartupToolsTests.CoreTools = CoreTools
+CoreStartupToolsTests.CoreStartupTools = CoreStartupTools
+CoreStartupToolsTests.Tools = Tools
 
 if __name__ == "__main__":
     for SuiteModule in TestSuites:
