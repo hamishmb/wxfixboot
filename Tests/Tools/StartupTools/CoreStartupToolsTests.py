@@ -51,3 +51,15 @@ class TestDeterminePackageManager(unittest.TestCase):
 
     def testDeterminePackageManager1(self):
         self.assertEqual(CoreStartupTools().DeterminePackageManager(APTCmd="which apt-get", YUMCmd="which yum"), Functions.DeterminePackageManager(APTCmd="which apt-get", YUMCmd="which yum"))
+
+class TestGetFSTabInfo(unittest.TestCase): #*** Do another test with a fake fstab file(s) XD ***
+    def setUp(self):
+        Tools.StartupTools.core.DiskInfo = Data.ReturnEmptyDiskInfoDict()
+        Functions.DiskInfo = Data.ReturnEmptyDiskInfoDict()
+
+    def tearDown(self):
+        del Tools.StartupTools.core.DiskInfo
+        del Functions.DiskInfo
+
+    def testGetFSTabInfo1(self):
+        self.assertEqual(CoreStartupTools().GetFSTabInfo(MountPoint="", OSName="ThisIsATest"), Functions.GetFSTabInfo(MountPoint="", OSName="ThisIsATest"))

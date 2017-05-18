@@ -51,4 +51,49 @@ def DeterminePackageManager(APTCmd, YUMCmd):
 
     return PackageManager
 
+def GetFSTabInfo(MountPoint, OSName):
+    """Get /etc/fstab info and related info (EFI Partition, /boot partition) for the given OS at the given mountpoint."""
+    #Do some setup.
+    EFIPartition = "Unknown"
+    BootPartition = "Unknown"
 
+    #Read the raw contents of the /etc/fstab file.
+    FSTabFile = open(MountPoint+"/etc/fstab", "r")
+    RawFSTABContents = FSTabFile.read().split("\n")
+    FSTabFile.close()
+
+    #Gather some info from it.
+    for Line in RawFSTABContents:
+        #Ignore any comments.
+        if "#" in Line or Line == "":
+            continue
+
+        #Try to find this OS's EFI and boot partitions (if there are any).
+        if Line.split()[1] == "/boot/efi" or Line.split()[1] == "/boot":
+            Temp = Line.split()[0]
+
+            #If we have a UUID, convert it into a device node.
+            if "UUID=" in Temp:
+                UUID = Temp.split("=")[1]
+
+                for Disk in DiskInfo.keys():
+                    if DiskInfo[Disk]["UUID"] == UUID:
+                        Temp = Disk
+                        break
+
+            #In case we had a UUID with no match, check again before adding it to OSInfo, else ignore it.
+            if "/dev/" in Temp:
+                Disk = Temp
+
+            else:
+                Disk = "Unknown"
+
+        #Try to find this OS's /boot partition (if there is one).
+        if Line.split()[1] == "/boot/efi":
+            EFIPartition = Disk
+
+        elif Line.split()[1] == "/boot":
+            BootPartition = Disk
+
+    #Return stuff.
+    return (RawFSTABContents, EFIPartition, BootPartition)
