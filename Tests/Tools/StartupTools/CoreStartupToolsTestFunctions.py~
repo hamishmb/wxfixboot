@@ -51,10 +51,8 @@ def DeterminePackageManager(APTCmd, YUMCmd):
 
     return PackageManager
 
-def GetFSTabInfo(self, MountPoint, OSName):
+def GetFSTabInfo(MountPoint, OSName):
     """Get /etc/fstab info and related info (EFI Partition, /boot partition) for the given OS at the given mountpoint."""
-    logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Getting FSTab info in "+MountPoint+"/etc/fstab for "+OSName+"...")
-
     #Do some setup.
     EFIPartition = "Unknown"
     BootPartition = "Unknown"
@@ -72,13 +70,11 @@ def GetFSTabInfo(self, MountPoint, OSName):
 
         #Try to find this OS's EFI and boot partitions (if there are any).
         if Line.split()[1] == "/boot/efi" or Line.split()[1] == "/boot":
-            logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Finding partition that automounts at /boot/efi or /boot...")
             Temp = Line.split()[0]
 
             #If we have a UUID, convert it into a device node.
             if "UUID=" in Temp:
                 UUID = Temp.split("=")[1]
-                logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Found UUID "+UUID+". Trying to find device name...")
 
                 for Disk in DiskInfo.keys():
                     if DiskInfo[Disk]["UUID"] == UUID:
@@ -87,11 +83,9 @@ def GetFSTabInfo(self, MountPoint, OSName):
 
             #In case we had a UUID with no match, check again before adding it to OSInfo, else ignore it.
             if "/dev/" in Temp:
-                logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Found EFI/Boot Partition "+Temp+"...")
                 Disk = Temp
 
             else:
-                logger.error("CoreStartupTools: Main().GetFSTabInfo(): Couldn't determine device name! Ignoring this device...")
                 Disk = "Unknown"
 
         #Try to find this OS's /boot partition (if there is one).
@@ -103,3 +97,46 @@ def GetFSTabInfo(self, MountPoint, OSName):
 
     #Return stuff.
     return (RawFSTABContents, EFIPartition, BootPartition)
+
+def DetermineOSArchitecture(self, MountPoint):
+    """Look for OS architecture on given partition."""
+    if MountPoint != "":
+        logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for OS at "+MountPoint+"...")
+
+    else:
+        logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for Current OS...")
+
+    #Do setup.
+    OSArch = None
+    Cmd = "arch"
+
+    while True:
+        if MountPoint != "":
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+           Retval, OSArch = CoreTools.StartProcess(Cmd, ReturnOutput=True)
+
+            #If the command failed, try a second approach.
+            if Retval != 0 and "arch" in Cmd:
+                Cmd = "file /sbin/init"
+
+            elif Retval != 0:
+                OSArch = None
+                break
+
+            else:
+                break
+
+        #If the command that worked was 'arch', or both failed, we can just return it.
+        if "arch" in Cmd or Retval != 0:
+            #Return the arch (or None, if we didn't find it).
+            return OSArch
+
+        else:
+            if "32-bit" in OSArch:
+                OSArch = "i386"
+
+            else:
+                OSArch = "x86_64"
+
+            return OSArch

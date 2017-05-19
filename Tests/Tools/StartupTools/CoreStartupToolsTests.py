@@ -63,3 +63,15 @@ class TestGetFSTabInfo(unittest.TestCase): #*** Do another test with a fake fsta
 
     def testGetFSTabInfo1(self):
         self.assertEqual(CoreStartupTools().GetFSTabInfo(MountPoint="", OSName="ThisIsATest"), Functions.GetFSTabInfo(MountPoint="", OSName="ThisIsATest"))
+
+class TestDetermineOSArchitecture(unittest.TestCase):
+    def setUp(self):
+        Tools.coretools.Startup = True
+        Functions.CoreTools = CoreTools()
+
+    def tearDown(self):
+        del Tools.coretools.Startup
+        del Functions.CoreTools
+
+    def testDetermineOSArchitecture1(self):
+        self.assertEqual(CoreStartupTools().DetermineOSArchitecture(MountPoint=""), Functions.DetermineOSArchitecture(MountPoint=""))

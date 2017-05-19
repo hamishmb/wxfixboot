@@ -97,3 +97,40 @@ def GetFSTabInfo(MountPoint, OSName):
 
     #Return stuff.
     return (RawFSTABContents, EFIPartition, BootPartition)
+
+def DetermineOSArchitecture(MountPoint):
+    """Look for OS architecture on given partition."""
+    #Do setup.
+    OSArch = None
+    Cmd = "arch"
+
+    while True:
+        if MountPoint != "":
+            Cmd = "chroot "+MountPoint+" "+Cmd
+
+        Retval, OSArch = CoreTools.StartProcess(Cmd, ReturnOutput=True)
+
+        #If the command failed, try a second approach.
+        if Retval != 0 and "arch" in Cmd:
+            Cmd = "file /sbin/init"
+
+        elif Retval != 0:
+            OSArch = None
+            break
+
+        else:
+            break
+
+    #If the command that worked was 'arch', or both failed, we can just return it.
+    if "arch" in Cmd or Retval != 0:
+        #Return the arch (or None, if we didn't find it).
+        return OSArch
+
+    else:
+        if "32-bit" in OSArch:
+            OSArch = "i386"
+
+        else:
+            OSArch = "x86_64"
+
+        return OSArch
