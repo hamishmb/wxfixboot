@@ -45,7 +45,8 @@ class TestCheckDepends(unittest.TestCase):
     def testCheckDepends1(self):
         #Run the Functions version first, because it will be a problem for us if a real Emergency exit is triggered.
         Functions.CheckDepends()
-        self.assertFalse(Functions.WouldEmergencyExit, Functions.WouldEmergencyExitBecause) #Let user know about the problem.
+        Functions.WouldEmergencyExit = True
+        self.assertEqual(Functions.WouldEmergencyExit, False, Functions.WouldEmergencyExitBecause) #Let user know about the problem.
 
         #If we got here okay, run the real thing. If it runs without error, we're fine.
         MainStartupTools().CheckDepends()
@@ -69,6 +70,6 @@ class TestCheckForLiveDisk(unittest.TestCase):
 
     def testCheckForLiveDisk1(self):
         Functions.CheckForLiveDisk()
-        MainStartupTools.CheckForLiveDisk()
+        MainStartupTools().CheckForLiveDisk()
 
         self.assertEqual(Functions.SystemInfo, Tools.StartupTools.main.SystemInfo)
