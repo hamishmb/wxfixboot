@@ -29,17 +29,6 @@ import wx
 from . import CoreStartupToolsTestFunctions as Functions
 from . import CoreStartupToolsTestData as Data
 
-class TestPanel(wx.Panel):
-    def __init__(self, parent):
-        """Initialises the panel"""
-        wx.Panel.__init__(self, parent=parent)
-        self.frame = parent
-
-class TestWindow(wx.Frame):
-    def __init__(self):
-        """Initialises TestWindow"""
-        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1,1), style=wx.SIMPLE_BORDER)
-
 class TestDeterminePackageManager(unittest.TestCase):
     def setUp(self):
         Tools.coretools.Startup = True
@@ -87,3 +76,38 @@ class TestGetOSNameWithLSB(unittest.TestCase):
 
     def testGetOSNameWithLSB(self):
         self.assertEqual(CoreStartupTools().GetOSNameWithLSB(Partition="RootFS", MountPoint="", IsCurrentOS=True), Functions.GetOSNameWithLSB(Partition="RootFS", MountPoint="", IsCurrentOS=True))
+
+class TestAskForOSName(unittest.TestCase):
+    def setUp(self):
+        self.app = wx.App()
+
+        Tools.StartupTools.core.DialogTools = DialogFunctionsForTests
+
+    def tearDown(self):
+        del Tools.StartupTools.core.DialogTools
+
+        self.app.Destroy()
+        del self.app
+
+    def testAskForOSName1(self):
+        DialogFunctionsForTests.ShowRealMsgDlg(Message="Enter \"Linux\" in the text entry dialog that you're about to be shown.")
+        Result = CoreStartupTools().AskForOSName(Partition="RootFS", OSArch="x86_64", IsCurrentOS=True)
+        self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], "WxFixBoot couldn't find the name of the current OS. Please name it so that WxFixBoot can function correctly.")
+        self.assertIsNot(DialogFunctionsForTests.TextEntryDlgResults[-1], False, "User didn't follow the instructions.")
+        self.assertEqual(DialogFunctionsForTests.TextEntryDlgResults[-1], "Linux")
+        self.assertEqual(Result, "Linux")
+
+    def testAskForOSName2(self):
+        DialogFunctionsForTests.ShowRealMsgDlg(Message="Click \"No\" in the yes/no dialog that you're about to be shown.")
+        CoreStartupTools().AskForOSName(Partition="RootFS", OSArch="x86_64", IsCurrentOS=False)
+        self.assertFalse(DialogFunctionsForTests.YesNoDlgResults[-1], "User didn't follow the instructions.")
+        self.assertIsNot(DialogFunctionsForTests.TextEntryDlgResults[-1], True, "User didn't follow the instructions.")
+        self.assertIsNone(Result)
+
+    def testAskForOSName3(self):
+        DialogFunctionsForTests.ShowRealMsgDlg(Message="Click \"Yes\" in the yes/no dialog that you're about to be shown, then enter \"Linux\" in the text entry dialog.")
+        Result = CoreStartupTools().AskForOSName(Partition="RootFS", OSArch="x86_64", IsCurrentOS=False)
+        self.assertTrue(DialogFunctionsForTests.YesNoDlgResults[-1], "User didn't follow the instructions.")
+        self.assertIsNot(DialogFunctionsForTests.TextEntryDlgResults[-1], False, "User didn't follow the instructions.")
+        self.assertEqual(DialogFunctionsForTests.TextEntryDlgResults[-1], "Linux")
+        self.assertEqual(Result, "Linux")
