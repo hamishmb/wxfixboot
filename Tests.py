@@ -215,6 +215,7 @@ CoreStartupToolsTests.Tools = Tools
 MainStartupToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
 MainStartupToolsTests.CoreTools = CoreTools
 MainStartupToolsTests.MainStartupTools = MainStartupTools
+MainStartupToolsTests.CoreStartupTools = CoreStartupTools
 MainStartupToolsTests.Tools = Tools
 
 if __name__ == "__main__":

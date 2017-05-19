@@ -26,7 +26,7 @@ from __future__ import unicode_literals
 WouldEmergencyExit = False
 WouldEmergencyExitBecause = []
 
-def EmergencyExit():
+def EmergencyExit(Message):
     """Test suite special: sets a variable so the tests know if an Emergency Exit would have been triggered."""
     global WouldEmergencyExit
     global WouldEmergencyExitBecause
@@ -53,3 +53,48 @@ def CheckDepends():
     if FailedList != []:
         #Missing dependencies!
         EmergencyExit("The following dependencies could not be found on your system: "+', '.join(FailedList)+".\n\nPlease install the missing dependencies.")
+
+def CheckForLiveDisk(self):
+    """Try to determine if we're running on a live disk."""
+    logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Attempting to check if we're on a live disk...")
+
+    #Detect Parted Magic automatically.
+    if "pmagic" in CoreTools.StartProcess("uname -r", ReturnOutput=True)[1]:
+        logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Running on Parted Magic...")
+        SystemInfo["IsLiveDisk"] = True
+        SystemInfo["OnPartedMagic"] = True
+
+    #Try to detect ubuntu-based livecds.
+    elif CoreTools.IsMounted("/cow", "/") and os.path.isfile("/cdrom/casper/filesystem.squashfs"):
+        logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Running on Ubuntu-based live disk...")
+        SystemInfo["IsLiveDisk"] = True
+        SystemInfo["OnPartedMagic"] = False
+
+    #Try to detect fedora-based livecds.
+    elif CoreTools.IsMounted("/dev/mapper/live-rw", "/") and os.path.isfile("/run/initramfs/live/LiveOS/squashfs.img"):
+        logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Running on Fedora-based live disk...")
+        SystemInfo["IsLiveDisk"] = True
+        SystemInfo["OnPartedMagic"] = False
+
+    #Try to detect if we're not running on a live disk (on a HDD).
+    elif "/dev/sd" in CoreTools.GetPartitionMountedAt("/"):
+        logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Not running on live disk...")
+        SystemInfo["IsLiveDisk"] = False
+        SystemInfo["OnPartedMagic"] = False
+
+    #Try to detect if we're not running on a live disk (on LVM).
+    elif "/dev/mapper/" in CoreTools.GetPartitionMountedAt("/"):
+        logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Not running on live disk...")
+        SystemInfo["IsLiveDisk"] = False
+        SystemInfo["OnPartedMagic"] = False
+
+    #Ask the user if we're running on a live disk.
+    else:
+        logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Asking the user if we're running on live media...")
+        SystemInfo["IsLiveDisk"] = DialogTools.ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", Title="WxFixBoot - Live Media?")
+        SystemInfo["OnPartedMagic"] = False
+        logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Result: "+unicode(SystemInfo["IsLiveDisk"]))
+
+    #Get current OS architecture.
+    logger.info("MainStartupTools(): Main().CheckForLiveDisk(): Getting architecture of current OS...")
+    SystemInfo["CurrentOSArch"] = CoreStartupTools.DetermineOSArchitecture(MountPoint="")
