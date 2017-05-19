@@ -134,3 +134,19 @@ def DetermineOSArchitecture(MountPoint):
             OSArch = "x86_64"
 
         return OSArch
+
+def GetOSNameWithLSB(Partition, MountPoint, IsCurrentOS):
+    """Attempt to get an OS's name using lsb_release -sd as a fallback."""
+    if IsCurrentOS:
+        Cmd = "lsb_release -sd"
+
+    else:
+        Cmd = "chroot "+MountPoint+" lsb_release -sd"
+
+    Retval, Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)
+
+    if Retval != 0 or Output == "":
+        return "Unknown"
+
+    else:
+        return Output

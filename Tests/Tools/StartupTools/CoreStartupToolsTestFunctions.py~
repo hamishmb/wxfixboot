@@ -98,14 +98,8 @@ def GetFSTabInfo(MountPoint, OSName):
     #Return stuff.
     return (RawFSTABContents, EFIPartition, BootPartition)
 
-def DetermineOSArchitecture(self, MountPoint):
+def DetermineOSArchitecture(MountPoint):
     """Look for OS architecture on given partition."""
-    if MountPoint != "":
-        logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for OS at "+MountPoint+"...")
-
-    else:
-        logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for Current OS...")
-
     #Do setup.
     OSArch = None
     Cmd = "arch"
@@ -114,29 +108,51 @@ def DetermineOSArchitecture(self, MountPoint):
         if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-           Retval, OSArch = CoreTools.StartProcess(Cmd, ReturnOutput=True)
+        Retval, OSArch = CoreTools.StartProcess(Cmd, ReturnOutput=True)
 
-            #If the command failed, try a second approach.
-            if Retval != 0 and "arch" in Cmd:
-                Cmd = "file /sbin/init"
+        #If the command failed, try a second approach.
+        if Retval != 0 and "arch" in Cmd:
+            Cmd = "file /sbin/init"
 
-            elif Retval != 0:
-                OSArch = None
-                break
-
-            else:
-                break
-
-        #If the command that worked was 'arch', or both failed, we can just return it.
-        if "arch" in Cmd or Retval != 0:
-            #Return the arch (or None, if we didn't find it).
-            return OSArch
+        elif Retval != 0:
+            OSArch = None
+            break
 
         else:
-            if "32-bit" in OSArch:
-                OSArch = "i386"
+            break
 
-            else:
-                OSArch = "x86_64"
+    #If the command that worked was 'arch', or both failed, we can just return it.
+    if "arch" in Cmd or Retval != 0:
+        #Return the arch (or None, if we didn't find it).
+        return OSArch
 
-            return OSArch
+    else:
+        if "32-bit" in OSArch:
+            OSArch = "i386"
+
+        else:
+            OSArch = "x86_64"
+
+        return OSArch
+
+def GetOSNameWithLSB(Partition, MountPoint, IsCurrentOS):
+    """Attempt to get an OS's name using lsb_release -sd as a fallback."""
+    logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): Attempting to get OS name for OS on "+Partition+"...")
+
+    if IsCurrentOS:
+        logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): OS is the currently running OS...")
+        Cmd = "lsb_release -sd"
+
+    else:
+        logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): OS isn't the currently running OS...")
+        Cmd = "chroot "+MountPoint+" lsb_release -sd"
+
+    Retval, Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)
+
+    if Retval != 0 or Output == "":
+        logger.error("CoreStartupTools: Main().GetOSNameWithLSB(): Couldn't get OS name! Returning 'Unknown'...")
+        return "Unknown"
+
+    else:
+        logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): Success. OS name is "+Output+". Returning it...")
+        return Output

@@ -75,3 +75,15 @@ class TestDetermineOSArchitecture(unittest.TestCase):
 
     def testDetermineOSArchitecture1(self):
         self.assertEqual(CoreStartupTools().DetermineOSArchitecture(MountPoint=""), Functions.DetermineOSArchitecture(MountPoint=""))
+
+class TestGetOSNameWithLSB(unittest.TestCase):
+    def setUp(self):
+        Tools.coretools.Startup = True
+        Functions.CoreTools = CoreTools()
+
+    def tearDown(self):
+        del Tools.coretools.Startup
+        del Functions.CoreTools
+
+    def testGetOSNameWithLSB(self):
+        self.assertEqual(CoreStartupTools().GetOSNameWithLSB(Partition="RootFS", MountPoint="", IsCurrentOS=True), Functions.GetOSNameWithLSB(Partition="RootFS", MountPoint="", IsCurrentOS=True))
