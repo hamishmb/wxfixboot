@@ -49,6 +49,8 @@ from Tools.BackendTools.helpers import Main as HelperBackendTools
 from Tools.BackendTools.essentials import Main as EssentialBackendTools
 
 from Tools.StartupTools.core import Main as CoreStartupTools
+from Tools.StartupTools.main import Main as MainStartupTools
+from Tools.StartupTools.getbootloaderconfigtools import Main as BootloaderConfigObtainingTools
 
 #Import test modules.
 import Tests
@@ -62,6 +64,7 @@ from Tests.Tools.BackendTools import HelperBackendToolsTests
 from Tests.Tools.BackendTools import EssentialBackendToolsTests
 
 from Tests.Tools.StartupTools import CoreStartupToolsTests
+from Tests.Tools.StartupTools import MainStartupToolsTests
 
 def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
@@ -95,7 +98,7 @@ except getopt.GetoptError as err:
     sys.exit(2)
 
 #Set up which tests to run based on options given.
-TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests] #*** Set up full defaults when finished ***
+TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests, MainStartupToolsTests] #*** Set up full defaults when finished ***
 
 #Log only critical message by default.
 loggerLevel = logging.CRITICAL
@@ -108,7 +111,7 @@ for o, a in opts:
     elif o in ["-d", "--dialogtools"]:
         TestSuites = [DialogToolsTests]
     elif o in ["-s", "--startuptools"]:
-        TestSuites = [CoreStartupToolsTests]
+        TestSuites = [CoreStartupToolsTests, MainStartupToolsTests]
         #Implementation isn't finished ***
     elif o in ["-b", "--backendtools"]:
         TestSuites = [HelperBackendToolsTests, EssentialBackendToolsTests]
@@ -117,7 +120,7 @@ for o, a in opts:
         #TestSuites = [MainTests]
         assert False, "Not implemented yet"
     elif o in ["-a", "--all"]:
-        TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests]
+        TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests, MainStartupToolsTests]
         #TestSuites.append(MainTests)
     elif o in ["-t", "--tests"]:
         pass
@@ -168,6 +171,12 @@ Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools()
 Tools.StartupTools.core.logger = logger
 Tools.StartupTools.core.CoreTools = CoreTools()
 
+Tools.StartupTools.main.logger = logger
+Tools.StartupTools.main.os = os
+Tools.StartupTools.main.CoreTools = CoreTools()
+Tools.StartupTools.main.CoreStartupTools = CoreStartupTools()
+Tools.StartupTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools()
+
 #Setup test modules.
 #GetDevInfo tests.
 GetDevInfoTests.DevInfoTools = DevInfoTools
@@ -202,7 +211,13 @@ CoreStartupToolsTests.CoreTools = CoreTools
 CoreStartupToolsTests.CoreStartupTools = CoreStartupTools
 CoreStartupToolsTests.Tools = Tools
 
+#Main Startup tools tests.
+MainStartupToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
+MainStartupToolsTests.CoreTools = CoreTools
+MainStartupToolsTests.MainStartupTools = MainStartupTools
+MainStartupToolsTests.Tools = Tools
+
 if __name__ == "__main__":
     for SuiteModule in TestSuites:
-        print("\n\n---------------------------- Tests for "+unicode(SuiteModule)+" ----------------------------\n\n")
+        print("\n\nTests in "+unicode(SuiteModule)+"\n\n")
         unittest.TextTestRunner(verbosity=2).run(unittest.TestLoader().loadTestsFromModule(SuiteModule))

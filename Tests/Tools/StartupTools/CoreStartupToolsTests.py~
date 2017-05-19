@@ -99,7 +99,7 @@ class TestAskForOSName(unittest.TestCase):
 
     def testAskForOSName2(self):
         DialogFunctionsForTests.ShowRealMsgDlg(Message="Click \"No\" in the yes/no dialog that you're about to be shown.")
-                self.assertIsNone(CoreStartupTools().AskForOSName(Partition="RootFS", OSArch="x86_64", IsCurrentOS=False))
+        CoreStartupTools().AskForOSName(Partition="RootFS", OSArch="x86_64", IsCurrentOS=False)
         self.assertFalse(DialogFunctionsForTests.YesNoDlgResults[-1], "User didn't follow the instructions.")
         self.assertIsNot(DialogFunctionsForTests.TextEntryDlgResults[-1], True, "User didn't follow the instructions.")
         self.assertIsNone(Result)
