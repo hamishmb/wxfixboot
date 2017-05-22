@@ -29,6 +29,7 @@ import wx
 from . import CoreStartupToolsTestFunctions as Functions
 from . import CoreStartupToolsTestData as Data
 
+@unittest.skipUnless(False, "Disabled")
 class TestDeterminePackageManager(unittest.TestCase):
     def setUp(self):
         Tools.coretools.Startup = True
@@ -41,6 +42,7 @@ class TestDeterminePackageManager(unittest.TestCase):
     def testDeterminePackageManager1(self):
         self.assertEqual(CoreStartupTools().DeterminePackageManager(APTCmd="which apt-get", YUMCmd="which yum"), Functions.DeterminePackageManager(APTCmd="which apt-get", YUMCmd="which yum"))
 
+@unittest.skipUnless(False, "Disabled")
 class TestGetFSTabInfo(unittest.TestCase): #*** Do another test with a fake fstab file(s) XD ***
     def setUp(self):
         Tools.StartupTools.core.DiskInfo = Data.ReturnEmptyDiskInfoDict()
@@ -53,6 +55,7 @@ class TestGetFSTabInfo(unittest.TestCase): #*** Do another test with a fake fsta
     def testGetFSTabInfo1(self):
         self.assertEqual(CoreStartupTools().GetFSTabInfo(MountPoint="", OSName="ThisIsATest"), Functions.GetFSTabInfo(MountPoint="", OSName="ThisIsATest"))
 
+@unittest.skipUnless(False, "Disabled")
 class TestDetermineOSArchitecture(unittest.TestCase):
     def setUp(self):
         Tools.coretools.Startup = True
@@ -65,6 +68,7 @@ class TestDetermineOSArchitecture(unittest.TestCase):
     def testDetermineOSArchitecture1(self):
         self.assertEqual(CoreStartupTools().DetermineOSArchitecture(MountPoint=""), Functions.DetermineOSArchitecture(MountPoint=""))
 
+@unittest.skipUnless(False, "Disabled")
 class TestGetOSNameWithLSB(unittest.TestCase):
     def setUp(self):
         Tools.coretools.Startup = True
@@ -77,6 +81,7 @@ class TestGetOSNameWithLSB(unittest.TestCase):
     def testGetOSNameWithLSB(self):
         self.assertEqual(CoreStartupTools().GetOSNameWithLSB(Partition="RootFS", MountPoint="", IsCurrentOS=True), Functions.GetOSNameWithLSB(Partition="RootFS", MountPoint="", IsCurrentOS=True))
 
+@unittest.skipUnless(False, "Disabled")
 class TestAskForOSName(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
@@ -99,7 +104,7 @@ class TestAskForOSName(unittest.TestCase):
 
     def testAskForOSName2(self):
         DialogFunctionsForTests.ShowRealMsgDlg(Message="Click \"No\" in the yes/no dialog that you're about to be shown.")
-        CoreStartupTools().AskForOSName(Partition="RootFS", OSArch="x86_64", IsCurrentOS=False)
+        Result = CoreStartupTools().AskForOSName(Partition="RootFS", OSArch="x86_64", IsCurrentOS=False)
         self.assertFalse(DialogFunctionsForTests.YesNoDlgResults[-1], "User didn't follow the instructions.")
         self.assertIsNot(DialogFunctionsForTests.TextEntryDlgResults[-1], True, "User didn't follow the instructions.")
         self.assertIsNone(Result)
