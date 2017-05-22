@@ -151,3 +151,24 @@ class TestGetFirmwareType(unittest.TestCase):
         #If a dialog was going to be displayed to the user, make sure it would be displayed both times.
         if len(DialogFunctionsForTests.MsgDlgMessages) > 0 and DialogFunctionsForTests.MsgDlgMessages[-1] == "Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.":
             self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], DialogFunctionsForTests.MsgDlgMessages[-2])
+
+class TestFinalCheck(unittest.TestCase):
+    def setUp(self):
+        Tools.StartupTools.main.DialogTools = DialogFunctionsForTests
+
+    def tearDown(self):
+        del Tools.StartupTools.main.DialogTools
+        del Tools.StartupTools.main.BootloaderInfo #Will be present after test.
+        DialogFunctionsForTests.MsgDlgMessages = [] #Reset so we can check if there are any new messages from the 2nd test.
+
+    def testFinalCheck1(self):
+        #Get the dict for this test.
+        Tools.StartupTools.main.BootloaderInfo = Data.ReturnFakeBLInfo1()
+        MainStartupTools().FinalCheck()
+        self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], Data.ReturnFinalCheckResults1())
+
+    def testFinalCheck2(self):
+        #Get the dict for this test.
+        Tools.StartupTools.main.BootloaderInfo = Data.ReturnFakeBLInfo2()
+        MainStartupTools().FinalCheck()
+        self.assertTrue(len(DialogFunctionsForTests.MsgDlgMessages) == 0)

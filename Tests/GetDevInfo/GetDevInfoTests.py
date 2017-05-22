@@ -92,6 +92,4 @@ class TestParseLVMOutput(unittest.TestCase):
 
     def testParseAndAssembleLVMOutput(self):
         DevInfoTools().ParseLVMOutput(Testing=True)
-        print(GetDevInfo.getdevinfo.DiskInfo)
-        print("\n\n", self.CorrectDiskInfo)
         self.assertEqual(GetDevInfo.getdevinfo.DiskInfo, self.CorrectDiskInfo)

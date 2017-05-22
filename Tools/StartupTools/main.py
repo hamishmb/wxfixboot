@@ -517,7 +517,7 @@ class Main():
 
         for OS in BootloaderInfo:
             if BootloaderInfo[OS]["IsModifyable"] == False:
-                UnmodifyableOSs.append(OS+BootloaderInfo[OS]["Comments"])
+                UnmodifyableOSs.append(OS+", because "+BootloaderInfo[OS]["Comments"])
 
         if UnmodifyableOSs != []:
             DialogTools.ShowMsgDlg(Message="Some of the OSs found on your system cannot be modified! These are:\n\n"+'\n'.join(UnmodifyableOSs)+"\n\nClick okay to continue.")
