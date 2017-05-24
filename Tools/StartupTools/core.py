@@ -78,7 +78,7 @@ class Main():
 
     def HasWindows9X(self, MountPoint):
         """Try to find a Windows 9X installation. Return True if found, False if not."""
-        return (os.path.isdir(MountPoint+"/Windows") and os.path.isfile(MountPoint+"/AUTOEXEC.BAT") and os.path.isfile(MountPoint+"/COMMAND.COM") and os.path.isfile(MountPoint+"My\ Documents"))
+        return (os.path.isdir(MountPoint+"/Windows") and os.path.isfile(MountPoint+"/AUTOEXEC.BAT") and os.path.isfile(MountPoint+"/COMMAND.COM") and os.path.isfile(MountPoint+"My Documents"))
 
     def HasWindowsXP(self, MountPoint):
         """Try to find a Windows XP installation. Return True if found, False if not."""
