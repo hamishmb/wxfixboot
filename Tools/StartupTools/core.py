@@ -40,7 +40,7 @@ class Main():
         BootloaderInfo[OS]["AvailableBootloaders"] = []
         BootloaderInfo[OS]["MenuEntries"] = {}
         BootloaderInfo[OS]["IsModifyable"] = False
-        BootloaderInfo[OS]["Comments"] = "WxFixBoot cannot modify Windows"
+        BootloaderInfo[OS]["Comments"] = "WxFixBoot cannot modify Windows."
         BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"], BootloaderInfo[OS]["DefaultOS"] = (10, "Unknown", "Unknown", OS, OS)
 
         #Initialise some default no-action settings.
