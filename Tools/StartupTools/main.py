@@ -535,6 +535,6 @@ class Main():
                 NeedReinstalling.append(OS)
 
         if NeedReinstalling != []:
-            DialogTools.ShowMsgDlg(Message="Some of the OSs found on your system have damaged bootloaders! These are:\n\n"+'\n'.join(NeedReinstalling)+"\n\nPlease reinstall the bootloaders for the operating systems in order for them to function correctly.\n\nClick okay to continue.")
+            DialogTools.ShowMsgDlg(Message="Some of the OSs found on your system have damaged bootloaders! These are:\n\n"+'\n'.join(NeedReinstalling)+"\n\nPlease reinstall the bootloaders for these operating systems using \"Bootloader Options\".\n\nClick okay to continue.")
 
 #End main Class.
