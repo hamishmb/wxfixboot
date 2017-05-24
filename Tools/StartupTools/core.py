@@ -23,6 +23,83 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
+    def MakeBootloaderInfoEntryForWindows(self, OS):
+        """Makes an entry in BootloaderInfo for Windows"""
+        BootloaderInfo[OS] = {}
+        BootloaderInfo[OS]["OSName"] = OS
+
+        if OS == "Windows 95/98/ME":
+            BootloaderInfo[OS]["Bootloader"] = "AUTOEXEC.BAT"
+
+        elif OS == "Windows XP":
+            BootloaderInfo[OS]["Bootloader"] = "NTLoader"
+
+        else:
+            BootloaderInfo[OS]["Bootloader"] = "Windows Boot Manager"
+
+        BootloaderInfo[OS]["AvailableBootloaders"] = []
+        BootloaderInfo[OS]["MenuEntries"] = {}
+        BootloaderInfo[OS]["IsModifyable"] = False
+        BootloaderInfo[OS]["Comments"] = "WxFixBoot cannot modify Windows"
+        BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"], BootloaderInfo[OS]["DefaultOS"] = (10, "Unknown", "Unknown", OS, OS)
+
+        #Initialise some default no-action settings.
+        BootloaderInfo[OS]["Settings"] = {}
+        BootloaderInfo[OS]["Settings"]["Reinstall"] = False
+        BootloaderInfo[OS]["Settings"]["Update"] = False
+        BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] = False
+        BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"] = False
+        BootloaderInfo[OS]["Settings"]["NewKernelOptions"] = BootloaderInfo[OS]["GlobalKernelOptions"]
+        BootloaderInfo[OS]["Settings"]["NewTimeout"] = BootloaderInfo[OS]["Timeout"]
+        BootloaderInfo[OS]["Settings"]["DefaultOS"] = BootloaderInfo[OS]["DefaultOS"]
+        BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] = False
+        BootloaderInfo[OS]["Settings"]["NewBootloader"] = "-- Please Select --"
+        BootloaderInfo[OS]["Settings"]["BackupBootloader"] = False
+        BootloaderInfo[OS]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
+        BootloaderInfo[OS]["Settings"]["RestoreBootloader"] = False
+        BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
+        BootloaderInfo[OS]["Settings"]["ChangeThisOS"] = False
+
+        #Initialise GUI state for this OS (True = Enabled, False = Disabled).
+        BootloaderInfo[OS]["GUIState"] = {}
+        BootloaderInfo[OS]["GUIState"]["ReinstallCheckBoxState"] = True
+        BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"] = True
+        BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
+        BootloaderInfo[OS]["GUIState"]["NewTimeoutSpinnerState"] = False
+        BootloaderInfo[OS]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
+        BootloaderInfo[OS]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
+        BootloaderInfo[OS]["GUIState"]["DefaultOSChoiceState"] = False
+        BootloaderInfo[OS]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
+        BootloaderInfo[OS]["GUIState"]["NewBootloaderChoiceState"] = False
+        BootloaderInfo[OS]["GUIState"]["BackupBootloaderCheckBoxState"] = True
+        BootloaderInfo[OS]["GUIState"]["BackupBootloaderChoiceState"] = False
+        BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
+        BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = False
+
+    def HasWindows9X(self, MountPoint):
+        """Try to find a Windows 9X installation. Return True if found, False if not."""
+        return (os.path.isdir(MountPoint+"/Windows") and os.path.isfile(MountPoint+"/AUTOEXEC.BAT") and os.path.isfile(MountPoint+"/COMMAND.COM") and os.path.isfile(MountPoint+"My\ Documents"))
+
+    def HasWindowsXP(self, MountPoint):
+        """Try to find a Windows XP installation. Return True if found, False if not."""
+        return (os.path.isfile(MountPoint+"/boot.ini") and os.path.isfile(MountPoint+"/ntldr") and os.path.isfile(MountPoint+"/ntdetect.com") and os.path.isfile(MountPoint+"Documents\ and\ Settings"))
+
+    def HasWindowsVista(self, MountPoint):
+        """Try to find a Windows Vista installation. Return True if found, False if not."""
+        return (os.path.isfile(MountPoint+"/bootmgr") and os.path.isdir(MountPoint+"/Users") and os.path.isdir(MountPoint+"/Boot"))
+
+    def HasWindows7(self, MountPoint):
+        """Try to find a Windows 7 installation. Return True if found, False if not."""
+        return ((not os.path.isfile(MountPoint+"/bootmgr")) and os.path.isdir(MountPoint+"/Recovery") and os.path.isdir(MountPoint+"/Windows/BitLockerDiscoveryVolumeContents"))
+
+    def HasWindows8(self, MountPoint):
+        """Try to find a Windows 8/8.1 installation. Return True if found, False if not."""
+        return (os.path.isfile(MountPoint+"/BOOTNXT") and os.path.isdir(MountPoint+"/Windows/DesktopTileResources"))
+
+    def HasWindows10(self, MountPoint):
+        """Try to find a Windows 10 installation. Return True if found, False if not."""
+        return (os.path.isdir(MountPoint+"/Windows/HoloShell") and os.path.isdir(MountPoint+"/Apps"))
+
     def DeterminePackageManager(self, APTCmd, YUMCmd):
         """Determine and return the package manager using the given command strings."""
         PackageManager = "Unknown"

@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0.1"
-ReleaseDate = "23/5/2017"
+ReleaseDate = "24/5/2017"
 SessionEnding = False
 
 def usage():
@@ -158,6 +158,7 @@ Tools.dialogtools.time = time
 
 #StartupTools Package (Core).
 Tools.StartupTools.core.logger = logger
+Tools.StartupTools.core.os = os
 Tools.StartupTools.core.CoreTools = CoreTools
 Tools.StartupTools.core.DialogTools = DialogTools
 
@@ -446,6 +447,7 @@ class InitThread(threading.Thread):
         #Make dictionaries available to modules.
         Tools.coretools.DiskInfo = DiskInfo
         Tools.StartupTools.core.DiskInfo = DiskInfo
+        Tools.StartupTools.core.BootloaderInfo = BootloaderInfo
         Tools.StartupTools.core.SystemInfo = SystemInfo
         Tools.StartupTools.core.Settings = Settings
         Tools.StartupTools.main.DiskInfo = DiskInfo
@@ -1276,7 +1278,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Set up the previous OS choice.
         if SystemInfo["PreviousOSChoice"] == "":
-            SystemInfo["PreviousOSChoice"] = OSInfo.keys()[0]
+            SystemInfo["PreviousOSChoice"] = SystemInfo["ModifyableOSs"][0]
 
         self.CreateText()
         self.CreateChoiceBoxes()

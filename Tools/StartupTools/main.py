@@ -140,52 +140,72 @@ class Main():
             if DiskInfo[Partition]["Type"] == "Device":
                 continue
 
-            if DiskInfo[Partition]["FileSystem"] in ("vfat", "ntfs", "exfat"): pass #NOTE: Not fully implemented, will implement for v2.1. Disabled for now.
-                #Look for Windows. NOTE: NTFS can't be mounted twice.
-                #logger.debug("MainStartupTools: Main().GetOSs(): Looking for Windows on "+Partition+"...")
+            if DiskInfo[Partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
+                #Look for Windows. NOTE: It seems NTFS volumes can't be mounted twice, which is why we're being more careful here.
+                logger.debug("MainStartupTools: Main().GetOSs(): Looking for Windows on "+Partition+"...")
 
-                #Mount the partition and check if anything went wrong.
-                #MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
+                #Check if we need to mount the partition.
+                WasMounted = False
 
-                #if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
-                    #Ignore the partition.
-                #    logger.warning("MainStartupTools: Main().GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
-                #    continue
+                if CoreTools.IsMounted(Partition):
+                    #If mounted, get the mountpoint.
+                    MountPoint = CoreTools.GetMountPointOf(Partition)
 
-                #Windows XP.
-                #if os.path.isfile(MountPoint+"/boot.ini") and os.path.isdir(MountPoint+"/Windows"):
-                    #Add this information to OSInfo.
-                #    logger.debug("MainStartupTools: Main().GetOSs(): Found Windows XP...")
-                #    OSName = "Windows XP"
-                #    OSInfo[OSName] = {}
-                #    OSInfo[OSName]["Name"] = OSName
-                #    OSInfo[OSName]["IsCurrentOS"] = False
-                #    OSInfo[OSName]["Arch"] = "Unknown"
-                #    OSInfo[OSName]["Partition"] = Partition
-                #    OSInfo[OSName]["PackageManager"] = "Windows Installer"
-                #    OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
-                    #OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName) #TODO
+                else:
+                    #Mount the partition and check if anything went wrong.
+                    MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
 
-                #Windows Vista/7/8/8.1/10.
-                #elif os.path.isdir(MountPoint+"/Windows"):
-                #    logger.debug("MainStartupTools: Main().GetOSs(): Found Windows Vista/7/8/10...")
-                #    OSName = "Windows Vista/7/8/10"
-                #    OSInfo[OSName] = {}
-                #    OSInfo[OSName]["Name"] = OSName
-                #    OSInfo[OSName]["IsCurrentOS"] = False
-                #    OSInfo[OSName]["Arch"] = "Unknown"
-                #    OSInfo[OSName]["Partition"] = Partition
-                #    OSInfo[OSName]["PackageManager"] = "Windows Installer"
-                #    OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
-                    #OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName) #TODO
+                    if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
+                        #Ignore the partition.
+                        logger.warning("MainStartupTools: Main().GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
+                        continue
 
-                #else:
-                #    logger.debug("MainStartupTools: Main().GetOSs(): Didn't find Windows...")
+                    WasMounted = True
 
-                #Unmount the filesystem.
-                #if CoreTools.Unmount(MountPoint) != 0:
-                #    logger.error("MainStartupTools: Main().GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
-                #    CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+                #Check if there's a Windows/WinNT dir.
+                if not (os.path.isdir(MountPoint+"/WinNT") or os.path.isdir(MountPoint+"/Windows") or os.path.isdir(MountPoint+"/WINDOWS")):
+                    #Skip this partition, and unmount if needed.
+                    logger.info("MainStartupTools: Main().GetOSs(): Windows wasn't found...")
+
+                else:
+                    #Look for lots of different Windows editions.
+                    if CoreStartupTools.HasWindows9X(MountPoint):
+                        OSName = "Windows 95/98/ME"
+
+                    elif CoreStartupTools.HasWindowsXP(MountPoint):
+                        OSName = "Windows XP"
+
+                    elif CoreStartupTools.HasWindowsVista(MountPoint):
+                        OSName = "Windows Vista"
+
+                    elif CoreStartupTools.HasWindows7(MountPoint):
+                        OSName = "Windows 7"
+
+                    elif CoreStartupTools.HasWindows8(MountPoint):
+                        OSName = "Windows 8/8.1"
+
+                    elif CoreStartupTools.HasWindows10(MountPoint):
+                        OSName = "Windows 10"
+
+                    else:
+                        #Unknown Windows.
+                        OSName = "Windows"
+
+                    #Create OSInfo entry for it.
+                    logger.debug("MainStartupTools: Main().GetOSs(): Found "+OSName+"...")
+                    OSInfo[OSName] = {}
+                    OSInfo[OSName]["Name"] = OSName
+                    OSInfo[OSName]["IsCurrentOS"] = False
+                    OSInfo[OSName]["Arch"] = "Unknown"
+                    OSInfo[OSName]["Partition"] = Partition
+                    OSInfo[OSName]["PackageManager"] = "Windows Installer"
+                    OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+
+                #Unmount the filesystem if needed.
+                if WasMounted:
+                    if CoreTools.Unmount(MountPoint) != 0:
+                        logger.error("MainStartupTools: Main().GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
+                        CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
             else:
                 #Look for Linux.
@@ -333,6 +353,11 @@ class Main():
         Keys.sort()
 
         for OS in Keys:
+            #If this is a windows OS, create a standard entry.
+            if "Windows" in OS:
+                CoreStartupTools.MakeBootloaderInfoEntryForWindows(OS)
+                continue
+
             #If this isn't the current OS, do some preparation.
             if not OSInfo[OS]["IsCurrentOS"]:
                 #Mount the OS's partition.
