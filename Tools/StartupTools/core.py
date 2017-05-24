@@ -82,7 +82,7 @@ class Main():
 
     def HasWindowsXP(self, MountPoint):
         """Try to find a Windows XP installation. Return True if found, False if not."""
-        return (os.path.isfile(MountPoint+"/boot.ini") and os.path.isfile(MountPoint+"/ntldr") and os.path.isfile(MountPoint+"/NTDETECT.COM") and os.path.isdir(MountPoint+"/Documents\ and\ Settings"))
+        return (os.path.isfile(MountPoint+"/boot.ini") and os.path.isfile(MountPoint+"/ntldr") and os.path.isfile(MountPoint+"/NTDETECT.COM") and os.path.isdir(MountPoint+"/Documents and Settings"))
 
     def HasWindowsVista(self, MountPoint):
         """Try to find a Windows Vista installation. Return True if found, False if not."""
