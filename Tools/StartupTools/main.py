@@ -438,11 +438,16 @@ class Main():
 
             DefaultBootDevice = "Unknown"
 
-            for Menu in BootloaderInfo[OS]["MenuEntries"]:
-                for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
-                    if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
-                        DefaultBootDevice = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
-                        logger.info("MainStartupTools: Main().GetBootloaders(): Found Default OS's partition...")
+            if "MenuEntries" in BootloaderInfo[OS].keys():
+                for Menu in BootloaderInfo[OS]["MenuEntries"]:
+                    for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
+                        if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
+                            DefaultBootDevice = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
+                            logger.info("MainStartupTools: Main().GetBootloaders(): Found Default OS's partition...")
+
+            else:
+                #Bootloader's configuration is missing.
+                logger.error("MainStartupTools: Main().GetBootloaders(): "+OS+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
 
             #We have the partition, so now find the OS that resides on that partition.
             for OSName in OSInfo:
@@ -521,5 +526,15 @@ class Main():
 
         if UnmodifyableOSs != []:
             DialogTools.ShowMsgDlg(Message="Some of the OSs found on your system cannot be modified! These are:\n\n"+'\n'.join(UnmodifyableOSs)+"\n\nClick okay to continue.")
+
+        #Warn if any bootloaders need reinstalling.
+        NeedReinstalling = []
+
+        for OS in BootloaderInfo:
+            if "MenuEntries" not in BootloaderInfo[OS].keys():
+                NeedReinstalling.append(OS)
+
+        if NeedReinstalling != []:
+            DialogTools.ShowMsgDlg(Message="Some of the OSs found on your system have damaged bootloaders! These are:\n\n"+'\n'.join(NeedReinstalling)+"\n\nPlease reinstall the bootloaders for the operating systems in order for them to function correctly.\n\nClick okay to continue.")
 
 #End main Class.
