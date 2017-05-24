@@ -78,11 +78,11 @@ class Main():
 
     def HasWindows9X(self, MountPoint):
         """Try to find a Windows 9X installation. Return True if found, False if not."""
-        return (os.path.isdir(MountPoint+"/WINDOWS") and os.path.exists(MountPoint+"/AUTOEXEC.BAT") and os.path.exists(MountPoint+"/COMMAND.COM") and os.path.isdir(MountPoint+"My Documents"))
+        return (os.path.isdir(MountPoint+"/WINDOWS") and os.path.exists(MountPoint+"/AUTOEXEC.BAT") and os.path.exists(MountPoint+"/COMMAND.COM") and os.path.isdir(MountPoint+"/My Documents"))
 
     def HasWindowsXP(self, MountPoint):
         """Try to find a Windows XP installation. Return True if found, False if not."""
-        return (os.path.isfile(MountPoint+"/boot.ini") and os.path.isfile(MountPoint+"/ntldr") and os.path.isfile(MountPoint+"/ntdetect.com") and os.path.isdir(MountPoint+"Documents\ and\ Settings"))
+        return (os.path.isfile(MountPoint+"/boot.ini") and os.path.isfile(MountPoint+"/ntldr") and os.path.isfile(MountPoint+"/ntdetect.com") and os.path.isdir(MountPoint+"/Documents\ and\ Settings"))
 
     def HasWindowsVista(self, MountPoint):
         """Try to find a Windows Vista installation. Return True if found, False if not."""
