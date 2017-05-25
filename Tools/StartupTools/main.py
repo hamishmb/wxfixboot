@@ -140,7 +140,48 @@ class Main():
             if DiskInfo[Partition]["Type"] == "Device":
                 continue
 
-            if DiskInfo[Partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
+            elif DiskInfo[Partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
+                #Look for Mac OS X.
+                OSName = "Mac OS X ("+Partition+")"
+                logger.debug("MainStartupTools: Main().GetOSs(): Looking for Mac OS X on "+Partition+"...")
+
+                #Check if we need to mount the partition.
+                WasMounted = False
+
+                if CoreTools.IsMounted(Partition):
+                    #If mounted, get the mountpoint.
+                    MountPoint = CoreTools.GetMountPointOf(Partition)
+
+                else:
+                    #Mount the partition and check if anything went wrong.
+                    MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
+
+                    if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
+                        #Ignore the partition.
+                        logger.warning("MainStartupTools: Main().GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
+                        continue
+
+                    WasMounted = True
+
+                #Check for /mach_kernel.
+                if os.path.exists(MountPoint+"/mach_kernel"):
+                    #Create OSInfo entry for it.
+                    logger.debug("MainStartupTools: Main().GetOSs(): Found "+OSName+"...")
+                    OSInfo[OSName] = {}
+                    OSInfo[OSName]["Name"] = OSName
+                    OSInfo[OSName]["IsCurrentOS"] = False
+                    OSInfo[OSName]["Arch"] = "Unknown"
+                    OSInfo[OSName]["Partition"] = Partition
+                    OSInfo[OSName]["PackageManager"] = "Mac App Store"
+                    OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+
+                #Unmount the filesystem if needed.
+                if WasMounted:
+                    if CoreTools.Unmount(MountPoint) != 0:
+                        logger.error("MainStartupTools: Main().GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
+                        CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+
+            elif DiskInfo[Partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
                 #Look for Windows. NOTE: It seems NTFS volumes can't be mounted twice, which is why we're being more careful here.
                 logger.debug("MainStartupTools: Main().GetOSs(): Looking for Windows on "+Partition+"...")
 
@@ -192,6 +233,7 @@ class Main():
                         OSName = "Windows"
 
                     #Create OSInfo entry for it.
+                    OSName = OSName+" ("+Partition+")"
                     logger.debug("MainStartupTools: Main().GetOSs(): Found "+OSName+"...")
                     OSInfo[OSName] = {}
                     OSInfo[OSName]["Name"] = OSName
