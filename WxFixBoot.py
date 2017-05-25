@@ -447,6 +447,7 @@ class InitThread(threading.Thread):
         #Make dictionaries available to modules.
         Tools.coretools.DiskInfo = DiskInfo
         Tools.StartupTools.core.DiskInfo = DiskInfo
+        Tools.StartupTools.core.OSInfo = OSInfo
         Tools.StartupTools.core.BootloaderInfo = BootloaderInfo
         Tools.StartupTools.core.SystemInfo = SystemInfo
         Tools.StartupTools.core.Settings = Settings

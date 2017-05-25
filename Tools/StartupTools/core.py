@@ -32,7 +32,7 @@ class Main():
         BootloaderInfo[OS]["MenuEntries"] = {}
         BootloaderInfo[OS]["IsModifyable"] = False
         BootloaderInfo[OS]["Comments"] = "WxFixBoot cannot modify Mac OS X."
-        BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"], BootloaderInfo[OS]["DefaultOS"] = (10, "Unknown", "Unknown", OS, OS)
+        BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"], BootloaderInfo[OS]["DefaultOS"] = (10, "Unknown", OSInfo[OS]["Partition"], OS, OS)
 
         #Initialise some default no-action settings.
         BootloaderInfo[OS]["Settings"] = {}

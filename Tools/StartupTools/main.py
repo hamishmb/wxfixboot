@@ -163,8 +163,7 @@ class Main():
 
                     WasMounted = True
 
-                #Check for /mach_kernel.
-                if os.path.exists(MountPoint+"/mach_kernel"):
+                if os.path.exists(MountPoint+"/mach_kernel") or os.path.exists(MountPoint+"/System/Library/Kernels/kernel"):
                     #Create OSInfo entry for it.
                     logger.debug("MainStartupTools: Main().GetOSs(): Found "+OSName+"...")
                     OSInfo[OSName] = {}
