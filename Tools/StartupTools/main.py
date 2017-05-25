@@ -400,6 +400,11 @@ class Main():
                 CoreStartupTools.MakeBootloaderInfoEntryForWindows(OS)
                 continue
 
+            #Same for Mac OS X.
+            elif "Mac" in OS:
+                CoreStartupTools.MakeBootloaderInfoEntryForOSX(OS)
+                continue
+
             #If this isn't the current OS, do some preparation.
             if not OSInfo[OS]["IsCurrentOS"]:
                 #Mount the OS's partition.

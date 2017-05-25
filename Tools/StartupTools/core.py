@@ -23,6 +23,50 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
+    def MakeBootloaderInfoEntryForOSX(self, OS):
+        """Makes an entry in BootloaderInfo for Mac OS X"""
+        BootloaderInfo[OS] = {}
+        BootloaderInfo[OS]["OSName"] = OS
+        BootloaderInfo[OS]["Bootloader"] = "BootX/BootROM/boot.efi"
+        BootloaderInfo[OS]["AvailableBootloaders"] = []
+        BootloaderInfo[OS]["MenuEntries"] = {}
+        BootloaderInfo[OS]["IsModifyable"] = False
+        BootloaderInfo[OS]["Comments"] = "WxFixBoot cannot modify Mac OS X."
+        BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"], BootloaderInfo[OS]["DefaultOS"] = (10, "Unknown", "Unknown", OS, OS)
+
+        #Initialise some default no-action settings.
+        BootloaderInfo[OS]["Settings"] = {}
+        BootloaderInfo[OS]["Settings"]["Reinstall"] = False
+        BootloaderInfo[OS]["Settings"]["Update"] = False
+        BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] = False
+        BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"] = False
+        BootloaderInfo[OS]["Settings"]["NewKernelOptions"] = BootloaderInfo[OS]["GlobalKernelOptions"]
+        BootloaderInfo[OS]["Settings"]["NewTimeout"] = BootloaderInfo[OS]["Timeout"]
+        BootloaderInfo[OS]["Settings"]["DefaultOS"] = BootloaderInfo[OS]["DefaultOS"]
+        BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] = False
+        BootloaderInfo[OS]["Settings"]["NewBootloader"] = "-- Please Select --"
+        BootloaderInfo[OS]["Settings"]["BackupBootloader"] = False
+        BootloaderInfo[OS]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
+        BootloaderInfo[OS]["Settings"]["RestoreBootloader"] = False
+        BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
+        BootloaderInfo[OS]["Settings"]["ChangeThisOS"] = False
+
+        #Initialise GUI state for this OS (True = Enabled, False = Disabled).
+        BootloaderInfo[OS]["GUIState"] = {}
+        BootloaderInfo[OS]["GUIState"]["ReinstallCheckBoxState"] = True
+        BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"] = True
+        BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
+        BootloaderInfo[OS]["GUIState"]["NewTimeoutSpinnerState"] = False
+        BootloaderInfo[OS]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
+        BootloaderInfo[OS]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
+        BootloaderInfo[OS]["GUIState"]["DefaultOSChoiceState"] = False
+        BootloaderInfo[OS]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
+        BootloaderInfo[OS]["GUIState"]["NewBootloaderChoiceState"] = False
+        BootloaderInfo[OS]["GUIState"]["BackupBootloaderCheckBoxState"] = True
+        BootloaderInfo[OS]["GUIState"]["BackupBootloaderChoiceState"] = False
+        BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
+        BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = False
+
     def MakeBootloaderInfoEntryForWindows(self, OS):
         """Makes an entry in BootloaderInfo for Windows"""
         BootloaderInfo[OS] = {}
