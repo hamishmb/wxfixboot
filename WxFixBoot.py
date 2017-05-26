@@ -705,7 +705,7 @@ class MainWindow(wx.Frame):
         self.SaveMainOpts()
 
         #Open the Bootloader Options window
-        logger.debug("SettingsWindow().LaunchblOpts(): Starting Bootloader Settings Window...")
+        logger.debug("MainWindow().BootloaderOptions(): Starting Bootloader Settings Window...")
         self.Hide()
         BootloaderOptionsWindow(self).Show()
 
