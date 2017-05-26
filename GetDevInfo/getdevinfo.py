@@ -305,6 +305,13 @@ class Main():
         DiskInfo[Volume]["Flags"] = []
         DiskInfo[Volume]["Flags"] = self.GetCapabilities(SubNode)
         DiskInfo[Volume]["FileSystem"] = self.GetFileSystem(SubNode)
+
+        #Fix for Ubuntu 14.04.
+        if DiskInfo[Volume]["FileSystem"] == "Unknown":
+            #Try to use the description to determine if this is a vfat volume (difficult detecting in Ubuntu 14.04).
+            if "FAT" in SubNode.description.string:
+                DiskInfo[Volume]["FileSystem"] = "vfat"
+
         DiskInfo[Volume]["Partitioning"] = "N/A"
         DiskInfo[Volume]["UUID"] = self.GetUUID(Volume)
         DiskInfo[Volume]["ID"] = self.GetID(Volume)

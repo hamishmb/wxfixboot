@@ -128,7 +128,7 @@ class Main():
 
     def GetOSs(self):
         """Get the names of all OSs on the HDDs."""
-        logger.info("MainStartupTools: Main().GetOSs(): Finding Linux operating systems...")
+        logger.info("MainStartupTools: Main().GetOSs(): Finding operating systems...")
         RootFS = CoreTools.GetPartitionMountedAt("/")
         OSInfo = {}
 
