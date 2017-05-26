@@ -522,6 +522,9 @@ class Main():
 
             #We have the partition, so now find the OS that resides on that partition.
             for OSName in OSInfo:
+                if OSName not in BootloaderInfo:
+                    continue
+
                 print("OSNAME: "+OSName)
                 print(BootloaderInfo[OSName]["DefaultBootDevice"])
 
