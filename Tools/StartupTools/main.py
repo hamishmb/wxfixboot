@@ -525,14 +525,7 @@ class Main():
                 if OSName not in BootloaderInfo:
                     continue
 
-                #Don't try to match with unknown devices, because that will lead to errors.
-                MatchList = [OSInfo[OSName]["Partition"], OSInfo[OSName]["BootPartition"], OSInfo[OSName]["EFIPartition"]]
-
-                for Device in MatchList:
-                    if Device == "Unknown":
-                        MatchList.remove(Device)
-
-                if BootloaderInfo[OS]["DefaultBootDevice"] in MatchList:
+                if BootloaderInfo[OS]["DefaultBootDevice"] == OSInfo[OSName]["Partition"]: #*** More stringent, but sometimes won't work. Find a balance ***
                     #Set it.
                     BootloaderInfo[OS]["DefaultOS"] = OSName
                     logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched. The Default OS is "+OSName+"...")
