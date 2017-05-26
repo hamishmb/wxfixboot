@@ -520,6 +520,8 @@ class Main():
                 #Bootloader's configuration is missing.
                 logger.error("MainStartupTools: Main().GetBootloaders(): "+OS+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
 
+            print("OSNAME for matching: "+OS)
+ 
             #We have the partition, so now find the OS that resides on that partition.
             for OSName in OSInfo:
                 if OSName not in BootloaderInfo:
