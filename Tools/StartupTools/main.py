@@ -507,13 +507,13 @@ class Main():
             #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
             logger.info("MainStartupTools: Main().GetBootloaders(): Attempting to match the bootloader's default OS to any OS that WxFixBoot detected...")
 
-            BootloaderInfo[OSName]["DefaultBootDevice"] = "Unknown"
+            BootloaderInfo[OS]["DefaultBootDevice"] = "Unknown"
 
             if "MenuEntries" in BootloaderInfo[OS].keys():
                 for Menu in BootloaderInfo[OS]["MenuEntries"]:
                     for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
                         if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
-                            BootloaderInfo[OSName]["DefaultBootDevice"] = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
+                            BootloaderInfo[OS]["DefaultBootDevice"] = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
                             logger.info("MainStartupTools: Main().GetBootloaders(): Found Default OS's partition...")
 
             else:
