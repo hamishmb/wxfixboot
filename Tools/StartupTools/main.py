@@ -504,7 +504,7 @@ class Main():
                 BootloaderInfo[OS]["IsModifyable"] = False
                 BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+". Not modifyable because current OS is "+SystemInfo["CurrentOSArch"]+"."
 
-            #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
+            #Match the bootloader-specific default OS to WxFixBoot's OSs by partition. *** Be much more stringent about this later. eg if OS doesn't have an EFI partition, don't match against it. Put in a separate function.
             logger.info("MainStartupTools: Main().GetBootloaders(): Attempting to match the bootloader's default OS to any OS that WxFixBoot detected...")
 
             BootloaderInfo[OS]["DefaultBootDevice"] = "Unknown"
@@ -519,16 +519,11 @@ class Main():
             else:
                 #Bootloader's configuration is missing.
                 logger.error("MainStartupTools: Main().GetBootloaders(): "+OS+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
-
-            print("OSNAME for matching: "+OS)
  
             #We have the partition, so now find the OS that resides on that partition.
             for OSName in OSInfo:
                 if OSName not in BootloaderInfo:
                     continue
-
-                print("OSNAME: "+OSName)
-                print(BootloaderInfo[OSName]["DefaultBootDevice"])
 
                 #Don't try to match with unknown devices, because that will lead to errors.
                 MatchList = [OSInfo[OSName]["Partition"], OSInfo[OSName]["BootPartition"], OSInfo[OSName]["EFIPartition"]]
@@ -540,8 +535,8 @@ class Main():
                 if BootloaderInfo[OSName]["DefaultBootDevice"] in MatchList:
                     #Set it.
                     BootloaderInfo[OS]["DefaultOS"] = OSName
-                    print("Matched: ", OSName)
                     logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched. The Default OS is "+OSName+"...")
+                    break
 
             #Log if we couldn't match them.
             if BootloaderInfo[OS]["DefaultOS"] == "Unknown":
