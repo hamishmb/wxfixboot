@@ -507,13 +507,13 @@ class Main():
             #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
             logger.info("MainStartupTools: Main().GetBootloaders(): Attempting to match the bootloader's default OS to any OS that WxFixBoot detected...")
 
-            DefaultBootDevice = "Unknown"
+            BootloaderInfo[OSName]["DefaultBootDevice"] = "Unknown"
 
             if "MenuEntries" in BootloaderInfo[OS].keys():
                 for Menu in BootloaderInfo[OS]["MenuEntries"]:
                     for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
                         if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
-                            DefaultBootDevice = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
+                            BootloaderInfo[OSName]["DefaultBootDevice"] = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
                             logger.info("MainStartupTools: Main().GetBootloaders(): Found Default OS's partition...")
 
             else:
@@ -522,10 +522,20 @@ class Main():
 
             #We have the partition, so now find the OS that resides on that partition.
             for OSName in OSInfo:
-                print(DefaultBootDevice)
-                if DefaultBootDevice in (OSInfo[OSName]["Partition"], OSInfo[OSName]["BootPartition"], OSInfo[OSName]["EFIPartition"]):
+                print("OSNAME: "+OSName)
+                print(BootloaderInfo[OSName]["DefaultBootDevice"])
+
+                #Don't try to match with unknown devices, because that will lead to errors.
+                MatchList = [OSInfo[OSName]["Partition"], OSInfo[OSName]["BootPartition"], OSInfo[OSName]["EFIPartition"]]
+
+                for Device in MatchList:
+                    if Device == "Unknown":
+                        MatchList.remove(Device)
+
+                if BootloaderInfo[OSName]["DefaultBootDevice"] in MatchList:
                     #Set it.
                     BootloaderInfo[OS]["DefaultOS"] = OSName
+                    print("Matched: ", OSName)
                     logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched. The Default OS is "+OSName+"...")
 
             #Log if we couldn't match them.
