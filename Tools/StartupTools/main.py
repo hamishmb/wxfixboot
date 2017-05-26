@@ -532,7 +532,7 @@ class Main():
                     if Device == "Unknown":
                         MatchList.remove(Device)
 
-                if BootloaderInfo[OSName]["DefaultBootDevice"] in MatchList:
+                if BootloaderInfo[OS]["DefaultBootDevice"] in MatchList:
                     #Set it.
                     BootloaderInfo[OS]["DefaultOS"] = OSName
                     logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched. The Default OS is "+OSName+"...")
