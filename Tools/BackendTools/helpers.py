@@ -29,7 +29,7 @@ class Main():
             Cmd = "apt-get check"
 
         elif PackageManager == "yum":
-            Cmd = "yum -C history"
+            Cmd = "yum -C check-update"
 
         if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
