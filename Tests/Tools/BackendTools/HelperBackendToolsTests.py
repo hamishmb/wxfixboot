@@ -25,6 +25,7 @@ from __future__ import unicode_literals
 import unittest
 import wx
 import os
+import subprocess
 
 #Import test functions & data.
 from . import HelperBackendToolsTestFunctions as Functions
@@ -67,14 +68,27 @@ class TestWaitUntilPackageManagerNotInUse(unittest.TestCase):
         self.app.Destroy()
         del self.app
 
+    @unittest.skipUnless(subprocess.Popen("which apt-get", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't apt-get.")
     def testWaitUntilPackageManagerNotInUse1(self):
         DialogFunctionsForTests.ShowRealMsgDlg("Please ensure the package manager is not in use.")
         HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="apt-get")
 
+    @unittest.skipUnless(subprocess.Popen("which apt-get", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't apt-get.")
     def testWaitUntilPackageManagerNotInUse2(self):
         #Ask user to enable internet connection.
         DialogFunctionsForTests.ShowRealMsgDlg("Please open Synaptic or similar to lock the package manager, then click ok. After a few seconds, close it.")
         HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="apt-get")
+
+    @unittest.skipUnless(subprocess.Popen("which yum", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't yum.")
+    def testWaitUntilPackageManagerNotInUse3(self):
+        DialogFunctionsForTests.ShowRealMsgDlg("Please ensure the package manager is not in use.")
+        HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="yum")
+
+    @unittest.skipUnless(subprocess.Popen("which yum", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't yum.")
+    def testWaitUntilPackageManagerNotInUse4(self):
+        #Ask user to enable internet connection.
+        DialogFunctionsForTests.ShowRealMsgDlg("Please open YUM Extender or similar to lock the package manager, then click ok. After a few seconds, close it.")
+        HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="yum")
 
 class TestFindMissingFSCKModules(unittest.TestCase):
     def setUp(self):
