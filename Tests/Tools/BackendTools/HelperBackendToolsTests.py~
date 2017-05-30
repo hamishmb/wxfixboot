@@ -74,7 +74,6 @@ class TestWaitUntilPackageManagerNotInUse(unittest.TestCase):
         #Ask user to enable internet connection.
         DialogFunctionsForTests.ShowRealMsgDlg("Please open Synaptic or similar to lock the package manager, then click ok. After a few seconds, close it.")
         HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="apt-get")
-        self.assertTrue(DialogFunctionsForTests.ShowYesNoDlg("Is Synaptic/similar now closed?"))
 
 class TestFindMissingFSCKModules(unittest.TestCase):
     def setUp(self):

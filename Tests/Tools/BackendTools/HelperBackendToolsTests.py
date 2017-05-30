@@ -135,7 +135,7 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         Functions.SystemInfo = Data.ReturnInitialSystemInfoDict()
 
         #Test.
-        self.assertEqual(HelperBackendTools().FindCheckableFileSystems(), Functions.FindCheckableFileSystems())
+        self.assertEqual(Functions.FindCheckableFileSystems(), HelperBackendTools().FindCheckableFileSystems())
 
         #More teardown.
         del Tools.BackendTools.helpers.SystemInfo

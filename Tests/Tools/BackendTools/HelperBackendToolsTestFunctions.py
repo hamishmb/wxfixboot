@@ -88,7 +88,7 @@ def FindCheckableFileSystems():
                 #Unmount the FS temporarily, to avoid data corruption.
                 MountPoint = CoreTools.GetMountPointOf(Disk)
 
-                if CoreTools.Unmount(Disk) != 0:
+                if MountPoint in ("/", "/home"): #Don't actually unmount, would cause differences in output. Try to simulate if it was successful or not instead.
                     CheckTheFS = False
                     RemountPartitionAfter = False
 
