@@ -102,8 +102,104 @@ def GetOSs():
         if DiskInfo[Partition]["Type"] == "Device":
             continue
 
-        if DiskInfo[Partition]["FileSystem"] in ("vfat", "ntfs", "exfat"): pass #NOTE: Not fully implemented, will implement for v2.1. Disabled for now.
-            #Look for Windows. NOTE: NTFS can't be mounted twice. ***OMITTED HERE.
+        elif DiskInfo[Partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
+            #Look for Mac OS X.
+            OSName = "Mac OS X ("+Partition+")"
+
+            #Check if we need to mount the partition.
+            WasMounted = False
+
+            if CoreTools.IsMounted(Partition):
+                #If mounted, get the mountpoint.
+                MountPoint = CoreTools.GetMountPointOf(Partition)
+
+            else:
+                #Mount the partition and check if anything went wrong.
+                MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
+
+                if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
+                    #Ignore the partition.
+                    continue
+
+                WasMounted = True
+
+            if os.path.exists(MountPoint+"/mach_kernel") or os.path.exists(MountPoint+"/System/Library/Kernels/kernel"):
+                #Create OSInfo entry for it.
+                OSInfo[OSName] = {}
+                OSInfo[OSName]["Name"] = OSName
+                OSInfo[OSName]["IsCurrentOS"] = False
+                OSInfo[OSName]["Arch"] = "Unknown"
+                OSInfo[OSName]["Partition"] = Partition
+                OSInfo[OSName]["PackageManager"] = "Mac App Store"
+                OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+
+            #Unmount the filesystem if needed.
+            if WasMounted:
+                if CoreTools.Unmount(MountPoint) != 0: break
+                    #CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+
+        elif DiskInfo[Partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
+            #Look for Windows. NOTE: It seems NTFS volumes can't be mounted twice, which is why we're being more careful here.
+            #Check if we need to mount the partition.
+            WasMounted = False
+
+            if CoreTools.IsMounted(Partition):
+                #If mounted, get the mountpoint.
+                MountPoint = CoreTools.GetMountPointOf(Partition)
+
+            else:
+                #Mount the partition and check if anything went wrong.
+                MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
+
+                if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
+                    #Ignore the partition.
+                    continue
+
+                WasMounted = True
+
+            #Check if there's a Windows/WinNT dir.
+            if not (os.path.isdir(MountPoint+"/WinNT") or os.path.isdir(MountPoint+"/Windows") or os.path.isdir(MountPoint+"/WINDOWS")):
+                #Skip this partition, and unmount if needed.
+                pass
+
+            else:
+                #Look for lots of different Windows editions.
+                if CoreStartupTools.HasWindows9X(MountPoint):
+                    OSName = "Windows 95/98/ME"
+
+                elif CoreStartupTools.HasWindowsXP(MountPoint):
+                    OSName = "Windows XP"
+
+                elif CoreStartupTools.HasWindowsVista(MountPoint):
+                    OSName = "Windows Vista"
+
+                elif CoreStartupTools.HasWindows7(MountPoint):
+                    OSName = "Windows 7"
+
+                elif CoreStartupTools.HasWindows8(MountPoint):
+                    OSName = "Windows 8/8.1"
+
+                elif CoreStartupTools.HasWindows10(MountPoint):
+                    OSName = "Windows 10"
+
+                else:
+                    #Unknown Windows.
+                    OSName = "Windows"
+
+                #Create OSInfo entry for it.
+                OSName = OSName+" ("+Partition+")"
+                OSInfo[OSName] = {}
+                OSInfo[OSName]["Name"] = OSName
+                OSInfo[OSName]["IsCurrentOS"] = False
+                OSInfo[OSName]["Arch"] = "Unknown"
+                OSInfo[OSName]["Partition"] = Partition
+                OSInfo[OSName]["PackageManager"] = "Windows Installer"
+                OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+
+            #Unmount the filesystem if needed.
+            if WasMounted:
+                if CoreTools.Unmount(MountPoint) != 0: break
+                    #CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
         else:
             #Look for Linux.
@@ -183,10 +279,10 @@ def GetOSs():
     if len(OSInfo) >= 1:
         return OSInfo, SystemInfo
 
-    else: 
-        #Exit.
+    else:
         return (False, False)
 
+        #Exit.
         #CoreTools.EmergencyExit("You don't appear to have any Linux installations on your hard disks. If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
 
 def GetFirmwareType():

@@ -22,10 +22,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 def ReturnFakeBLInfo1():
-    return {"Linux Mint": {"IsModifyable": True, "Comments": "x86_64 architecture"}, "Windows Vistarg": {"IsModifyable": False, "Comments": "Windows cannot be modified with WxFixBoot"}, "macOS Sierra": {"IsModifyable": False, "Comments": "macOS cannot be modifyed with WxFixBoot"}, "Fedora Core 25": {"IsModifyable": True, "Comments": "i386 architecture"}}
+    return {"Linux Mint": {"IsModifyable": True, "Comments": "x86_64 architecture", "MenuEntries": {}}, "Windows Vistarg": {"IsModifyable": False, "Comments": "Windows cannot be modified with WxFixBoot", "MenuEntries": {}}, "macOS Sierra": {"IsModifyable": False, "Comments": "macOS cannot be modifyed with WxFixBoot", "MenuEntries": {}}, "Fedora Core 25": {"IsModifyable": True, "Comments": "i386 architecture", "MenuEntries": {}}}
 
 def ReturnFakeBLInfo2():
-    return {"Linux Mint": {"IsModifyable": True, "Comments": "x86_64 architecture"}, "Fedora Core 25": {"IsModifyable": True, "Comments": "i386 architecture"}}
+    return {"Linux Mint": {"IsModifyable": True, "Comments": "x86_64 architecture", "MenuEntries": {}}, "Fedora Core 25": {"IsModifyable": True, "Comments": "i386 architecture", "MenuEntries": {}}}
 
 def ReturnFinalCheckResults1():
     return "Some of the OSs found on your system cannot be modified! These are:\n\nWindows Vistarg, because Windows cannot be modified with WxFixBoot\nmacOS Sierra, because macOS cannot be modifyed with WxFixBoot\n\nClick okay to continue."

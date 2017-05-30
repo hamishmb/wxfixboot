@@ -79,12 +79,12 @@ class TestGetOSs(unittest.TestCase):
         self.app = wx.App()
 
         Tools.coretools.Startup = True
-
         DevInfoTools().GetInfo(Standalone=True) #We need real disk info for these ones.
         self.DiskInfo = GetDevInfo.getdevinfo.DiskInfo
         Functions.DiskInfo = self.DiskInfo
         Tools.StartupTools.main.DiskInfo = self.DiskInfo
         Tools.StartupTools.core.DiskInfo = self.DiskInfo
+        Tools.StartupTools.core.os = os
 
         Tools.StartupTools.main.SystemInfo = {}
         Functions.SystemInfo = {}
@@ -106,6 +106,7 @@ class TestGetOSs(unittest.TestCase):
         del Functions.os
         del Tools.StartupTools.main.DiskInfo
         del Tools.StartupTools.core.DiskInfo
+        del Tools.StartupTools.core.os
         del Tools.StartupTools.main.SystemInfo
         del Tools.StartupTools.core.DialogTools
 

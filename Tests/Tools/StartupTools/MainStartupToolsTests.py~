@@ -79,7 +79,7 @@ class TestGetOSs(unittest.TestCase):
         self.app = wx.App()
 
         Tools.coretools.Startup = True
-
+        Tool
         DevInfoTools().GetInfo(Standalone=True) #We need real disk info for these ones.
         self.DiskInfo = GetDevInfo.getdevinfo.DiskInfo
         Functions.DiskInfo = self.DiskInfo
@@ -159,7 +159,7 @@ class TestFinalCheck(unittest.TestCase):
     def tearDown(self):
         del Tools.StartupTools.main.DialogTools
         del Tools.StartupTools.main.BootloaderInfo #Will be present after test.
-        del DialogFunctionsForTests.MsgDlgMessages #As above.
+        DialogFunctionsForTests.MsgDlgMessages = [] #Reset so we can check if there are any new messages from the 2nd test.
 
     def testFinalCheck1(self):
         #Get the dict for this test.
