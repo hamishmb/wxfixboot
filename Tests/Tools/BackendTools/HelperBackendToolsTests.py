@@ -49,13 +49,14 @@ class TestWaitUntilPackageManagerNotInUse(unittest.TestCase):
         self.app = wx.App()
         self.Frame = TestWindow()
         self.Panel = TestPanel(self.Frame)
-        Functions.ParentWindow = self
 
         Tools.coretools.Startup = True
 
+        DialogFunctionsForTests.ParentWindow = self.Panel
+
     def tearDown(self):
         del Tools.coretools.Startup
-        del Functions.ParentWindow
+        del DialogFunctionsForTests.ParentWindow
 
         self.Panel.Destroy()
         del self.Panel
@@ -100,7 +101,7 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         self.app = wx.App()
         self.Frame = TestWindow()
         self.Panel = TestPanel(self.Frame)
-        Functions.ParentWindow = self
+        DialogFunctionsForTests.ParentWindow = self.Panel
 
         Tools.coretools.Startup = True
         DevInfoTools().GetInfo(Standalone=True) #We need real disk info for these ones.
@@ -112,13 +113,13 @@ class TestFindCheckableFileSystems(unittest.TestCase):
 
     def tearDown(self):
         del Tools.coretools.Startup
+        del DialogFunctionsForTests.ParentWindow
         del GetDevInfo.getdevinfo.DiskInfo
         del self.DiskInfo
         del Functions.DiskInfo
         del Functions.CoreTools
         del Tools.BackendTools.helpers.DiskInfo
         del Tools.BackendTools.helpers.DialogTools
-        del Functions.ParentWindow
 
         self.Panel.Destroy()
         del self.Panel
@@ -146,7 +147,7 @@ class TestHandleFilesystemCheckReturnValues(unittest.TestCase):
         self.app = wx.App()
         self.Frame = TestWindow()
         self.Panel = TestPanel(self.Frame)
-        Functions.ParentWindow = self
+        DialogFunctionsForTests.ParentWindow = self.Panel
 
         self.SystemInfo = Data.ReturnInitialSystemInfoDict()
         Tools.BackendTools.helpers.SystemInfo = self.SystemInfo
@@ -154,6 +155,7 @@ class TestHandleFilesystemCheckReturnValues(unittest.TestCase):
 
     def tearDown(self):
         del self.SystemInfo
+        del DialogFunctionsForTests.ParentWindow
         del Tools.BackendTools.helpers.SystemInfo
         del Tools.BackendTools.helpers.DialogTools
 

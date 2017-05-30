@@ -48,14 +48,14 @@ class TestCheckInternetConnection(unittest.TestCase):
         self.app = wx.App()
         self.Frame = TestWindow()
         self.Panel = TestPanel(self.Frame)
-        Functions.ParentWindow = self
+        DialogFunctionsForTests.ParentWindow = self.Panel
 
         Tools.coretools.Startup = True
         Tools.BackendTools.essentials.SystemInfo = Data.ReturnInitialSystemInfoDict()
         Tools.BackendTools.essentials.DialogTools = DialogFunctionsForTests #Define here to avoid calling another thread that doesn't exist when trying to show a dialog.
 
     def tearDown(self):
-        del Functions.ParentWindow
+        del DialogFunctionsForTests.ParentWindow
         del Tools.coretools.Startup
         del Tools.BackendTools.essentials.SystemInfo
         del Tools.BackendTools.essentials.DialogTools

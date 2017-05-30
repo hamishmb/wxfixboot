@@ -78,14 +78,14 @@ def ShowRealMsgDlg(Message, Kind="info"):
         Title = "WxFixBoot - Error"
         style = wx.OK | wx.ICON_ERROR
 
-    dlg = wx.MessageDialog(None, Message, Title, style, pos=wx.DefaultPosition)
+    dlg = wx.MessageDialog(ParentWindow, Message, Title, style, pos=wx.DefaultPosition)
     dlg.ShowModal()
     dlg.Destroy()
     wx.Yield()
 
 def ShowYesNoDlg(Message, Title="WxFixBoot - Question", Buttons=(None, None)):
     """Shows a yes/no dialog from a thread upon instruction"""
-    dlg = wx.MessageDialog(None, Message, Title, wx.YES_NO | wx.ICON_QUESTION)
+    dlg = wx.MessageDialog(ParentWindow, Message, Title, wx.YES_NO | wx.ICON_QUESTION)
 
     #Try to set custom Buttons labels if needed (handle attribute error on wx 2.8.11).
     if Buttons != (None, None):
@@ -113,7 +113,7 @@ def ShowYesNoDlg(Message, Title="WxFixBoot - Question", Buttons=(None, None)):
 
 def ShowChoiceDlg(Message, Choices, Title="WxFixBoot - Select an Option"):
     """Shows a choice dialog from a thread upon instruction"""
-    dlg = wx.SingleChoiceDialog(None, Message, Title, Choices, pos=wx.DefaultPosition)
+    dlg = wx.SingleChoiceDialog(ParentWindow, Message, Title, Choices, pos=wx.DefaultPosition)
 
     #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
@@ -132,7 +132,7 @@ def ShowChoiceDlg(Message, Choices, Title="WxFixBoot - Select an Option"):
 
 def ShowTextEntryDlg(Message, Title="WxFixBoot - Text Entry"):
     """Shows a text entry dialog from a thread upon instruction"""
-    dlg = wx.TextEntryDialog(None, Message, Title, "", style=wx.OK|wx.CANCEL, pos=wx.DefaultPosition)
+    dlg = wx.TextEntryDialog(ParentWindow, Message, Title, "", style=wx.OK|wx.CANCEL, pos=wx.DefaultPosition)
 
     #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
@@ -151,7 +151,7 @@ def ShowTextEntryDlg(Message, Title="WxFixBoot - Text Entry"):
 
 def ShowSaveFiledlg(Title="WxFixBoot - Select A File", Wildcard="All Files/Devices (*)|*"):
     """Shows a save file choice dialog from a thread upon instruction"""
-    dlg = wx.FileDialog(None, message=Title, defaultDir="/home", wildcard=Wildcard, style=wx.SAVE|wx.OVERWRITE_PROMPT)
+    dlg = wx.FileDialog(ParentWindow, message=Title, defaultDir="/home", wildcard=Wildcard, style=wx.SAVE|wx.OVERWRITE_PROMPT)
 
     #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:

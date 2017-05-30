@@ -41,6 +41,17 @@ Functions.time = time
 PotentialDevicePath = ""
 PotentialPartitionPath = ""
 
+class TestPanel(wx.Panel):
+    def __init__(self, parent):
+        """Initialises the panel"""
+        wx.Panel.__init__(self, parent=parent)
+        self.frame = parent
+
+class TestWindow(wx.Frame):
+    def __init__(self):
+        """Initialises TestWindow"""
+        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1,1), style=wx.SIMPLE_BORDER)
+
 class TestStartProcess(unittest.TestCase):
     def setUp(self):
         self.Commands = Data.ReturnFakeCommands()
@@ -59,6 +70,9 @@ class TestStartProcess(unittest.TestCase):
 class TestIsMounted(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
+        self.Frame = TestWindow()
+        self.Panel = TestPanel(self.Frame)
+        DialogFunctionsForTests.ParentWindow = self.Panel
 
         global PotentialPartitionPath
 
@@ -86,9 +100,17 @@ class TestIsMounted(unittest.TestCase):
 
             os.rmdir("/tmp/wxfixbootmtpt")
 
+        self.Panel.Destroy()
+        del self.Panel
+
+        self.Frame.Destroy()
+        del self.Frame
+
         self.app.Destroy()
         del self.app
+
         del self.Path
+        del DialogFunctionsForTests.ParentWindow
         del Tools.coretools.Startup
 
     def testIsMounted1(self):
@@ -107,6 +129,9 @@ class TestIsMounted(unittest.TestCase):
 class TestGetMountPointOf(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
+        self.Frame = TestWindow()
+        self.Panel = TestPanel(self.Frame)
+        DialogFunctionsForTests.ParentWindow = self.Panel
 
         #Get a device path from the user to test against.
         global PotentialPartitionPath
@@ -124,9 +149,17 @@ class TestGetMountPointOf(unittest.TestCase):
         Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
 
     def tearDown(self):
+        self.Panel.Destroy()
+        del self.Panel
+
+        self.Frame.Destroy()
+        del self.Frame
+
         self.app.Destroy()
         del self.app
+
         del self.Path
+        del DialogFunctionsForTests.ParentWindow
         del Tools.coretools.Startup
 
     def testGetMountPointOf1(self):
@@ -147,6 +180,9 @@ class TestGetMountPointOf(unittest.TestCase):
 class TestGetPartitionMountedAt(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
+        self.Frame = TestWindow()
+        self.Panel = TestPanel(self.Frame)
+        DialogFunctionsForTests.ParentWindow = self.Panel
 
         #Get a device path from the user to test against.
         global PotentialPartitionPath
@@ -170,8 +206,16 @@ class TestGetPartitionMountedAt(unittest.TestCase):
         Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
 
     def TearDown(self):
+        self.Panel.Destroy()
+        del self.Panel
+
+        self.Frame.Destroy()
+        del self.Frame
+
         self.app.Destroy()
         del self.app
+
+        del DialogFunctionsForTests.ParentWindow
         del self.Path
         del self.MountPoint
         del Tools.coretools.Startup
@@ -182,6 +226,9 @@ class TestGetPartitionMountedAt(unittest.TestCase):
 class TestMountPartition(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
+        self.Frame = TestWindow()
+        self.Panel = TestPanel(self.Frame)
+        DialogFunctionsForTests.ParentWindow = self.Panel
 
         #Get a device path from the user to test against.
         global PotentialPartitionPath
@@ -207,12 +254,19 @@ class TestMountPartition(unittest.TestCase):
         Tools.coretools.Startup = True #Stops startprocess from trying to send data to the output box.
 
     def tearDown(self):
-        self.app.Destroy()
-
         #Unmount.
         Functions.UnmountDisk(self.Path)
 
+        self.Panel.Destroy()
+        del self.Panel
+
+        self.Frame.Destroy()
+        del self.Frame
+
+        self.app.Destroy()
         del self.app
+
+        del DialogFunctionsForTests.ParentWindow
         del self.Path
         del Tools.coretools.Startup
 

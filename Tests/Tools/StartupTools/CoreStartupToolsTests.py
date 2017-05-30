@@ -29,6 +29,17 @@ import wx
 from . import CoreStartupToolsTestFunctions as Functions
 from . import CoreStartupToolsTestData as Data
 
+class TestPanel(wx.Panel):
+    def __init__(self, parent):
+        """Initialises the panel"""
+        wx.Panel.__init__(self, parent=parent)
+        self.frame = parent
+
+class TestWindow(wx.Frame):
+    def __init__(self):
+        """Initialises TestWindow"""
+        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1,1), style=wx.SIMPLE_BORDER)
+
 class TestDeterminePackageManager(unittest.TestCase):
     def setUp(self):
         Tools.coretools.Startup = True
@@ -80,11 +91,22 @@ class TestGetOSNameWithLSB(unittest.TestCase):
 class TestAskForOSName(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
+        self.Frame = TestWindow()
+        self.Panel = TestPanel(self.Frame)
+
+        DialogFunctionsForTests.ParentWindow = self.Panel
 
         Tools.StartupTools.core.DialogTools = DialogFunctionsForTests
 
     def tearDown(self):
         del Tools.StartupTools.core.DialogTools
+        del DialogFunctionsForTests.ParentWindow
+
+        self.Panel.Destroy()
+        del self.Panel
+
+        self.Frame.Destroy()
+        del self.Frame
 
         self.app.Destroy()
         del self.app

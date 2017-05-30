@@ -48,14 +48,14 @@ class TestCheckInternetConnection(unittest.TestCase):
         self.app = wx.App()
         self.Frame = TestWindow()
         self.Panel = TestPanel(self.Frame)
-        Functions.ParentWindow = self
+        DialogFunctionsForTests.ParentWindow = self
 
         Tools.coretools.Startup = True
         Tools.BackendTools.essentials.SystemInfo = Data.ReturnInitialSystemInfoDict()
         Tools.BackendTools.essentials.DialogTools = DialogFunctionsForTests #Define here to avoid calling another thread that doesn't exist when trying to show a dialog.
 
     def tearDown(self):
-        del Functions.ParentWindow
+        del DialogFunctionsForTests.ParentWindow
         del Tools.coretools.Startup
         del Tools.BackendTools.essentials.SystemInfo
         del Tools.BackendTools.essentials.DialogTools
@@ -71,12 +71,12 @@ class TestCheckInternetConnection(unittest.TestCase):
 
     def testCheckInternetConnection1(self):
         #Ask user to disable internet connection and give up when test fails.
-        DialogFunctionsForTests.ShowMsgDlg("Please disable your internet connection, and opt to \"Cancel/Skip Bootloader Options\" when prompted.")
+        DialogFunctionsForTests.ShowRealMsgDlg("Please disable your internet connection, and opt to \"Cancel/Skip Bootloader Options\" when prompted.")
         EssentialBackendTools().CheckInternetConnection()
         self.assertEqual(Tools.BackendTools.essentials.SystemInfo, Data.ReturnSystemInfoDictWithDisabledBLOpts())
 
     def testCheckInternetConnection2(self):
         #Ask user to enable internet connection.
-        Functions.ShowMsgDlg("Please enable your internet connection.")
+        DialogFunctionsForTests.ShowRealMsgDlg("Please enable your internet connection.")
         EssentialBackendTools().CheckInternetConnection()
         self.assertEqual(Tools.BackendTools.essentials.SystemInfo, Data.ReturnSystemInfoDictWithEnabledBLOpts())

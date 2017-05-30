@@ -30,6 +30,17 @@ import os
 from . import MainStartupToolsTestFunctions as Functions
 from . import MainStartupToolsTestData as Data
 
+class TestPanel(wx.Panel):
+    def __init__(self, parent):
+        """Initialises the panel"""
+        wx.Panel.__init__(self, parent=parent)
+        self.frame = parent
+
+class TestWindow(wx.Frame):
+    def __init__(self):
+        """Initialises TestWindow"""
+        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1,1), style=wx.SIMPLE_BORDER)
+
 class TestCheckDepends(unittest.TestCase):
     def setUp(self):
         Tools.coretools.Startup = True
@@ -53,9 +64,16 @@ class TestCheckDepends(unittest.TestCase):
 
 class TestCheckForLiveDisk(unittest.TestCase):
     def setUp(self):
+        self.app = wx.App()
+        self.Frame = TestWindow()
+        self.Panel = TestPanel(self.Frame)
+
+        DialogFunctionsForTests.ParentWindow = self.Panel
+
         Tools.coretools.Startup = True
 
         Tools.StartupTools.main.SystemInfo = {}
+        Tools.StartupTools.main.DialogTools = DialogFunctionsForTests
 
         Functions.SystemInfo = {}
         Functions.CoreTools = CoreTools()
@@ -63,10 +81,21 @@ class TestCheckForLiveDisk(unittest.TestCase):
 
     def tearDown(self):
         del Tools.coretools.Startup
+        del DialogFunctionsForTests.ParentWindow
         del Tools.StartupTools.main.SystemInfo
+        del Tools.StartupTools.main.DialogTools
         del Functions.SystemInfo
         del Functions.CoreTools
         del Functions.CoreStartupTools
+
+        self.Panel.Destroy()
+        del self.Panel
+
+        self.Frame.Destroy()
+        del self.Frame
+
+        self.app.Destroy()
+        del self.app
 
     def testCheckForLiveDisk1(self):
         Functions.CheckForLiveDisk()
@@ -77,7 +106,10 @@ class TestCheckForLiveDisk(unittest.TestCase):
 class TestGetOSs(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
+        self.Frame = TestWindow()
+        self.Panel = TestPanel(self.Frame)
 
+        DialogFunctionsForTests.ParentWindow = self.Panel
         Tools.coretools.Startup = True
         DevInfoTools().GetInfo(Standalone=True) #We need real disk info for these ones.
         self.DiskInfo = GetDevInfo.getdevinfo.DiskInfo
@@ -96,6 +128,7 @@ class TestGetOSs(unittest.TestCase):
         Tools.StartupTools.core.DialogTools = DialogFunctionsForTests
 
     def tearDown(self):
+        del DialogFunctionsForTests.ParentWindow
         del Tools.coretools.Startup
         del GetDevInfo.getdevinfo.DiskInfo
         del self.DiskInfo
@@ -110,6 +143,12 @@ class TestGetOSs(unittest.TestCase):
         del Tools.StartupTools.main.SystemInfo
         del Tools.StartupTools.core.DialogTools
 
+        self.Panel.Destroy()
+        del self.Panel
+
+        self.Frame.Destroy()
+        del self.Frame
+
         self.app.Destroy()
         del self.app
 
@@ -121,6 +160,10 @@ class TestGetOSs(unittest.TestCase):
 class TestGetFirmwareType(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
+        self.Frame = TestWindow()
+        self.Panel = TestPanel(self.Frame)
+
+        DialogFunctionsForTests.ParentWindow = self.Panel
 
         Tools.coretools.Startup = True
 
@@ -134,6 +177,7 @@ class TestGetFirmwareType(unittest.TestCase):
 
     def tearDown(self):
         del Tools.coretools.Startup
+        del DialogFunctionsForTests.ParentWindow
         del Tools.StartupTools.main.SystemInfo
         del Tools.StartupTools.main.DialogTools
         del Functions.SystemInfo
