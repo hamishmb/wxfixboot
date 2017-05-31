@@ -331,8 +331,15 @@ class Main():
                     #Remove the temporary mountpoint
                     os.rmdir(MountPoint)
 
-        #Check that at least one OS was detected.
-        if len(OSInfo) >= 1:
+        #Check that at least one Linux OS was detected.
+        LinuxOSs = []
+
+        #Get list of Linux OSs.
+        for OS in OSInfo:
+            if OS[0] not in ("Windows", "Mac"):
+                LinuxOSs.append(OSName)
+
+        if len(LinuxOSs) >= 1:
             logger.debug("MainStartupTools: Main().GetOSs(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
             return OSInfo, SystemInfo
 
