@@ -38,6 +38,7 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
         self.BadNode1 = Data.BadNode1().GetCopy()
         self.BadNode2 = Data.BadNode2().GetCopy()
         self.BadNode3 = Data.BadNode3().GetCopy()
+        self.maxDiff = None
 
     def tearDown(self):
         del self.Node1

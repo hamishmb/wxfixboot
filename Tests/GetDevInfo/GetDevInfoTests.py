@@ -38,7 +38,6 @@ class TestGetVendorProductCapacityDescription(unittest.TestCase):
         self.BadNode1 = Data.BadNode1().GetCopy()
         self.BadNode2 = Data.BadNode2().GetCopy()
         self.BadNode3 = Data.BadNode3().GetCopy()
-        self.maxDiff = None
 
     def tearDown(self):
         del self.Node1
@@ -85,6 +84,7 @@ class TestParseLVMOutput(unittest.TestCase):
         GetDevInfo.getdevinfo.DiskInfo = Data.ReturnFakeDiskInfoLinux()
         self.CorrectDiskInfo = Data.ReturnFakeLVMDiskInfo()
         GetDevInfo.getdevinfo.Main.GetLVAliasesTest = Functions.GetLVAliases
+        self.maxDiff = None
 
     def tearDown(self):
         del GetDevInfo.getdevinfo.Main.LVMOutput
