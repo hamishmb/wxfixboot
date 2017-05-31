@@ -100,7 +100,6 @@ def ReturnFakeDiskInfoLinux():
     DiskInfo["/dev/sda"]["Capacity"] = "200GB"
     DiskInfo["/dev/sda"]["Type"] = "Device"
     DiskInfo["/dev/sda"]["Partitions"] = ["/dev/sda1", "/dev/sda2"]
-    DiskInfo["/dev/sda"]["FileSystem"] = "ntfs"
 
     #Fictional /dev/sda1
     DiskInfo["/dev/sda1"] = {}
@@ -195,7 +194,7 @@ def ReturnFakeDiskInfoMac():
 
 #Functions to return other data.
 def ReturnFakeLVMDiskInfo():
-    return {u'/dev/sda': {u'Product': u'FakeDisk', u'Vendor': u'ThereIsNone', u'Name': u'/dev/sda', u'RawCapacity': u'56483132', u'HostDevice': u'N/A', u'Capacity': u'200GB', u'Partitions': [u'/dev/sda1', u'/dev/sda2'], u'Type': u'Device', u'Description': u'Fake Hard Disk Drive'}, u'/dev/mapper/fedora-root': {u'LVName': u'fedora-root', u'VGName': u'mapper', u'HostPartition': u'/dev/sda3', u'Vendor': u'Linux', u'Name': u'/dev/mapper/fedora-root', u'Capacity': u'13.20 GiB', u'Product': u'LVM Partition', u'UUID': u'TWxt1j-g62o-GYju-3UpB-A4g3-9ZbB-HWb7jf', u'Partitioning': u'N/A', u'HostDevice': u'/dev/sda', u'BootRecord': u'Unknown', u'Flags': [], u'RawCapacity': u'13.20 GiB', u'BootRecordStrings': [u'Unknown'], u'FileSystem': u'', u'Description': u'LVM partition fedora-root in volume group mapper', u'Aliases': [u'/dev/mapper/fedora-root', u'/dev/fedora/root'], u'Type': u'Partition', u'ID': u'dm-name-mapper-fedora-root', u'Partitions': []}, u'/dev/sda3': {u'Product': u'Host Device: FakeDisk', u'Vendor': u'FakeOS v3', u'Name': u'/dev/sda3', u'RawCapacity': u'564456313', u'HostDevice': u'/dev/sda', u'Capacity': u'25.5GB', u'Partitions': [], u'Type': u'Partition', u'Description': u'BTRFS Volume'}, u'/dev/sda1': {u'Product': u'Host Device: FakeDisk', u'Vendor': u'FakeOS v3', u'Name': u'/dev/sda1', u'RawCapacity': u'5648313', u'HostDevice': u'/dev/sda', u'Capacity': u'20GB', u'Partitions': [], u'Type': u'Partition', u'Description': u'EXT4 Volume'}, u'/dev/sda2': {u'Product': u'Host Device: FakeDisk', u'Vendor': u'FakeOS v3', u'Name': u'/dev/sda2', u'RawCapacity': u'564313', u'HostDevice': u'/dev/sda', u'Capacity': u'2.5GB', u'Partitions': [], u'Type': u'Partition', u'Description': u'EXT3 Volume'}, u'/dev/mapper/fedora-swap': {u'LVName': u'fedora-swap', u'VGName': u'mapper', u'HostPartition': u'/dev/sda3', u'Vendor': u'Linux', u'Name': u'/dev/mapper/fedora-swap', u'Capacity': u'1.60 GiB', u'Product': u'LVM Partition', u'UUID': u'3e8urm-xsCG-iCAJ-Q3go-2247-OU5N-3AwlD1', u'Partitioning': u'N/A', u'HostDevice': u'/dev/sda', u'BootRecord': u'Unknown', u'Flags': [], u'RawCapacity': u'1.60 GiB', u'BootRecordStrings': [u'Unknown'], u'FileSystem': u'', u'Description': u'LVM partition fedora-swap in volume group mapper', u'Aliases': [u'/dev/mapper/fedora-swap', u'/dev/fedora/swap'], u'Type': u'Partition', u'ID': u'dm-name-mapper-fedora-swap', u'Partitions': []}}
+    return {u'/dev/sda': {u'Product': u'FakeDisk', u'Vendor': u'ThereIsNone', u'Name': u'/dev/sda', u'RawCapacity': u'56483132', u'HostDevice': u'N/A', u'Capacity': u'200GB', u'Partitions': [u'/dev/sda1', u'/dev/sda2'], u'Type': u'Device', u'Description': u'Fake Hard Disk Drive'}, u'/dev/mapper/fakefedora-root': {u'LVName': u'fakefedora-root', u'VGName': u'mapper', u'HostPartition': u'/dev/sda3', u'Vendor': u'Linux', u'Name': u'/dev/mapper/fakefedora-root', u'Capacity': u'13.20 GiB', u'Product': u'LVM Partition', u'UUID': u'TWxt1j-g62o-GYju-3UpB-A4g3-9ZbB-HWb7jf', u'Partitioning': u'N/A', u'HostDevice': u'/dev/sda', u'BootRecord': u'Unknown', u'Flags': [], u'RawCapacity': u'13.20 GiB', u'BootRecordStrings': [u'Unknown'], u'FileSystem': u'', u'Description': u'LVM partition fakefedora-root in volume group mapper', u'Aliases': [u'/dev/mapper/fakefedora-root', u'/dev/fakefedora/root'], u'Type': u'Partition', u'ID': u'dm-name-mapper-fakefedora-root', u'Partitions': []}, u'/dev/sda3': {u'Product': u'Host Device: FakeDisk', u'Vendor': u'FakeOS v3', u'Name': u'/dev/sda3', u'RawCapacity': u'564456313', u'HostDevice': u'/dev/sda', u'Capacity': u'25.5GB', u'Partitions': [], u'Type': u'Partition', u'Description': u'BTRFS Volume'}, u'/dev/sda1': {u'Product': u'Host Device: FakeDisk', u'Vendor': u'FakeOS v3', u'Name': u'/dev/sda1', u'RawCapacity': u'5648313', u'HostDevice': u'/dev/sda', u'Capacity': u'20GB', u'Partitions': [], u'Type': u'Partition', u'Description': u'EXT4 Volume'}, u'/dev/sda2': {u'Product': u'Host Device: FakeDisk', u'Vendor': u'FakeOS v3', u'Name': u'/dev/sda2', u'RawCapacity': u'564313', u'HostDevice': u'/dev/sda', u'Capacity': u'2.5GB', u'Partitions': [], u'Type': u'Partition', u'Description': u'EXT3 Volume'}, u'/dev/mapper/fakefedora-swap': {u'LVName': u'fakefedora-swap', u'VGName': u'mapper', u'HostPartition': u'/dev/sda3', u'Vendor': u'Linux', u'Name': u'/dev/mapper/fakefedora-swap', u'Capacity': u'1.60 GiB', u'Product': u'LVM Partition', u'UUID': u'3e8urm-xsCG-iCAJ-Q3go-2247-OU5N-3AwlD1', u'Partitioning': u'N/A', u'HostDevice': u'/dev/sda', u'BootRecord': u'Unknown', u'Flags': [], u'RawCapacity': u'1.60 GiB', u'BootRecordStrings': [u'Unknown'], u'FileSystem': u'', u'Description': u'LVM partition fakefedora-swap in volume group mapper', u'Aliases': [u'/dev/mapper/fakefedora-swap', u'/dev/fedora/swap'], u'Type': u'Partition', u'ID': u'dm-name-mapper-fedora-swap', u'Partitions': []}}
 
 def ReturnFakeDiskutilListPlist():
     return """<?xml version="1.0" encoding="UTF-8"?>
@@ -726,9 +725,9 @@ def ReturnFakeDiskutilInfoDisk0s3Plist():
 
 def ReturnFakeLVMOutput():
     return """  --- Logical volume ---
-  LV Path                /dev/fedora/swap
+  LV Path                /dev/fakefedora/swap
   LV Name                swap
-  VG Name                fedora
+  VG Name                fakefedora
   LV UUID                3e8urm-xsCG-iCAJ-Q3go-2247-OU5N-3AwlD1
   LV Write Access        read/write
   LV Creation host, time localhost-live, 2016-12-22 19:49:26 +0000
@@ -750,9 +749,9 @@ def ReturnFakeLVMOutput():
    
    
   --- Logical volume ---
-  LV Path                /dev/fedora/root
+  LV Path                /dev/fakefedora/root
   LV Name                root
-  VG Name                fedora
+  VG Name                fakefedora
   LV UUID                TWxt1j-g62o-GYju-3UpB-A4g3-9ZbB-HWb7jf
   LV Write Access        read/write
   LV Creation host, time localhost-live, 2016-12-22 19:49:26 +0000
