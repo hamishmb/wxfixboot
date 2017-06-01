@@ -146,12 +146,24 @@ class Main():
 
     def GetDefaultOSsPartition(self, OS):
         """Get the partition for the given OS's default OS to boot"""
+        DefaultBootDevice = "Unknown"
+
         for Menu in BootloaderInfo[OS]["MenuEntries"]:
             for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
                 if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
-                    BootloaderInfo[OS]["DefaultBootDevice"] = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
+                    DefaultBootDevice = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
                     logger.info("CoreStartupTools: Main().GetDefaultOSsPartition(): Found Default OS's partition...")
                     break
+
+        if DefaultBootDevice != "Unknown":
+            BootloaderInfo[OS]["DefaultBootDevice"] = DefaultBootDevice
+
+            #Try to get the UUID too.
+            if BootloaderInfo[OS]["DefaultBootDevice"] in DiskInfo:
+                BootloaderInfo[OS]["DefaultBootDeviceUUID"] = DiskInfo[BootloaderInfo[OS]["DefaultBootDevice"]]["UUID"]
+
+            else:
+                BootloaderInfo[OS]["DefaultBootDeviceUUID"] = "Unknown" #Try harder? ***
 
     def DeterminePackageManager(self, APTCmd, YUMCmd):
         """Determine and return the package manager using the given command strings."""
