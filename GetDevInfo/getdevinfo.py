@@ -374,7 +374,7 @@ class Main():
                 DiskInfo[Volume] = {}
                 DiskInfo[Volume]["Name"] = Volume
                 DiskInfo[Volume]["Aliases"] = AliasList
-                DiskInfo[Volume]["LVName"], DiskInfo[Volume]["VGName"] = self.GetLVandVGName(Volume)
+                DiskInfo[Volume]["LVName"], DiskInfo[Volume]["VGName"] = self.GetLVAndVGName(Volume)
                 DiskInfo[Volume]["Type"] = "Partition"
                 DiskInfo[Volume]["Partitions"] = []
                 DiskInfo[Volume]["Vendor"] = "Linux"
