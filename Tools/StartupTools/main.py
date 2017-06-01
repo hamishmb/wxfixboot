@@ -517,11 +517,7 @@ class Main():
             BootloaderInfo[OS]["DefaultBootDevice"] = "Unknown"
 
             if "MenuEntries" in BootloaderInfo[OS].keys():
-                for Menu in BootloaderInfo[OS]["MenuEntries"]:
-                    for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
-                        if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
-                            BootloaderInfo[OS]["DefaultBootDevice"] = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
-                            logger.info("MainStartupTools: Main().GetBootloaders(): Found Default OS's partition...")
+                CoreStartupTools.GetDefaultOSsPartition(OS)
 
             else:
                 #Bootloader's configuration is missing.

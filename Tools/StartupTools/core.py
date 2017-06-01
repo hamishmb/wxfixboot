@@ -144,6 +144,15 @@ class Main():
         """Try to find a Windows 10 installation. Return True if found, False if not."""
         return (os.path.isdir(MountPoint+"/Windows/HoloShell") and os.path.isdir(MountPoint+"/Apps"))
 
+    def GetDefaultOSsPartition(self, OS):
+        """Get the partition for the given OS's default OS to boot"""
+        for Menu in BootloaderInfo[OS]["MenuEntries"]:
+            for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
+                if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
+                    BootloaderInfo[OS]["DefaultBootDevice"] = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
+                    logger.info("CoreStartupTools: Main().GetDefaultOSsPartition(): Found Default OS's partition...")
+                    break
+
     def DeterminePackageManager(self, APTCmd, YUMCmd):
         """Determine and return the package manager using the given command strings."""
         PackageManager = "Unknown"
