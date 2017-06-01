@@ -511,7 +511,7 @@ class Main():
                 BootloaderInfo[OS]["IsModifyable"] = False
                 BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+". Not modifyable because current OS is "+SystemInfo["CurrentOSArch"]+"."
 
-            #Match the bootloader-specific default OS to WxFixBoot's OSs by partition. *** Be much more stringent about this later. eg if OS doesn't have an EFI partition, don't match against it. Put in a separate function.
+            #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
             logger.info("MainStartupTools: Main().GetBootloaders(): Attempting to match the bootloader's default OS to any OS that WxFixBoot detected...")
 
             BootloaderInfo[OS]["DefaultBootDevice"] = "Unknown"

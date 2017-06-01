@@ -34,7 +34,7 @@ class Main():
         BLSpecificDefaultOS = "Unknown"
 
         for Entry in BootloaderInfo[OS]["NewMenuEntries"]["MainMenu"]["Order"]:
-            if BootloaderInfo[OS]["NewMenuEntries"]["MainMenu"][Entry]["Partition"] == BootloaderInfo[OS]["DefaultBootDevice"]:
+            if BootloaderInfo[OS]["NewMenuEntries"]["MainMenu"][Entry]["Partition"] == BootloaderInfo[OS]["Settings"]["DefaultBootDevice"]:
                 BLSpecificDefaultOS = BootloaderInfo[OS]["NewMenuEntries"]["MainMenu"][Entry]["ID"]
                 logger.info("BootloaderConfigSettingTools: Main().SetGRUB2Config(): Found Default OS's GRUB2 ID...")
                 break
