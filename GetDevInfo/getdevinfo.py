@@ -254,8 +254,8 @@ class Main():
             if "--" in Volume:
                 Sep = "--" #Weird Ubuntu LVM thing.
 
-            VG = Volume.replace("/dev/mapper/", "").split(Sep)[0]
-            LV = Volume.replace("/dev/mapper/", "").split(Sep)[1]
+            VG = Volume.replace("/dev/mapper/", "").split(Sep)[1]
+            LV = Volume.replace("/dev/mapper/", "").split(Sep)[0]
 
         elif "/dev/" in Volume:
             VG = Volume.split("/")[2]
