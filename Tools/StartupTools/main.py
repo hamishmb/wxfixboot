@@ -524,15 +524,7 @@ class Main():
                 logger.error("MainStartupTools: Main().GetBootloaders(): "+OS+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
  
             #We have the partition, so now find the OS that resides on that partition.
-            for OSName in OSInfo:
-                if OSName not in BootloaderInfo:
-                    continue
-
-                if BootloaderInfo[OS]["DefaultBootDevice"] == OSInfo[OSName]["Partition"]: #*** More stringent, but sometimes won't work. Find a balance ***
-                    #Set it.
-                    BootloaderInfo[OS]["DefaultOS"] = OSName
-                    logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched. The Default OS is "+OSName+"...")
-                    break
+            CoreStartupTools.MatchPartitionToOS(OS)
 
             #Log if we couldn't match them.
             if BootloaderInfo[OS]["DefaultOS"] == "Unknown":

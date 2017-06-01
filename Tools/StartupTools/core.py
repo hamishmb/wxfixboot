@@ -165,6 +165,39 @@ class Main():
             else:
                 BootloaderInfo[OS]["DefaultBootDeviceUUID"] = "Unknown" #Try harder? ***
 
+    def MatchPartitionToOS(self, OS):
+        """Matches the given partition to an OS in OSInfo"""
+        for OSName in OSInfo:
+            if OSName not in BootloaderInfo:
+                continue
+
+            if "DefaultBootDeviceUUID" in BootloaderInfo[OS]:
+                Disk = BootloaderInfo[OS]["DefaultBootDeviceUUID"]
+
+            else:
+                Disk = BootloaderInfo[OS]["DefaultBootDevice"]
+
+            if Disk in (OSInfo[OSName]["Partition"], DiskInfo[OSInfo[OSName]["Partition"]]["UUID"]):
+                #Set it.
+                BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "Partition"
+                BootloaderInfo[OS]["DefaultOS"] = OSName
+                logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched with the partition. The Default OS is "+OSName+"...")
+                break
+
+            elif Disk in (OSInfo[OSName]["BootPartition"], DiskInfo[OSInfo[OSName]["BootPartition"]]["UUID"]):
+                #Set it.
+                BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "BootPartition"
+                BootloaderInfo[OS]["DefaultOS"] = OSName
+                logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched with the boot partition. The Default OS is "+OSName+"...")
+                break
+
+            elif Disk in (OSInfo[OSName]["EFIPartition"], DiskInfo[OSInfo[OSName]["EFIPartition"]]["UUID"]):
+                #Set it.
+                BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "EFIPartition"
+                BootloaderInfo[OS]["DefaultOS"] = OSName
+                logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched with the EFI partition. The Default OS is "+OSName+"...")
+                break
+
     def DeterminePackageManager(self, APTCmd, YUMCmd):
         """Determine and return the package manager using the given command strings."""
         PackageManager = "Unknown"
