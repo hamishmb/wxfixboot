@@ -246,6 +246,26 @@ class Main():
 
         return DefaultName, AliasList
 
+    def GetLVAndVGName(self, Volume):
+        """Get the Logical Volume and Volume Group names from the given path"""
+        if "/dev/mapper/" in Volume:
+            Sep = "-"
+
+            if "--" in Volume:
+                Sep = "--" #Weird Ubuntu LVM thing.
+
+            VG = Volume.replace("/dev/mapper/", "").split(Sep)[0]
+            LV = Volume.replace("/dev/mapper/", "").split(Sep)[1]
+
+        elif "/dev/" in Volume:
+            VG = Volume.split("/")[2]
+            LV = Volume.split("/")[3]
+
+        else:
+            VG, LV = ("Unknown", "Unknown")
+
+        return VG, LV
+
     def GetDeviceInfo(self, Node):
         """Get Device Information"""
         HostDisk = unicode(Node.logicalname.string)
@@ -354,8 +374,7 @@ class Main():
                 DiskInfo[Volume] = {}
                 DiskInfo[Volume]["Name"] = Volume
                 DiskInfo[Volume]["Aliases"] = AliasList
-                DiskInfo[Volume]["LVName"] = Volume.split("/")[-1]
-                DiskInfo[Volume]["VGName"] = Volume.split("/")[2]
+                DiskInfo[Volume]["LVName"], DiskInfo[Volume]["VGName"] = self.GetLVandVGName(Volume)
                 DiskInfo[Volume]["Type"] = "Partition"
                 DiskInfo[Volume]["Partitions"] = []
                 DiskInfo[Volume]["Vendor"] = "Linux"
