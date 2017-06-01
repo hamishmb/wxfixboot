@@ -1631,9 +1631,6 @@ class BootloaderOptionsWindow(wx.Frame):
             self.UpdateBootloaderCheckBox.Disable()
             self.InstallNewBootloaderCheckBox.Disable()
 
-        #Default OS choice.
-        self.DefaultOSChoice.SetStringSelection(BootloaderInfo[self.OSChoice.GetStringSelection()]["DefaultOS"])
-
         #Make sure the window displays properly.
         self.MainSizer.SetSizeHints(self)
 
