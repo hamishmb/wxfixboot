@@ -92,7 +92,7 @@ class Main():
         SkipUntil = 0
         LineCounter = 0
 
-        return GRUBDir, MenuEntries, MenuIDs
+        return "", MenuEntries, MenuIDs
 
         #Read each line.
         for Line in MenuData:
