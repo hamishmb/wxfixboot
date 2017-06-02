@@ -148,9 +148,6 @@ class Main():
         """Get the partition for the given OS's default OS to boot"""
         DefaultBootDevice = "Unknown"
 
-#        print("OS: "+OS)
-#        print(BootloaderInfo[OS]["MenuEntries"].keys())
-
         for Menu in BootloaderInfo[OS]["MenuEntries"]:
             for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
 

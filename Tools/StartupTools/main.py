@@ -543,6 +543,7 @@ class Main():
             BootloaderInfo[OS]["GUIState"]["BackupBootloaderChoiceState"] = False
             BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
             BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = False
+
             print("OS: "+OS)
             print(BootloaderInfo[OS]["MenuEntries"].keys())
 
@@ -576,6 +577,9 @@ class Main():
             #Same for Mac OS X.
             elif "Mac" in OS:
                 continue
+
+            print("OS: "+OS)
+            print(BootloaderInfo[OS]["MenuEntries"].keys())
 
             #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
             logger.info("MainStartupTools: Main().FinalCheck(): Attempting to match "+OS+"'s default OS to any OS that WxFixBoot detected...")
