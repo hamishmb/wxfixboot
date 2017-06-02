@@ -152,6 +152,7 @@ class Main():
 
         for Menu in BootloaderInfo[OS]["MenuEntries"]:
             for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
+                print(BootloaderInfo[OS]["MenuEntries"][Menu].keys())
                 print("Entry: "+Entry, "Default: "+BootloaderInfo[OS]["BLSpecificDefaultOS"])
                 print(Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"])
 
