@@ -495,7 +495,7 @@ class Main():
                 logger.info("MainStartupTools: Main().GetBootloaders(): "+OS+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\"...")
                 BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
 
-            #If we didn't find the kernel options, set some defaults here, and warn the user.
+            """#If we didn't find the kernel options, set some defaults here, and warn the user.
             if BootloaderInfo[OS]["GlobalKernelOptions"] == "Unknown":
                 BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
                 logger.warning("MainStartupTools: Main().GetBootloaders(): Couldn't find "+OS+"'s global kernel options! Assuming 'quiet splash nomodeset'...")
@@ -509,7 +509,7 @@ class Main():
 
             else:
                 BootloaderInfo[OS]["IsModifyable"] = False
-                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+". Not modifyable because current OS is "+SystemInfo["CurrentOSArch"]+"."
+                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+". Not modifyable because current OS is "+SystemInfo["CurrentOSArch"]+".""""
 
             #Initialise some default no-action settings.
             BootloaderInfo[OS]["Settings"] = {}
