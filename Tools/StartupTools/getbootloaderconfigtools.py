@@ -101,7 +101,7 @@ class Main():
             #Parse any menu entries we find.
             if "menuentry " in Line:
                 logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Found a menu entry. Assembling into a dictionary with self.AssembleGRUB2MenuEntry()...")
-                MenuEntries = {} #self.AssembleGRUB2MenuEntry(MenuEntries, MenuIDs, MenuData, MenuName, Line, EntryCounter)
+                #MenuEntries = self.AssembleGRUB2MenuEntry(MenuEntries, MenuIDs, MenuData, MenuName, Line, EntryCounter)
                 logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Done!")
 
                 #Increment the entry counter.
