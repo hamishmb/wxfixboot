@@ -459,7 +459,7 @@ class Main():
             BootloaderInfo[OS]["Bootloader"], BootloaderInfo[OS]["AvailableBootloaders"] = CoreStartupTools.LookForBootloadersOnPartition(OS, OSInfo[OS]["PackageManager"], MountPoint, not OSInfo[OS]["IsCurrentOS"])
 
             BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"], BootloaderInfo[OS]["DefaultOS"] = (10, "Unknown", "Unknown", "Unknown", "Unknown")
-            BootloaderInfo[OS]["MenuEntries"] = OS
+            BootloaderInfo[OS]["MenuEntries"] = {OS: {}}
 
             #For EFI bootloaders, set the boot disk to the OS's EFI Partition.
 #            if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "ELILO"):
