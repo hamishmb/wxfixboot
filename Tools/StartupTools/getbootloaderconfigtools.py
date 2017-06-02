@@ -51,55 +51,53 @@ class Main():
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+" on any likely disks...")
         return "Unknown"
 
-    def ParseGRUB2MenuData(self, MenuData="", MountPoint="", MenuEntries={}, MenuName="MainMenu", MenuIDs={}, MenuID=""):
+    def ParseGRUB2MenuDataOld(self, MenuData="", MountPoint="", MenuEntries={}, MenuName="MainMenu", MenuIDs={}, MenuID=""):
         """Find and parse GRUB2 (EFI and BIOS) menu entries in the given line list"""
         MenuName="MainMenu "+MountPoint
         MenuEntries[MenuName] = {}
         print("Bob: ", MenuEntries.keys())
         return "", MenuEntries, MenuIDs
 
-    def ParseGRUB2MenuDataOld(self, MenuData="", MountPoint="", MenuEntries={}, MenuName="MainMenu", MenuIDs={}, MenuID=""):
+    def ParseGRUB2MenuData(self, MenuData="", MountPoint="", MenuEntries={}, MenuName="MainMenu", MenuIDs={}, MenuID=""):
         """Find and parse GRUB2 (EFI and BIOS) menu entries in the given line list"""
-#        if MenuData != "":
-#            logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in given menu data...")
-#            GRUBDir = ""
+        if MenuData != "":
+            logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in given menu data...")
+            GRUBDir = ""
 
-#        else:
-#            logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and opening GRUB config file...")
+        else:
+            logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and opening GRUB config file...")
 
-#            #Find grub.cfg. (Ubuntu).
-#            if os.path.isdir(MountPoint+"/boot/grub"):
-#                GRUBDir = MountPoint+"/boot/grub"
+            #Find grub.cfg. (Ubuntu).
+            if os.path.isdir(MountPoint+"/boot/grub"):
+                GRUBDir = MountPoint+"/boot/grub"
 
-#            #(Fedora, BIOS)
-#            elif os.path.isdir(MountPoint+"/boot/grub2"):
-#                GRUBDir = MountPoint+"/boot/grub2"
+            #(Fedora, BIOS)
+            elif os.path.isdir(MountPoint+"/boot/grub2"):
+                GRUBDir = MountPoint+"/boot/grub2"
 
-#            #(Fedora, EFI)
-#            if os.path.isfile(GRUBDir+"/grub.cfg") == False and os.path.isdir(MountPoint+"/boot/efi/EFI/fedora"):
-#                GRUBDir = MountPoint+"/boot/efi/EFI/fedora"
+            #(Fedora, EFI)
+            if os.path.isfile(GRUBDir+"/grub.cfg") == False and os.path.isdir(MountPoint+"/boot/efi/EFI/fedora"):
+                GRUBDir = MountPoint+"/boot/efi/EFI/fedora"
 
-#            #Process menu entries, and pass the entire contents of the menu entries file to the parser.
-#            MenuEntriesFile = open(GRUBDir+"/grub.cfg", "r")
-#            MenuData = MenuEntriesFile.readlines()
-#            MenuEntriesFile.close()
+            #Process menu entries, and pass the entire contents of the menu entries file to the parser.
+            MenuEntriesFile = open(GRUBDir+"/grub.cfg", "r")
+            MenuData = MenuEntriesFile.readlines()
+            MenuEntriesFile.close()
 
-#            logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in "+GRUBDir+"/grub.cfg...")
+            logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in "+GRUBDir+"/grub.cfg...")
 
-#        logger.debug("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Parsing menu data for menu: "+MenuName+"...")
+        logger.debug("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Parsing menu data for menu: "+MenuName+"...")
 
         MenuName="MainMenu "+MountPoint
 
         MenuEntries[MenuName] = {}
-#        MenuEntries[MenuName]["Order"] = []
-#        MenuIDs[MenuName] = {}
-#        MenuIDs[MenuName]["ID"] = MenuID
+        MenuEntries[MenuName]["Order"] = []
+        MenuIDs[MenuName] = {}
+        MenuIDs[MenuName]["ID"] = MenuID
         
-#        EntryCounter = 0
-#        SkipUntil = 0
-#        LineCounter = 0
-
-        return "", MenuEntries, MenuIDs
+        EntryCounter = 0
+        SkipUntil = 0
+        LineCounter = 0
 
         #Read each line.
         for Line in MenuData:
