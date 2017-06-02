@@ -168,7 +168,7 @@ class Main():
     def MatchPartitionToOS(self, OS):
         """Matches the default boot device (in a menu entry) to an OS in OSInfo"""
         for OSName in OSInfo:
-            print(OSName)
+            print("Testing against "+OSName)
 
             if OSName not in BootloaderInfo:
                 continue
@@ -179,7 +179,7 @@ class Main():
             else:
                 Disk = BootloaderInfo[OS]["DefaultBootDevice"]
 
-            print(BootloaderInfo[OS]["DefaultBootDevice"], OSInfo[OSName]["Partition"], OSName, OS)
+            print("Testing against: "+BootloaderInfo[OS]["DefaultBootDevice"], "Testing: "+OSInfo[OSName]["Partition"], "Testing: "+OSName, "For: "+OS)
 
             if OSInfo[OSName]["Partition"] != "Unknown" and Disk in (OSInfo[OSName]["Partition"], DiskInfo[OSInfo[OSName]["Partition"]]["UUID"]):
                 #Set it.

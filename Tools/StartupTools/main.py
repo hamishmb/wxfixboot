@@ -576,7 +576,7 @@ class Main():
                 continue
 
             #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
-            logger.info("MainStartupTools: Main().FinalCheck(): Attempting to match the bootloader's default OS to any OS that WxFixBoot detected...")
+            logger.info("MainStartupTools: Main().FinalCheck(): Attempting to match "+OS+"'s default OS to any OS that WxFixBoot detected...")
 
             BootloaderInfo[OS]["DefaultBootDevice"] = "Unknown"
 
