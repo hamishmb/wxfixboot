@@ -51,7 +51,7 @@ class Main():
         logger.info("BootloaderConfigObtainingTools: Main().FindGRUB(): Didn't find "+GRUBVersion+" on any likely disks...")
         return "Unknown"
 
-    def ParseGRUB2MenuData(self, MenuData="", MountPoint="", MenuEntries={}, MenuName="MainMenu "+MountPoint, MenuIDs={}, MenuID=""):
+    def ParseGRUB2MenuData(self, MenuData="", MountPoint="", MenuEntries={}, MenuName="MainMenu", MenuIDs={}, MenuID=""):
         """Find and parse GRUB2 (EFI and BIOS) menu entries in the given line list"""
         if MenuData != "":
             logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in given menu data...")
