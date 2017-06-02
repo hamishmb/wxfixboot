@@ -185,21 +185,21 @@ class Main():
                 #Set it.
                 BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "Partition"
                 BootloaderInfo[OS]["DefaultOS"] = OSName
-                logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched with the partition. The Default OS is "+OSName+"...")
+                logger.info("CoreStartupTools: Main().MatchPartitionToOS(): Successfully matched with the partition. The Default OS is "+OSName+"...")
                 break
 
             elif OSInfo[OSName]["BootPartition"] != "Unknown" and  Disk in (OSInfo[OSName]["BootPartition"], DiskInfo[OSInfo[OSName]["BootPartition"]]["UUID"]):
                 #Set it.
                 BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "BootPartition"
                 BootloaderInfo[OS]["DefaultOS"] = OSName
-                logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched with the boot partition. The Default OS is "+OSName+"...")
+                logger.info("CoreStartupTools: Main().MatchPartitionToOS(): Successfully matched with the boot partition. The Default OS is "+OSName+"...")
                 break
 
             elif OSInfo[OSName]["EFIPartition"] != "Unknown" and Disk in (OSInfo[OSName]["EFIPartition"], DiskInfo[OSInfo[OSName]["EFIPartition"]]["UUID"]):
                 #Set it.
                 BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "EFIPartition"
                 BootloaderInfo[OS]["DefaultOS"] = OSName
-                logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched with the EFI partition. The Default OS is "+OSName+"...")
+                logger.info("CoreStartupTools: Main().MatchPartitionToOS(): Successfully matched with the EFI partition. The Default OS is "+OSName+"...")
                 break
 
     def DeterminePackageManager(self, APTCmd, YUMCmd):

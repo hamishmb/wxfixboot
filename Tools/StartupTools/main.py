@@ -511,26 +511,6 @@ class Main():
                 BootloaderInfo[OS]["IsModifyable"] = False
                 BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+". Not modifyable because current OS is "+SystemInfo["CurrentOSArch"]+"."
 
-            #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
-            logger.info("MainStartupTools: Main().GetBootloaders(): Attempting to match the bootloader's default OS to any OS that WxFixBoot detected...")
-
-            BootloaderInfo[OS]["DefaultBootDevice"] = "Unknown"
-
-            if "MenuEntries" in BootloaderInfo[OS].keys():
-                CoreStartupTools.GetDefaultOSsPartition(OS)
-
-            else:
-                #Bootloader's configuration is missing.
-                logger.error("MainStartupTools: Main().GetBootloaders(): "+OS+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
- 
-            #We have the partition, so now find the OS that resides on that partition.
-            CoreStartupTools.MatchPartitionToOS(OS)
-
-            #Log if we couldn't match them.
-            if BootloaderInfo[OS]["DefaultOS"] == "Unknown":
-                logger.warning("MainStartupTools: Main().GetBootloaders(): Couldn't match! We will instead use the first OS in the list as the default OS, which is "+SystemInfo["ModifyableOSs"][0]+"...")
-                BootloaderInfo[OS]["DefaultOS"] = SystemInfo["ModifyableOSs"][0]
-
             #Initialise some default no-action settings.
             BootloaderInfo[OS]["Settings"] = {}
             BootloaderInfo[OS]["Settings"]["Reinstall"] = False
@@ -586,6 +566,26 @@ class Main():
 
     def FinalCheck(self):
         """Check for any conflicting options, and warn the user of any potential pitfalls."""
+        #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
+        logger.info("MainStartupTools: Main().FinalCheck(): Attempting to match the bootloader's default OS to any OS that WxFixBoot detected...")
+
+        BootloaderInfo[OS]["DefaultBootDevice"] = "Unknown"
+
+        if "MenuEntries" in BootloaderInfo[OS].keys():
+            CoreStartupTools.GetDefaultOSsPartition(OS)
+
+        else:
+            #Bootloader's configuration is missing.
+            logger.error("MainStartupTools: Main().FinalCheck(): "+OS+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
+ 
+        #We have the partition, so now find the OS that resides on that partition.
+        CoreStartupTools.MatchPartitionToOS(OS)
+
+        #Log if we couldn't match them.
+        if BootloaderInfo[OS]["DefaultOS"] == "Unknown":
+            logger.warning("MainStartupTools: Main().FinalCheck(): Couldn't match! We will instead use the first OS in the list as the default OS, which is "+SystemInfo["ModifyableOSs"][0]+"...")
+            BootloaderInfo[OS]["DefaultOS"] = SystemInfo["ModifyableOSs"][0]
+
         #Check and warn about conflicting settings.
         #Warn if any OSs aren't modifyable.
         UnmodifyableOSs = []
