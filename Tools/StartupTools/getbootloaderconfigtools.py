@@ -354,7 +354,7 @@ class Main():
                             if MenuEntries[Menu][OS]["ID"] == GRUBDefault:
                                 DefaultOS = OS
                                 print(DefaultOS)
-                                print(MenuEntries[Menu])
+                                print(MenuEntries[Menu].keys())
                                 break
 
                 if MatchByName:
