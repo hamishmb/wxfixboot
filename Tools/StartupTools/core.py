@@ -177,21 +177,21 @@ class Main():
             else:
                 Disk = BootloaderInfo[OS]["DefaultBootDevice"]
 
-            if Disk in (OSInfo[OSName]["Partition"], DiskInfo[OSInfo[OSName]["Partition"]]["UUID"]):
+            if OSInfo[OSName]["Partition"] != "Unknown" and Disk in (OSInfo[OSName]["Partition"], DiskInfo[OSInfo[OSName]["Partition"]]["UUID"]):
                 #Set it.
                 BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "Partition"
                 BootloaderInfo[OS]["DefaultOS"] = OSName
                 logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched with the partition. The Default OS is "+OSName+"...")
                 break
 
-            elif Disk in (OSInfo[OSName]["BootPartition"], DiskInfo[OSInfo[OSName]["BootPartition"]]["UUID"]):
+            elif OSInfo[OSName]["BootPartition"] != "Unknown" and  Disk in (OSInfo[OSName]["BootPartition"], DiskInfo[OSInfo[OSName]["BootPartition"]]["UUID"]):
                 #Set it.
                 BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "BootPartition"
                 BootloaderInfo[OS]["DefaultOS"] = OSName
                 logger.info("MainStartupTools: Main().GetBootloaders(): Successfully matched with the boot partition. The Default OS is "+OSName+"...")
                 break
 
-            elif Disk in (OSInfo[OSName]["EFIPartition"], DiskInfo[OSInfo[OSName]["EFIPartition"]]["UUID"]):
+            elif OSInfo[OSName]["EFIPartition"] != "Unknown" and Disk in (OSInfo[OSName]["EFIPartition"], DiskInfo[OSInfo[OSName]["EFIPartition"]]["UUID"]):
                 #Set it.
                 BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "EFIPartition"
                 BootloaderInfo[OS]["DefaultOS"] = OSName
