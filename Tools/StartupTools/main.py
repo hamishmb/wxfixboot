@@ -462,8 +462,8 @@ class Main():
             BootloaderInfo[OS]["MenuEntries"] = {OS: {}}
 
             #For EFI bootloaders, set the boot disk to the OS's EFI Partition.
-#            if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "ELILO"):
-#                BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
+            if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "ELILO"):
+                BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
 #            if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
 #                GRUBDir, BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)[0:2]
