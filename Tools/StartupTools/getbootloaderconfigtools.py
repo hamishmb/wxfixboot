@@ -353,6 +353,8 @@ class Main():
                         for OS in MenuEntries[Menu]["Order"]:
                             if MenuEntries[Menu][OS]["ID"] == GRUBDefault:
                                 DefaultOS = OS
+                                print(DefaultOS)
+                                print(MenuEntries[Menu])
                                 break
 
                 if MatchByName:
