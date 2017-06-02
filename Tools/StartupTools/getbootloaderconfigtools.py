@@ -140,7 +140,7 @@ class Main():
                 logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Done! Processing any menu entries in the submenu with recursive call...")
 
                 #Call this function again with the contents of the submenu, and some arguments so everything works correctly.
-                MenuEntries, MenuIDs = self.ParseGRUB2MenuData(SubMenuData, MountPoint=MountPoint, MenuEntries=MenuEntries, MenuName=SubMenuName, MenuIDs=MenuIDs, MenuID=unicode(EntryCounter)+">")[1:]
+                #MenuEntries, MenuIDs = self.ParseGRUB2MenuData(SubMenuData, MountPoint=MountPoint, MenuEntries=MenuEntries, MenuName=SubMenuName, MenuIDs=MenuIDs, MenuID=unicode(EntryCounter)+">")[1:]
 
                 logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Done! Jumping past the submenu data to avoid duplicating menu entries...")
 
