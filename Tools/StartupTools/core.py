@@ -177,6 +177,8 @@ class Main():
             else:
                 Disk = BootloaderInfo[OS]["DefaultBootDevice"]
 
+            print(Disk, OSInfo[OSName]["Partition"], OSName)
+
             if OSInfo[OSName]["Partition"] != "Unknown" and Disk in (OSInfo[OSName]["Partition"], DiskInfo[OSInfo[OSName]["Partition"]]["UUID"]):
                 #Set it.
                 BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "Partition"
