@@ -79,6 +79,8 @@ class Main():
 
             logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in "+GRUBDir+"/grub.cfg...")
 
+        return GRUBDir, MenuEntries, MenuIDs
+
         logger.debug("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Parsing menu data for menu: "+MenuName+"...")
 
         MenuEntries[MenuName] = {}
