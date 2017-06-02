@@ -55,7 +55,7 @@ class Main():
         """Find and parse GRUB2 (EFI and BIOS) menu entries in the given line list"""
         MenuName="MainMenu "+MountPoint
         MenuEntries[MenuName] = {}
-        print(MenuEntries.keys())
+        print("Bob: ", MenuEntries.keys())
         return "", MenuEntries, MenuIDs
 
     def ParseGRUB2MenuDataOld(self, MenuData="", MountPoint="", MenuEntries={}, MenuName="MainMenu", MenuIDs={}, MenuID=""):
