@@ -148,13 +148,11 @@ class Main():
         """Get the partition for the given OS's default OS to boot"""
         DefaultBootDevice = "Unknown"
 
-        print("OS :"+OS)
+        print("OS: "+OS)
 
         for Menu in BootloaderInfo[OS]["MenuEntries"]:
             for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
                 print(BootloaderInfo[OS]["MenuEntries"][Menu].keys())
-                print("Entry: "+Entry, "Default: "+BootloaderInfo[OS]["BLSpecificDefaultOS"])
-                print(Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"])
 
                 if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
                     DefaultBootDevice = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
