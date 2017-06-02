@@ -149,10 +149,10 @@ class Main():
         DefaultBootDevice = "Unknown"
 
         print("OS: "+OS)
+        print(BootloaderInfo[OS]["MenuEntries"].keys())
 
         for Menu in BootloaderInfo[OS]["MenuEntries"]:
             for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
-                print(BootloaderInfo[OS]["MenuEntries"][Menu].keys())
 
                 if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
                     DefaultBootDevice = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
