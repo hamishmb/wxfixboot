@@ -151,12 +151,11 @@ class Main():
         print("OS :"+OS)
 
         for Menu in BootloaderInfo[OS]["MenuEntries"]:
-            for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]["Order"]:
+            for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
                 print("Entry: "+Entry, "Default: "+BootloaderInfo[OS]["BLSpecificDefaultOS"])
-                print(BootloaderInfo[OS]["MenuEntries"][Menu][Entry])
-                print(BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"] == BootloaderInfo[OS]["BLSpecificDefaultOSPartition"])
+                print(Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"])
 
-                if BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"] == BootloaderInfo[OS]["BLSpecificDefaultOSPartition"]:
+                if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
                     DefaultBootDevice = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
                     logger.info("CoreStartupTools: Main().GetDefaultOSsPartition(): Found Default OS's partition...")
                     break
