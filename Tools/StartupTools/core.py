@@ -153,6 +153,7 @@ class Main():
         for Menu in BootloaderInfo[OS]["MenuEntries"]:
             for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
                 print("Entry: "+Entry, "Default: "+BootloaderInfo[OS]["BLSpecificDefaultOS"])
+                print(BootloaderInfo[OS]["MenuEntries"][Menu][Entry])
                 print(BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"] == BootloaderInfo[OS]["BLSpecificDefaultOSPartition"])
 
                 if BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"] == BootloaderInfo[OS]["BLSpecificDefaultOSPartition"]:
