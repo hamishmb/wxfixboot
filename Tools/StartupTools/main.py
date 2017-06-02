@@ -473,7 +473,7 @@ class Main():
                 if OSInfo[OS]["PackageManager"] == "yum":
                     GRUBDir = MountPoint+"/boot/efi/EFI/fedora"
 
-                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", GRUBDir+"/grubenv", BootloaderInfo[OS]["MenuEntries"])
+#                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", GRUBDir+"/grubenv", BootloaderInfo[OS]["MenuEntries"])
 
                 #Try to find GRUB's location if this is GRUB2.
                 if BootloaderInfo[OS]["Bootloader"] == "GRUB2":

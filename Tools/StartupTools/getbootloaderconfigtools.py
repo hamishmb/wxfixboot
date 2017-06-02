@@ -346,37 +346,37 @@ class Main():
                     #Match by name.
                     MatchByName = True
 
-#                if MatchByID:
-#                    #Find the corresponding GRUB menuentry, matching by ID.
-#                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Matching default OS by ID...")
-#                    for Menu in MenuEntries.keys():
-#                        for OS in MenuEntries[Menu]["Order"]:
-#                            if MenuEntries[Menu][OS]["ID"] == GRUBDefault:
-#                                DefaultOS = OS
-#                                break
+                if MatchByID:
+                    #Find the corresponding GRUB menuentry, matching by ID.
+                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Matching default OS by ID...")
+                    for Menu in MenuEntries.keys():
+                        for OS in MenuEntries[Menu]["Order"]:
+                            if MenuEntries[Menu][OS]["ID"] == GRUBDefault:
+                                DefaultOS = OS
+                                break
 
-#                if MatchByName:
-#                    #Check in the menuentries list.
-#                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by name...")
-#                    Found = False
+                if MatchByName:
+                    #Check in the menuentries list.
+                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Finding default OS by name...")
+                    Found = False
 
-#                    for Menu in MenuEntries.keys():
-#                        for MenuEntry in MenuEntries[Menu]["Order"]:
-#                            if GRUBDefault == MenuEntry:
-#                                DefaultOS = GRUBDefault
-#                                Found = True
+                    for Menu in MenuEntries.keys():
+                        for MenuEntry in MenuEntries[Menu]["Order"]:
+                            if GRUBDefault == MenuEntry:
+                                DefaultOS = GRUBDefault
+                                Found = True
 
-#                    if Found:
-#                        logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Found default OS by name...")
+                    if Found:
+                        logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Found default OS by name...")
 
-#                    else:
-#                        logger.warning("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Didn't find default OS by name, setting it to the 1st menu entry instead...")
+                    else:
+                        logger.warning("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Didn't find default OS by name, setting it to the 1st menu entry instead...")
 
                         #Find the 1st menu entry.
-#                        for Entry in MenuEntries["MainMenu"]["Order"]:
-#                            if MenuEntries["MainMenu"][Entry]["ID"] == 0:
-#                                DefaultOS = Entry
-#                                logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Set default OS to "+Entry+" instead. Continuing...")
+                        for Entry in MenuEntries["MainMenu"]["Order"]:
+                            if MenuEntries["MainMenu"][Entry]["ID"] == 0:
+                                DefaultOS = Entry
+                                logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Set default OS to "+Entry+" instead. Continuing...")
 
                 logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Done!")
 
