@@ -544,7 +544,7 @@ class Main():
             BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
             BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = False
 
-            print(BootloaderInfo[OS]["MenuEntries"])
+            print(BootloaderInfo[OS]["MenuEntries"].keys())
             #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
             if OSInfo[OS]["EFIPartition"] != "Unknown":
                 if CoreTools.Unmount(MountPoint+"/boot/efi") != 0:
