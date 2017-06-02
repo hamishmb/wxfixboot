@@ -79,8 +79,6 @@ class Main():
 
             logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in "+GRUBDir+"/grub.cfg...")
 
-        return GRUBDir, MenuEntries, MenuIDs
-
         logger.debug("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Parsing menu data for menu: "+MenuName+"...")
 
         MenuEntries[MenuName] = {}
@@ -103,7 +101,7 @@ class Main():
             #Parse any menu entries we find.
             if "menuentry " in Line:
                 logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Found a menu entry. Assembling into a dictionary with self.AssembleGRUB2MenuEntry()...")
-                MenuEntries = self.AssembleGRUB2MenuEntry(MenuEntries, MenuIDs, MenuData, MenuName, Line, EntryCounter)
+                MenuEntries = {} #self.AssembleGRUB2MenuEntry(MenuEntries, MenuIDs, MenuData, MenuName, Line, EntryCounter)
                 logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Done!")
 
                 #Increment the entry counter.
