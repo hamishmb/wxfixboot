@@ -353,6 +353,9 @@ class Main():
                         for OS in MenuEntries[Menu]["Order"]:
                             if MenuEntries[Menu][OS]["ID"] == GRUBDefault:
                                 DefaultOS = OS
+
+                                #Use this to match more easily.
+                                DefaultOSPartition = MenuEntries[Menu][OS]["Partition"]
                                 break
 
                 if MatchByName:
@@ -364,6 +367,10 @@ class Main():
                         for MenuEntry in MenuEntries[Menu]["Order"]:
                             if GRUBDefault == MenuEntry:
                                 DefaultOS = GRUBDefault
+
+                                #Use this to match more easily.
+                                DefaultOSPartition = MenuEntries[Menu][OS]["Partition"]
+
                                 Found = True
 
                     if Found:
@@ -376,6 +383,10 @@ class Main():
                         for Entry in MenuEntries["MainMenu"]["Order"]:
                             if MenuEntries["MainMenu"][Entry]["ID"] == 0:
                                 DefaultOS = Entry
+
+                                #Use this to match more easily.
+                                DefaultOSPartition = MenuEntries[Menu][OS]["Partition"]
+
                                 logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Set default OS to "+Entry+" instead. Continuing...")
 
                 logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Done!")
@@ -383,9 +394,6 @@ class Main():
         #Close the file.
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Done! Returning information...")
         ConfigFile.close()
-
-        #Use this to match more easily.
-        DefaultOSPartition = MenuEntries[Menu][DefaultOS]["Partition"]
 
         return (Timeout, KernelOptions, DefaultOS, DefaultOSPartition)
 
@@ -514,6 +522,10 @@ class Main():
                     for OS in MenuEntries[Menu]["Order"]:
                         if MenuEntries[Menu][OS]["ID"] == GRUBDefault:
                             DefaultOS = OS
+
+                            #Use this to match more easily.
+                            DefaultOSPartition = MenuEntries[Menu][OS]["Partition"]
+
                             break
 
             #Look for the timeout setting.
@@ -536,9 +548,6 @@ class Main():
         #Close the file.
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Done! Returning Information...")
         ConfigFile.close()
-
-        #Use this to match more easily.
-        DefaultOSPartition = MenuEntries[Menu][DefaultOS]["Partition"]
 
         return Timeout, DefaultOS, DefaultOSPartition
 
@@ -685,10 +694,11 @@ class Main():
             for Entry in BootloaderInfo[OS]["MenuEntries"]["MainMenu"]["Order"]:
                 if BootloaderInfo[OS]["MenuEntries"]["MainMenu"][Entry]["ID"] == 0:
                     DefaultOS = Entry
-                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Set default OS to "+Entry+" instead. Continuing...")
 
-        #Use this to match more easily.
-        DefaultOSPartition = MenuEntries[Menu][DefaultOS]["Partition"]
+                    #Use this to match more easily.
+                    DefaultOSPartition = BootloaderInfo[OS]["MenuEntries"]["MainMenu"][Entry]["Partition"]
+
+                    logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Set default OS to "+Entry+" instead. Continuing...")
 
         #Ignore ELILO's boot disk setting.
         if "/etc/lilo.conf" in ConfigFilePath:
