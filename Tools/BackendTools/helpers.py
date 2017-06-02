@@ -23,6 +23,11 @@ from __future__ import unicode_literals
 
 #Begin Main Class.
 class Main():
+    def PartitionMatchesOS(self, Partition, OS):
+        """Matches the given boot device to an OS, using the info we gathered at startup using the function above"""
+        #Try to match it by UUID or by name, looking for the same type of match we got before, to avoid false positives.
+        return Partition in (OSInfo[OS][BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"]], DiskInfo[OSInfo[OS][BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"]]]["UUID"])
+
     def WaitUntilPackageManagerNotInUse(self, MountPoint, PackageManager):
         """Check if the package manager is in use, and if so, wait until it is no longer in use."""
         if PackageManager == "apt-get":

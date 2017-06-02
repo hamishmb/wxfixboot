@@ -166,7 +166,7 @@ class Main():
                 BootloaderInfo[OS]["DefaultBootDeviceUUID"] = "Unknown" #Try harder? ***
 
     def MatchPartitionToOS(self, OS):
-        """Matches the given partition to an OS in OSInfo"""
+        """Matches the default boot device (in a menu entry) to an OS in OSInfo"""
         for OSName in OSInfo:
             if OSName not in BootloaderInfo:
                 continue
