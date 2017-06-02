@@ -81,6 +81,8 @@ class Main():
 
         logger.debug("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Parsing menu data for menu: "+MenuName+"...")
 
+        MenuName="MainMenu "+MountPoint
+
         MenuEntries[MenuName] = {}
         MenuEntries[MenuName]["Order"] = []
         MenuIDs[MenuName] = {}
