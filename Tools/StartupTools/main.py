@@ -472,47 +472,47 @@ class Main():
 
                 #Get GRUB2's config.
                 #If we're using fedora, always look for grubenv in the EFI partition (the grubenv symlink is in /boot/grub2 but it doesn't work when we're chrooting).
-#                if OSInfo[OS]["PackageManager"] == "yum":
-#                    GRUBDir = MountPoint+"/boot/efi/EFI/fedora"
+                if OSInfo[OS]["PackageManager"] == "yum":
+                    GRUBDir = MountPoint+"/boot/efi/EFI/fedora"
 
-#                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", GRUBDir+"/grubenv", BootloaderInfo[OS]["MenuEntries"])
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUB2Config(MountPoint+"/etc/default/grub", GRUBDir+"/grubenv", BootloaderInfo[OS]["MenuEntries"])
 
                 #Try to find GRUB's location if this is GRUB2.
-#                if BootloaderInfo[OS]["Bootloader"] == "GRUB2":
-#                    BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB2")
+                if BootloaderInfo[OS]["Bootloader"] == "GRUB2":
+                    BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB2")
 
-#            elif BootloaderInfo[OS]["Bootloader"] == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
-#                BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseLILOMenuEntries(MountPoint+"/etc/elilo.conf")
-#                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/elilo.conf", OS=OS)
+            elif BootloaderInfo[OS]["Bootloader"] == "ELILO" and os.path.isfile(MountPoint+"/etc/elilo.conf"):
+                BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseLILOMenuEntries(MountPoint+"/etc/elilo.conf")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/elilo.conf", OS=OS)
 
-#            elif BootloaderInfo[OS]["Bootloader"] == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
-#                BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseLILOMenuEntries(MountPoint+"/etc/lilo.conf")
-#                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/lilo.conf", OS=OS)
+            elif BootloaderInfo[OS]["Bootloader"] == "LILO" and os.path.isfile(MountPoint+"/etc/lilo.conf"):
+                BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseLILOMenuEntries(MountPoint+"/etc/lilo.conf")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetLILOConfig(MountPoint+"/etc/lilo.conf", OS=OS)
 
-#            elif BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY" and os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
-#                BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUBLEGACYMenuEntries(MountPoint+"/boot/grub/menu.lst")
-#                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst", BootloaderInfo[OS]["MenuEntries"])
-#                BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB-LEGACY")
+            elif BootloaderInfo[OS]["Bootloader"] == "GRUB-LEGACY" and os.path.isfile(MountPoint+"/boot/grub/menu.lst"):
+                BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUBLEGACYMenuEntries(MountPoint+"/boot/grub/menu.lst")
+                BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(MountPoint+"/boot/grub/menu.lst", BootloaderInfo[OS]["MenuEntries"])
+                BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB-LEGACY")
 
-#                #Use safe default kernel options.
-#                logger.info("MainStartupTools: Main().GetBootloaders(): "+OS+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\"...")
-#                BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
+                #Use safe default kernel options.
+                logger.info("MainStartupTools: Main().GetBootloaders(): "+OS+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\"...")
+                BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
 
             #If we didn't find the kernel options, set some defaults here, and warn the user.
-#            if BootloaderInfo[OS]["GlobalKernelOptions"] == "Unknown":
-#                BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
-#                logger.warning("MainStartupTools: Main().GetBootloaders(): Couldn't find "+OS+"'s global kernel options! Assuming 'quiet splash nomodeset'...")
-#                DialogTools.ShowMsgDlg(Message="Couldn't find "+OS+"'s default kernel options! Loading safe defaults instead. Click okay to continue.", Kind="warning")
+            if BootloaderInfo[OS]["GlobalKernelOptions"] == "Unknown":
+                BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
+                logger.warning("MainStartupTools: Main().GetBootloaders(): Couldn't find "+OS+"'s global kernel options! Assuming 'quiet splash nomodeset'...")
+                DialogTools.ShowMsgDlg(Message="Couldn't find "+OS+"'s default kernel options! Loading safe defaults instead. Click okay to continue.", Kind="warning")
 
-#            #Determine if we can modify this OS from our current one.
-#            if OSInfo[OS]["Arch"] == SystemInfo["CurrentOSArch"] or (OSInfo[OS]["Arch"] == "i386" and SystemInfo["CurrentOSArch"] == "x86_64"):
-#                BootloaderInfo[OS]["IsModifyable"] = True
-#                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+"."
-#                SystemInfo["ModifyableOSs"].append(OS)
+            #Determine if we can modify this OS from our current one.
+            if OSInfo[OS]["Arch"] == SystemInfo["CurrentOSArch"] or (OSInfo[OS]["Arch"] == "i386" and SystemInfo["CurrentOSArch"] == "x86_64"):
+                BootloaderInfo[OS]["IsModifyable"] = True
+                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+"."
+                SystemInfo["ModifyableOSs"].append(OS)
 
-#            else:
-#                BootloaderInfo[OS]["IsModifyable"] = False
-#                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+". Not modifyable because current OS is "+SystemInfo["CurrentOSArch"]+"."
+            else:
+                BootloaderInfo[OS]["IsModifyable"] = False
+                BootloaderInfo[OS]["Comments"] = "Architecture is "+OSInfo[OS]["Arch"]+". Not modifyable because current OS is "+SystemInfo["CurrentOSArch"]+"."
 
             #Initialise some default no-action settings.
             BootloaderInfo[OS]["Settings"] = {}
