@@ -79,18 +79,18 @@ class Main():
 
 #            logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in "+GRUBDir+"/grub.cfg...")
 
-        logger.debug("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Parsing menu data for menu: "+MenuName+"...")
+#        logger.debug("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Parsing menu data for menu: "+MenuName+"...")
 
         MenuName="MainMenu "+MountPoint
 
         MenuEntries[MenuName] = {}
-        MenuEntries[MenuName]["Order"] = []
-        MenuIDs[MenuName] = {}
-        MenuIDs[MenuName]["ID"] = MenuID
+#        MenuEntries[MenuName]["Order"] = []
+#        MenuIDs[MenuName] = {}
+#        MenuIDs[MenuName]["ID"] = MenuID
         
-        EntryCounter = 0
-        SkipUntil = 0
-        LineCounter = 0
+#        EntryCounter = 0
+#        SkipUntil = 0
+#        LineCounter = 0
 
         return "", MenuEntries, MenuIDs
 
