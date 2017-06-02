@@ -384,7 +384,10 @@ class Main():
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Done! Returning information...")
         ConfigFile.close()
 
-        return (Timeout, KernelOptions, DefaultOS)
+        #Use this to match more easily.
+        DefaultOSPartition = MenuEntries[Menu][DefaultOS]["Partition"]
+
+        return (Timeout, KernelOptions, DefaultOS, DefaultOSPartition)
 
     def ParseGRUBLEGACYMenuEntries(self, MenuEntriesFilePath):
         """Find and parse GRUB LEGACY menu entries."""
@@ -534,7 +537,10 @@ class Main():
         logger.info("BootloaderConfigObtainingTools: Main().GetGRUBLEGACYConfig(): Done! Returning Information...")
         ConfigFile.close()
 
-        return Timeout, DefaultOS
+        #Use this to match more easily.
+        DefaultOSPartition = MenuEntries[Menu][DefaultOS]["Partition"]
+
+        return Timeout, DefaultOS, DefaultOSPartition
 
     def ParseLILOMenuEntries(self, MenuEntriesFilePath):
         """Find and parse LILO and ELILO menu entries."""
@@ -681,10 +687,13 @@ class Main():
                     DefaultOS = Entry
                     logger.info("BootloaderConfigObtainingTools: Main().GetGRUB2Config(): Set default OS to "+Entry+" instead. Continuing...")
 
+        #Use this to match more easily.
+        DefaultOSPartition = MenuEntries[Menu][DefaultOS]["Partition"]
+
         #Ignore ELILO's boot disk setting.
         if "/etc/lilo.conf" in ConfigFilePath:
-            return (Timeout, KernelOptions, BootDisk, DefaultOS)
+            return (Timeout, KernelOptions, BootDisk, DefaultOS, DefaultOSPartition)
 
         else:
             logger.info("BootloaderConfigObtainingTools: Main().GetLILOConfig(): Ignoring ELILO's book disk setting, instead preferring the detected EFI partition for this OS...")
-            return (Timeout, KernelOptions, DefaultOS)
+            return (Timeout, KernelOptions, DefaultOS, DefaultOSPartition)
