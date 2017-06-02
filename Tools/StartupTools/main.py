@@ -595,6 +595,9 @@ class Main():
                 logger.warning("MainStartupTools: Main().FinalCheck(): Couldn't match! We will instead use the first OS in the list as the default OS, which is "+SystemInfo["ModifyableOSs"][0]+"...")
                 BootloaderInfo[OS]["DefaultOS"] = SystemInfo["ModifyableOSs"][0]
 
+            #Set this.
+            BootloaderInfo[OS]["Settings"]["DefaultOS"] = BootloaderInfo[OS]["DefaultOS"]
+
         #Check and warn about conflicting settings.
         #Warn if any OSs aren't modifyable.
         UnmodifyableOSs = []
