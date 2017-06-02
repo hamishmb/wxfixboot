@@ -543,7 +543,6 @@ class Main():
             BootloaderInfo[OS]["GUIState"]["BackupBootloaderChoiceState"] = False
             BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
             BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = False
-
             print("OS: "+OS)
             print(BootloaderInfo[OS]["MenuEntries"].keys())
 
