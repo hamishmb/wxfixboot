@@ -58,8 +58,11 @@ class Main():
         print("Bob: ", MenuEntries.keys())
         return "", MenuEntries, MenuIDs
 
-    def ParseGRUB2MenuData(self, MenuData="", MountPoint="", MenuEntries={}, MenuName="MainMenu", MenuIDs={}, MenuID=""):
+    def ParseGRUB2MenuData(self, MenuData="", MountPoint="", MenuEntries=None, MenuName="MainMenu", MenuIDs={}, MenuID=""):
         """Find and parse GRUB2 (EFI and BIOS) menu entries in the given line list"""
+        if MenuEntries is None:
+            MenuEntries = {}
+
         if MenuData != "":
             logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in given menu data...")
             GRUBDir = ""
@@ -87,6 +90,8 @@ class Main():
             logger.info("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Finding and parsing menu entries in "+GRUBDir+"/grub.cfg...")
 
         logger.debug("BootloaderConfigObtainingTools: Main().ParseGRUB2MenuData(): Parsing menu data for menu: "+MenuName+"...")
+
+        MenuName="MainMenu "+MountPoint
 
         MenuEntries[MenuName] = {}
         MenuEntries[MenuName]["Order"] = []
