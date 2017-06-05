@@ -172,6 +172,9 @@ class Main():
 
     def MatchPartitionToOS(self, OS):
         """Matches the default boot device (in a menu entry) to an OS in OSInfo"""
+        BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "Unknown"
+        BootloaderInfo[OS]["DefaultOS"] = "Unknown"
+
         for OSName in OSInfo:
             if OSName not in BootloaderInfo:
                 continue

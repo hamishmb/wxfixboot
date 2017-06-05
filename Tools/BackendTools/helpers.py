@@ -26,7 +26,6 @@ class Main():
     def PartitionMatchesOS(self, Partition, OS):
         """Matches the given boot device to an OS, using the info we gathered at startup using the function above"""
         #Try to match it by UUID or by name, looking for the same type of match we got before, to avoid false positives.
-        print("Type of Match: "+BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"])
         print("Partition to match: "+Partition)
         print("OS to match with: "+OS)
         print("Trying to match (1st) with: "+OSInfo[OS]["Partition"])
