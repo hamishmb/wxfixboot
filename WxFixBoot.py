@@ -1303,7 +1303,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def DisplayTimeoutInfoMessage(self):
         """Displays an informational message to the user if they only have 1 detected OS."""
-        Dlg = wx.MessageDialog(self.Panel, "WxFixBoot only detected one Operating System on your computer, excluding any Windows or Mac installations. You can hide your boot menu entirely, if you wish, by selecting a bootloader timeout of 0 seconds.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION)
+        Dlg = wx.MessageDialog(self.Panel, "WxFixBoot only detected one Operating System on your computer. You can hide your boot menu entirely, if you wish, by selecting a bootloader timeout of 0 seconds.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION)
         Dlg.ShowModal()
         Dlg.Destroy()
 
