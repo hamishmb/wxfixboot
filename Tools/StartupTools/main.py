@@ -570,10 +570,12 @@ class Main():
             #Set sensible defaults for Windows.
             if "Windows" in OS:
                 BootloaderInfo[OS]["DefaultBootDevice"] = OSInfo[OS]["Partition"]
+                BootloaderInfo[OS]["DefaultOS"] = OS
 
             #Same for Mac OS X.
             elif "Mac" in OS:
                 BootloaderInfo[OS]["DefaultBootDevice"] = OSInfo[OS]["Partition"]
+                BootloaderInfo[OS]["DefaultOS"] = OS
 
             #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
             logger.info("MainStartupTools: Main().FinalCheck(): Attempting to match "+OS+"'s default OS to any OS that WxFixBoot detected...")
