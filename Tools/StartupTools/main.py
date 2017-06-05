@@ -571,14 +571,16 @@ class Main():
             if "Windows" in OS:
                 BootloaderInfo[OS]["DefaultBootDevice"] = OSInfo[OS]["Partition"]
                 BootloaderInfo[OS]["DefaultOS"] = OS
+                continue
 
             #Same for Mac OS X.
             elif "Mac" in OS:
                 BootloaderInfo[OS]["DefaultBootDevice"] = OSInfo[OS]["Partition"]
                 BootloaderInfo[OS]["DefaultOS"] = OS
+                continue
 
             #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
-            logger.info("MainStartupTools: Main().FinalCheck(): Attempting to match "+OS+"'s default OS to any OS that WxFixBoot detected...")
+            logger.info("MainStartupTools: Main().GetBootloaders(): Attempting to match "+OS+"'s default OS to any OS that WxFixBoot detected...")
 
             BootloaderInfo[OS]["DefaultBootDevice"] = "Unknown"
 
@@ -587,14 +589,14 @@ class Main():
 
             else:
                 #Bootloader's configuration is missing.
-                logger.error("MainStartupTools: Main().FinalCheck(): "+OS+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
+                logger.error("MainStartupTools: Main().GetBootloaders(): "+OS+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
  
             #We have the partition, so now find the OS that resides on that partition.
             CoreStartupTools.MatchPartitionToOS(OS)
 
             #Log if we couldn't match them.
             if BootloaderInfo[OS]["DefaultOS"] == "Unknown":
-                logger.warning("MainStartupTools: Main().FinalCheck(): Couldn't match! We will instead use the first OS in the list as the default OS, which is "+SystemInfo["ModifyableOSs"][0]+"...")
+                logger.warning("MainStartupTools: Main().GetBootloaders(): Couldn't match! We will instead use the first OS in the list as the default OS, which is "+SystemInfo["ModifyableOSs"][0]+"...")
                 BootloaderInfo[OS]["DefaultOS"] = SystemInfo["ModifyableOSs"][0]
 
             #Set this.
