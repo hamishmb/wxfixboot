@@ -63,7 +63,7 @@ class Main():
         RetVal = 1
 
         #Trap in while loop until package manager is free.
-        while RetVal != 0:
+        while RetVal not in (0, 100): #100 when there are updates available on Fedora.
             RetVal = CoreTools.StartProcess(Cmd, ShowOutput=False)
             time.sleep(5)
 
