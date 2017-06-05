@@ -29,9 +29,25 @@ class Main():
         print("Type of Match: "+BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"])
         print("Partition to match: "+Partition)
         print("OS to match with: "+OS)
-        print("Trying to match with: "+OSInfo[OS][BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"]])
+        print("Trying to match (1st) with: "+OSInfo[OS]["Partition"])
+        print("Trying to match (2nd) with: "+OSInfo[OS]["BootPartition"])
+        print("Trying to match (3rd) with: "+OSInfo[OS]["EFIPartition"])
 
-        return Partition in (OSInfo[OS][BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"]], DiskInfo[OSInfo[OS][BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"]]]["UUID"])
+        #If partition is unknown ignore it.
+        if Partition == "Unknown":
+            return False
+
+        if Partition in (OSInfo[OS]["Partition"], DiskInfo[OSInfo[OS]["Partition"]]["UUID"]):
+            return True
+
+        elif Partition in (OSInfo[OS]["BootPartition"], DiskInfo[OSInfo[OS]["BootPartition"]]["UUID"]):
+            return True
+
+        elif Partition in (OSInfo[OS]["BootPartition"], DiskInfo[OSInfo[OS]["BootPartition"]]["UUID"]):
+            return True
+
+        else:
+            return False
 
     def WaitUntilPackageManagerNotInUse(self, MountPoint, PackageManager):
         """Check if the package manager is in use, and if so, wait until it is no longer in use."""
