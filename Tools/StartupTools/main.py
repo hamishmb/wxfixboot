@@ -466,9 +466,7 @@ class Main():
                 BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
             if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
-                print("OS: "+OS)
-                print("MountPoint: "+MountPoint)
-                GRUBDir, BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)[0:2] #*** Don't kno why, but I have to cal with MenuEntires={}, default argument doesn't work. ***
+                GRUBDir, BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)[0:2]
 
                 #Get GRUB2's config.
                 #If we're using fedora, always look for grubenv in the EFI partition (the grubenv symlink is in /boot/grub2 but it doesn't work when we're chrooting).
@@ -547,9 +545,6 @@ class Main():
             BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
             BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = False
 
-            print("OS: "+OS)
-            print(BootloaderInfo[OS]["MenuEntries"].keys())
-
             #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
             if OSInfo[OS]["EFIPartition"] != "Unknown":
                 if CoreTools.Unmount(MountPoint+"/boot/efi") != 0:
@@ -570,19 +565,6 @@ class Main():
                 if CoreTools.Unmount(MountPoint) != 0:
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
 
-        for OS in OSInfo.keys():
-            #Ignore Windows.
-            if "Windows" in OS:
-                continue
-
-            #Same for Mac OS X.
-            elif "Mac" in OS:
-                continue
-
-            print("OS: "+OS)
-            print(BootloaderInfo[OS]["MenuEntries"].keys())
-
-
     def FinalCheck(self):
         """Check for any conflicting options, and warn the user of any potential pitfalls."""
         for OS in OSInfo.keys():
@@ -593,9 +575,6 @@ class Main():
             #Same for Mac OS X.
             elif "Mac" in OS:
                 continue
-
-            print("OS: "+OS)
-            print(BootloaderInfo[OS]["MenuEntries"].keys())
 
             #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
             logger.info("MainStartupTools: Main().FinalCheck(): Attempting to match "+OS+"'s default OS to any OS that WxFixBoot detected...")

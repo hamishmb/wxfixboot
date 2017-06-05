@@ -168,7 +168,7 @@ class Main():
                 BootloaderInfo[OS]["DefaultBootDeviceUUID"] = DiskInfo[BootloaderInfo[OS]["DefaultBootDevice"]]["UUID"]
 
             else:
-                BootloaderInfo[OS]["DefaultBootDeviceUUID"] = "Unknown" #Try harder? ***
+                BootloaderInfo[OS]["DefaultBootDeviceUUID"] = "Unknown"
 
     def MatchPartitionToOS(self, OS):
         """Matches the default boot device (in a menu entry) to an OS in OSInfo"""

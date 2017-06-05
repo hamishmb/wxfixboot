@@ -26,11 +26,11 @@ class Main():
     def PartitionMatchesOS(self, Partition, OS):
         """Matches the given boot device to an OS, using the info we gathered at startup using the function above"""
         #Try to match it by UUID or by name, looking for the same type of match we got before, to avoid false positives.
-        print("Partition to match: "+Partition)
-        print("OS to match with: "+OS)
-        print("Trying to match (1st) with: "+OSInfo[OS]["Partition"])
-        print("Trying to match (2nd) with: "+OSInfo[OS]["BootPartition"])
-        print("Trying to match (3rd) with: "+OSInfo[OS]["EFIPartition"])
+        logger.debug("HelperBackendTools.PartitionMatchesOS: Partition To Match: "+Partition+"...")
+        logger.debug("HelperBackendTools.PartitionMatchesOS: OS to match with: "+OS+"...")
+        logger.debug("HelperBackendTools.PartitionMatchesOS: Trying to match (1st) with: "+OSInfo[OS]["Partition"]+"...")
+        logger.debug("HelperBackendTools.PartitionMatchesOS: Trying to match (2nd) with: "+OSInfo[OS]["BootPartition"]+"...")
+        logger.debug("HelperBackendTools.PartitionMatchesOS: Trying to match (3rd) with: "+OSInfo[OS]["EFIPartition"]+"...")
 
         #If partition is unknown ignore it.
         if Partition == "Unknown":
@@ -186,7 +186,7 @@ class Main():
 
             for Function in Operations:
                 if type(Function) == type(()):
-                    if MainBackendTools.ManageBootloader == Function: #*** check again ***
+                    if MainBackendTools.ManageBootloader == Function:
                         BootloaderOperations = True
                         break
 

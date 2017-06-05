@@ -2077,7 +2077,7 @@ class BootloaderOptionsWindow(wx.Frame):
         BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"] = self.KeepKernelOptionsCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["NewKernelOptions"] = self.NewKernelOptionsTextCtrl.GetValue()
         BootloaderInfo[OS]["Settings"]["DefaultOS"] = self.DefaultOSChoice.GetStringSelection()
-        BootloaderInfo[OS]["Settings"]["DefaultBootDevice"] = BootloaderInfo[BootloaderInfo[OS]["Settings"]["DefaultOS"]]["DefaultBootDevice"] #Go with this for now, finish later ***
+        BootloaderInfo[OS]["Settings"]["DefaultBootDevice"] = BootloaderInfo[BootloaderInfo[OS]["Settings"]["DefaultOS"]]["DefaultBootDevice"]
         BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] = self.InstallNewBootloaderCheckBox.GetValue()
         BootloaderInfo[OS]["Settings"]["NewBootloader"] = self.NewBootloaderChoice.GetStringSelection()
         BootloaderInfo[OS]["Settings"]["BackupBootloader"] = self.BackupBootloaderCheckBox.GetValue()
