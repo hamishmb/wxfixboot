@@ -44,7 +44,7 @@ class Main():
         elif OSInfo[OS]["BootPartition"] != "Unknown" and Partition in (OSInfo[OS]["BootPartition"], DiskInfo[OSInfo[OS]["BootPartition"]]["UUID"]):
             return True
 
-        elif OSInfo[OS]["EFIPartition"] != "Unknown" and Partition in (OSInfo[OS]["BootPartition"], DiskInfo[OSInfo[OS]["BootPartition"]]["UUID"]):
+        elif OSInfo[OS]["EFIPartition"] != "Unknown" and Partition in (OSInfo[OS]["EFIPartition"], DiskInfo[OSInfo[OS]["EFIPartition"]]["UUID"]):
             return True
 
         else:
