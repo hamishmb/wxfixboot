@@ -565,8 +565,7 @@ class Main():
                 if CoreTools.Unmount(MountPoint) != 0:
                     logger.error("MainStartupTools: Main().GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
 
-    def FinalCheck(self):
-        """Check for any conflicting options, and warn the user of any potential pitfalls."""
+        #Get default OSs.
         for OS in OSInfo.keys():
             #Ignore Windows.
             if "Windows" in OS:
@@ -599,6 +598,8 @@ class Main():
             #Set this.
             BootloaderInfo[OS]["Settings"]["DefaultOS"] = BootloaderInfo[OS]["DefaultOS"]
 
+    def FinalCheck(self):
+        """Check for any conflicting options, and warn the user of any potential pitfalls."""
         #Check and warn about conflicting settings.
         #Warn if any OSs aren't modifyable.
         UnmodifyableOSs = []
