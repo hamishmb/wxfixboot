@@ -71,7 +71,7 @@ class TestCheckInternetConnection(unittest.TestCase):
 
     def testCheckInternetConnection1(self):
         #Ask user to disable internet connection and give up when test fails.
-        DialogFunctionsForTests.ShowRealMsgDlg("Please disable your internet connection, and opt to \"Cancel/Skip Bootloader Options\" when prompted.")
+        DialogFunctionsForTests.ShowRealMsgDlg("Please disable your internet connection, and opt to \"Cancel/Skip Bootloader Operations\" when prompted.")
         EssentialBackendTools().CheckInternetConnection()
         self.assertEqual(Tools.BackendTools.essentials.SystemInfo, Data.ReturnSystemInfoDictWithDisabledBLOpts())
 
