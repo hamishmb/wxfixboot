@@ -37,13 +37,14 @@ class Main():
         if Partition == "Unknown":
             return False
 
-        if Partition in (OSInfo[OS]["Partition"], DiskInfo[OSInfo[OS]["Partition"]]["UUID"]):
+        #If the eg EFI partition isn't known, don't do the rest of the test in the if statement to avoid erors (short-circuit logic).
+        if OSInfo[OS]["Partition"] != "Unknown" and Partition in (OSInfo[OS]["Partition"], DiskInfo[OSInfo[OS]["Partition"]]["UUID"]):
             return True
 
-        elif Partition in (OSInfo[OS]["BootPartition"], DiskInfo[OSInfo[OS]["BootPartition"]]["UUID"]):
+        elif OSInfo[OS]["BootPartition"] != "Unknown" and Partition in (OSInfo[OS]["BootPartition"], DiskInfo[OSInfo[OS]["BootPartition"]]["UUID"]):
             return True
 
-        elif Partition in (OSInfo[OS]["BootPartition"], DiskInfo[OSInfo[OS]["BootPartition"]]["UUID"]):
+        elif OSInfo[OS]["EFIPartition"] != "Unknown" and Partition in (OSInfo[OS]["BootPartition"], DiskInfo[OSInfo[OS]["BootPartition"]]["UUID"]):
             return True
 
         else:
