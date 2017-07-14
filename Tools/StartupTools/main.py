@@ -121,8 +121,6 @@ class Main():
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
 
-        CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
-
         #Don't worry about this error when running on Parted Magic.
         if CoreTools.StartProcess("mount -avw") != 0 and SystemInfo["OnPartedMagic"] == False:
             logger.critical("MainStartupTools: Main().MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
