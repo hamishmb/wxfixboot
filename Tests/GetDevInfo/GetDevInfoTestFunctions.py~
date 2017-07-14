@@ -22,7 +22,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 def GetLVAliases(self, Line):
-    """Obtain and verify the name of an LVM volume. Return it once found. Works the same as the normal one, but doesn't check to see if """
+    """Obtain and verify the name of an LVM volume. Return it once found. Works the same as the normal one, but doesn't check to see if the paths exist"""
     AliasList = []
     DefaultName = "Unknown"
 
@@ -30,12 +30,10 @@ def GetLVAliases(self, Line):
     Temp = Line.split()[-1]
 
     #Try this way first for better compatibility with most systems.
-    if os.path.exists("/dev/mapper/"+'-'.join(Temp.split("/")[2:])):
-        AliasList.append("/dev/mapper/"+'-'.join(Temp.split("/")[2:]))
+    AliasList.append("/dev/mapper/"+'-'.join(Temp.split("/")[2:]))
 
     #Alternative ways of obtaining the info.
-    if os.path.exists(Temp):
-        AliasList.append(Temp)
+    AliasList.append(Temp)
 
     #Weird one for Ubuntu with extra - in it.
     if "-" in Temp:
@@ -47,8 +45,7 @@ def GetLVAliases(self, Line):
         VGName = VGName.replace("-", "--")
 
         #Check whether this works.
-        if os.path.exists("/dev/mapper/"+VGName+"-"+LVName):
-            AliasList.append("/dev/mapper/"+VGName+"-"+LVName)
+        AliasList.append("/dev/mapper/"+VGName+"-"+LVName)
 
     if len(AliasList) >= 1:
         DefaultName = AliasList[0]

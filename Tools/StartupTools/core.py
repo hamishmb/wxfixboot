@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Core Startup Tools in the StartupTools Package for WxFixBoot Version 2.0.1
+# Core Startup Tools in the StartupTools Package for WxFixBoot Version 2.0.2
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it

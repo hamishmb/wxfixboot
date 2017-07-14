@@ -23,8 +23,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import subprocess
-i
 def StartProcess(Command, ReturnOutput=False):
     """Start a given process, and return output and return value if needed"""
     runcmd = subprocess.Popen("LC_ALL=C "+Command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)

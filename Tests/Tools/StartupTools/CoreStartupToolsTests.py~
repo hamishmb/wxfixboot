@@ -94,7 +94,7 @@ class TestAskForOSName(unittest.TestCase):
         self.Frame = TestWindow()
         self.Panel = TestPanel(self.Frame)
 
-        DialogFunctionsForTests.ParentWindow = self
+        DialogFunctionsForTests.ParentWindow = self.Panel
 
         Tools.StartupTools.core.DialogTools = DialogFunctionsForTests
 
