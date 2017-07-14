@@ -382,6 +382,7 @@ class Main():
         #Exit.
         DialogTools.ShowMsgDlg(Message="Done. WxFixBoot will now exit.")
         wx.Exit()
-        sys.exit(Message)
+        sys.stdout.write(Message+"\n")
+        os._exit(1)
 
 #End main Class.

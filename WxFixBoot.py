@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# WxFixBoot Version 2.0.1
+# WxFixBoot Version 2.0.2
 # Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
@@ -40,8 +40,8 @@ from wx.animate import Animation
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "2.0.1"
-ReleaseDate = "5/6/2017"
+Version = "2.0.2"
+ReleaseDate = "14/7/2017"
 SessionEnding = False
 
 def usage():

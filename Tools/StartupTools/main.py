@@ -113,13 +113,15 @@ class Main():
         """Check all unmounted filesystems."""
         logger.info("MainStartupTools: Main().CheckFS(): Checking filesystems if possible. Running 'fsck -ARMp'...")
 
-        if CoreTools.StartProcess("fsck -ARMp") != 0:
+        if CoreTools.StartProcess("fsck -ARMp") not in (0, 8):
             logger.critical("MainStartupTools: Main().CheckFS(): Failed to check filesystems! Doing emergency exit...")
             CoreTools.EmergencyExit("Failed to check filesystems! Please fix your filesystems and then run WxFixBoot again.")
 
     def MountCoreFS(self):
         """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
         logger.info("MainStartupTools: Main().MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
+
+        CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
         #Don't worry about this error when running on Parted Magic.
         if CoreTools.StartProcess("mount -avw") != 0 and SystemInfo["OnPartedMagic"] == False:
