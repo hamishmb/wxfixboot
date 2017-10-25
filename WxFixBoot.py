@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0.2"
-ReleaseDate = "14/7/2017"
+ReleaseDate = "25/10/2017"
 SessionEnding = False
 
 def usage():
@@ -940,6 +940,13 @@ class MainWindow(wx.Frame):
 
             #Delete the log file, and don't bother handling any errors, because this is run as root.
             os.remove('/tmp/wxfixboot.log')
+
+            #If we're using wayland, remove the workaround we have to use to make this work.
+            #XXX Fix for running on Wayland until we get policy kit stuff done.
+            try:
+                if os.environ['XDG_SESSION_TYPE'] == "wayland":
+                    subprocess.Popen("xhost -si:localuser:root", shell=True).wait()
+            except KeyError: pass
 
             self.Destroy()
 

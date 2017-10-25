@@ -204,6 +204,14 @@ class AuthWindow(wx.Frame):
         #Stop the user from starting wxfixboot twice at once.
         if self.Started == False:
             self.Started = True
+
+            #XXX Fix for running on Wayland until we get policy kit stuff done.
+            try:
+                if os.environ['XDG_SESSION_TYPE'] == "wayland":
+                    subprocess.Popen("xhost +si:localuser:root", shell=True).wait()
+
+            except KeyError: pass
+
             Cmd = subprocess.Popen("sudo -SH /usr/share/wxfixboot/WxFixBoot.py", stdin=subprocess.PIPE, stdout=sys.stdout, stderr=subprocess.PIPE, shell=True)
 
             #Send the password to sudo through stdin, to avoid showing the user's password in the system/activity monitor.
