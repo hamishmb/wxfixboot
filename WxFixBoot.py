@@ -944,9 +944,8 @@ class MainWindow(wx.Frame):
             #If we're using wayland, remove the workaround we have to use to make this work.
             #XXX Fix for running on Wayland until we get policy kit stuff done.
             try:
-                if os.environ['XDG_SESSION_TYPE'] == "wayland":
-                    subprocess.Popen("xhost -si:localuser:root", shell=True).wait()
-            except KeyError: pass
+                subprocess.check_call("xhost -si:localuser:root", shell=True)
+            except subprocess.CalledProcessError: pass
 
             self.Destroy()
 
@@ -2391,11 +2390,11 @@ class ProgressWindow(wx.Frame):
                 if CoreTools.Unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
                     #If we errored try removing chroot and trying again.
                     logger.warning("ProgressWindow().RestartWxFixBoot(): Failed to unmount /tmp/wxfixboot/mountpoints/dev/"+Dir+"! Trying to remove chroot first then trying again...")
-                    CoreTools.TearDownChoot("/tmp/wxfixboot/mountpoints/dev/"+Dir)
+                    CoreTools.TearDownChroot("/tmp/wxfixboot/mountpoints/dev/"+Dir)
 
                     if CoreTools.Unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
                         logger.error("ProgressWindow().RestartWxFixBoot(): Couldn't unmount /tmp/wxfixboot/mountpoints/dev/"+Dir+"! Giving up, warning user, and aborting restart...")
-                        Dlg = wx.MessageDialog(self.Panel, "Couldn't restart WxFixBoot because there are mounted filesystems in the temporary directory! Please try restarting your system and then try again.", "WxFixBoot - Error!", wx.OK | wx,ICON_ERROR)
+                        Dlg = wx.MessageDialog(self.Panel, "Couldn't restart WxFixBoot because there are mounted filesystems in the temporary directory! Please try restarting your system and then try again.", "WxFixBoot - Error!", wx.OK | wx.ICON_ERROR)
                         Dlg.ShowModal()
                         Dlg.Destroy()
                         return False
