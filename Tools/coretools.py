@@ -379,6 +379,12 @@ class Main():
         LogFile = DialogTools.ShowSaveFileDlg(Wildcard="Log Files|*.log")
         self.StartProcess("mv -v /tmp/wxfixboot.log "+LogFile, ShowOutput=False)
 
+        #If we're using wayland, remove the workaround we have to use to make this work.
+        #XXX Fix for running on Wayland until we get policy kit stuff done.
+        try:
+            subprocess.check_call("xhost -si:localuser:root", shell=True)
+        except subprocess.CalledProcessError: pass
+
         #Exit.
         DialogTools.ShowMsgDlg(Message="Done. WxFixBoot will now exit.")
         wx.Exit()
