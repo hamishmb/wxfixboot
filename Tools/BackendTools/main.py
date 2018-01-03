@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Main Backend Tools in the BackendTools Package for WxFixBoot Version 2.0.2
 # This file is part of WxFixBoot.
-# Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.

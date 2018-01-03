@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # WxFixBoot Version 2.0.2
-# Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0.2"
-ReleaseDate = "25/10/2017"
+ReleaseDate = "3/1/2018"
 SessionEnding = False
 
 def usage():
@@ -53,7 +53,7 @@ def usage():
     print("       -d, --debug:                  Log lots of boring debug messages, as well as information, warnings, errors and critical errors. Usually used for diagnostic purposes.")
     print("                                     The default, as it's very helpful if problems are encountered, and the user needs help\n")
     print("WxFixBoot "+Version+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2017")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2018")
 
 #If this isn't running as root, relaunch.
 if not os.geteuid() == 0:
@@ -751,7 +751,7 @@ class MainWindow(wx.Frame):
         aboutbox.Name = "WxFixBoot"
         aboutbox.SetIcon(AppIcon)
         aboutbox.Version = Version
-        aboutbox.Copyright = "(C) 2013-2017 Hamish McIntyre-Bhatty"
+        aboutbox.Copyright = "(C) 2013-2018 Hamish McIntyre-Bhatty"
         aboutbox.Description = "Utility to fix the bootloader on a\ncomputer quickly"
         aboutbox.WebSite = ("https://launchpad.net/wxfixboot", "Launchpad page")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty"]

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 # Unit tests for WxFixBoot Version 2.0.2
 # This file is part of WxFixBoot.
-# Copyright (C) 2013-2017 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -80,7 +80,7 @@ def usage():
     print("       -a, --all:                    Run all the tests. The default.\n")
     print("       -t, --tests:                  Ignored.")
     print("WxFixBoot "+Version+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2017")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2018")
 
 #Exit if not running as root.
 if os.geteuid() != 0:
