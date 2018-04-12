@@ -91,13 +91,20 @@ class Main():
 
     def GetPartitioning(self, Node, Disk):
         """Get the Paritioning"""
-        Partitioning = DiskInfo[Disk]["Flags"][-1].split(":")[-1]
+        try:
+            Partitioning = DiskInfo[Disk]["Flags"][-1].split(":")[-1]
 
-        if Partitioning in ("gpt", "dos"):
-            if Partitioning == "dos":
-                Partitioning = "mbr"
+            if Partitioning in ("gpt", "dos"):
+                if Partitioning == "dos":
+                    Partitioning = "mbr"
 
-        else:
+            else:
+                Partitioning = "Unknown"
+
+        #Fix for unpartitioned disks.
+        #Pulled in from separate getdevinfo code proir to integration
+        #in the next major release.
+        except IndexError:
             Partitioning = "Unknown"
 
         return Partitioning
