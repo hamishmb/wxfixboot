@@ -245,6 +245,10 @@ class Main():
             logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
             NewFileContents.append("timeout="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"\n")
 
+        #Use LILO's compact option to speed the boot process up.
+        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO":
+            NewFileContents.append("compact\n")
+
         if SetBootDevice == False:
             #Now let's find the ID of RootDevice.
             logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+BootDevice+"...")
