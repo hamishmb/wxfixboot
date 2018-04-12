@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# Unit tests for WxFixBoot Version 2.0.2
+# Unit tests for WxFixBoot Version 2.0.3
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -35,7 +35,7 @@ import sys
 from bs4 import BeautifulSoup
 
 #Global vars.
-Version = "2.0.1"
+Version = "2.0.3"
 
 #Custom made modules.
 import GetDevInfo

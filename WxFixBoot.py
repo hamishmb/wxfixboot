@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# WxFixBoot Version 2.0.2
+# WxFixBoot Version 2.0.3
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
@@ -40,8 +40,8 @@ from wx.animate import Animation
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "2.0.2"
-ReleaseDate = "3/1/2018"
+Version = "2.0.3"
+ReleaseDate = "12/4/2018"
 SessionEnding = False
 
 def usage():
@@ -426,7 +426,7 @@ class InitThread(threading.Thread):
         try:
             self.MainCode()
 
-        except:
+        except Exception:
             logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while starting WxFixBoot. Warning user and exiting.")
             CoreTools.EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile starting up!")
 
@@ -1826,7 +1826,7 @@ class BootloaderOptionsWindow(wx.Frame):
                 try:
                     self.SetupForRestoringBootloader(plistlib.readPlist(File))
 
-                except:
+                except Exception:
                     #Error!
                     logger.error("BootloaderOptionsWindow().OnRestoreBootloaderChoice(): Error when loading config! Warning user and reloading previous settings...")
 
@@ -2512,7 +2512,7 @@ class BackendThread(threading.Thread):
         try:
             self.StartOperations()
 
-        except:
+        except Exception:
             logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while running operations. Warning user and exiting.")
             CoreTools.EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile running operations!")
 

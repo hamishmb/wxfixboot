@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# Device Information Obtainer for WxFixBoot Version 2.0.2
+# Device Information Obtainer for WxFixBoot Version 2.0.3
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -165,7 +165,7 @@ class Main():
                     ID = SplitLine[-3]
                     break
 
-            except:
+            except Exception:
                 pass
 
         if ID != "Unknown":
