@@ -142,6 +142,9 @@ class AuthWindow(wx.Frame):
 
     def OnAuth(self, Event=None):
         """Check the password is correct, then either warn the user or call self.StartWxFixBoot()"""
+        #Disable the auth button (stops you from trying twice in quick succession).
+        self.AuthButton.Disable()
+
         #Remove any cached credentials, so we don't create a security problem, or say the password is right when it isn't.
         subprocess.Popen("sudo -k", shell=True).wait()
 
@@ -163,9 +166,9 @@ class AuthWindow(wx.Frame):
         Output = Cmd.stdout.read()
 
         if "Authentication Succeeded" in Output:
-            #Set the password field colour to green and disable the auth button.
+            #Set the password field colour to green and disable the cancel button.
             self.PasswordField.SetBackgroundColour((192,255,192))
-            self.AuthButton.Disable()
+            self.CancelButton.Disable()
 
             #Play the green pulse for one second.
             self.Throbber.SetAnimation(self.GreenPulse)
@@ -174,6 +177,9 @@ class AuthWindow(wx.Frame):
             wx.CallLater(1100, self.StartWxFixBoot, Password)
 
         else:
+            #Re-enable auth button.
+            self.AuthButton.Enable()
+
             #Shake the window
             XPos, YPos = self.GetPosition()
             Count = 0
