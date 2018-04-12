@@ -1638,6 +1638,13 @@ class BootloaderOptionsWindow(wx.Frame):
             self.UpdateBootloaderCheckBox.Disable()
             self.InstallNewBootloaderCheckBox.Disable()
 
+        #Warn the user not to do bootloader operations if the current bootloader is an EFI bootloader,
+        #but we couldn't find the OS's EFI partition.
+        if (BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] in ("GRUB_UEFI", "ELILO")) and (OSInfo[self.OSChoice.GetStringSelection()]["EFIPartition"] == "Unknown"):
+            dlg = wx.MessageDialog(self.Panel, "This OS has no UEFI partition, but you have a UEFI bootloader installed! Please don't do any bootloader operations on this operating system, or you may encounter errors.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
+
         #Make sure the window displays properly.
         self.MainSizer.SetSizeHints(self)
 
