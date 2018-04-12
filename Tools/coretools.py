@@ -359,7 +359,7 @@ class Main():
         Retval = self.StartProcess("mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf", ShowOutput=False)
 
         if Retval != 0:
-            logger.error("CoreTools: Main().TearDownChroot(): Failed to run command: 'mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf'! Return value was: "+Retval+". Chroot may not be removed properly!")
+            logger.error("CoreTools: Main().TearDownChroot(): Failed to run command: 'mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf'! Return value was: "+unicode(Retval)+". Chroot may not be removed properly!")
 
         logger.debug("CoreTools: Main().TearDownChroot(): Finished removing chroot at MountPoint: "+MountPoint+"...")
         return Retval
