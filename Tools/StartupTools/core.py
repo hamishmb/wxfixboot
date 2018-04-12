@@ -245,7 +245,7 @@ class Main():
         else:
             logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in / (Current OS)...")
 
-        Bootloader = None
+        Bootloader = "Unknown"
         AvailableBootloaders = []
 
         #Okay, let's run a command in the chroot that was set up in self.FindBootloaderRemovalOSs(), depending on which package manager this OS uses, and which bootloader is currently installed.
