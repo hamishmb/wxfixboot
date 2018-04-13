@@ -1645,6 +1645,15 @@ class BootloaderOptionsWindow(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
 
+        #Warn the user if we don't know what the bootloader is.
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "Unknown":
+            self.ReinstallBootloaderCheckBox.Disable()
+            self.UpdateBootloaderCheckBox.Disable()
+
+            dlg = wx.MessageDialog(self.Panel, "Couldn't determine the bootloader for this OS! It may be not fully installed or removed. If you want to fix this, please open the advanced options pulldown and replace the bootloader with one of the selections there.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
+            dlg.ShowModal()
+            dlg.Destroy()
+
         #Make sure the window displays properly.
         self.MainSizer.SetSizeHints(self)
 
