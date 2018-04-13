@@ -1896,13 +1896,13 @@ class BootloaderOptionsWindow(wx.Frame):
         self.OnRestoreBootloaderCheckBox()
 
         #Determine if the current bootloader is the same as the backed up one. 
-        if Config["Bootloader"] == BootloaderInfo[OS]["Bootloader"] and Config["Bootloader"] != "GRUB-LEGACY":
+        if Config["Bootloader"] == BootloaderInfo[OS]["Bootloader"] and Config["Bootloader"] not in ("GRUB-LEGACY", "Unknown"):
             #Set up to reinstall the current bootloader.
             self.ReinstallBootloaderCheckBox.Enable()
             self.ReinstallBootloaderCheckBox.SetValue(1)
             self.OnUpdateOrReinstallCheckBox()
 
-        elif Config["Bootloader"] != "GRUB-LEGACY" and BootloaderInfo[OS]["Bootloader"] != "GRUB-LEGACY":
+        elif Config["Bootloader"] != "GRUB-LEGACY" and BootloaderInfo[OS]["Bootloader"] not in ("GRUB-LEGACY", "Unknown"):
             #Set up to replace the current bootloader with the old one.
             self.InstallNewBootloaderCheckBox.Enable()
             self.InstallNewBootloaderCheckBox.SetValue(1)
@@ -2031,7 +2031,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.NewBootloaderChoice.Disable()
 
         #Don't allow the user to attempt to modify GRUB-LEGACY.
-        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] in ("GRUB-LEGACY", "Unknown"):
             self.ReinstallBootloaderCheckBox.Disable()
             self.UpdateBootloaderCheckBox.Disable()
             self.InstallNewBootloaderCheckBox.Disable()
@@ -2068,7 +2068,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.RestoreBootloaderChoice.Disable()
 
         #Don't allow the user to attempt to modify GRUB-LEGACY.
-        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] in ("GRUB-LEGACY", "Unknown"):
             self.ReinstallBootloaderCheckBox.Disable()
             self.UpdateBootloaderCheckBox.Disable()
             self.InstallNewBootloaderCheckBox.Disable()
