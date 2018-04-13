@@ -172,12 +172,12 @@ class Main():
 
         #Find the ID for the boot device if possible.
         logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Getting ID for boot device...")
-        if DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]["ID"] != "Unknown":
+        if DiskInfo[DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]]["ID"] != "Unknown":
             #Good, we've got the ID.
-            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found ID /dev/disk/by-id/"+DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]["ID"]+"...")
+            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found ID /dev/disk/by-id/"+DiskInfo[DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]]["ID"]+"...")
 
             #Set it to RootDevice's ID.                    
-            BootDevice = "/dev/disk/by-id/"+DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]["ID"]
+            BootDevice = "/dev/disk/by-id/"+DiskInfo[DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]]["ID"]
 
         else:
             #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
