@@ -1565,6 +1565,16 @@ class BootloaderOptionsWindow(wx.Frame):
         self.OnTimeoutCheckBox()
         self.SetGUIState()
 
+        #Don't allow the user to attempt to modify or remove GRUB-LEGACY.
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] in ("GRUB-LEGACY", "Unknown"):
+            self.ReinstallBootloaderCheckBox.Disable()
+            self.UpdateBootloaderCheckBox.Disable()
+
+        #Don't allow the user to replace grub-legacy.
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
+            self.InstallNewBootloaderCheckBox.Disable()
+
+
     def SetGUIState(self, Event=None):
         """Set all the GUI element's states (enabled/disabled) for this OS"""
         OS = self.OSChoice.GetStringSelection()
@@ -1600,7 +1610,7 @@ class BootloaderOptionsWindow(wx.Frame):
         """Save and load new GUI settings and states in accordance with the OS choice change"""
         logger.debug("BootloaderOptionsWindow().OnOSChoiceChange(): OS choice has changed. Saving and then loading settings...")
 
-        #Save settings when selection a new choice, but not when this is called when the window is first opened.
+        #Save settings when selecting a new choice, but not when this is called when the window is first opened.
         if Startup == False:
             self.SaveSettings(OS=SystemInfo["PreviousOSChoice"])
             self.SaveGUIState(OS=SystemInfo["PreviousOSChoice"])
@@ -1633,9 +1643,12 @@ class BootloaderOptionsWindow(wx.Frame):
         self.SetTextLabels()
 
         #Don't allow the user to attempt to modify or remove GRUB-LEGACY.
-        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] in ("GRUB-LEGACY", "Unknown"):
             self.ReinstallBootloaderCheckBox.Disable()
             self.UpdateBootloaderCheckBox.Disable()
+
+        #Don't allow the user to replace grub-legacy.
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
             self.InstallNewBootloaderCheckBox.Disable()
 
         #Warn the user not to do bootloader operations if the current bootloader is an EFI bootloader,
@@ -1647,9 +1660,6 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Warn the user if we don't know what the bootloader is.
         if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "Unknown":
-            self.ReinstallBootloaderCheckBox.Disable()
-            self.UpdateBootloaderCheckBox.Disable()
-
             dlg = wx.MessageDialog(self.Panel, "Couldn't determine the bootloader for this OS! It may be not fully installed or removed. If you want to fix this, please open the advanced options pulldown and replace the bootloader with one of the selections there.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
@@ -2034,6 +2044,9 @@ class BootloaderOptionsWindow(wx.Frame):
         if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] in ("GRUB-LEGACY", "Unknown"):
             self.ReinstallBootloaderCheckBox.Disable()
             self.UpdateBootloaderCheckBox.Disable()
+
+        #Don't allow replacing grub-legacy.
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
             self.InstallNewBootloaderCheckBox.Disable()
 
     def OnInstallNewBootloaderCheckBox(self, Event=None):
@@ -2071,6 +2084,9 @@ class BootloaderOptionsWindow(wx.Frame):
         if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] in ("GRUB-LEGACY", "Unknown"):
             self.ReinstallBootloaderCheckBox.Disable()
             self.UpdateBootloaderCheckBox.Disable()
+
+        #Don't allow replacing grub-legacy.
+        if BootloaderInfo[self.OSChoice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
             self.InstallNewBootloaderCheckBox.Disable()
 
     def OnNewBootloaderChoice(self, Event=None):
