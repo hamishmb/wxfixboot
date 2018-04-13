@@ -172,16 +172,16 @@ class Main():
 
         #Find the ID for the boot device if possible.
         logger.info("BootloaderConfigSettingTools: Main().SetLILOConfig(): Getting ID for boot device...")
-        if DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"] != "Unknown":
+        if DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]]["ID"] != "Unknown":
             #Good, we've got the ID.
-            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found ID /dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]+"...")
+            logger.debug("BootloaderConfigSettingTools: Main().SetLILOConfig(): Found ID /dev/disk/by-id/"+DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]]["ID"]+"...")
 
             #Set it to RootDevice's ID.                    
-            BootDevice = "/dev/disk/by-id/"+DiskInfo[BootloaderInfo[OS]["BootDisk"]]["ID"]
+            BootDevice = "/dev/disk/by-id/"+DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]]["ID"]
 
         else:
             #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
-            logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): We don't have the ID! Using "+BootloaderInfo[OS]["BootDisk"]+" instead. This may cause problems if the device name changes!")
+            logger.warning("BootloaderConfigSettingTools: Main().SetLILOConfig(): We don't have the ID! Using "+OSInfo[OS]["Partition"]]["HostDevice"]+" instead. This may cause problems if the device name changes!")
             BootDevice = BootloaderInfo[OS]["BootDisk"]
 
         #Open the file in read mode, so we can find the important bits of config to edit. Also, use a list to temporarily store the modified lines.
