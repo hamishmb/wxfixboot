@@ -201,6 +201,12 @@ class Main():
             elif OSInfo[OS]["PackageManager"] == "yum":
                 Cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. Continuing anyway...'"
 
+        else:
+            #Bootloader is unknown, or grub-legacy. Just output a warning message.
+            logger.warning("MainBackendTools: Main().RemoveOldBootloader(): Cannot remove GRUB-LEGACY / unknown bootloader! Continuing anyway...")
+
+            Cmd = "echo 'WARNING: Cannot remove GRUB-LEGACY, or bootloader is unknown. Continuing anyway...'"
+
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
