@@ -283,8 +283,8 @@ class Main():
 
             if Found:
                 #On Fedora, GRUB2 for BIOS and GRUB2 for UEFI are both installed by default!
-                #To figure out which way we're booting (and which is being used), see whether we detected an EFI partition.
-                if PackageDict[Package] == "GRUB-UEFI" and OSInfo[OS]["PackageManager"] == "yum" and OSInfo[OS]["EFIPartition"] == "Unknown":
+                #To figure out which way we're booting (and which is being used), see whether we are booting in EFI mode or not.
+                if PackageDict[Package] == "GRUB-UEFI" and OSInfo[OS]["PackageManager"] == "yum" and SystemInfo["FirmwareType"] == "BIOS":
                     #We're booting with GRUB2.
                     continue
 
