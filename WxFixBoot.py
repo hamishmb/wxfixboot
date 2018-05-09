@@ -40,8 +40,8 @@ from wx.animate import Animation
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "2.0.3"
-ReleaseDate = "16/4/2018"
+Version = "2.0.4"
+ReleaseDate = "9/5/2018"
 SessionEnding = False
 
 def usage():

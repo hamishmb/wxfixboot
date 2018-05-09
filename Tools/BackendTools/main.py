@@ -172,7 +172,7 @@ class Main():
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub-pc grub-pc-bin grub-common'"
 
             elif OSInfo[OS]["PackageManager"] == "yum":
-                Cmd = "yum -y remove grub2 grub2-tools"
+                Cmd = "yum -y remove grub2"
 
         elif BootloaderInfo[OS]["Bootloader"] == "LILO":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing LILO...")
@@ -190,7 +190,7 @@ class Main():
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common'"
 
             elif OSInfo[OS]["PackageManager"] == "yum":
-                Cmd = "yum -y remove grub2-efi grub2-tools grub2-efi-modules"
+                Cmd = "yum -y remove grub2-efi shim-x64"
 
         elif BootloaderInfo[OS]["Bootloader"] == "ELILO":
             logger.info("MainBackendTools: Main().RemoveOldBootloader(): Removing ELILO...")
@@ -318,7 +318,7 @@ class Main():
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'"
 
             elif OSInfo[OS]["PackageManager"] == "yum":
-                Cmd = "yum -y install grub2 grub2-tools"
+                Cmd = "yum -y install grub2"
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing LILO...")
@@ -342,7 +342,7 @@ class Main():
                 Cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
 
             elif OSInfo[OS]["PackageManager"] == "yum":
-                Cmd = "yum -y install grub2-efi grub2-efi-modules grub2-tools"
+                Cmd = "yum -y install grub2-efi-ia32 grub2-efi-x64 grub2-efi shim-x64 fwupd fwupdate-efi fwupdate-libs gnome-software PackageKit appstream-data comps-extras epiphany-runtime flatpak-libs fwupd-labels libsmbios ostree rpm-ostree-libs"
 
         elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
             logger.info("MainBackendTools: Main().InstallNewBootloader(): Installing ELILO...")
