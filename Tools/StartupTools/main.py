@@ -99,8 +99,8 @@ class Main():
         DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot is about to gather device information. After this point, you must not remove/add any devices from/to your computer, so do that now if you wish to.")
 
         #Attempt unmount of all filesystems.
-        logger.debug("MainStartupTools: Main().UnmountAllFS(): Running 'unmount -ad'...")
-        CoreTools.StartProcess("umount -ad")
+        #logger.debug("MainStartupTools: Main().UnmountAllFS(): Running 'unmount -ad'...")
+        #CoreTools.StartProcess("umount -ad")
 
         #Make sure that we still have rw access on live disks.
         if SystemInfo["IsLiveDisk"]:
