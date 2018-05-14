@@ -334,7 +334,7 @@ class Main():
 
             if CoreTools.StartProcess("cp -v "+SourceDir+"/grub*.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False) != 0:
                 logger.error("HelperBackendTools: Main().ManageUEFIFiles(): Failed to copy "+SourceDir+"/grub*.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
-                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
+                DialogTools.ShowMsgDlg(Kind="warning", Message="WxFixBoot failed to copy the new bootloader's UEFI files to the failsafe directory! This is likely not a problem. Click okay to continue.")
 
             #If we were previously using ELILO, remove its EFI files.
             if BootloaderInfo[OS]["Bootloader"] == "ELILO":

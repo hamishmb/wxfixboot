@@ -253,6 +253,7 @@ class Main():
             Cmd = "dpkg --get-selections"
 
         else:
+            #TODO Do we actually just want yum list?
             Cmd = "yum -C list installed"
 
         if UsingChroot:
