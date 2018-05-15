@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 Version = "2.0.4"
-ReleaseDate = "14/5/2018"
+ReleaseDate = "15/5/2018"
 SessionEnding = False
 
 def usage():
@@ -753,7 +753,7 @@ class MainWindow(wx.Frame):
         aboutbox.Version = Version
         aboutbox.Copyright = "(C) 2013-2018 Hamish McIntyre-Bhatty"
         aboutbox.Description = "Utility to fix the bootloader on a\ncomputer quickly"
-        aboutbox.WebSite = ("https://hamishmb.altervista.org", "My Website")
+        aboutbox.WebSite = ("https://www.hamishmb.com", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty"]
         aboutbox.Artists = ["Holly McIntyre-Bhatty (Logo and Splash Screen)"]
         aboutbox.License = "WxFixBoot is free software: you can redistribute it and/or modify it\nunder the terms of the GNU General Public License version 3 or,\nat your option, any later version.\n\nWxFixBoot is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>."
