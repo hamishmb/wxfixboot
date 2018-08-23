@@ -40,8 +40,8 @@ from wx.animate import Animation
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
-Version = "2.0.4"
-ReleaseDate = "15/5/2018"
+Version = "3.0.0"
+ReleaseDate = "23/8/2018"
 SessionEnding = False
 
 def usage():
@@ -103,7 +103,7 @@ import Tools
 
 from GetDevInfo.getdevinfo import Main as DevInfoToolsCallable
 
-from Tools.coretools import Main as CoreToolsCallable
+import Tools.coretools as CoreTools
 
 from Tools.dialogtools import Main as DialogToolsCallable
 
@@ -118,10 +118,8 @@ from Tools.BackendTools.BootloaderTools.setconfigtools import Main as Bootloader
 
 import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
 
-#Access these modules without the "()" so conditional tests can work.
+#Access these modules without the "()" so conditional tests can work. FIXME IN PROCESS OF REMOVING
 DevInfoTools = DevInfoToolsCallable()
-
-CoreTools = CoreToolsCallable()
 
 DialogTools = DialogToolsCallable()
 
@@ -135,7 +133,7 @@ MainBackendTools = MainBackendToolsCallable()
 BootloaderConfigObtainingTools = BootloaderConfigObtainingToolsCallable()
 BootloaderConfigSettingTools = BootloaderConfigSettingToolsCallable()
 
-#Setup custom-made modules (make global variables accessible inside the packages).
+#Setup custom-made modules (make global variables accessible inside the packages). FIXME in process of removing
 #GetDevInfo Package.
 GetDevInfo.getdevinfo.subprocess = subprocess
 GetDevInfo.getdevinfo.os = os
@@ -143,12 +141,7 @@ GetDevInfo.getdevinfo.logger = logger
 GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
 #CoreTools Module.
-Tools.coretools.wx = wx
-Tools.coretools.subprocess = subprocess
-Tools.coretools.sys = sys
 Tools.coretools.logger = logger
-Tools.coretools.logging = logging
-Tools.coretools.os = os
 Tools.coretools.DialogTools = DialogTools
 
 #DialogTools Module.
