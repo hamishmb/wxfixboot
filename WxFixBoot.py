@@ -101,13 +101,13 @@ for o, a in opts:
 import GetDevInfo
 import Tools
 
-from GetDevInfo.getdevinfo import Main as DevInfoToolsCallable
+from GetDevInfo.getdevinfo import Main as DevInfoToolsCallable #FIXME DEPRECATED
 
 import Tools.coretools as CoreTools
 import Tools.dialogtools as DialogTools
 
 import Tools.StartupTools.core as CoreStartupTools
-from Tools.StartupTools.main import Main as MainStartupToolsCallable
+import Tools.StartupTools.main as MainStartupTools
 from Tools.StartupTools.getbootloaderconfigtools import Main as BootloaderConfigObtainingToolsCallable
 from Tools.BackendTools.helpers import Main as HelperBackendToolsCallable
 from Tools.BackendTools.essentials import Main as EssentialBackendToolsCallable
@@ -118,9 +118,7 @@ from Tools.BackendTools.BootloaderTools.setconfigtools import Main as Bootloader
 import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
 
 #Access these modules without the "()" so conditional tests can work. FIXME IN PROCESS OF REMOVING
-DevInfoTools = DevInfoToolsCallable()
-
-MainStartupTools = MainStartupToolsCallable()
+DevInfoTools = DevInfoToolsCallable() #FIXME DEPRECATED
 
 HelperBackendTools = HelperBackendToolsCallable()
 EssentialBackendTools = EssentialBackendToolsCallable()
@@ -150,7 +148,6 @@ Tools.StartupTools.core.DialogTools = DialogTools
 
 #StartupTools Package (Main).
 Tools.StartupTools.main.logger = logger
-Tools.StartupTools.main.os = os
 Tools.StartupTools.main.CoreTools = CoreTools
 Tools.StartupTools.main.CoreStartupTools = CoreStartupTools
 Tools.StartupTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
