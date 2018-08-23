@@ -113,14 +113,12 @@ import Tools.BackendTools.helpers as HelperBackendTools
 import Tools.BackendTools.essentials as EssentialBackendTools
 import Tools.BackendTools.main as MainBackendTools
 
-from Tools.BackendTools.BootloaderTools.setconfigtools import Main as BootloaderConfigSettingToolsCallable
+import Tools.BackendTools.BootloaderTools.setconfigtools as BootloaderConfigSettingTools
 
 import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
 
 #Access these modules without the "()" so conditional tests can work. FIXME IN PROCESS OF REMOVING
 DevInfoTools = DevInfoToolsCallable() #FIXME DEPRECATED
-
-BootloaderConfigSettingTools = BootloaderConfigSettingToolsCallable()
 
 #Setup custom-made modules (make global variables accessible inside the packages). FIXME in process of removing
 #GetDevInfo Package.
@@ -177,7 +175,6 @@ Tools.StartupTools.getbootloaderconfigtools.logger = logger
 
 #BootloaderTools Package (SetConfigTools)
 Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
-Tools.BackendTools.BootloaderTools.setconfigtools.os = os
 Tools.BackendTools.BootloaderTools.setconfigtools.CoreTools = CoreTools
 Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
 Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
