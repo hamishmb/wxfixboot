@@ -21,7 +21,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Begin Main Functions.
+#Import modules.
+import wx
+
 def BindEvents(self):
     """Bind all events for the caller"""
     self.Bind(wx.EVT_BUTTON, self.SystemInfoWindow.OnExit, self.OkayButton)
@@ -95,5 +97,3 @@ def UpdateListCtrl(self, Event=None, Headings=[], Dictionary={}):
 
     #Auto Resize the columns.
     self.OnSize()
-
-#End Main Functions.

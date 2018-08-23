@@ -180,7 +180,6 @@ Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
 Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
 
 #NoteBookSharedFunctions module.
-NoteBookSharedFunctions.wx = wx
 NoteBookSharedFunctions.logger = logger
 
 #Begin Disk Information Handler thread.
