@@ -138,7 +138,7 @@ def RemoveOldBootloader(OS):
         MountPoint = "/tmp/wxfixboot/mountpoints"+OSInfo[OS]["Partition"]
 
         #Check if the partition is mounted.
-        UnmountAfter = not CoreTools.IsMounted(OSInfo[OS]["Partition"], MountPoint)
+        UnmountAfter = not CoreTools.is_mounted(OSInfo[OS]["Partition"], MountPoint)
 
         if UnmountAfter:
             #Mount the partition using the global mount function.
@@ -231,7 +231,7 @@ def RemoveOldBootloader(OS):
     if UseChroot:
         Cmd = "chroot "+MountPoint+" "+Cmd
 
-    Retval = CoreTools.StartProcess(Cmd)
+    Retval = CoreTools.start_process(Cmd)
 
     if Retval != 0:
         logger.error("RemoveOldBootloader(): Failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! Warning user...")
@@ -291,7 +291,7 @@ def InstallNewBootloader(OS):
         MountPoint = "/tmp/wxfixboot/mountpoints"+OSInfo[OS]["Partition"]
 
         #Check if the partition is mounted.
-        UnmountAfter = not CoreTools.IsMounted(OSInfo[OS]["Partition"], MountPoint)
+        UnmountAfter = not CoreTools.is_mounted(OSInfo[OS]["Partition"], MountPoint)
 
         if UnmountAfter:
             if CoreTools.MountPartition(Partition=OSInfo[OS]["Partition"], MountPoint=MountPoint) != 0:
@@ -322,7 +322,7 @@ def InstallNewBootloader(OS):
     if UseChroot:
         Cmd = "chroot "+MountPoint+" "+Cmd
 
-    if CoreTools.StartProcess(Cmd) not in (0,100):
+    if CoreTools.start_process(Cmd) not in (0,100):
         logger.error("InstallNewBootloader(): Failed to Update the Package Information! Continuing anyway...")
         DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to update "+OS+"'s package information! Giving up. You will be prompted to try again if you wish.")
         return False
@@ -386,7 +386,7 @@ def InstallNewBootloader(OS):
     if UseChroot:
         Cmd = "chroot "+MountPoint+" "+Cmd
 
-    Retval = CoreTools.StartProcess(Cmd)
+    Retval = CoreTools.start_process(Cmd)
 
     if Retval != 0:
         logger.error("InstallNewBootloader(): Failed to install new bootloader. Warn user...")
@@ -446,7 +446,7 @@ def SetNewBootloaderConfig(OS):
         MountPoint = "/tmp/wxfixboot/mountpoints"+OSInfo[OS]["Partition"]
 
         #Check if the partition is mounted.
-        UnmountAfter = not CoreTools.IsMounted(OSInfo[OS]["Partition"], MountPoint)
+        UnmountAfter = not CoreTools.is_mounted(OSInfo[OS]["Partition"], MountPoint)
 
         if UnmountAfter:
             #Mount the partition.
@@ -614,7 +614,7 @@ def SetNewBootloaderConfig(OS):
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        if CoreTools.StartProcess(Cmd, ShowOutput=False) != 0:
+        if CoreTools.start_process(Cmd, ShowOutput=False) != 0:
             logger.error("SetNewBootloaderConfig(): '"+Cmd+"' didn't run successfully! Attempting to continue anyway...")
 
         #Check the config file exists for lilo.
@@ -653,7 +653,7 @@ def SetNewBootloaderConfig(OS):
         if UseChroot:
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        if CoreTools.StartProcess(Cmd, ShowOutput=False) != 0:
+        if CoreTools.start_process(Cmd, ShowOutput=False) != 0:
             logger.error("SetNewBootloaderConfig(): '"+Cmd+"' didn't run successfully! Attempting to continue anyway...")
 
         #Check elilo's config file exists.

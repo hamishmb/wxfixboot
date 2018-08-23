@@ -22,10 +22,6 @@ from __future__ import unicode_literals
 
 #Import other modules
 import traceback
-import wx
-import wx.html
-import wx.lib.statbmp
-import wx.lib.stattext
 import threading
 import subprocess
 import sys
@@ -35,8 +31,12 @@ import os
 import shutil
 import time
 import plistlib
-from wx.animate import AnimationCtrl
-from wx.animate import Animation
+
+import wx
+import wx.html
+import wx.lib.statbmp
+import wx.lib.stattext
+
 from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
@@ -99,21 +99,14 @@ for o, a in opts:
 
 #Import custom-made modules
 import GetDevInfo
-import Tools
-
 from GetDevInfo.getdevinfo import Main as DevInfoToolsCallable #FIXME DEPRECATED
 
+import Tools
 import Tools.coretools as CoreTools
 import Tools.dialogtools as DialogTools
-
-import Tools.StartupTools.core as CoreStartupTools
 import Tools.StartupTools.main as MainStartupTools
-import Tools.StartupTools.getbootloaderconfigtools as BootloaderConfigObtainingTools
-import Tools.BackendTools.helpers as HelperBackendTools
 import Tools.BackendTools.essentials as EssentialBackendTools
 import Tools.BackendTools.main as MainBackendTools
-
-import Tools.BackendTools.BootloaderTools.setconfigtools as BootloaderConfigSettingTools
 
 import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
 
@@ -392,7 +385,7 @@ class InitThread(threading.Thread):
         #Remove the temporary directory if it exists.
         if os.path.isdir("/tmp/wxfixboot/mountpoints"):
             #Check nothing is using it.
-            if "/tmp/wxfixboot/mountpoints" in CoreTools.StartProcess("mount", ReturnOutput=True)[1]:
+            if "/tmp/wxfixboot/mountpoints" in CoreTools.start_process("mount", ReturnOutput=True)[1]:
                 CoreTools.EmergencyExit("There are mounted filesystems in /tmp/wxfixboot/mountpoints, WxFixBoot's temporary mountpoints directory! Please unmount any filesystems there and try again.")
 
             shutil.rmtree("/tmp/wxfixboot/mountpoints")
@@ -834,7 +827,7 @@ class MainWindow(wx.Frame):
 
                 if Answer == wx.ID_OK:
                     #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
-                    CoreTools.StartProcess("cp /tmp/wxfixboot.log "+File)
+                    CoreTools.start_process("cp /tmp/wxfixboot.log "+File)
 
                     dlg = wx.MessageDialog(self.Panel, 'Done! WxFixBoot will now exit.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
                     dlg.ShowModal()
@@ -2410,7 +2403,7 @@ class ProgressWindow(wx.Frame):
 
                 if Answer == wx.ID_OK:
                     #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
-                    CoreTools.StartProcess("cp /tmp/wxfixboot.log "+File)
+                    CoreTools.start_process("cp /tmp/wxfixboot.log "+File)
 
                     dlg = wx.MessageDialog(self.Panel, 'Done! WxFixBoot will now exit.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
                     dlg.ShowModal()

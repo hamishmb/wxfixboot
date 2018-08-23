@@ -35,7 +35,7 @@ from . import dialogtools as DialogTools
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def StartProcess(ExecCmds, StdinLines=[], ShowOutput=True, ReturnOutput=False, Testing=False):
+def start_process(ExecCmds, ShowOutput=True, ReturnOutput=False, Testing=False):
     """Start a process given a string of commands to execute.
     ShowOutput is boolean and specifies whether to show output in the outputbox (if exists) or not.
     ReturnOutput is boolean and specifies whether to return the output back to the caller or not.
@@ -44,143 +44,143 @@ def StartProcess(ExecCmds, StdinLines=[], ShowOutput=True, ReturnOutput=False, T
     ExecCmds = "LC_ALL=C "+ExecCmds
 
     #Run the command(s).
-    logger.debug("StartProcess(): Starting process: "+ExecCmds)
+    logger.debug("start_process(): Starting process: "+ExecCmds)
     cmd = subprocess.Popen(ExecCmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
     #Use a simpler output reader on startup to improve performance.
     if Startup:
-        LineList = Read(cmd, Testing=Testing)
+        line_list = read(cmd, Testing=Testing)
 
     else:
-        LineList = ReadAndSendOutput(cmd, ShowOutput)
+        line_list = read_and_send_output(cmd, ShowOutput)
 
     #Save runcmd.returncode, as it tends to reset fairly quickly.
-    Retval = int(cmd.returncode)
+    ret_val = int(cmd.returncode)
 
     #Log this info in a debug message.
-    logger.debug("StartProcess(): Process: "+ExecCmds+": Return Value: "+unicode(Retval)+", Output: \"\n\n"+'\n'.join(LineList)+"\"\n")
+    logger.debug("start_process(): Process: "+ExecCmds+": Return Value: "+unicode(ret_val)+", Output: \"\n\n"+'\n'.join(line_list)+"\"\n")
 
-    if ReturnOutput == False:
+    if ReturnOutput is False:
         #Return the return code back to whichever function ran this process, so it can handle any errors.
-        return Retval
+        return ret_val
 
     elif Testing:
         #Return the return code, as well as the output.
-        return (Retval, ''.join(LineList))
+        return (ret_val, ''.join(line_list))
 
     else:
         #Return the return code, as well as the output.
-        return (Retval, '\n'.join(LineList))
+        return (ret_val, '\n'.join(line_list))
 
-def Read(cmd, Testing=False):
+def read(cmd, Testing=False):
     """Read the cmd's output char by char, but do as little processing as possible to improve startup performance"""
     #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
-    Counter = 0
-    Line = str("")
-    LineList = []
+    counter = 0
+    line = str("")
+    line_list = []
 
-    while cmd.poll() == None or Counter < 100:
-        Char = cmd.stdout.read(1)
+    while cmd.poll() is None or counter < 100:
+        char = cmd.stdout.read(1)
 
-        if Char == "":
-            Counter += 1
+        if char == "":
+            counter += 1
             continue
 
-        Line += Char
+        line += char
 
-        if Char in ("\n", "\r"):
+        if char in ("\n", "\r"):
             #Interpret as Unicode and remove "NULL" characters.
-            Line = Line.decode("UTF-8", errors="replace").replace("\x00", "")
+            line = line.decode("UTF-8", errors="replace").replace("\x00", "")
 
             if Testing:
-                LineList.append(Line)
+                line_list.append(line)
 
             else:
-                LineList.append(Line.replace("\n", "").replace("\r", ""))
+                line_list.append(line.replace("\n", "").replace("\r", ""))
 
-            #Reset Line.
-            Line = str("")
+            #Reset line.
+            line = str("")
 
-    return LineList
+    return line_list
     
-def ReadAndSendOutput(cmd, ShowOutput):
+def read_and_send_output(cmd, ShowOutput):
     """Read the cmd's output char by char, and send the output to the output box"""
     #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
-    Counter = 0
-    Line = str("")
-    LineList = []
-    Hold = False
-    SendLine = False
+    counter = 0
+    line = str("")
+    line_list = []
+    hold = False
+    send_line = False
 
-    while cmd.poll() == None or Counter < 100:
-        Char = cmd.stdout.read(1)
+    while cmd.poll() is None or counter < 100:
+        char = cmd.stdout.read(1)
 
-        if Char == "":
-            Counter += 1
+        if char == "":
+            counter += 1
             continue
 
-        Line += Char
+        line += char
 
-        if Hold:
+        if hold:
             #Check if this char is \n.
-            if Char == "\n":
+            if char == "\n":
                 #Send the line as is but replace \r\n with \n.
-                Line = str(Line.replace("\r\n", "\n"))
+                line = str(line.replace("\r\n", "\n"))
 
             else:
                 #Send the line as is.
-                SendLine = True
+                send_line = True
 
-            Hold = False
+            hold = False
 
-        if Char in ("\n", "\x08") or SendLine:
+        if char in ("\n", "\x08") or send_line:
             #Interpret as Unicode and remove "NULL" characters.
-            Line = Line.decode("UTF-8", errors="replace").replace("\x00", "")
+            line = line.decode("UTF-8", errors="replace").replace("\x00", "")
 
-            wx.CallAfter(ParentWindow.UpdateOutputBox, Line, ShowOutput)
-            LineList.append(Line.replace("\n", "").replace("\r", "").replace("\x08", ""))
+            wx.CallAfter(ParentWindow.UpdateOutputBox, line, ShowOutput)
+            line_list.append(line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
-            #Reset Line.
-            Line = str("")
-            SendLine = False
+            #Reset line.
+            line = str("")
+            send_line = False
 
-        elif Char == "\r":
+        elif char == "\r":
             #Take the next character too in case it's \n, so we can just handle \r\n as \n.
-            Hold = True
+            hold = True
 
-    return LineList
+    return line_list
 
-def IsMounted(Partition, MountPoint=None):
+def is_mounted(Partition, MountPoint=None):
     """Checks if the given partition is mounted.
     Partition is the given partition to check.
     If MountPoint is specified, check if the partition is mounted there, rather than just if it's mounted.
     Return boolean True/False.
     """
-    if MountPoint == None:
-        logger.debug("IsMounted(): Checking if "+Partition+" is mounted...")
-        MountInfo = StartProcess("mount -l", ShowOutput=False, ReturnOutput=True)[1]
+    if MountPoint is None:
+        logger.debug("is_mounted(): Checking if "+Partition+" is mounted...")
+        mount_info = start_process("mount -l", ShowOutput=False, ReturnOutput=True)[1]
 
-        Mounted = False
+        mounted = False
 
-        for Line in MountInfo.split("\n"):
-            if Line.split()[0] == Partition:
-                Mounted = True
+        for line in mount_info.split("\n"):
+            if line.split()[0] == Partition:
+                mounted = True
 
     else:
         #Check where it's mounted to.
-        logger.debug("IsMounted(): Checking if "+Partition+" is mounted at "+MountPoint+"...")
+        logger.debug("is_mounted(): Checking if "+Partition+" is mounted at "+MountPoint+"...")
 
-        Mounted = False
+        mounted = False
 
         if GetMountPointOf(Partition) == MountPoint:
-            Mounted = True
+            mounted = True
 
-    if Mounted:
-        logger.debug("IsMounted(): It is. Returning True...")
+    if mounted:
+        logger.debug("is_mounted(): It is. Returning True...")
         return True
 
     else:
-        logger.debug("IsMounted(): It isn't. Returning False...")
+        logger.debug("is_mounted(): It isn't. Returning False...")
         return False
 
 def GetPartitionMountedAt(MountPoint):
@@ -188,44 +188,44 @@ def GetPartitionMountedAt(MountPoint):
     Otherwise, return None"""
     logger.info("GetPartitionMountedAt(): Trying to get partition mounted at "+MountPoint+"...")
 
-    MountInfo = StartProcess("mount -l", ShowOutput=False, ReturnOutput=True)[1]
-    Partition = None
+    mount_info = start_process("mount -l", ShowOutput=False, ReturnOutput=True)[1]
+    partition = None
 
-    for Line in MountInfo.split("\n"):
-        SplitLine = Line.split()
+    for line in mount_info.split("\n"):
+        split_line = line.split()
 
-        if MountPoint == SplitLine[2]:
-            Partition = SplitLine[0]
+        if MountPoint == split_line[2]:
+            partition = split_line[0]
 
-    if Partition != None:
-        logger.info("GetPartitionMountedAt(): Found it! Partition is "+Partition+"...")
+    if partition != None:
+        logger.info("GetPartitionMountedAt(): Found it! Partition is "+partition+"...")
 
     else:
         logger.info("GetPartitionMountedAt(): Didn't find it...")
 
-    return Partition
+    return partition
 
 def GetMountPointOf(Partition):
     """Returns the mountpoint of the given partition, if any.
     Otherwise, return None"""
     logger.info("GetMountPointOf(): Trying to get mount point of partition "+Partition+"...")
 
-    MountInfo = StartProcess("mount -l", ShowOutput=False, ReturnOutput=True)[1]
-    MountPoint = None
+    mount_info = start_process("mount -l", ShowOutput=False, ReturnOutput=True)[1]
+    mount_point = None
 
-    for Line in MountInfo.split("\n"):
-        SplitLine = Line.split()
+    for line in mount_info.split("\n"):
+        split_line = line.split()
 
-        if Partition == SplitLine[0]:
-            MountPoint = SplitLine[2]
+        if Partition == split_line[0]:
+            mount_point = split_line[2]
 
-    if MountPoint != None:
-        logger.info("GetMountPointOf(): Found it! MountPoint is "+MountPoint+"...")
+    if mount_point != None:
+        logger.info("GetMountPointOf(): Found it! MountPoint is "+mount_point+"...")
 
     else:
         logger.info("GetMountPointOf(): Didn't find it...")
 
-    return MountPoint
+    return mount_point
 
 def MountPartition(Partition, MountPoint, Options=""):
     """Mounts the given partition.
@@ -240,7 +240,7 @@ def MountPartition(Partition, MountPoint, Options=""):
     else:
         logger.info("MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with no extra options...")
         
-    MountInfo = StartProcess("mount -l", ShowOutput=False, ReturnOutput=True)[1]
+    mount_info = start_process("mount -l", ShowOutput=False, ReturnOutput=True)[1]
 
     #There is a partition mounted here. Check if our partition is already mounted in the right place.
     if MountPoint == GetMountPointOf(Partition):
@@ -248,29 +248,29 @@ def MountPartition(Partition, MountPoint, Options=""):
         logger.debug("MountPartition(): Partition: "+Partition+" was already mounted at: "+MountPoint+". Continuing...")
         return 0
 
-    elif MountPoint in MountInfo:
+    elif MountPoint in mount_info:
         #Something else is in the way. Unmount that partition, and continue.
         logger.warning("MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
-        Retval = Unmount(MountPoint)
+        ret_val = Unmount(MountPoint)
 
-        if Retval != 0:
+        if ret_val != 0:
             logger.error("MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
             return False
 
     #Create the dir if needed.
-    if os.path.isdir(MountPoint) == False:
+    if os.path.isdir(MountPoint) is False:
         os.makedirs(MountPoint)
 
     #Mount the device to the mount point.
-    Retval = StartProcess("mount "+Options+" "+Partition+" "+MountPoint, ShowOutput=False)
+    ret_val = start_process("mount "+Options+" "+Partition+" "+MountPoint, ShowOutput=False)
 
-    if Retval == 0:
+    if ret_val == 0:
         logger.debug("MountPartition(): Successfully mounted partition!")
 
     else:
         logger.warning("MountPartition(): Failed to mount partition!")
 
-    return Retval
+    return ret_val
 
 def RemountPartition(Partition, Mode="rw"):
     """Remounts the given partition.
@@ -279,16 +279,16 @@ def RemountPartition(Partition, Mode="rw"):
     The default value for Mode is rw.
     """
     logger.debug("RemountPartition(): Remounting "+Partition+" as "+Mode+"...")
-    Retval = StartProcess("mount -o remount,"+Mode+" "+Partition, ShowOutput=False)
+    ret_val = start_process("mount -o remount,"+Mode+" "+Partition, ShowOutput=False)
 
-    if Retval == 0:
+    if ret_val == 0:
         logger.warning("RemountPartition(): Successfully remounted partition!")
 
     else:
         logger.info("RemountPartition(): Failed to remount partition!")
 
     #Return the return value
-    return Retval
+    return ret_val
 
 def Unmount(MountPoint):
     """Unmounts the given mountpoint.
@@ -297,28 +297,28 @@ def Unmount(MountPoint):
     """
     logger.debug("Unmount(): Preparing to unmount "+MountPoint)
 
-    if MountPoint not in StartProcess("mount -l", ShowOutput=False, ReturnOutput=True)[1]:
+    if MountPoint not in start_process("mount -l", ShowOutput=False, ReturnOutput=True)[1]:
         logger.info("Unmount(): "+MountPoint+" was not mounted. Continuing...")
-        Retval = 0
+        ret_val = 0
 
     else:
         logger.debug("Unmount(): Unmounting "+MountPoint+"...")
-        Retval = StartProcess("umount "+MountPoint, ShowOutput=False)
+        ret_val = start_process("umount "+MountPoint, ShowOutput=False)
 
-        if Retval == 0:
+        if ret_val == 0:
             logger.info("Unmount(): Successfully unmounted "+MountPoint+"!")
 
         else:
             logger.warning("Unmount(): Failed to unmount "+MountPoint+"!")
         
     #Return the return value
-    return Retval
+    return ret_val
 
 def UpdateChrootMtab(MountPoint):
     """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right."""
     logger.debug("UpdateChrootMtab(): Updating /etc/mtab for chroot at: "+MountPoint+"...")
 
-    retval = StartProcess("cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab", ShowOutput=False)
+    retval = start_process("cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab", ShowOutput=False)
 
     if retval != 0:
         logger.warning("UpdateChrootMtab(): Failed to run command: cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab! Chroot may not set up properly! This *probably* doesn't matter, but in rare situations it could cause problems. If the chrooted OS is Fedora-based, this is normal because /etc/mtab is a symlink to /proc/self/mounts.")
@@ -333,48 +333,46 @@ def SetUpChroot(MountPoint):
     #We might also need internet access in chroot, so to do this first backup MountPoint/etc/resolv.conf to MountPoint/etc/resolv.conf.bak (if it's a link, this will also preserve it),
     #then copy current system's /etc/resolv.conf (the contents, not the link) to MountPoint/etc/resolv.conf, enabling internet access.
 
-    MountList = ("/dev", "/dev/pts", "/proc", "/sys")
+    mount_list = ("/dev", "/dev/pts", "/proc", "/sys")
 
-    for FileSystem in MountList:
-        if MountPartition(Partition=FileSystem, MountPoint=MountPoint+FileSystem, Options="--bind") != 0:
-            logger.error("SetUpChroot(): Failed to bind "+FileSystem+" to "+MountPoint+Filesystem+"! Chroot isn't set up properly! Attempting to continue anyway...")
+    for file_system in mount_list:
+        if MountPartition(Partition=file_system, MountPoint=MountPoint+file_system, Options="--bind") != 0:
+            logger.error("SetUpChroot(): Failed to bind "+file_system+" to "+MountPoint+Filesystem+"! Chroot isn't set up properly! Attempting to continue anyway...")
 
-    ExecList = ("mv -vf "+MountPoint+"/etc/resolv.conf "+MountPoint+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+MountPoint+"/etc/resolv.conf")
+    exec_list = ("mv -vf "+MountPoint+"/etc/resolv.conf "+MountPoint+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+MountPoint+"/etc/resolv.conf")
 
-    for ExecCmd in ExecList:
-        Result = StartProcess(ExecCmd, ShowOutput=False, ReturnOutput=True)
-        output = Result[1]
-        Retval = Result[0]
+    for exec_cmd in exec_list:
+        ret_val = start_process(exec_cmd, ShowOutput=False, ReturnOutput=True)[0]
 
-        if Retval != 0:
-            logger.error("SetUpChroot(): Error: Failed to run command: '"+ExecCmd+"'! Chroot may not be set up properly! On Fedora systems this probably doesn't matter. Continuing anyway...")
+        if ret_val != 0:
+            logger.error("SetUpChroot(): Error: Failed to run command: '"+exec_cmd+"'! Chroot may not be set up properly! On Fedora systems this probably doesn't matter. Continuing anyway...")
             #Ignore these errors, the only happen on Fedora and they don't really matter.
-            Retval = 0
+            ret_val = 0
 
     UpdateChrootMtab(MountPoint=MountPoint)
 
     logger.debug("SetUpChroot(): Finished setting up chroot for MountPoint: "+MountPoint+"...")
-    return Retval
+    return ret_val
 
 def TearDownChroot(MountPoint):
     """Remove a chroot at the given mountpoint."""
     logger.debug("TearDownChroot(): Removing chroot at MountPoint: "+MountPoint+"...")
 
     #Unmount /dev/pts, /dev, /proc and /sys in the chroot.
-    UnmountList = (MountPoint+"/dev/pts", MountPoint+"/dev", MountPoint+"/proc", MountPoint+"/sys")
+    unmount_list = (MountPoint+"/dev/pts", MountPoint+"/dev", MountPoint+"/proc", MountPoint+"/sys")
 
-    for FileSystem in UnmountList:
-        if Unmount(FileSystem) != 0:
-            logger.error("TearDownChroot(): Faied to unmount "+FileSystem+"! Chroot isn't removed properly! Attempting to continue anyway...")
+    for file_system in unmount_list:
+        if Unmount(file_system) != 0:
+            logger.error("TearDownChroot(): Faied to unmount "+file_system+"! Chroot isn't removed properly! Attempting to continue anyway...")
 
     #We'll also need to replace the MountPoint/etc/resolv.conf with the backup file, MountPoint/etc/resolv.conf.bak.
-    Retval = StartProcess("mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf", ShowOutput=False)
+    ret_val = start_process("mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf", ShowOutput=False)
 
-    if Retval != 0:
-        logger.error("TearDownChroot(): Failed to run command: 'mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf'! Return value was: "+unicode(Retval)+". Chroot may not be removed properly!")
+    if ret_val != 0:
+        logger.error("TearDownChroot(): Failed to run command: 'mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf'! Return value was: "+unicode(ret_val)+". Chroot may not be removed properly!")
 
     logger.debug("TearDownChroot(): Finished removing chroot at MountPoint: "+MountPoint+"...")
-    return Retval
+    return ret_val
 
 def EmergencyExit(Message):
     """Handle emergency exits. Warn the user, log, and exit to terminal with the given message"""
@@ -388,8 +386,8 @@ def EmergencyExit(Message):
     logging.shutdown()
 
     #Save the log file.
-    LogFile = DialogTools.ShowSaveFileDlg(Wildcard="Log Files|*.log")
-    StartProcess("mv -v /tmp/wxfixboot.log "+LogFile, ShowOutput=False)
+    log_file = DialogTools.ShowSaveFileDlg(Wildcard="Log Files|*.log")
+    start_process("mv -v /tmp/wxfixboot.log "+log_file, ShowOutput=False)
 
     #If we're using wayland, remove the workaround we have to use to make this work.
     #XXX Fix for running on Wayland until we get policy kit stuff done.
@@ -401,4 +399,4 @@ def EmergencyExit(Message):
     DialogTools.ShowMsgDlg(Message="Done. WxFixBoot will now exit.")
     wx.Exit()
     sys.stdout.write(Message+"\n")
-    os._exit(1)
+    os.exit(1) #TODO Was os._exit(1). Why? Does this work?

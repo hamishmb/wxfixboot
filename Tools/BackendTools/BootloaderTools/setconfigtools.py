@@ -137,7 +137,7 @@ def InstallGRUB2ToMBR(PackageManager, UseChroot, MountPoint, Device):
     if UseChroot:
         Cmd = "chroot "+MountPoint+" "+Cmd
 
-    Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
+    Retval = CoreTools.start_process(Cmd, ShowOutput=False)
 
     #Return the return value.
     return Retval
@@ -155,7 +155,7 @@ def InstallGRUB2ToEFIPartition(PackageManager, UseChroot, MountPoint, UEFISystem
     if UseChroot:
         Cmd = "chroot "+MountPoint+" "+Cmd
 
-    Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
+    Retval = CoreTools.start_process(Cmd, ShowOutput=False)
 
     #Return the return value.
     return Retval
@@ -175,7 +175,7 @@ def UpdateGRUB2(OS, PackageManager, UseChroot, MountPoint):
     if UseChroot:
         Cmd = "chroot "+MountPoint+" "+Cmd
 
-    Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
+    Retval = CoreTools.start_process(Cmd, ShowOutput=False)
 
     #Return the return value.
     return Retval
@@ -470,7 +470,7 @@ def InstallLILOToMBR(PackageManager, UseChroot, MountPoint):
     if UseChroot:
         Cmd = "chroot "+MountPoint+" "+Cmd
 
-    Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
+    Retval = CoreTools.start_process(Cmd, ShowOutput=False)
 
     #Return the return value.
     return Retval
@@ -484,7 +484,7 @@ def InstallELILOToPartition(OS, PackageManager, UseChroot, MountPoint):
     if UseChroot:
         Cmd = "chroot "+MountPoint+" "+Cmd
 
-    Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
+    Retval = CoreTools.start_process(Cmd, ShowOutput=False)
 
     #Return the return value.
     return Retval

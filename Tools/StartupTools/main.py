@@ -47,7 +47,7 @@ def CheckDepends():
 
     for Command in CmdList:
         #Run the command with its argument and log the output (if in debug mode)
-        Retval, Output = CoreTools.StartProcess("which "+Command, ReturnOutput=True)
+        Retval, Output = CoreTools.start_process("which "+Command, ReturnOutput=True)
 
         if Retval != 0:
             logger.error("CheckDepends(): Dependency problems! Command: "+Command+" failed to execute or wasn't found.")
@@ -65,19 +65,19 @@ def CheckForLiveDisk():
     logger.info("MainStartupTools(): CheckForLiveDisk(): Attempting to check if we're on a live disk...")
 
     #Detect Parted Magic automatically.
-    if "pmagic" in CoreTools.StartProcess("uname -r", ReturnOutput=True)[1]:
+    if "pmagic" in CoreTools.start_process("uname -r", ReturnOutput=True)[1]:
         logger.info("MainStartupTools(): CheckForLiveDisk(): Running on Parted Magic...")
         SystemInfo["IsLiveDisk"] = True
         SystemInfo["OnPartedMagic"] = True
 
     #Try to detect ubuntu-based livecds.
-    elif CoreTools.IsMounted("/cow", "/") and os.path.isfile("/cdrom/casper/filesystem.squashfs"):
+    elif CoreTools.is_mounted("/cow", "/") and os.path.isfile("/cdrom/casper/filesystem.squashfs"):
         logger.info("MainStartupTools(): CheckForLiveDisk(): Running on Ubuntu-based live disk...")
         SystemInfo["IsLiveDisk"] = True
         SystemInfo["OnPartedMagic"] = False
 
     #Try to detect fedora-based livecds.
-    elif CoreTools.IsMounted("/dev/mapper/live-rw", "/") and os.path.isfile("/run/initramfs/live/LiveOS/squashfs.img"):
+    elif CoreTools.is_mounted("/dev/mapper/live-rw", "/") and os.path.isfile("/run/initramfs/live/LiveOS/squashfs.img"):
         logger.info("MainStartupTools(): CheckForLiveDisk(): Running on Fedora-based live disk...")
         SystemInfo["IsLiveDisk"] = True
         SystemInfo["OnPartedMagic"] = False
@@ -113,7 +113,7 @@ def UnmountAllFS():
 
     #Attempt unmount of all filesystems.
     #logger.debug("UnmountAllFS(): Running 'unmount -ad'...")
-    #CoreTools.StartProcess("umount -ad")
+    #CoreTools.start_process("umount -ad")
 
     #Make sure that we still have rw access on live disks.
     if SystemInfo["IsLiveDisk"]:
@@ -126,7 +126,7 @@ def CheckFS():
     """Check all unmounted filesystems."""
     logger.info("CheckFS(): Checking filesystems if possible. Running 'fsck -ARMp'...")
 
-    if CoreTools.StartProcess("fsck -ARMp") not in (0, 8):
+    if CoreTools.start_process("fsck -ARMp") not in (0, 8):
         logger.critical("CheckFS(): Failed to check filesystems! Doing emergency exit...")
         CoreTools.EmergencyExit("Failed to check filesystems! Please fix your filesystems and then run WxFixBoot again.")
 
@@ -135,7 +135,7 @@ def MountCoreFS():
     logger.info("MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
 
     #Don't worry about this error when running on Parted Magic.
-    if CoreTools.StartProcess("mount -avw") != 0 and SystemInfo["OnPartedMagic"] == False:
+    if CoreTools.start_process("mount -avw") != 0 and SystemInfo["OnPartedMagic"] == False:
         logger.critical("MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
         CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
@@ -161,7 +161,7 @@ def GetOSs():
             #Check if we need to mount the partition.
             WasMounted = False
 
-            if CoreTools.IsMounted(Partition):
+            if CoreTools.is_mounted(Partition):
                 #If mounted, get the mountpoint.
                 MountPoint = CoreTools.GetMountPointOf(Partition)
 
@@ -200,7 +200,7 @@ def GetOSs():
             #Check if we need to mount the partition.
             WasMounted = False
 
-            if CoreTools.IsMounted(Partition):
+            if CoreTools.is_mounted(Partition):
                 #If mounted, get the mountpoint.
                 MountPoint = CoreTools.GetMountPointOf(Partition)
 
@@ -303,7 +303,7 @@ def GetOSs():
                     continue
 
             #Look for Linux on this partition.
-            Retval, Temp = CoreTools.StartProcess(Cmd, ReturnOutput=True)
+            Retval, Temp = CoreTools.start_process(Cmd, ReturnOutput=True)
             OSName = Temp.replace('\n', '')
 
             #Run the function to get the architechure.
@@ -367,18 +367,18 @@ def GetFirmwareType():
     #Check if the firmware type is UEFI.
     #Also, look for UEFI variables.
     #Make sure efivars module is loaded. If it doesn't exist, continue anyway.
-    CoreTools.StartProcess("modprobe efivars")
+    CoreTools.start_process("modprobe efivars")
 
     #Look for the UEFI vars in some common directories.
-    if os.path.isdir("/sys/firmware/efi/vars") and CoreTools.StartProcess("ls /sys/firmware/efi/vars", ReturnOutput=True)[1] != "":
+    if os.path.isdir("/sys/firmware/efi/vars") and CoreTools.start_process("ls /sys/firmware/efi/vars", ReturnOutput=True)[1] != "":
         UEFIVariables = True
         logger.info("GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/vars...")
 
-    elif os.path.isdir("/proc/efi/vars") and CoreTools.StartProcess("ls /proc/efi/vars", ReturnOutput=True)[1] != "":
+    elif os.path.isdir("/proc/efi/vars") and CoreTools.start_process("ls /proc/efi/vars", ReturnOutput=True)[1] != "":
         UEFIVariables = True
         logger.info("GetFirmwareType(): Found UEFI Variables at /proc/efi/vars...")
 
-    elif os.path.isdir("/sys/firmware/efi/efivars") and CoreTools.StartProcess("ls /sys/firmware/efi/efivars", ReturnOutput=True)[1] != "":
+    elif os.path.isdir("/sys/firmware/efi/efivars") and CoreTools.start_process("ls /sys/firmware/efi/efivars", ReturnOutput=True)[1] != "":
         UEFIVariables = True
         logger.info("GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/efivars...")
 
@@ -393,7 +393,7 @@ def GetFirmwareType():
 
     else:
         #Look a second way.
-        Output = CoreTools.StartProcess("dmidecode -q -t BIOS", ReturnOutput=True)[1]
+        Output = CoreTools.start_process("dmidecode -q -t BIOS", ReturnOutput=True)[1]
 
         if "UEFI" not in Output:
             #It's BIOS.

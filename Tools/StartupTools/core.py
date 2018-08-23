@@ -221,7 +221,7 @@ def DeterminePackageManager(APTCmd, YUMCmd):
     PackageManager = "Unknown"
 
     for Cmd in (APTCmd, YUMCmd):
-        Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
+        Retval = CoreTools.start_process(Cmd, ShowOutput=False)
 
         if Retval != 0:
             if Cmd == APTCmd:
@@ -269,7 +269,7 @@ def LookForBootloadersOnPartition(OS, PackageManager, MountPoint, UsingChroot):
     if UsingChroot:
         Cmd = "chroot "+MountPoint+" "+Cmd
 
-    Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
+    Output = CoreTools.start_process(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
 
     #Look for them in a specific order to be as fast a possible and to avoid false positives.
     if PackageManager == "apt-get":
@@ -314,7 +314,7 @@ def LookForBootloadersOnPartition(OS, PackageManager, MountPoint, UsingChroot):
         if UsingChroot: 
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
+        Output = CoreTools.start_process(Cmd, ShowOutput=False, ReturnOutput=True)[1].split("\n")
 
         #Only look in the package name.
         for Line in Output:
@@ -407,7 +407,7 @@ def DetermineOSArchitecture(MountPoint):
         if MountPoint != "":
             Cmd = "chroot "+MountPoint+" "+Cmd
 
-        Retval, OSArch = CoreTools.StartProcess(Cmd, ReturnOutput=True)
+        Retval, OSArch = CoreTools.start_process(Cmd, ReturnOutput=True)
 
         #If the command failed, try a second approach.
         if Retval != 0 and "arch" in Cmd:
@@ -446,7 +446,7 @@ def GetOSNameWithLSB(Partition, MountPoint, IsCurrentOS):
         logger.info("GetOSNameWithLSB(): OS isn't the currently running OS...")
         Cmd = "chroot "+MountPoint+" lsb_release -sd"
 
-    Retval, Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)
+    Retval, Output = CoreTools.start_process(Cmd, ShowOutput=False, ReturnOutput=True)
 
     if Retval != 0 or Output == "":
         logger.error("GetOSNameWithLSB(): Couldn't get OS name! Returning 'Unknown'...")
