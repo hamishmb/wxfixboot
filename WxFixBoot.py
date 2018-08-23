@@ -127,15 +127,6 @@ GetDevInfo.getdevinfo.os = os
 GetDevInfo.getdevinfo.logger = logger
 GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
-#BackendTools Package (Essentials)
-Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools #FIXME circular dependency
-
-#BackendTools Package (Main).
-Tools.BackendTools.main.HelperBackendTools = HelperBackendTools #FIXME circular dependency
-
-#BootloaderTools Package (SetConfigTools)
-Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools #FIXME circular dependency
-
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
     def __init__(self, ParentWindow):
@@ -787,11 +778,11 @@ class MainWindow(wx.Frame):
         #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
         #Do essential processes first.
         if Settings["QuickFSCheck"]:
-            Operations.append((EssentialBackendTools.FileSystemCheck, "Quick"))
+            Operations.append((EssentialBackendTools.FileSystemCheck, "Quick", Tools.BackendTools.main.ManageBootloader))
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.FileSystemCheck to Operations...")
 
         if Settings["BadSectorCheck"]:
-            Operations.append((EssentialBackendTools.FileSystemCheck, "Thorough"))
+            Operations.append((EssentialBackendTools.FileSystemCheck, "Thorough", Tools.BackendTools.main.ManageBootloader))
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.FileSystemCheck to Operations...")
 
         #Now do other processes.

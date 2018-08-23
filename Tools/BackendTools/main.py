@@ -30,7 +30,7 @@ import wx
 
 #Import other modules.
 from . import essentials as EssentialBackendTools
-#from . import helpers as HelperBackendTools FIXME circular dependency
+from . import helpers as HelperBackendTools
 from . import BootloaderTools
 BootloaderConfigSettingTools = BootloaderTools.setconfigtools
 

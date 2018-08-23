@@ -26,7 +26,7 @@ import wx
 import logging
 
 #Import other modules.
-#from . import helpers as HelperBackendTools FIXME circular dependency.
+from . import helpers as HelperBackendTools
 
 from .. import coretools as CoreTools
 from .. import dialogtools as DialogTools
@@ -82,7 +82,7 @@ def CheckInternetConnection():
                 logger.info("CheckInternetConnection(): Testing the internet connection again...")
                 pass
 
-def FileSystemCheck(Type):
+def FileSystemCheck(Type, manage_bootloader_function):
     """Quickly check all filesystems."""
     logger.debug("FileSystemCheck(): Starting...")
 
@@ -173,7 +173,7 @@ def FileSystemCheck(Type):
                 logger.info("FileSystemCheck(): Checked Disk: "+Disk+". No Errors Found!")
 
             else:
-                HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Disk)
+                HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Disk, manage_bootloader_function=manage_bootloader_function)
 
         #Run bad blocks if requested.
         if RunBadBlocks:
@@ -185,7 +185,7 @@ def FileSystemCheck(Type):
                 logger.info("FileSystemCheck(): Checked Disk: "+Disk+" for bad sectors. No Errors Found!")
 
             else:
-                HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds="badblocks -sv "+Disk, Retval=retval, Partition=Disk)
+                HandleFilesystemCheckReturnValues(ExecCmds="badblocks -sv "+Disk, Retval=retval, Partition=Disk, manage_bootloader_function=manage_bootloader_function)
 
         if FileSystemsToCheck[Disk]["Remount"]:
             logger.debug("FileSystemCheck(): Remounting Disk: "+Disk+" Read-Write...")
@@ -200,3 +200,47 @@ def FileSystemCheck(Type):
     wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Filesystem Check!")
     wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
     wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished Filesystem Check!###\n")
+
+def HandleFilesystemCheckReturnValues(ExecCmds, Retval, Partition, manage_bootloader_function):
+    """Handle Filesystem Checker return codes."""
+    ExecList = ExecCmds.split()
+
+    #Return values of 1,2 or 3 happen if errors were corrected.
+    if Retval in (1, 2, 3) and ExecList[0] != "badblocks":
+        if ExecList[0] == "xfs_repair":
+            #Fs Corruption Detected.
+            logger.warning("HandleFilesystemCheckReturnValues(): xfs_repair detected filesystem corruption on FileSystem: "+Partition+". It's probably (and hopefully) been fixed, but we're logging this anyway.")
+            DialogTools.ShowMsgDlg(Kind="warning", Message="Corruption was found on the filesystem: "+Partition+"! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
+
+        elif ExecList[0] in ('fsck.jfs', 'fsck.minix', 'fsck.reiserfs', 'fsck.vfat', 'fsck.ext2', 'fsck.ex3', 'fsck.ext4', 'fsck.ext4dev'):
+            #Fixed Errors.
+            logger.info("HandleFilesystemCheckReturnValues(): "+ExecList[0]+" successfully fixed errors on the partition: "+Partition+". Continuing...")
+            DialogTools.ShowMsgDlg(Kind="warning", Message="The filesystem checker found and successfully fixed errors on partition: "+Partition+". Click okay to continue.")
+
+    else:
+        #Something bad happened!
+        #If we're doing bootloader operations, prompt the user to disable them.
+        BootloaderOperations = False
+
+        for Function in Operations:
+            if type(Function) == type(()):
+                if manage_bootloader_function == Function:
+                    BootloaderOperations = True
+                    break
+
+        logger.error("HandleFilesystemCheckReturnValues(): "+ExecList[0]+" Errored with exit value "+unicode(Retval)+"! This could indicate filesystem corruption or bad sectors!")
+
+        if BootloaderOperations:
+            logger.error("HandleFilesystemCheckReturnValues(): Asking the user whether to skip bootloader operations...")
+
+            Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(Retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, your system could become unstable or unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?", Buttons=("Disable Bootloader Operations", "Ignore and Continue Anyway"))
+
+            if Result:
+                #A good choice. WxFixBoot will now disable any bootloader operations.
+                logger.warning("HandleFilesystemCheckReturnValues(): User disabled bootloader operations as recommended, due to bad sectors/HDD problems/FS Checker problems...")
+                SystemInfo["DisableBootloaderOperations"] = True
+                SystemInfo["DisableBootloaderOperationsBecause"].append("Filesystem corruption was detected on "+Partition)
+
+            else:
+                #Seriously? Well, okay, we'll do it anyway... This is probably a very bad idea...
+                logger.warning("HandleFilesystemCheckReturnValues(): User ignored the warning and went ahead with bootloader modifications (if any) anyway, even with possible HDD problems/Bad sectors! This is a REALLY bad idea, but we'll do it anyway, as requested...")

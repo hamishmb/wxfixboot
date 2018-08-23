@@ -27,7 +27,7 @@ import sys
 import logging
 
 #Import other modules.
-#from .. import helpers FIXME circular dependency
+from .. import helpers
 
 sys.path.append('../../..') #Need to be able to import the Tools module from here.
 import Tools.coretools as CoreTools
