@@ -21,11 +21,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+#Import modules.
 import subprocess
 import sys
 import logging
 import os
 import wx
+
+#Import other modules.
+from . import dialogtools as DialogTools
 
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)

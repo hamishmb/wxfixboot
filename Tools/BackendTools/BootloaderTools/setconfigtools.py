@@ -23,7 +23,15 @@ from __future__ import unicode_literals
 
 #Import modules.
 import os
+import sys
 import logging
+
+#Import other modules.
+#from .. import helpers FIXME circular dependency
+
+sys.path.append('../../..') #Need to be able to import the Tools module from here.
+import Tools.coretools as CoreTools
+import Tools.dialogtools as DialogTools
 
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)

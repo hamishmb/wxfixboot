@@ -26,6 +26,12 @@ import os
 import time
 import logging
 
+#Import other modules.
+from . import main as MainBackendTools
+
+from .. import coretools as CoreTools
+from .. import dialogtools as DialogTools
+
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

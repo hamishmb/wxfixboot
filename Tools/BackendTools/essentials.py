@@ -25,6 +25,12 @@ from __future__ import unicode_literals
 import wx
 import logging
 
+#Import other modules.
+#from . import helpers as HelperBackendTools FIXME circular dependency.
+
+from .. import coretools as CoreTools
+from .. import dialogtools as DialogTools
+
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

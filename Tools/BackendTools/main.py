@@ -23,9 +23,22 @@ from __future__ import unicode_literals
 
 #Import modules.
 import os
+import sys
 import time
 import logging
 import wx
+
+#Import other modules.
+from . import essentials as EssentialBackendTools
+#from . import helpers as HelperBackendTools FIXME circular dependency
+from . import BootloaderTools
+BootloaderConfigSettingTools = BootloaderTools.setconfigtools
+
+from .. import coretools as CoreTools
+from .. import dialogtools as DialogTools
+
+sys.path.append('../..') #Need to be able to import the Tools module from here.
+import Tools.StartupTools.getbootloaderconfigtools as BootloaderConfigObtainingTools
 
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)

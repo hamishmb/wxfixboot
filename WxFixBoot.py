@@ -127,44 +127,14 @@ GetDevInfo.getdevinfo.os = os
 GetDevInfo.getdevinfo.logger = logger
 GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
-#CoreTools Module.
-Tools.coretools.DialogTools = DialogTools
-
-#StartupTools Package (Core).
-Tools.StartupTools.core.CoreTools = CoreTools
-Tools.StartupTools.core.DialogTools = DialogTools
-
-#StartupTools Package (Main).
-Tools.StartupTools.main.CoreTools = CoreTools
-Tools.StartupTools.main.CoreStartupTools = CoreStartupTools
-Tools.StartupTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
-Tools.StartupTools.main.DialogTools = DialogTools
-
-#StartupTools Package (BootloaderConfigObtainingTools).
-Tools.StartupTools.getbootloaderconfigtools.CoreTools = CoreTools
-
-#BackendTools Package (Helpers)
-Tools.BackendTools.helpers.CoreTools = CoreTools
-Tools.BackendTools.helpers.DialogTools = DialogTools
-Tools.BackendTools.helpers.MainBackendTools = MainBackendTools
-
 #BackendTools Package (Essentials)
-Tools.BackendTools.essentials.CoreTools = CoreTools
-Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools
-Tools.BackendTools.essentials.DialogTools = DialogTools
+Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools #FIXME circular dependency
 
 #BackendTools Package (Main).
-Tools.BackendTools.main.CoreTools = CoreTools
-Tools.BackendTools.main.EssentialBackendTools = EssentialBackendTools
-Tools.BackendTools.main.HelperBackendTools = HelperBackendTools
-Tools.BackendTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
-Tools.BackendTools.main.BootloaderConfigSettingTools = BootloaderConfigSettingTools
-Tools.BackendTools.main.DialogTools = DialogTools
+Tools.BackendTools.main.HelperBackendTools = HelperBackendTools #FIXME circular dependency
 
 #BootloaderTools Package (SetConfigTools)
-Tools.BackendTools.BootloaderTools.setconfigtools.CoreTools = CoreTools
-Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
-Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
+Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools #FIXME circular dependency
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):

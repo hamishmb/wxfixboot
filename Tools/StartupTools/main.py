@@ -25,6 +25,13 @@ from __future__ import unicode_literals
 import os
 import logging
 
+#Import other modules.
+from . import core as CoreStartupTools
+from . import getbootloaderconfigtools as BootloaderConfigObtainingTools
+
+from .. import coretools as CoreTools
+from .. import dialogtools as DialogTools
+
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
