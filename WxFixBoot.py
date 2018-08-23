@@ -128,19 +128,13 @@ GetDevInfo.getdevinfo.logger = logger
 GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
 #CoreTools Module.
-Tools.coretools.logger = logger
 Tools.coretools.DialogTools = DialogTools
 
-#DialogTools Module.
-Tools.dialogtools.logger = logger
-
 #StartupTools Package (Core).
-Tools.StartupTools.core.logger = logger
 Tools.StartupTools.core.CoreTools = CoreTools
 Tools.StartupTools.core.DialogTools = DialogTools
 
 #StartupTools Package (Main).
-Tools.StartupTools.main.logger = logger
 Tools.StartupTools.main.CoreTools = CoreTools
 Tools.StartupTools.main.CoreStartupTools = CoreStartupTools
 Tools.StartupTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools
@@ -150,19 +144,16 @@ Tools.StartupTools.main.DialogTools = DialogTools
 Tools.StartupTools.getbootloaderconfigtools.CoreTools = CoreTools
 
 #BackendTools Package (Helpers)
-Tools.BackendTools.helpers.logger = logger
 Tools.BackendTools.helpers.CoreTools = CoreTools
 Tools.BackendTools.helpers.DialogTools = DialogTools
 Tools.BackendTools.helpers.MainBackendTools = MainBackendTools
 
 #BackendTools Package (Essentials)
-Tools.BackendTools.essentials.logger = logger
 Tools.BackendTools.essentials.CoreTools = CoreTools
 Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools
 Tools.BackendTools.essentials.DialogTools = DialogTools
 
 #BackendTools Package (Main).
-Tools.BackendTools.main.logger = logger
 Tools.BackendTools.main.CoreTools = CoreTools
 Tools.BackendTools.main.EssentialBackendTools = EssentialBackendTools
 Tools.BackendTools.main.HelperBackendTools = HelperBackendTools
@@ -170,17 +161,10 @@ Tools.BackendTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtaini
 Tools.BackendTools.main.BootloaderConfigSettingTools = BootloaderConfigSettingTools
 Tools.BackendTools.main.DialogTools = DialogTools
 
-#StartupTools Package (GetConfigTools)
-Tools.StartupTools.getbootloaderconfigtools.logger = logger
-
 #BootloaderTools Package (SetConfigTools)
-Tools.BackendTools.BootloaderTools.setconfigtools.logger = logger
 Tools.BackendTools.BootloaderTools.setconfigtools.CoreTools = CoreTools
 Tools.BackendTools.BootloaderTools.setconfigtools.DialogTools = DialogTools
 Tools.BackendTools.BootloaderTools.setconfigtools.HelperBackendTools = HelperBackendTools
-
-#NoteBookSharedFunctions module.
-NoteBookSharedFunctions.logger = logger
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):

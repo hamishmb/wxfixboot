@@ -23,6 +23,11 @@ from __future__ import unicode_literals
 
 #Import modules.
 import wx
+import logging
+
+#Set up logging. FIXME Set logger level as specified on cmdline.
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 def BindEvents(self):
     """Bind all events for the caller"""
@@ -55,18 +60,18 @@ def SetupSizers(self):
 
 def UpdateListCtrl(self, Event=None, Headings=[], Dictionary={}):
     """Update the list control"""
-    logger.debug("SystemInfoNoteBookSharedFunctions().UpdateListCtrl(): Clearing all objects in list ctrl...")
+    logger.debug("UpdateListCtrl(): Clearing all objects in list ctrl...")
     self.ListCtrl.ClearAll()
 
     #Create the columns.
-    logger.debug("SystemInfoNoteBookSharedFunctions().UpdateListCtrl(): Inserting columns into list ctrl...")
+    logger.debug("UpdateListCtrl(): Inserting columns into list ctrl...")
     Column = 0
     for Heading in Headings:
         self.ListCtrl.InsertColumn(col=Column, heading=Heading, format=wx.LIST_FORMAT_CENTRE) 
         Column += 1
 
     #Add info from the custom module.
-    logger.debug("SystemInfoNoteBookSharedFunctions().UpdateListCtrl(): Adding info to list ctrl...")
+    logger.debug("UpdateListCtrl(): Adding info to list ctrl...")
 
     Keys = Dictionary.keys()
     Keys.sort()

@@ -23,6 +23,11 @@ from __future__ import unicode_literals
 
 #Import modules.
 import os
+import logging
+
+#Set up logging. FIXME Set logger level as specified on cmdline.
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 def CheckDepends():
     """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
@@ -38,14 +43,14 @@ def CheckDepends():
         Retval, Output = CoreTools.StartProcess("which "+Command, ReturnOutput=True)
 
         if Retval != 0:
-            logger.error("MainStartupTools: CheckDepends(): Dependency problems! Command: "+Command+" failed to execute or wasn't found.")
-            logger.error("MainStartupTools: CheckDepends(): The error was: "+Output)
+            logger.error("CheckDepends(): Dependency problems! Command: "+Command+" failed to execute or wasn't found.")
+            logger.error("CheckDepends(): The error was: "+Output)
             FailedList.append(Command)
 
     #Check if any commands failed.
     if FailedList != []:
         #Missing dependencies!
-        logger.critical("MainStartupTools: CheckDepends(): Dependencies missing! WxFixBoot will exit. The missing dependencies are: "+', '.join(FailedList)+". Exiting.")
+        logger.critical("CheckDepends(): Dependencies missing! WxFixBoot will exit. The missing dependencies are: "+', '.join(FailedList)+". Exiting.")
         CoreTools.EmergencyExit("The following dependencies could not be found on your system: "+', '.join(FailedList)+".\n\nPlease install the missing dependencies.")
 
 def CheckForLiveDisk():
@@ -96,40 +101,40 @@ def CheckForLiveDisk():
 def UnmountAllFS():
     """Unmount any unnecessary filesystems, to prevent data corruption."""
     #Warn about removing devices.
-    logger.info("MainStartupTools: UnmountAllFS(): Unmounting all Filesystems...")
+    logger.info("UnmountAllFS(): Unmounting all Filesystems...")
     DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot is about to gather device information. After this point, you must not remove/add any devices from/to your computer, so do that now if you wish to.")
 
     #Attempt unmount of all filesystems.
-    #logger.debug("MainStartupTools: UnmountAllFS(): Running 'unmount -ad'...")
+    #logger.debug("UnmountAllFS(): Running 'unmount -ad'...")
     #CoreTools.StartProcess("umount -ad")
 
     #Make sure that we still have rw access on live disks.
     if SystemInfo["IsLiveDisk"]:
-        logger.info("MainStartupTools: UnmountAllFS(): Attempting to remount '/' to make sure it's still rw...")
+        logger.info("UnmountAllFS(): Attempting to remount '/' to make sure it's still rw...")
 
         if CoreTools.RemountPartition("/") != 0:
-            logger.error("MainStartupTools: UnmountAllFS(): Failed to remount / as rw! This probably doesn't matter...")
+            logger.error("UnmountAllFS(): Failed to remount / as rw! This probably doesn't matter...")
 
 def CheckFS():
     """Check all unmounted filesystems."""
-    logger.info("MainStartupTools: CheckFS(): Checking filesystems if possible. Running 'fsck -ARMp'...")
+    logger.info("CheckFS(): Checking filesystems if possible. Running 'fsck -ARMp'...")
 
     if CoreTools.StartProcess("fsck -ARMp") not in (0, 8):
-        logger.critical("MainStartupTools: CheckFS(): Failed to check filesystems! Doing emergency exit...")
+        logger.critical("CheckFS(): Failed to check filesystems! Doing emergency exit...")
         CoreTools.EmergencyExit("Failed to check filesystems! Please fix your filesystems and then run WxFixBoot again.")
 
 def MountCoreFS():
     """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
-    logger.info("MainStartupTools: MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
+    logger.info("MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
 
     #Don't worry about this error when running on Parted Magic.
     if CoreTools.StartProcess("mount -avw") != 0 and SystemInfo["OnPartedMagic"] == False:
-        logger.critical("MainStartupTools: MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
+        logger.critical("MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
         CoreTools.EmergencyExit("Failed to re-mount your filesystems after checking them!")
 
 def GetOSs():
     """Get the names of all OSs on the HDDs."""
-    logger.info("MainStartupTools: GetOSs(): Finding operating systems...")
+    logger.info("GetOSs(): Finding operating systems...")
     RootFS = CoreTools.GetPartitionMountedAt("/")
     OSInfo = {}
 
@@ -144,7 +149,7 @@ def GetOSs():
         elif DiskInfo[Partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
             #Look for Mac OS X.
             OSName = "Mac OS X ("+Partition+")"
-            logger.debug("MainStartupTools: GetOSs(): Looking for Mac OS X on "+Partition+"...")
+            logger.debug("GetOSs(): Looking for Mac OS X on "+Partition+"...")
 
             #Check if we need to mount the partition.
             WasMounted = False
@@ -159,14 +164,14 @@ def GetOSs():
 
                 if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
                     #Ignore the partition.
-                    logger.warning("MainStartupTools: GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
+                    logger.warning("GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
                     continue
 
                 WasMounted = True
 
             if os.path.exists(MountPoint+"/mach_kernel") or os.path.exists(MountPoint+"/System/Library/Kernels/kernel"):
                 #Create OSInfo entry for it.
-                logger.debug("MainStartupTools: GetOSs(): Found "+OSName+"...")
+                logger.debug("GetOSs(): Found "+OSName+"...")
                 OSInfo[OSName] = {}
                 OSInfo[OSName]["Name"] = OSName
                 OSInfo[OSName]["IsCurrentOS"] = False
@@ -178,12 +183,12 @@ def GetOSs():
             #Unmount the filesystem if needed.
             if WasMounted:
                 if CoreTools.Unmount(MountPoint) != 0:
-                    logger.error("MainStartupTools: GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
+                    logger.error("GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
                     CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
         elif DiskInfo[Partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
             #Look for Windows. NOTE: It seems NTFS volumes can't be mounted twice, which is why we're being more careful here.
-            logger.debug("MainStartupTools: GetOSs(): Looking for Windows on "+Partition+"...")
+            logger.debug("GetOSs(): Looking for Windows on "+Partition+"...")
 
             #Check if we need to mount the partition.
             WasMounted = False
@@ -198,7 +203,7 @@ def GetOSs():
 
                 if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
                     #Ignore the partition.
-                    logger.warning("MainStartupTools: GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
+                    logger.warning("GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
                     continue
 
                 WasMounted = True
@@ -206,7 +211,7 @@ def GetOSs():
             #Check if there's a Windows/WinNT dir.
             if not (os.path.isdir(MountPoint+"/WinNT") or os.path.isdir(MountPoint+"/Windows") or os.path.isdir(MountPoint+"/WINDOWS")):
                 #Skip this partition, and unmount if needed.
-                logger.info("MainStartupTools: GetOSs(): Windows wasn't found...")
+                logger.info("GetOSs(): Windows wasn't found...")
 
             else:
                 #Look for lots of different Windows editions.
@@ -234,7 +239,7 @@ def GetOSs():
 
                 #Create OSInfo entry for it.
                 OSName = OSName+" ("+Partition+")"
-                logger.debug("MainStartupTools: GetOSs(): Found "+OSName+"...")
+                logger.debug("GetOSs(): Found "+OSName+"...")
                 OSInfo[OSName] = {}
                 OSInfo[OSName]["Name"] = OSName
                 OSInfo[OSName]["IsCurrentOS"] = False
@@ -246,26 +251,26 @@ def GetOSs():
             #Unmount the filesystem if needed.
             if WasMounted:
                 if CoreTools.Unmount(MountPoint) != 0:
-                    logger.error("MainStartupTools: GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
+                    logger.error("GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
                     CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
         else:
             #Look for Linux.
             #The python command runs on python 2 and python 3.
-            logger.debug("MainStartupTools: GetOSs(): Looking for Linux on "+Partition+"...")
+            logger.debug("GetOSs(): Looking for Linux on "+Partition+"...")
 
             #If there are aliases for Partition, check if the root FS is one of those too.
             RootFSIsAlias = False
 
             if "Aliases" in DiskInfo[Partition]:
-                logger.debug("MainStartupTools: GetOSs(): Checking if RootFS is an alias for "+Partition+"...")
+                logger.debug("GetOSs(): Checking if RootFS is an alias for "+Partition+"...")
 
                 if RootFS in DiskInfo[Partition]["Aliases"]:
-                    logger.debug("MainStartupTools: GetOSs(): RootFS is an alias...")
+                    logger.debug("GetOSs(): RootFS is an alias...")
                     RootFSIsAlias = True
 
                 else:
-                    logger.debug("MainStartupTools: GetOSs(): RootFS isn't an alias...")
+                    logger.debug("GetOSs(): RootFS isn't an alias...")
                     RootFSIsAlias = False
 
             if Partition == RootFS or RootFSIsAlias:
@@ -287,7 +292,7 @@ def GetOSs():
                 #Mount the partition and check if anything went wrong.
                 if CoreTools.MountPartition(Partition=Partition, MountPoint=MountPoint) != 0:
                     #Ignore the partition.
-                    logger.warning("MainStartupTools: GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
+                    logger.warning("GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
                     continue
 
             #Look for Linux on this partition.
@@ -303,7 +308,7 @@ def GetOSs():
 
                 #If we really have to, ask the user.
                 if OSName == None:
-                    logger.warning("MainStartupTools: GetOSs(): Asking user for OS name instead...")
+                    logger.warning("GetOSs(): Asking user for OS name instead...")
                     OSName = CoreStartupTools.AskForOSName(Partition=Partition, OSArch=OSArch, IsCurrentOS=IsCurrentOS)
 
             #Look for APT.
@@ -326,7 +331,7 @@ def GetOSs():
             if Chroot:
                 #Unmount the filesystem.
                 if CoreTools.Unmount(MountPoint) != 0:
-                    logger.error("MainStartupTools: GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
+                    logger.error("GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
                     CoreTools.EmergencyExit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
                 #Remove the temporary mountpoint
@@ -341,11 +346,11 @@ def GetOSs():
             LinuxOSs.append(OSName)
 
     if len(LinuxOSs) >= 1:
-        logger.debug("MainStartupTools: GetOSs(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
+        logger.debug("GetOSs(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
         return OSInfo, SystemInfo
 
     else:
-        logger.critical("MainStartupTools: GetOSs(): No Linux installations found! If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
+        logger.critical("GetOSs(): No Linux installations found! If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
 
         #Exit.
         CoreTools.EmergencyExit("You don't appear to have any Linux installations on your hard disks. If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
@@ -360,23 +365,23 @@ def GetFirmwareType():
     #Look for the UEFI vars in some common directories.
     if os.path.isdir("/sys/firmware/efi/vars") and CoreTools.StartProcess("ls /sys/firmware/efi/vars", ReturnOutput=True)[1] != "":
         UEFIVariables = True
-        logger.info("MainStartupTools: GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/vars...")
+        logger.info("GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/vars...")
 
     elif os.path.isdir("/proc/efi/vars") and CoreTools.StartProcess("ls /proc/efi/vars", ReturnOutput=True)[1] != "":
         UEFIVariables = True
-        logger.info("MainStartupTools: GetFirmwareType(): Found UEFI Variables at /proc/efi/vars...")
+        logger.info("GetFirmwareType(): Found UEFI Variables at /proc/efi/vars...")
 
     elif os.path.isdir("/sys/firmware/efi/efivars") and CoreTools.StartProcess("ls /sys/firmware/efi/efivars", ReturnOutput=True)[1] != "":
         UEFIVariables = True
-        logger.info("MainStartupTools: GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/efivars...")
+        logger.info("GetFirmwareType(): Found UEFI Variables at /sys/firmware/efi/efivars...")
 
     else:
-        logger.info("MainStartupTools: GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars, /sys/firmware/efi/efivars, or /proc/efi/vars. This is normal if running on a BIOS system. Determining firmware type a different way...")
+        logger.info("GetFirmwareType(): UEFI vars not found in /sys/firmware/efi/vars, /sys/firmware/efi/efivars, or /proc/efi/vars. This is normal if running on a BIOS system. Determining firmware type a different way...")
         UEFIVariables = False
 
     if UEFIVariables:
         #It's UEFI.
-        logger.info("MainStartupTools: GetFirmwareType(): Detected Firmware Type as UEFI.")
+        logger.info("GetFirmwareType(): Detected Firmware Type as UEFI.")
         SystemInfo["FirmwareType"] = "UEFI"
 
     else:
@@ -385,12 +390,12 @@ def GetFirmwareType():
 
         if "UEFI" not in Output:
             #It's BIOS.
-            logger.info("MainStartupTools: GetFirmwareType(): Detected Firmware Type as BIOS...")
+            logger.info("GetFirmwareType(): Detected Firmware Type as BIOS...")
             SystemInfo["FirmwareType"] = "BIOS"
 
         else:
             #It's UEFI.
-            logger.warning("MainStartupTools: GetFirmwareType(): Detected Firmware Type as UEFI, but couldn't find UEFI variables!")
+            logger.warning("GetFirmwareType(): Detected Firmware Type as UEFI, but couldn't find UEFI variables!")
             SystemInfo["FirmwareType"] = "UEFI"
             DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
 
@@ -419,12 +424,12 @@ def GetBootloaders():
             Chroot = True
 
             if CoreTools.MountPartition(OSInfo[OS]["Partition"], MountPoint) != 0:
-                logger.error("MainStartupTools: GetBootloaders(): Failed to mount "+OS+"'s partition! Skipping bootloader detection for this OS.")
+                logger.error("GetBootloaders(): Failed to mount "+OS+"'s partition! Skipping bootloader detection for this OS.")
                 continue
 
             #Set up chroot.
             if CoreTools.SetUpChroot(MountPoint) != 0:
-                logger.error("MainStartupTools: GetBootloaders(): Couldn't set up chroot on "+MountPoint+"! Attempting to remove it in case it's partially set up, and then skipping this OS...")
+                logger.error("GetBootloaders(): Couldn't set up chroot on "+MountPoint+"! Attempting to remove it in case it's partially set up, and then skipping this OS...")
                 CoreTools.TearDownChroot(MountPoint)
                 continue
 
@@ -435,7 +440,7 @@ def GetBootloaders():
         #Mount a /boot partition if it exists.
         if OSInfo[OS]["BootPartition"] != "Unknown":
             if CoreTools.MountPartition(OSInfo[OS]["BootPartition"], MountPoint+"/boot") != 0:
-                logger.error("MainStartupTools: GetBootloaders(): Failed to mount "+OS+"'s /boot partition! Skipping bootloader detection for this OS.")
+                logger.error("GetBootloaders(): Failed to mount "+OS+"'s /boot partition! Skipping bootloader detection for this OS.")
 
                 if not OSInfo[OS]["IsCurrentOS"]:
                     CoreTools.TearDownChroot(MountPoint)
@@ -446,7 +451,7 @@ def GetBootloaders():
         #Mount a /boot/efi partition if it exists.
         if OSInfo[OS]["EFIPartition"] != "Unknown":
             if CoreTools.MountPartition(OSInfo[OS]["EFIPartition"], MountPoint+"/boot/efi") != 0:
-                logger.error("MainStartupTools: GetBootloaders(): Failed to mount "+OS+"'s /boot/efi partition! Skipping bootloader detection for this OS.")
+                logger.error("GetBootloaders(): Failed to mount "+OS+"'s /boot/efi partition! Skipping bootloader detection for this OS.")
 
                 if not OSInfo[OS]["IsCurrentOS"]:
                     CoreTools.TearDownChroot(MountPoint)
@@ -494,13 +499,13 @@ def GetBootloaders():
             BootloaderInfo[OS]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[OS]["Partition"], "GRUB-LEGACY")
 
             #Use safe default kernel options.
-            logger.info("MainStartupTools: GetBootloaders(): "+OS+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\"...")
+            logger.info("GetBootloaders(): "+OS+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\"...")
             BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
 
         #If we didn't find the kernel options, set some defaults here, and warn the user.
         if BootloaderInfo[OS]["GlobalKernelOptions"] == "Unknown":
             BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
-            logger.warning("MainStartupTools: GetBootloaders(): Couldn't find "+OS+"'s global kernel options! Assuming 'quiet splash nomodeset'...")
+            logger.warning("GetBootloaders(): Couldn't find "+OS+"'s global kernel options! Assuming 'quiet splash nomodeset'...")
             DialogTools.ShowMsgDlg(Message="Couldn't find "+OS+"'s default kernel options! Loading safe defaults instead. Click okay to continue.", Kind="warning")
 
         #Determine if we can modify this OS from our current one.
@@ -554,17 +559,17 @@ def GetBootloaders():
         #Unmount a /boot partition if it exists.
         if OSInfo[OS]["BootPartition"] != "Unknown":
             if CoreTools.Unmount(MountPoint+"/boot") != 0:
-                logger.error("MainStartupTools: GetBootloaders(): Failed to unmount "+OS+"'s /boot partition! Continuing anyway...")
+                logger.error("GetBootloaders(): Failed to unmount "+OS+"'s /boot partition! Continuing anyway...")
 
         #Clean up if needed.
         if not OSInfo[OS]["IsCurrentOS"]:
             #Remove chroot.
             if CoreTools.TearDownChroot(MountPoint) != 0:
-                logger.error("MainStartupTools: GetBootloaders(): Failed to remove chroot from "+MountPoint+"! Attempting to continue anyway...")
+                logger.error("GetBootloaders(): Failed to remove chroot from "+MountPoint+"! Attempting to continue anyway...")
 
             #Unmount the OS's partition.
             if CoreTools.Unmount(MountPoint) != 0:
-                logger.error("MainStartupTools: GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
+                logger.error("GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
 
     #Get default OSs.
     for OS in OSInfo.keys():
@@ -581,7 +586,7 @@ def GetBootloaders():
             continue
 
         #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
-        logger.info("MainStartupTools: GetBootloaders(): Attempting to match "+OS+"'s default OS to any OS that WxFixBoot detected...")
+        logger.info("GetBootloaders(): Attempting to match "+OS+"'s default OS to any OS that WxFixBoot detected...")
 
         BootloaderInfo[OS]["DefaultBootDevice"] = "Unknown"
 
@@ -590,14 +595,14 @@ def GetBootloaders():
 
         else:
             #Bootloader's configuration is missing.
-            logger.error("MainStartupTools: GetBootloaders(): "+OS+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
+            logger.error("GetBootloaders(): "+OS+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
 
         #We have the partition, so now find the OS that resides on that partition.
         CoreStartupTools.MatchPartitionToOS(OS)
 
         #Log if we couldn't match them.
         if BootloaderInfo[OS]["DefaultOS"] == "Unknown":
-            logger.warning("MainStartupTools: GetBootloaders(): Couldn't match! We will instead use the first OS in the list as the default OS, which is "+SystemInfo["ModifyableOSs"][0]+"...")
+            logger.warning("GetBootloaders(): Couldn't match! We will instead use the first OS in the list as the default OS, which is "+SystemInfo["ModifyableOSs"][0]+"...")
             BootloaderInfo[OS]["DefaultOS"] = SystemInfo["ModifyableOSs"][0]
 
         #Set this.

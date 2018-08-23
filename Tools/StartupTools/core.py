@@ -23,6 +23,11 @@ from __future__ import unicode_literals
 
 #Import modules.
 import os
+import logging
+
+#Set up logging. FIXME Set logger level as specified on cmdline.
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 def MakeBootloaderInfoEntryForOSX(OS):
     """Makes an entry in BootloaderInfo for Mac OS X"""
@@ -154,7 +159,7 @@ def GetDefaultOSsPartition(OS):
 
             if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
                 DefaultBootDevice = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
-                logger.info("CoreStartupTools: Main().GetDefaultOSsPartition(): Found Default OS's partition...")
+                logger.info("GetDefaultOSsPartition(): Found Default OS's partition...")
                 break
 
         #Break out if possible.
@@ -190,21 +195,21 @@ def MatchPartitionToOS(OS):
             #Set it.
             BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "Partition"
             BootloaderInfo[OS]["DefaultOS"] = OSName
-            logger.info("CoreStartupTools: Main().MatchPartitionToOS(): Successfully matched with the partition. The Default OS is "+OSName+"...")
+            logger.info("MatchPartitionToOS(): Successfully matched with the partition. The Default OS is "+OSName+"...")
             break
 
         elif OSInfo[OSName]["BootPartition"] != "Unknown" and  Disk in (OSInfo[OSName]["BootPartition"], DiskInfo[OSInfo[OSName]["BootPartition"]]["UUID"]):
             #Set it.
             BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "BootPartition"
             BootloaderInfo[OS]["DefaultOS"] = OSName
-            logger.info("CoreStartupTools: Main().MatchPartitionToOS(): Successfully matched with the boot partition. The Default OS is "+OSName+"...")
+            logger.info("MatchPartitionToOS(): Successfully matched with the boot partition. The Default OS is "+OSName+"...")
             break
 
         elif OSInfo[OSName]["EFIPartition"] != "Unknown" and Disk in (OSInfo[OSName]["EFIPartition"], DiskInfo[OSInfo[OSName]["EFIPartition"]]["UUID"]):
             #Set it.
             BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "EFIPartition"
             BootloaderInfo[OS]["DefaultOS"] = OSName
-            logger.info("CoreStartupTools: Main().MatchPartitionToOS(): Successfully matched with the EFI partition. The Default OS is "+OSName+"...")
+            logger.info("MatchPartitionToOS(): Successfully matched with the EFI partition. The Default OS is "+OSName+"...")
             break
 
 def DeterminePackageManager(APTCmd, YUMCmd):
@@ -241,10 +246,10 @@ def DeterminePackageManager(APTCmd, YUMCmd):
 def LookForBootloadersOnPartition(OS, PackageManager, MountPoint, UsingChroot):
     """Look for bootloaders installed in the OS in the given mount point."""
     if UsingChroot:
-        logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")
+        logger.debug("LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")
 
     else:
-        logger.debug("CoreStartupTools: Main().LookForBootloadersOnPartition(): Looking for bootloaders in / (Current OS)...")
+        logger.debug("LookForBootloadersOnPartition(): Looking for bootloaders in / (Current OS)...")
 
     Bootloader = "Unknown"
     AvailableBootloaders = []
@@ -291,7 +296,7 @@ def LookForBootloadersOnPartition(OS, PackageManager, MountPoint, UsingChroot):
                 continue
 
             Bootloader = PackageDict[Package]
-            logger.info("CoreStartupTools: Main().LookForBootloadersOnPartition(): Found "+Bootloader+"...")
+            logger.info("LookForBootloadersOnPartition(): Found "+Bootloader+"...")
             break
 
     #Look for any other bootloaders that might be available for installation. Ignore GRUB-LEGACY.
@@ -324,14 +329,14 @@ def LookForBootloadersOnPartition(OS, PackageManager, MountPoint, UsingChroot):
 
     #Log info.
     AvailableBootloaders.sort()
-    logger.info("CoreStartupTools: Main().LookForBootloadersOnPartition(): Found available bootloaders: "+', '.join(AvailableBootloaders))
+    logger.info("LookForBootloadersOnPartition(): Found available bootloaders: "+', '.join(AvailableBootloaders))
 
     #Return info.
     return Bootloader, AvailableBootloaders
 
 def GetFSTabInfo(MountPoint, OSName):
     """Get /etc/fstab info and related info (EFI Partition, /boot partition) for the given OS at the given mountpoint."""
-    logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Getting FSTab info in "+MountPoint+"/etc/fstab for "+OSName+"...")
+    logger.debug("GetFSTabInfo(): Getting FSTab info in "+MountPoint+"/etc/fstab for "+OSName+"...")
 
     #Do some setup.
     EFIPartition = "Unknown"
@@ -350,13 +355,13 @@ def GetFSTabInfo(MountPoint, OSName):
 
         #Try to find this OS's EFI and boot partitions (if there are any).
         if Line.split()[1] == "/boot/efi" or Line.split()[1] == "/boot":
-            logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Finding partition that automounts at /boot/efi or /boot...")
+            logger.debug("GetFSTabInfo(): Finding partition that automounts at /boot/efi or /boot...")
             Temp = Line.split()[0]
 
             #If we have a UUID, convert it into a device node.
             if "UUID=" in Temp:
                 UUID = Temp.split("=")[1]
-                logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Found UUID "+UUID+". Trying to find device name...")
+                logger.debug("GetFSTabInfo(): Found UUID "+UUID+". Trying to find device name...")
 
                 for Disk in DiskInfo.keys():
                     if DiskInfo[Disk]["UUID"] == UUID:
@@ -365,11 +370,11 @@ def GetFSTabInfo(MountPoint, OSName):
 
             #In case we had a UUID with no match, check again before adding it to OSInfo, else ignore it.
             if "/dev/" in Temp:
-                logger.debug("CoreStartupTools: Main().GetFSTabInfo(): Found EFI/Boot Partition "+Temp+"...")
+                logger.debug("GetFSTabInfo(): Found EFI/Boot Partition "+Temp+"...")
                 Disk = Temp
 
             else:
-                logger.error("CoreStartupTools: Main().GetFSTabInfo(): Couldn't determine device name! Ignoring this device...")
+                logger.error("GetFSTabInfo(): Couldn't determine device name! Ignoring this device...")
                 Disk = "Unknown"
 
         #Try to find this OS's /boot partition (if there is one).
@@ -385,10 +390,10 @@ def GetFSTabInfo(MountPoint, OSName):
 def DetermineOSArchitecture(MountPoint):
     """Look for OS architecture on given partition."""
     if MountPoint != "":
-        logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for OS at "+MountPoint+"...")
+        logger.info("DetermineOSArchitecture(): Trying to find OS arch for OS at "+MountPoint+"...")
 
     else:
-        logger.info("CoreStartupTools: Main().DetermineOSArchitecture(): Trying to find OS arch for Current OS...")
+        logger.info("DetermineOSArchitecture(): Trying to find OS arch for Current OS...")
 
     #Do setup.
     OSArch = None
@@ -427,29 +432,29 @@ def DetermineOSArchitecture(MountPoint):
 
 def GetOSNameWithLSB(Partition, MountPoint, IsCurrentOS):
     """Attempt to get an OS's name using lsb_release -sd as a fallback."""
-    logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): Attempting to get OS name for OS on "+Partition+"...")
+    logger.info("GetOSNameWithLSB(): Attempting to get OS name for OS on "+Partition+"...")
 
     if IsCurrentOS:
-        logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): OS is the currently running OS...")
+        logger.info("GetOSNameWithLSB(): OS is the currently running OS...")
         Cmd = "lsb_release -sd"
 
     else:
-        logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): OS isn't the currently running OS...")
+        logger.info("GetOSNameWithLSB(): OS isn't the currently running OS...")
         Cmd = "chroot "+MountPoint+" lsb_release -sd"
 
     Retval, Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)
 
     if Retval != 0 or Output == "":
-        logger.error("CoreStartupTools: Main().GetOSNameWithLSB(): Couldn't get OS name! Returning 'Unknown'...")
+        logger.error("GetOSNameWithLSB(): Couldn't get OS name! Returning 'Unknown'...")
         return "Unknown"
 
     else:
-        logger.info("CoreStartupTools: Main().GetOSNameWithLSB(): Success. OS name is "+Output+". Returning it...")
+        logger.info("GetOSNameWithLSB(): Success. OS name is "+Output+". Returning it...")
         return Output
 
 def AskForOSName(Partition, OSArch, IsCurrentOS):
     """Ask the user if an OS exists on the given partition."""
-    logger.info("CoreStartupTools: Main().AskForOSName(): Asking the user for the name of the OS in "+Partition+"...")
+    logger.info("AskForOSName(): Asking the user for the name of the OS in "+Partition+"...")
 
     if IsCurrentOS:
         DialogTools.ShowMsgDlg(Kind="warning", Message="WxFixBoot couldn't find the name of the current OS. Please name it so that WxFixBoot can function correctly.")
@@ -459,12 +464,12 @@ def AskForOSName(Partition, OSArch, IsCurrentOS):
         Result = DialogTools.ShowYesNoDlg(Message="There is a Linux operating system on partition: "+Partition+" but WxFixBoot couldn't find its name. It isn't the currently running OS. Do you want to name it and include it in the list? Only click yes if you believe it is a recent OS. Click Yes if you want to name it, otherwise click No", Buttons=("Name it", "Don't name it."))
 
     if Result == False:
-        logger.info("CoreStartupTools: Main().AskForOSName(): User didn't want to name the OS in "+Partition+"! Ignoring it...")
+        logger.info("AskForOSName(): User didn't want to name the OS in "+Partition+"! Ignoring it...")
         #User reported no OS in this partition, ignore it.
         return None
 
     else:
-        logger.debug("CoreStartupTools: Main().AskForOSName(): User reported recent Linux OS in "+Partition+" (or OS is current OS). Asking name of OS...")
+        logger.debug("AskForOSName(): User reported recent Linux OS in "+Partition+" (or OS is current OS). Asking name of OS...")
         #User reported that an OS is here.
         Result = DialogTools.ShowTextEntryDlg(Message="Please enter the name of the operating system that is on "+Partition+".\nThe name you specify will be used later in the program", Title="WxFixBoot - Enter OS Name")
 

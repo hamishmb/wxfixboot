@@ -23,25 +23,30 @@ from __future__ import unicode_literals
 
 #Import modules.
 import wx
+import logging
+
+#Set up logging. FIXME Set logger level as specified on cmdline.
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 def CheckInternetConnection():
     """Check the internet connection."""
     DialogTools.ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations. This will be done by pinging the OpenDNS DNS servers.")
     Retry = True
 
-    logger.info("EssentialBackendTools: CheckInternetConnection(): Checking the Internet Connection...")
+    logger.info("CheckInternetConnection(): Checking the Internet Connection...")
     SystemInfo["DisableBootloaderOperations"] = False
 
     while True:
         #Test the internet connection by pinging an OpenDNS DNS server.
         PacketLoss = "100%"
 
-        logger.debug("EssentialBackendTools: CheckInternetConnection(): Running 'ping -c 5 -i 0.5 208.67.222.222'...")
+        logger.debug("CheckInternetConnection(): Running 'ping -c 5 -i 0.5 208.67.222.222'...")
         Retval, Output = CoreTools.StartProcess("ping -c 5 -i 0.5 208.67.222.222", ShowOutput=False, ReturnOutput=True)
 
         if Retval != 0:
             #This errored for some reason. Probably no internet connection.
-            logger.error("EssentialBackendTools: CheckInternetConnection(): Command errored!")
+            logger.error("CheckInternetConnection(): Command errored!")
             PacketLoss = "100%"
 
         else:
@@ -52,28 +57,28 @@ def CheckInternetConnection():
 
         if PacketLoss == "0%":
             #Good! We have a reliable internet connection.
-            logger.info("EssentialBackendTools: CheckInternetConnection(): Internet Connection Test Succeeded!")
+            logger.info("CheckInternetConnection(): Internet Connection Test Succeeded!")
             break
 
         else:
             #Uh oh! We DON'T have a reliable internet connection! Ask the user to either try again, or skip Bootloader operations.
-            logger.error("EssentialBackendTools: CheckInternetConnection(): Internet Connection test failed! Asking user to try again or disable bootloader operations...")
+            logger.error("CheckInternetConnection(): Internet Connection test failed! Asking user to try again or disable bootloader operations...")
             Result = DialogTools.ShowYesNoDlg(Message="Your Internet Connection failed the test! Without a working internet connection, you cannot perform bootloader operations. Click yes to try again, and click no to give up and skip bootloader operations.", Title="WxFixBoot - Disable Bootloader Operations?", Buttons=("Try again", "Cancel Bootloader Operations"))
 
             if Result == False:
-                logger.warning("EssentialBackendTools: CheckInternetConnection(): Disabling bootloader operations due to bad internet connection...")
+                logger.warning("CheckInternetConnection(): Disabling bootloader operations due to bad internet connection...")
                 SystemInfo["DisableBootloaderOperations"] = True
                 SystemInfo["DisableBootloaderOperationsBecause"].append("Internet Connection test failed.")
                 break
 
             else:
                 #We'll just run the loop again
-                logger.info("EssentialBackendTools: CheckInternetConnection(): Testing the internet connection again...")
+                logger.info("CheckInternetConnection(): Testing the internet connection again...")
                 pass
 
 def FileSystemCheck(Type):
     """Quickly check all filesystems."""
-    logger.debug("EssentialBackendTools: FileSystemCheck(): Starting...")
+    logger.debug("FileSystemCheck(): Starting...")
 
     #Update Current Operation Text.
     wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing for Filesystem Check...")
@@ -93,7 +98,7 @@ def FileSystemCheck(Type):
     #Run the check on the checkable Disks
     for Disk in FileSystemsToCheck:
         #Gather info.
-        logger.info("EssentialBackendTools: FileSystemCheck():: Checking "+Disk+"...")
+        logger.info("FileSystemCheck():: Checking "+Disk+"...")
         wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking Disk: "+Disk+"###\n")
         wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking Disk: "+Disk)
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30+((50//FileSystemsToCheckLength)*(Checked+1)))
@@ -121,7 +126,7 @@ def FileSystemCheck(Type):
 
             else:
                 ExecCmds = ""
-                logger.warning("EssentialBackendTools: FileSystemCheck(): Skipping Disk: "+Disk+", as WxFixBoot doesn't support checking it yet...")
+                logger.warning("FileSystemCheck(): Skipping Disk: "+Disk+", as WxFixBoot doesn't support checking it yet...")
                 DialogTools.ShowMsgDlg(Kind="error", Message="The filesystem on Disk: "+Disk+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Disk+" will now be skipped.")
 
         else:
@@ -159,7 +164,7 @@ def FileSystemCheck(Type):
             #Check the return values, and run the handler if needed.
             if retval == 0:
                 #Success.
-                logger.info("EssentialBackendTools: FileSystemCheck(): Checked Disk: "+Disk+". No Errors Found!")
+                logger.info("FileSystemCheck(): Checked Disk: "+Disk+". No Errors Found!")
 
             else:
                 HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds=ExecCmds, Retval=retval, Partition=Disk)
@@ -171,17 +176,17 @@ def FileSystemCheck(Type):
             #Check the return values, and run the handler if needed.
             if retval == 0:
                 #Success.
-                logger.info("EssentialBackendTools: FileSystemCheck(): Checked Disk: "+Disk+" for bad sectors. No Errors Found!")
+                logger.info("FileSystemCheck(): Checked Disk: "+Disk+" for bad sectors. No Errors Found!")
 
             else:
                 HelperBackendTools.HandleFilesystemCheckReturnValues(ExecCmds="badblocks -sv "+Disk, Retval=retval, Partition=Disk)
 
         if FileSystemsToCheck[Disk]["Remount"]:
-            logger.debug("EssentialBackendTools: FileSystemCheck(): Remounting Disk: "+Disk+" Read-Write...")
+            logger.debug("FileSystemCheck(): Remounting Disk: "+Disk+" Read-Write...")
             Retval = CoreTools.MountPartition(Partition=Disk, MountPoint=FileSystemsToCheck[Disk]["MountPoint"])
 
             if Retval != 0:
-                logger.warning("EssentialBackendTools: FileSystemCheck(): Failed to remount "+Disk+" after check. We probably need to reboot first. Never mind...")
+                logger.warning("FileSystemCheck(): Failed to remount "+Disk+" after check. We probably need to reboot first. Never mind...")
 
         Checked += 1
 
