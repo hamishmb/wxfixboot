@@ -106,7 +106,7 @@ from GetDevInfo.getdevinfo import Main as DevInfoToolsCallable
 import Tools.coretools as CoreTools
 import Tools.dialogtools as DialogTools
 
-from Tools.StartupTools.core import Main as CoreStartupToolsCallable
+import Tools.StartupTools.core as CoreStartupTools
 from Tools.StartupTools.main import Main as MainStartupToolsCallable
 from Tools.StartupTools.getbootloaderconfigtools import Main as BootloaderConfigObtainingToolsCallable
 from Tools.BackendTools.helpers import Main as HelperBackendToolsCallable
@@ -120,7 +120,6 @@ import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
 #Access these modules without the "()" so conditional tests can work. FIXME IN PROCESS OF REMOVING
 DevInfoTools = DevInfoToolsCallable()
 
-CoreStartupTools = CoreStartupToolsCallable()
 MainStartupTools = MainStartupToolsCallable()
 
 HelperBackendTools = HelperBackendToolsCallable()
@@ -146,7 +145,6 @@ Tools.dialogtools.logger = logger
 
 #StartupTools Package (Core).
 Tools.StartupTools.core.logger = logger
-Tools.StartupTools.core.os = os
 Tools.StartupTools.core.CoreTools = CoreTools
 Tools.StartupTools.core.DialogTools = DialogTools
 
