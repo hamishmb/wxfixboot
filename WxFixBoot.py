@@ -104,8 +104,7 @@ import Tools
 from GetDevInfo.getdevinfo import Main as DevInfoToolsCallable
 
 import Tools.coretools as CoreTools
-
-from Tools.dialogtools import Main as DialogToolsCallable
+import Tools.dialogtools as DialogTools
 
 from Tools.StartupTools.core import Main as CoreStartupToolsCallable
 from Tools.StartupTools.main import Main as MainStartupToolsCallable
@@ -120,8 +119,6 @@ import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
 
 #Access these modules without the "()" so conditional tests can work. FIXME IN PROCESS OF REMOVING
 DevInfoTools = DevInfoToolsCallable()
-
-DialogTools = DialogToolsCallable()
 
 CoreStartupTools = CoreStartupToolsCallable()
 MainStartupTools = MainStartupToolsCallable()
@@ -145,9 +142,7 @@ Tools.coretools.logger = logger
 Tools.coretools.DialogTools = DialogTools
 
 #DialogTools Module.
-Tools.dialogtools.wx = wx
 Tools.dialogtools.logger = logger
-Tools.dialogtools.time = time
 
 #StartupTools Package (Core).
 Tools.StartupTools.core.logger = logger
