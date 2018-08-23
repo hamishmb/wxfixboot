@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Main Backend Tools in the BackendTools Package for WxFixBoot Version 2.0.3
+# Main Backend Tools in the BackendTools Package for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
