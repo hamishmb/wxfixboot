@@ -109,7 +109,7 @@ import Tools.dialogtools as DialogTools
 import Tools.StartupTools.core as CoreStartupTools
 import Tools.StartupTools.main as MainStartupTools
 import Tools.StartupTools.getbootloaderconfigtools as BootloaderConfigObtainingTools
-from Tools.BackendTools.helpers import Main as HelperBackendToolsCallable
+import Tools.BackendTools.helpers as HelperBackendTools
 from Tools.BackendTools.essentials import Main as EssentialBackendToolsCallable
 from Tools.BackendTools.main import Main as MainBackendToolsCallable
 
@@ -120,7 +120,6 @@ import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
 #Access these modules without the "()" so conditional tests can work. FIXME IN PROCESS OF REMOVING
 DevInfoTools = DevInfoToolsCallable() #FIXME DEPRECATED
 
-HelperBackendTools = HelperBackendToolsCallable()
 EssentialBackendTools = EssentialBackendToolsCallable()
 MainBackendTools = MainBackendToolsCallable()
 
@@ -157,8 +156,6 @@ Tools.StartupTools.getbootloaderconfigtools.CoreTools = CoreTools
 
 #BackendTools Package (Helpers)
 Tools.BackendTools.helpers.logger = logger
-Tools.BackendTools.helpers.os = os
-Tools.BackendTools.helpers.time = time
 Tools.BackendTools.helpers.CoreTools = CoreTools
 Tools.BackendTools.helpers.DialogTools = DialogTools
 Tools.BackendTools.helpers.MainBackendTools = MainBackendTools
