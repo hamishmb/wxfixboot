@@ -103,7 +103,7 @@ def CheckForLiveDisk():
 
     #Get current OS architecture.
     logger.info("MainStartupTools(): CheckForLiveDisk(): Getting architecture of current OS...")
-    SystemInfo["CurrentOSArch"] = CoreStartupTools.DetermineOSArchitecture(MountPoint="")
+    SystemInfo["CurrentOSArch"] = CoreStartupTools.determine_os_architecture(mount_point="")
 
 def unmountAllFS():
     """unmount any unnecessary filesystems, to prevent data corruption."""
@@ -149,29 +149,29 @@ def GetOSs():
     Keys = DiskInfo.keys()
     Keys.sort()
 
-    for Partition in Keys:
-        if DiskInfo[Partition]["Type"] == "Device":
+    for partition in Keys:
+        if DiskInfo[partition]["Type"] == "Device":
             continue
 
-        elif DiskInfo[Partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
+        elif DiskInfo[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
             #Look for Mac OS X.
-            OSName = "Mac OS X ("+Partition+")"
-            logger.debug("GetOSs(): Looking for Mac OS X on "+Partition+"...")
+            OSName = "Mac OS X ("+partition+")"
+            logger.debug("GetOSs(): Looking for Mac OS X on "+partition+"...")
 
             #Check if we need to mount the partition.
             WasMounted = False
 
-            if CoreTools.is_mounted(Partition):
+            if CoreTools.is_mounted(partition):
                 #If mounted, get the mountpoint.
-                MountPoint = CoreTools.get_mount_point_of(Partition)
+                MountPoint = CoreTools.get_mount_point_of(partition)
 
             else:
                 #Mount the partition and check if anything went wrong.
-                MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
+                MountPoint = "/tmp/wxfixboot/mountpoints"+partition
 
-                if CoreTools.mount_partition(partition=Partition, mount_point=MountPoint) != 0:
+                if CoreTools.mount_partition(partition=partition, mount_point=MountPoint) != 0:
                     #Ignore the partition.
-                    logger.warning("GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
+                    logger.warning("GetOSs(): Couldn't mount "+partition+"! Skipping this partition...")
                     continue
 
                 WasMounted = True
@@ -183,34 +183,34 @@ def GetOSs():
                 OSInfo[OSName]["Name"] = OSName
                 OSInfo[OSName]["IsCurrentOS"] = False
                 OSInfo[OSName]["Arch"] = "Unknown"
-                OSInfo[OSName]["Partition"] = Partition
+                OSInfo[OSName]["Partition"] = partition
                 OSInfo[OSName]["PackageManager"] = "Mac App Store"
                 OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
 
             #unmount the filesystem if needed.
             if WasMounted:
                 if CoreTools.unmount(MountPoint) != 0:
-                    logger.error("GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
-                    CoreTools.emergency_exit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+                    logger.error("GetOSs(): Couldn't unmount "+partition+"! Doing emergency exit...")
+                    CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
-        elif DiskInfo[Partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
+        elif DiskInfo[partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
             #Look for Windows. NOTE: It seems NTFS volumes can't be mounted twice, which is why we're being more careful here.
-            logger.debug("GetOSs(): Looking for Windows on "+Partition+"...")
+            logger.debug("GetOSs(): Looking for Windows on "+partition+"...")
 
             #Check if we need to mount the partition.
             WasMounted = False
 
-            if CoreTools.is_mounted(Partition):
+            if CoreTools.is_mounted(partition):
                 #If mounted, get the mountpoint.
-                MountPoint = CoreTools.get_mount_point_of(Partition)
+                MountPoint = CoreTools.get_mount_point_of(partition)
 
             else:
                 #Mount the partition and check if anything went wrong.
-                MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
+                MountPoint = "/tmp/wxfixboot/mountpoints"+partition
 
-                if CoreTools.mount_partition(partition=Partition, mount_point=MountPoint) != 0:
+                if CoreTools.mount_partition(partition=partition, mount_point=MountPoint) != 0:
                     #Ignore the partition.
-                    logger.warning("GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
+                    logger.warning("GetOSs(): Couldn't mount "+partition+"! Skipping this partition...")
                     continue
 
                 WasMounted = True
@@ -222,22 +222,22 @@ def GetOSs():
 
             else:
                 #Look for lots of different Windows editions.
-                if CoreStartupTools.HasWindows9X(MountPoint):
+                if CoreStartupTools.has_windows_9x(MountPoint):
                     OSName = "Windows 95/98/ME"
 
-                elif CoreStartupTools.HasWindowsXP(MountPoint):
+                elif CoreStartupTools.has_windows_xp(MountPoint):
                     OSName = "Windows XP"
 
-                elif CoreStartupTools.HasWindowsVista(MountPoint):
+                elif CoreStartupTools.has_windows_vista(MountPoint):
                     OSName = "Windows Vista"
 
-                elif CoreStartupTools.HasWindows7(MountPoint):
+                elif CoreStartupTools.has_windows_7(MountPoint):
                     OSName = "Windows 7"
 
-                elif CoreStartupTools.HasWindows8(MountPoint):
+                elif CoreStartupTools.has_windows_8(MountPoint):
                     OSName = "Windows 8/8.1"
 
-                elif CoreStartupTools.HasWindows10(MountPoint):
+                elif CoreStartupTools.has_windows_10(MountPoint):
                     OSName = "Windows 10"
 
                 else:
@@ -245,34 +245,34 @@ def GetOSs():
                     OSName = "Windows"
 
                 #Create OSInfo entry for it.
-                OSName = OSName+" ("+Partition+")"
+                OSName = OSName+" ("+partition+")"
                 logger.debug("GetOSs(): Found "+OSName+"...")
                 OSInfo[OSName] = {}
                 OSInfo[OSName]["Name"] = OSName
                 OSInfo[OSName]["IsCurrentOS"] = False
                 OSInfo[OSName]["Arch"] = "Unknown"
-                OSInfo[OSName]["Partition"] = Partition
+                OSInfo[OSName]["Partition"] = partition
                 OSInfo[OSName]["PackageManager"] = "Windows Installer"
                 OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
 
             #unmount the filesystem if needed.
             if WasMounted:
                 if CoreTools.unmount(MountPoint) != 0:
-                    logger.error("GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
-                    CoreTools.emergency_exit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+                    logger.error("GetOSs(): Couldn't unmount "+partition+"! Doing emergency exit...")
+                    CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
         else:
             #Look for Linux.
             #The python command runs on python 2 and python 3.
-            logger.debug("GetOSs(): Looking for Linux on "+Partition+"...")
+            logger.debug("GetOSs(): Looking for Linux on "+partition+"...")
 
-            #If there are aliases for Partition, check if the root FS is one of those too.
+            #If there are aliases for partition, check if the root FS is one of those too.
             RootFSIsAlias = False
 
-            if "Aliases" in DiskInfo[Partition]:
-                logger.debug("GetOSs(): Checking if RootFS is an alias for "+Partition+"...")
+            if "Aliases" in DiskInfo[partition]:
+                logger.debug("GetOSs(): Checking if RootFS is an alias for "+partition+"...")
 
-                if RootFS in DiskInfo[Partition]["Aliases"]:
+                if RootFS in DiskInfo[partition]["Aliases"]:
                     logger.debug("GetOSs(): RootFS is an alias...")
                     RootFSIsAlias = True
 
@@ -280,26 +280,26 @@ def GetOSs():
                     logger.debug("GetOSs(): RootFS isn't an alias...")
                     RootFSIsAlias = False
 
-            if Partition == RootFS or RootFSIsAlias:
+            if partition == RootFS or RootFSIsAlias:
                 Cmd =  "python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
-                APTCmd = "which apt-get"
-                YUMCmd = "which yum"
+                apt_cmd = "which apt-get"
+                yum_cmd = "which yum"
                 Chroot = False
-                IsCurrentOS = True
+                is_current_os = True
                 MountPoint = ""
 
             else:
-                MountPoint = "/tmp/wxfixboot/mountpoints"+Partition
+                MountPoint = "/tmp/wxfixboot/mountpoints"+partition
                 Cmd = "chroot "+MountPoint+" python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
-                APTCmd = "chroot "+MountPoint+" which apt-get"
-                YUMCmd = "chroot "+MountPoint+" which yum"
+                apt_cmd = "chroot "+MountPoint+" which apt-get"
+                yum_cmd = "chroot "+MountPoint+" which yum"
                 Chroot = True
-                IsCurrentOS = False
+                is_current_os = False
 
                 #Mount the partition and check if anything went wrong.
-                if CoreTools.mount_partition(partition=Partition, mount_point=MountPoint) != 0:
+                if CoreTools.mount_partition(partition=partition, mount_point=MountPoint) != 0:
                     #Ignore the partition.
-                    logger.warning("GetOSs(): Couldn't mount "+Partition+"! Skipping this partition...")
+                    logger.warning("GetOSs(): Couldn't mount "+partition+"! Skipping this partition...")
                     continue
 
             #Look for Linux on this partition.
@@ -307,30 +307,30 @@ def GetOSs():
             OSName = Temp.replace('\n', '')
 
             #Run the function to get the architechure.
-            OSArch = CoreStartupTools.DetermineOSArchitecture(mount_point=MountPoint)
+            os_architecture = CoreStartupTools.determine_os_architecture(mount_point=MountPoint)
 
             #If the OS's name wasn't found, but its architecture was, there must be an OS here, so try to use lsb_release if possible before asking the user. Catch if the name is just whitespace too.
-            if (Retval != 0 or OSName == "" or OSName.isspace()) and OSArch != None:
-                OSName = CoreStartupTools.GetOSNameWithLSB(partition=Partition, mount_point=MountPoint, IsCurrentOS=IsCurrentOS)
+            if (Retval != 0 or OSName == "" or OSName.isspace()) and os_architecture != None:
+                OSName = CoreStartupTools.get_os_name_with_lsb(partition=partition, mount_point=MountPoint, is_current_os=is_current_os)
 
                 #If we really have to, ask the user.
                 if OSName == None:
                     logger.warning("GetOSs(): Asking user for OS name instead...")
-                    OSName = CoreStartupTools.AskForOSName(partition=Partition, OSArch=OSArch, IsCurrentOS=IsCurrentOS)
+                    OSName = CoreStartupTools.ask_for_os_name(partition=partition, is_current_os=is_current_os)
 
             #Look for APT.
-            PackageManager = CoreStartupTools.DeterminePackageManager(APTCmd=APTCmd, YUMCmd=YUMCmd) 
+            PackageManager = CoreStartupTools.determine_package_manager(apt_cmd=apt_cmd, yum_cmd=yum_cmd) 
 
-            #Also check if CoreStartupTools.AskForOSName was used to determine the name. If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
-            if OSName != None and OSArch != None and PackageManager != "Unknown":
+            #Also check if CoreStartupTools.ask_for_os_name was used to determine the name. If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
+            if OSName != None and os_architecture != None and PackageManager != "Unknown":
                 #Add this information to OSInfo.
                 OSInfo[OSName] = {}
                 OSInfo[OSName]["Name"] = OSName
-                OSInfo[OSName]["IsCurrentOS"] = IsCurrentOS
-                OSInfo[OSName]["Arch"] = OSArch
-                OSInfo[OSName]["Partition"] = Partition
+                OSInfo[OSName]["IsCurrentOS"] = is_current_os
+                OSInfo[OSName]["Arch"] = os_architecture
+                OSInfo[OSName]["Partition"] = partition
                 OSInfo[OSName]["PackageManager"] = PackageManager
-                OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.GetFSTabInfo(MountPoint, OSName)
+                OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.get_fstab_info(MountPoint, OSName)
 
                 if Chroot == False:
                     SystemInfo["CurrentOS"] = OSInfo[OSName].copy()
@@ -338,8 +338,8 @@ def GetOSs():
             if Chroot:
                 #unmount the filesystem.
                 if CoreTools.unmount(MountPoint) != 0:
-                    logger.error("GetOSs(): Couldn't unmount "+Partition+"! Doing emergency exit...")
-                    CoreTools.emergency_exit("Couldn't unmount "+Partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+                    logger.error("GetOSs(): Couldn't unmount "+partition+"! Doing emergency exit...")
+                    CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
                 #Remove the temporary mountpoint
                 os.rmdir(MountPoint)
@@ -416,12 +416,12 @@ def GetBootloaders():
     for OS in Keys:
         #If this is a windows OS, create a standard entry.
         if "Windows" in OS:
-            CoreStartupTools.MakeBootloaderInfoEntryForWindows(OS)
+            CoreStartupTools.make_bootloaderinfo_entry_for_windows(OS)
             continue
 
         #Same for Mac OS X.
         elif "Mac" in OS:
-            CoreStartupTools.MakeBootloaderInfoEntryForOSX(OS)
+            CoreStartupTools.make_bootloaderinfo_entry_for_macos(OS)
             continue
 
         #If this isn't the current OS, do some preparation.
@@ -598,14 +598,14 @@ def GetBootloaders():
         BootloaderInfo[OS]["DefaultBootDevice"] = "Unknown"
 
         if "MenuEntries" in BootloaderInfo[OS].keys():
-            CoreStartupTools.GetDefaultOSsPartition(OS)
+            CoreStartupTools.get_defaultoss_partition(OS)
 
         else:
             #Bootloader's configuration is missing.
             logger.error("GetBootloaders(): "+OS+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
 
         #We have the partition, so now find the OS that resides on that partition.
-        CoreStartupTools.MatchPartitionToOS(OS)
+        CoreStartupTools.match_partition_to_os(OS)
 
         #Log if we couldn't match them.
         if BootloaderInfo[OS]["DefaultOS"] == "Unknown":

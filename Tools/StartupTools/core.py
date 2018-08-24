@@ -33,448 +33,455 @@ from .. import dialogtools as DialogTools
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def MakeBootloaderInfoEntryForOSX(OS):
+#Silence pylint errors about missing global dictionaries.
+DiskInfo = {}
+SystemInfo = {}
+BootloaderInfo = {}
+OSInfo = {}
+
+def make_bootloaderinfo_entry_for_macos(the_os):
     """Makes an entry in BootloaderInfo for Mac OS X"""
-    BootloaderInfo[OS] = {}
-    BootloaderInfo[OS]["OSName"] = OS
-    BootloaderInfo[OS]["Bootloader"] = "BootX/BootROM/boot.efi"
-    BootloaderInfo[OS]["AvailableBootloaders"] = []
-    BootloaderInfo[OS]["MenuEntries"] = {}
-    BootloaderInfo[OS]["IsModifyable"] = False
-    BootloaderInfo[OS]["Comments"] = "WxFixBoot cannot modify Mac OS X."
-    BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"], BootloaderInfo[OS]["DefaultOS"] = (10, "Unknown", OSInfo[OS]["Partition"], OS, OS)
+    BootloaderInfo[the_os] = {}
+    BootloaderInfo[the_os]["OSName"] = the_os
+    BootloaderInfo[the_os]["Bootloader"] = "BootX/BootROM/boot.efi"
+    BootloaderInfo[the_os]["AvailableBootloaders"] = []
+    BootloaderInfo[the_os]["MenuEntries"] = {}
+    BootloaderInfo[the_os]["IsModifyable"] = False
+    BootloaderInfo[the_os]["Comments"] = "WxFixBoot cannot modify Mac OS X."
+    BootloaderInfo[the_os]["Timeout"], BootloaderInfo[the_os]["GlobalKernelOptions"], BootloaderInfo[the_os]["BootDisk"], BootloaderInfo[the_os]["BLSpecificDefaultOS"], BootloaderInfo[the_os]["DefaultOS"] = (10, "Unknown", OSInfo[the_os]["Partition"], the_os, the_os)
 
     #Initialise some default no-action settings.
-    BootloaderInfo[OS]["Settings"] = {}
-    BootloaderInfo[OS]["Settings"]["Reinstall"] = False
-    BootloaderInfo[OS]["Settings"]["Update"] = False
-    BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] = False
-    BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"] = False
-    BootloaderInfo[OS]["Settings"]["NewKernelOptions"] = BootloaderInfo[OS]["GlobalKernelOptions"]
-    BootloaderInfo[OS]["Settings"]["NewTimeout"] = BootloaderInfo[OS]["Timeout"]
-    BootloaderInfo[OS]["Settings"]["DefaultOS"] = BootloaderInfo[OS]["DefaultOS"]
-    BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] = False
-    BootloaderInfo[OS]["Settings"]["NewBootloader"] = "-- Please Select --"
-    BootloaderInfo[OS]["Settings"]["BackupBootloader"] = False
-    BootloaderInfo[OS]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
-    BootloaderInfo[OS]["Settings"]["RestoreBootloader"] = False
-    BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
-    BootloaderInfo[OS]["Settings"]["ChangeThisOS"] = False
+    BootloaderInfo[the_os]["Settings"] = {}
+    BootloaderInfo[the_os]["Settings"]["Reinstall"] = False
+    BootloaderInfo[the_os]["Settings"]["Update"] = False
+    BootloaderInfo[the_os]["Settings"]["KeepExistingTimeout"] = False
+    BootloaderInfo[the_os]["Settings"]["KeepExistingKernelOptions"] = False
+    BootloaderInfo[the_os]["Settings"]["NewKernelOptions"] = BootloaderInfo[the_os]["GlobalKernelOptions"]
+    BootloaderInfo[the_os]["Settings"]["NewTimeout"] = BootloaderInfo[the_os]["Timeout"]
+    BootloaderInfo[the_os]["Settings"]["DefaultOS"] = BootloaderInfo[the_os]["DefaultOS"]
+    BootloaderInfo[the_os]["Settings"]["InstallNewBootloader"] = False
+    BootloaderInfo[the_os]["Settings"]["NewBootloader"] = "-- Please Select --"
+    BootloaderInfo[the_os]["Settings"]["BackupBootloader"] = False
+    BootloaderInfo[the_os]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
+    BootloaderInfo[the_os]["Settings"]["RestoreBootloader"] = False
+    BootloaderInfo[the_os]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
+    BootloaderInfo[the_os]["Settings"]["ChangeThisOS"] = False
 
-    #Initialise GUI state for this OS (True = Enabled, False = Disabled).
-    BootloaderInfo[OS]["GUIState"] = {}
-    BootloaderInfo[OS]["GUIState"]["ReinstallCheckBoxState"] = True
-    BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"] = True
-    BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
-    BootloaderInfo[OS]["GUIState"]["NewTimeoutSpinnerState"] = False
-    BootloaderInfo[OS]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
-    BootloaderInfo[OS]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
-    BootloaderInfo[OS]["GUIState"]["DefaultOSChoiceState"] = False
-    BootloaderInfo[OS]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
-    BootloaderInfo[OS]["GUIState"]["NewBootloaderChoiceState"] = False
-    BootloaderInfo[OS]["GUIState"]["BackupBootloaderCheckBoxState"] = True
-    BootloaderInfo[OS]["GUIState"]["BackupBootloaderChoiceState"] = False
-    BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
-    BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = False
+    #Initialise GUI state for the_os (True = Enabled, False = Disabled).
+    BootloaderInfo[the_os]["GUIState"] = {}
+    BootloaderInfo[the_os]["GUIState"]["ReinstallCheckBoxState"] = True
+    BootloaderInfo[the_os]["GUIState"]["UpdateCheckBoxState"] = True
+    BootloaderInfo[the_os]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
+    BootloaderInfo[the_os]["GUIState"]["NewTimeoutSpinnerState"] = False
+    BootloaderInfo[the_os]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
+    BootloaderInfo[the_os]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
+    BootloaderInfo[the_os]["GUIState"]["DefaultOSChoiceState"] = False
+    BootloaderInfo[the_os]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
+    BootloaderInfo[the_os]["GUIState"]["NewBootloaderChoiceState"] = False
+    BootloaderInfo[the_os]["GUIState"]["BackupBootloaderCheckBoxState"] = True
+    BootloaderInfo[the_os]["GUIState"]["BackupBootloaderChoiceState"] = False
+    BootloaderInfo[the_os]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
+    BootloaderInfo[the_os]["GUIState"]["RestoreBootloaderChoiceState"] = False
 
-def MakeBootloaderInfoEntryForWindows(OS):
+def make_bootloaderinfo_entry_for_windows(the_os):
     """Makes an entry in BootloaderInfo for Windows"""
-    BootloaderInfo[OS] = {}
-    BootloaderInfo[OS]["OSName"] = OS
+    BootloaderInfo[the_os] = {}
+    BootloaderInfo[the_os]["OSName"] = the_os
 
-    if OS == "Windows 95/98/ME":
-        BootloaderInfo[OS]["Bootloader"] = "AUTOEXEC.BAT"
+    if the_os == "Windows 95/98/ME":
+        BootloaderInfo[the_os]["Bootloader"] = "AUTOEXEC.BAT"
 
-    elif OS == "Windows XP":
-        BootloaderInfo[OS]["Bootloader"] = "NTLoader"
+    elif the_os == "Windows XP":
+        BootloaderInfo[the_os]["Bootloader"] = "NTLoader"
 
     else:
-        BootloaderInfo[OS]["Bootloader"] = "Windows Boot Manager"
+        BootloaderInfo[the_os]["Bootloader"] = "Windows Boot Manager"
 
-    BootloaderInfo[OS]["AvailableBootloaders"] = []
-    BootloaderInfo[OS]["MenuEntries"] = {}
-    BootloaderInfo[OS]["IsModifyable"] = False
-    BootloaderInfo[OS]["Comments"] = "WxFixBoot cannot modify Windows."
-    BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"], BootloaderInfo[OS]["DefaultOS"] = (10, "Unknown", "Unknown", OS, OS)
+    BootloaderInfo[the_os]["AvailableBootloaders"] = []
+    BootloaderInfo[the_os]["MenuEntries"] = {}
+    BootloaderInfo[the_os]["IsModifyable"] = False
+    BootloaderInfo[the_os]["Comments"] = "WxFixBoot cannot modify Windows."
+    BootloaderInfo[the_os]["Timeout"], BootloaderInfo[the_os]["GlobalKernelOptions"], BootloaderInfo[the_os]["BootDisk"], BootloaderInfo[the_os]["BLSpecificDefaultOS"], BootloaderInfo[the_os]["DefaultOS"] = (10, "Unknown", "Unknown", the_os, the_os)
 
     #Initialise some default no-action settings.
-    BootloaderInfo[OS]["Settings"] = {}
-    BootloaderInfo[OS]["Settings"]["Reinstall"] = False
-    BootloaderInfo[OS]["Settings"]["Update"] = False
-    BootloaderInfo[OS]["Settings"]["KeepExistingTimeout"] = False
-    BootloaderInfo[OS]["Settings"]["KeepExistingKernelOptions"] = False
-    BootloaderInfo[OS]["Settings"]["NewKernelOptions"] = BootloaderInfo[OS]["GlobalKernelOptions"]
-    BootloaderInfo[OS]["Settings"]["NewTimeout"] = BootloaderInfo[OS]["Timeout"]
-    BootloaderInfo[OS]["Settings"]["DefaultOS"] = BootloaderInfo[OS]["DefaultOS"]
-    BootloaderInfo[OS]["Settings"]["InstallNewBootloader"] = False
-    BootloaderInfo[OS]["Settings"]["NewBootloader"] = "-- Please Select --"
-    BootloaderInfo[OS]["Settings"]["BackupBootloader"] = False
-    BootloaderInfo[OS]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
-    BootloaderInfo[OS]["Settings"]["RestoreBootloader"] = False
-    BootloaderInfo[OS]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
-    BootloaderInfo[OS]["Settings"]["ChangeThisOS"] = False
+    BootloaderInfo[the_os]["Settings"] = {}
+    BootloaderInfo[the_os]["Settings"]["Reinstall"] = False
+    BootloaderInfo[the_os]["Settings"]["Update"] = False
+    BootloaderInfo[the_os]["Settings"]["KeepExistingTimeout"] = False
+    BootloaderInfo[the_os]["Settings"]["KeepExistingKernelOptions"] = False
+    BootloaderInfo[the_os]["Settings"]["NewKernelOptions"] = BootloaderInfo[the_os]["GlobalKernelOptions"]
+    BootloaderInfo[the_os]["Settings"]["NewTimeout"] = BootloaderInfo[the_os]["Timeout"]
+    BootloaderInfo[the_os]["Settings"]["DefaultOS"] = BootloaderInfo[the_os]["DefaultOS"]
+    BootloaderInfo[the_os]["Settings"]["InstallNewBootloader"] = False
+    BootloaderInfo[the_os]["Settings"]["NewBootloader"] = "-- Please Select --"
+    BootloaderInfo[the_os]["Settings"]["BackupBootloader"] = False
+    BootloaderInfo[the_os]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
+    BootloaderInfo[the_os]["Settings"]["RestoreBootloader"] = False
+    BootloaderInfo[the_os]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
+    BootloaderInfo[the_os]["Settings"]["ChangeThisOS"] = False
 
-    #Initialise GUI state for this OS (True = Enabled, False = Disabled).
-    BootloaderInfo[OS]["GUIState"] = {}
-    BootloaderInfo[OS]["GUIState"]["ReinstallCheckBoxState"] = True
-    BootloaderInfo[OS]["GUIState"]["UpdateCheckBoxState"] = True
-    BootloaderInfo[OS]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
-    BootloaderInfo[OS]["GUIState"]["NewTimeoutSpinnerState"] = False
-    BootloaderInfo[OS]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
-    BootloaderInfo[OS]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
-    BootloaderInfo[OS]["GUIState"]["DefaultOSChoiceState"] = False
-    BootloaderInfo[OS]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
-    BootloaderInfo[OS]["GUIState"]["NewBootloaderChoiceState"] = False
-    BootloaderInfo[OS]["GUIState"]["BackupBootloaderCheckBoxState"] = True
-    BootloaderInfo[OS]["GUIState"]["BackupBootloaderChoiceState"] = False
-    BootloaderInfo[OS]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
-    BootloaderInfo[OS]["GUIState"]["RestoreBootloaderChoiceState"] = False
+    #Initialise GUI state for this the_os (True = Enabled, False = Disabled).
+    BootloaderInfo[the_os]["GUIState"] = {}
+    BootloaderInfo[the_os]["GUIState"]["ReinstallCheckBoxState"] = True
+    BootloaderInfo[the_os]["GUIState"]["UpdateCheckBoxState"] = True
+    BootloaderInfo[the_os]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
+    BootloaderInfo[the_os]["GUIState"]["NewTimeoutSpinnerState"] = False
+    BootloaderInfo[the_os]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
+    BootloaderInfo[the_os]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
+    BootloaderInfo[the_os]["GUIState"]["DefaultOSChoiceState"] = False
+    BootloaderInfo[the_os]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
+    BootloaderInfo[the_os]["GUIState"]["NewBootloaderChoiceState"] = False
+    BootloaderInfo[the_os]["GUIState"]["BackupBootloaderCheckBoxState"] = True
+    BootloaderInfo[the_os]["GUIState"]["BackupBootloaderChoiceState"] = False
+    BootloaderInfo[the_os]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
+    BootloaderInfo[the_os]["GUIState"]["RestoreBootloaderChoiceState"] = False
 
-def HasWindows9X(MountPoint):
+def has_windows_9x(mount_point):
     """Try to find a Windows 9X installation. Return True if found, False if not."""
-    return (os.path.isdir(MountPoint+"/WINDOWS") and os.path.exists(MountPoint+"/AUTOEXEC.BAT") and os.path.exists(MountPoint+"/COMMAND.COM") and os.path.isdir(MountPoint+"/My Documents"))
+    return (os.path.isdir(mount_point+"/WINDOWS") and os.path.exists(mount_point+"/AUTOEXEC.BAT") and os.path.exists(mount_point+"/COMMAND.COM") and os.path.isdir(mount_point+"/My Documents"))
 
-def HasWindowsXP(MountPoint):
+def has_windows_xp(mount_point):
     """Try to find a Windows XP installation. Return True if found, False if not."""
-    return (os.path.isfile(MountPoint+"/boot.ini") and os.path.isfile(MountPoint+"/ntldr") and os.path.isfile(MountPoint+"/NTDETECT.COM") and os.path.isdir(MountPoint+"/Documents and Settings"))
+    return (os.path.isfile(mount_point+"/boot.ini") and os.path.isfile(mount_point+"/ntldr") and os.path.isfile(mount_point+"/NTDETECT.COM") and os.path.isdir(mount_point+"/Documents and Settings"))
 
-def HasWindowsVista(MountPoint):
+def has_windows_vista(mount_point):
     """Try to find a Windows Vista installation. Return True if found, False if not."""
-    return (os.path.isfile(MountPoint+"/bootmgr") and os.path.isdir(MountPoint+"/Users") and os.path.isdir(MountPoint+"/Boot"))
+    return (os.path.isfile(mount_point+"/bootmgr") and os.path.isdir(mount_point+"/Users") and os.path.isdir(mount_point+"/Boot"))
 
-def HasWindows7(MountPoint):
+def has_windows_7(mount_point):
     """Try to find a Windows 7 installation. Return True if found, False if not."""
-    return ((not os.path.isfile(MountPoint+"/bootmgr")) and os.path.isdir(MountPoint+"/Recovery") and os.path.isdir(MountPoint+"/Windows/BitLockerDiscoveryVolumeContents"))
+    return ((not os.path.isfile(mount_point+"/bootmgr")) and os.path.isdir(mount_point+"/Recovery") and os.path.isdir(mount_point+"/Windows/BitLockerDiscoveryVolumeContents"))
 
-def HasWindows8(MountPoint):
+def has_windows_8(mount_point):
     """Try to find a Windows 8/8.1 installation. Return True if found, False if not."""
-    return (os.path.isfile(MountPoint+"/BOOTNXT") and os.path.isdir(MountPoint+"/Windows/DesktopTileResources"))
+    return (os.path.isfile(mount_point+"/BOOTNXT") and os.path.isdir(mount_point+"/Windows/DesktopTileResources"))
 
-def HasWindows10(MountPoint):
+def has_windows_10(mount_point):
     """Try to find a Windows 10 installation. Return True if found, False if not."""
-    return (os.path.isdir(MountPoint+"/Windows/HoloShell") and os.path.isdir(MountPoint+"/Apps"))
+    return (os.path.isdir(mount_point+"/Windows/HoloShell") and os.path.isdir(mount_point+"/Apps"))
 
-def GetDefaultOSsPartition(OS):
+def get_defaultoss_partition(the_os):
     """Get the partition for the given OS's default OS to boot"""
-    DefaultBootDevice = "Unknown"
+    default_boot_device = "Unknown"
 
-    for Menu in BootloaderInfo[OS]["MenuEntries"]:
-        for Entry in BootloaderInfo[OS]["MenuEntries"][Menu]:
+    for menu in BootloaderInfo[the_os]["MenuEntries"]:
+        for entry in BootloaderInfo[the_os]["MenuEntries"][menu]:
 
-            if Entry == BootloaderInfo[OS]["BLSpecificDefaultOS"]:
-                DefaultBootDevice = BootloaderInfo[OS]["MenuEntries"][Menu][Entry]["Partition"]
-                logger.info("GetDefaultOSsPartition(): Found Default OS's partition...")
+            if entry == BootloaderInfo[the_os]["BLSpecificDefaultOS"]:
+                default_boot_device = BootloaderInfo[the_os]["MenuEntries"][menu][entry]["Partition"]
+                logger.info("get_defaultoss_partition(): Found Default OS's partition...")
                 break
 
         #Break out if possible.
-        if DefaultBootDevice != "Unknown":
+        if default_boot_device != "Unknown":
             break
 
-    if DefaultBootDevice != "Unknown":
-        BootloaderInfo[OS]["DefaultBootDevice"] = DefaultBootDevice
+    if default_boot_device != "Unknown":
+        BootloaderInfo[the_os]["DefaultBootDevice"] = default_boot_device
 
         #Try to get the UUID too.
-        if BootloaderInfo[OS]["DefaultBootDevice"] in DiskInfo:
-            BootloaderInfo[OS]["DefaultBootDeviceUUID"] = DiskInfo[BootloaderInfo[OS]["DefaultBootDevice"]]["UUID"]
+        if BootloaderInfo[the_os]["DefaultBootDevice"] in DiskInfo:
+            BootloaderInfo[the_os]["DefaultBootDeviceUUID"] = DiskInfo[BootloaderInfo[the_os]["DefaultBootDevice"]]["UUID"]
 
         else:
-            BootloaderInfo[OS]["DefaultBootDeviceUUID"] = "Unknown"
+            BootloaderInfo[the_os]["DefaultBootDeviceUUID"] = "Unknown"
 
-def MatchPartitionToOS(OS):
+def match_partition_to_os(the_os):
     """Matches the default boot device (in a menu entry) to an OS in OSInfo"""
-    BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "Unknown"
-    BootloaderInfo[OS]["DefaultOS"] = "Unknown"
+    BootloaderInfo[the_os]["DefaultBootDeviceMatchedWith"] = "Unknown"
+    BootloaderInfo[the_os]["DefaultOS"] = "Unknown"
 
-    for OSName in OSInfo:
-        if OSName not in BootloaderInfo:
+    for os_name in OSInfo:
+        if os_name not in BootloaderInfo:
             continue
 
-        if "DefaultBootDeviceUUID" in BootloaderInfo[OS]:
-            Disk = BootloaderInfo[OS]["DefaultBootDeviceUUID"]
+        if "DefaultBootDeviceUUID" in BootloaderInfo[the_os]:
+            disk = BootloaderInfo[the_os]["DefaultBootDeviceUUID"]
 
         else:
-            Disk = BootloaderInfo[OS]["DefaultBootDevice"]
+            disk = BootloaderInfo[the_os]["DefaultBootDevice"]
 
-        if OSInfo[OSName]["Partition"] != "Unknown" and Disk in (OSInfo[OSName]["Partition"], DiskInfo[OSInfo[OSName]["Partition"]]["UUID"]):
+        if OSInfo[os_name]["Partition"] != "Unknown" and disk in (OSInfo[os_name]["Partition"], DiskInfo[OSInfo[os_name]["Partition"]]["UUID"]):
             #Set it.
-            BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "Partition"
-            BootloaderInfo[OS]["DefaultOS"] = OSName
-            logger.info("MatchPartitionToOS(): Successfully matched with the partition. The Default OS is "+OSName+"...")
+            BootloaderInfo[the_os]["DefaultBootDeviceMatchedWith"] = "Partition"
+            BootloaderInfo[the_os]["DefaultOS"] = os_name
+            logger.info("match_partition_to_os(): Successfully matched with the partition. The Default OS is "+os_name+"...")
             break
 
-        elif OSInfo[OSName]["BootPartition"] != "Unknown" and  Disk in (OSInfo[OSName]["BootPartition"], DiskInfo[OSInfo[OSName]["BootPartition"]]["UUID"]):
+        elif OSInfo[os_name]["BootPartition"] != "Unknown" and disk in (OSInfo[os_name]["BootPartition"], DiskInfo[OSInfo[os_name]["BootPartition"]]["UUID"]):
             #Set it.
-            BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "BootPartition"
-            BootloaderInfo[OS]["DefaultOS"] = OSName
-            logger.info("MatchPartitionToOS(): Successfully matched with the boot partition. The Default OS is "+OSName+"...")
+            BootloaderInfo[the_os]["DefaultBootDeviceMatchedWith"] = "BootPartition"
+            BootloaderInfo[the_os]["DefaultOS"] = os_name
+            logger.info("match_partition_to_os(): Successfully matched with the boot partition. The Default OS is "+os_name+"...")
             break
 
-        elif OSInfo[OSName]["EFIPartition"] != "Unknown" and Disk in (OSInfo[OSName]["EFIPartition"], DiskInfo[OSInfo[OSName]["EFIPartition"]]["UUID"]):
+        elif OSInfo[os_name]["EFIPartition"] != "Unknown" and disk in (OSInfo[os_name]["EFIPartition"], DiskInfo[OSInfo[os_name]["EFIPartition"]]["UUID"]):
             #Set it.
-            BootloaderInfo[OS]["DefaultBootDeviceMatchedWith"] = "EFIPartition"
-            BootloaderInfo[OS]["DefaultOS"] = OSName
-            logger.info("MatchPartitionToOS(): Successfully matched with the EFI partition. The Default OS is "+OSName+"...")
+            BootloaderInfo[the_os]["DefaultBootDeviceMatchedWith"] = "EFIPartition"
+            BootloaderInfo[the_os]["DefaultOS"] = os_name
+            logger.info("match_partition_to_os(): Successfully matched with the EFI partition. The Default OS is "+os_name+"...")
             break
 
-def DeterminePackageManager(APTCmd, YUMCmd):
+def determine_package_manager(apt_cmd, yum_cmd):
     """Determine and return the package manager using the given command strings."""
-    PackageManager = "Unknown"
+    package_manager = "Unknown"
 
-    for Cmd in (APTCmd, YUMCmd):
-        Retval = CoreTools.start_process(Cmd, show_output=False)
+    for cmd in (apt_cmd, yum_cmd):
+        retval = CoreTools.start_process(cmd, show_output=False)
 
-        if Retval != 0:
-            if Cmd == APTCmd:
+        if retval != 0:
+            if cmd == apt_cmd:
                 #Couldn't find apt!
-                logger.info("MainStartupTools: Main().DeterminePackageManager(): Didn't find apt. Looking for yum...")
+                logger.info("MainStartupTools: Main().determine_package_manager(): Didn't find apt. Looking for yum...")
                 continue
 
             else:
-                logger.info("MainStartupTools: Main().DeterminePackageManager(): Didn't find apt or yum. Returning 'Unknown'...")
+                logger.info("MainStartupTools: Main().determine_package_manager(): Didn't find apt or yum. Returning 'Unknown'...")
 
         else:
-            if Cmd == APTCmd:
+            if cmd == apt_cmd:
                 #Found APT!
-                logger.info("MainStartupTools: Main().DeterminePackageManager(): Found apt...")
-                PackageManager = "apt-get"
+                logger.info("MainStartupTools: Main().determine_package_manager(): Found apt...")
+                package_manager = "apt-get"
                 break
 
             else:
                 #Found YUM!
-                logger.info("MainStartupTools: Main().DeterminePackageManager(): Found yum...")
-                PackageManager = "yum"
+                logger.info("MainStartupTools: Main().determine_package_manager(): Found yum...")
+                package_manager = "yum"
                 break
 
-    return PackageManager
+    return package_manager
 
-def LookForBootloadersOnPartition(OS, PackageManager, MountPoint, UsingChroot):
+def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, using_chroot):
     """Look for bootloaders installed in the OS in the given mount point."""
-    if UsingChroot:
-        logger.debug("LookForBootloadersOnPartition(): Looking for bootloaders in "+MountPoint+"...")
+    if using_chroot:
+        logger.debug("look_for_bootloaders_on_partition(): Looking for bootloaders in "+mount_point+"...")
 
     else:
-        logger.debug("LookForBootloadersOnPartition(): Looking for bootloaders in / (Current OS)...")
+        logger.debug("look_for_bootloaders_on_partition(): Looking for bootloaders in / (Current OS)...")
 
-    Bootloader = "Unknown"
-    AvailableBootloaders = []
+    bootloader = "Unknown"
+    available_bootloaders = []
 
     #Okay, let's run a command in the chroot that was set up in FindBootloaderRemovalOSs(), depending on which package manager this OS uses, and which bootloader is currently installed.
-    if PackageManager == "apt-get":
-        Cmd = "dpkg --get-selections"
+    if package_manager == "apt-get":
+        cmd = "dpkg --get-selections"
 
     else:
         #TODO Do we actually just want yum list?
-        Cmd = "yum -C list installed"
+        cmd = "yum -C list installed"
 
-    if UsingChroot:
-        Cmd = "chroot "+MountPoint+" "+Cmd
+    if using_chroot:
+        cmd = "chroot "+mount_point+" "+cmd
 
-    Output = CoreTools.start_process(Cmd, show_output=False, return_output=True)[1].split("\n")
+    output = CoreTools.start_process(cmd, show_output=False, return_output=True)[1].split("\n")
 
     #Look for them in a specific order to be as fast a possible and to avoid false positives.
-    if PackageManager == "apt-get":
-        BootloaderPackages = ("grub-efi", "elilo", "grub-pc", "lilo", "grub")
-        PackageDict = {"grub-efi": "GRUB-UEFI", "elilo": "ELILO", "grub-pc": "GRUB2", "lilo": "LILO", "grub": "GRUB-LEGACY"}
+    if package_manager == "apt-get":
+        bootloader_packages = ("grub-efi", "elilo", "grub-pc", "lilo", "grub")
+        package_dictionary = {"grub-efi": "GRUB-UEFI", "elilo": "ELILO", "grub-pc": "GRUB2", "lilo": "LILO", "grub": "GRUB-LEGACY"}
 
     else:
-        BootloaderPackages = ("grub2-efi", "grub2", "grub")
-        PackageDict = {"grub2-efi": "GRUB-UEFI", "grub2": "GRUB2", "grub": "GRUB-LEGACY"}
+        bootloader_packages = ("grub2-efi", "grub2", "grub")
+        package_dictionary = {"grub2-efi": "GRUB-UEFI", "grub2": "GRUB2", "grub": "GRUB-LEGACY"}
 
-    for Package in BootloaderPackages:
-        Found = False
+    for package in bootloader_packages:
+        found = False
 
-        for Line in Output:
-            if Package in Line:
-                if PackageManager == "apt-get":
-                    if Line.split()[1] != "install":
+        for line in output:
+            if package in line:
+                if package_manager == "apt-get":
+                    if line.split()[1] != "install":
                         continue
 
-                Found = True
+                found = True
                 break
 
-        if Found:
+        if found:
             #On Fedora, GRUB2 for BIOS and GRUB2 for UEFI are both installed by default!
             #To figure out which way we're booting (and which is being used), see whether we are booting in EFI mode or not.
-            if PackageDict[Package] == "GRUB-UEFI" and OSInfo[OS]["PackageManager"] == "yum" and SystemInfo["FirmwareType"] == "BIOS":
+            if package_dictionary[package] == "GRUB-UEFI" and OSInfo[the_os]["PackageManager"] == "yum" and SystemInfo["FirmwareType"] == "BIOS":
                 #We're booting with GRUB2.
                 continue
 
-            Bootloader = PackageDict[Package]
-            logger.info("LookForBootloadersOnPartition(): Found "+Bootloader+"...")
+            bootloader = package_dictionary[package]
+            logger.info("look_for_bootloaders_on_partition(): Found "+bootloader+"...")
             break
 
     #Look for any other bootloaders that might be available for installation. Ignore GRUB-LEGACY.
-    for Package in BootloaderPackages:
-        if PackageManager == "apt-get":
-            Cmd = "apt-cache search "+Package
+    for package in bootloader_packages:
+        if package_manager == "apt-get":
+            cmd = "apt-cache search "+package
 
         else:
-            Cmd = "yum -C search "+Package
+            cmd = "yum -C search "+package
 
-        if UsingChroot: 
-            Cmd = "chroot "+MountPoint+" "+Cmd
+        if using_chroot:
+            cmd = "chroot "+mount_point+" "+cmd
 
-        Output = CoreTools.start_process(Cmd, show_output=False, return_output=True)[1].split("\n")
+        output = CoreTools.start_process(cmd, show_output=False, return_output=True)[1].split("\n")
 
         #Only look in the package name.
-        for Line in Output:
+        for line in output:
             try:
-                if PackageManager == "apt-get":
-                    CorrectSection = Line.split()[0]
+                if package_manager == "apt-get":
+                    correct_section = line.split()[0]
 
                 else:
-                    CorrectSection = Line.split()[0].split(".")[0]
+                    correct_section = line.split()[0].split(".")[0]
 
-            except IndexError: continue
+            except IndexError:
+                continue
 
-            if Package == CorrectSection:
-                if PackageDict[Package] not in AvailableBootloaders and PackageDict[Package] != "GRUB-LEGACY":
-                    AvailableBootloaders.append(PackageDict[Package])
+            if package == correct_section:
+                if package_dictionary[package] not in available_bootloaders and package_dictionary[package] != "GRUB-LEGACY":
+                    available_bootloaders.append(package_dictionary[package])
 
     #Log info.
-    AvailableBootloaders.sort()
-    logger.info("LookForBootloadersOnPartition(): Found available bootloaders: "+', '.join(AvailableBootloaders))
+    available_bootloaders.sort()
+    logger.info("look_for_bootloaders_on_partition(): Found available bootloaders: "+', '.join(available_bootloaders))
 
     #Return info.
-    return Bootloader, AvailableBootloaders
+    return bootloader, available_bootloaders
 
-def GetFSTabInfo(MountPoint, OSName):
+def get_fstab_info(mount_point, os_name):
     """Get /etc/fstab info and related info (EFI Partition, /boot partition) for the given OS at the given mountpoint."""
-    logger.debug("GetFSTabInfo(): Getting FSTab info in "+MountPoint+"/etc/fstab for "+OSName+"...")
+    logger.debug("get_fstab_info(): Getting FSTab info in "+mount_point+"/etc/fstab for "+os_name+"...")
 
     #Do some setup.
-    EFIPartition = "Unknown"
-    BootPartition = "Unknown"
+    efi_partition = "Unknown"
+    boot_partition = "Unknown"
 
     #Read the raw contents of the /etc/fstab file.
-    FSTabFile = open(MountPoint+"/etc/fstab", "r")
-    RawFSTABContents = FSTabFile.read().split("\n")
-    FSTabFile.close()
+    fstab_file = open(mount_point+"/etc/fstab", "r")
+    raw_fstab_contents = fstab_file.read().split("\n")
+    fstab_file.close()
 
     #Gather some info from it.
-    for Line in RawFSTABContents:
+    for line in raw_fstab_contents:
         #Ignore any comments.
-        if "#" in Line or Line == "":
+        if "#" in line or line == "":
             continue
 
         #Try to find this OS's EFI and boot partitions (if there are any).
-        if Line.split()[1] == "/boot/efi" or Line.split()[1] == "/boot":
-            logger.debug("GetFSTabInfo(): Finding partition that automounts at /boot/efi or /boot...")
-            Temp = Line.split()[0]
+        if line.split()[1] == "/boot/efi" or line.split()[1] == "/boot":
+            logger.debug("get_fstab_info(): Finding partition that automounts at /boot/efi or /boot...")
+            temp = line.split()[0]
 
             #If we have a UUID, convert it into a device node.
-            if "UUID=" in Temp:
-                UUID = Temp.split("=")[1]
-                logger.debug("GetFSTabInfo(): Found UUID "+UUID+". Trying to find device name...")
+            if "UUID=" in temp:
+                uuid = temp.split("=")[1]
+                logger.debug("get_fstab_info(): Found UUID "+uuid+". Trying to find device name...")
 
-                for Disk in DiskInfo.keys():
-                    if DiskInfo[Disk]["UUID"] == UUID:
-                        Temp = Disk
+                for disk in DiskInfo:
+                    if DiskInfo[disk]["UUID"] == uuid:
+                        temp = disk
                         break
 
             #In case we had a UUID with no match, check again before adding it to OSInfo, else ignore it.
-            if "/dev/" in Temp:
-                logger.debug("GetFSTabInfo(): Found EFI/Boot Partition "+Temp+"...")
-                Disk = Temp
+            if "/dev/" in temp:
+                logger.debug("get_fstab_info(): Found EFI/Boot Partition "+temp+"...")
+                disk = temp
 
             else:
-                logger.error("GetFSTabInfo(): Couldn't determine device name! Ignoring this device...")
-                Disk = "Unknown"
+                logger.error("get_fstab_info(): Couldn't determine device name! Ignoring this device...")
+                disk = "Unknown"
 
         #Try to find this OS's /boot partition (if there is one).
-        if Line.split()[1] == "/boot/efi":
-            EFIPartition = Disk
+        if line.split()[1] == "/boot/efi":
+            efi_partition = disk
 
-        elif Line.split()[1] == "/boot":
-            BootPartition = Disk
+        elif line.split()[1] == "/boot":
+            boot_partition = disk
 
     #Return stuff.
-    return (RawFSTABContents, EFIPartition, BootPartition)
+    return (raw_fstab_contents, efi_partition, boot_partition)
 
-def DetermineOSArchitecture(MountPoint):
+def determine_os_architecture(mount_point):
     """Look for OS architecture on given partition."""
-    if MountPoint != "":
-        logger.info("DetermineOSArchitecture(): Trying to find OS arch for OS at "+MountPoint+"...")
+    if mount_point != "":
+        logger.info("determine_os_architecture(): Trying to find OS arch for OS at "+mount_point+"...")
 
     else:
-        logger.info("DetermineOSArchitecture(): Trying to find OS arch for Current OS...")
+        logger.info("determine_os_architecture(): Trying to find OS arch for Current OS...")
 
     #Do setup.
-    OSArch = None
-    Cmd = "arch"
+    os_architecture = None
+    cmd = "arch"
 
     while True:
-        if MountPoint != "":
-            Cmd = "chroot "+MountPoint+" "+Cmd
+        if mount_point != "":
+            cmd = "chroot "+mount_point+" "+cmd
 
-        Retval, OSArch = CoreTools.start_process(Cmd, return_output=True)
+        retval, os_architecture = CoreTools.start_process(cmd, return_output=True)
 
         #If the command failed, try a second approach.
-        if Retval != 0 and "arch" in Cmd:
-            Cmd = "file /sbin/init"
+        if retval != 0 and "arch" in cmd:
+            cmd = "file /sbin/init"
 
-        elif Retval != 0:
-            OSArch = None
+        elif retval != 0:
+            os_architecture = None
             break
 
         else:
             break
 
     #If the command that worked was 'arch', or both failed, we can just return it.
-    if "arch" in Cmd or Retval != 0:
+    if "arch" in cmd or retval != 0:
         #Return the arch (or None, if we didn't find it).
-        return OSArch
+        return os_architecture
 
     else:
-        if "32-bit" in OSArch:
-            OSArch = "i386"
+        if "32-bit" in os_architecture:
+            os_architecture = "i386"
 
         else:
-            OSArch = "x86_64"
+            os_architecture = "x86_64"
 
-        return OSArch
+        return os_architecture
 
-def GetOSNameWithLSB(Partition, MountPoint, IsCurrentOS):
+def get_os_name_with_lsb(partition, mount_point, is_current_os):
     """Attempt to get an OS's name using lsb_release -sd as a fallback."""
-    logger.info("GetOSNameWithLSB(): Attempting to get OS name for OS on "+Partition+"...")
+    logger.info("get_os_name_with_lsb(): Attempting to get OS name for OS on "+partition+"...")
 
-    if IsCurrentOS:
-        logger.info("GetOSNameWithLSB(): OS is the currently running OS...")
-        Cmd = "lsb_release -sd"
+    if is_current_os:
+        logger.info("get_os_name_with_lsb(): OS is the currently running OS...")
+        cmd = "lsb_release -sd"
 
     else:
-        logger.info("GetOSNameWithLSB(): OS isn't the currently running OS...")
-        Cmd = "chroot "+MountPoint+" lsb_release -sd"
+        logger.info("get_os_name_with_lsb(): OS isn't the currently running OS...")
+        cmd = "chroot "+mount_point+" lsb_release -sd"
 
-    Retval, Output = CoreTools.start_process(Cmd, show_output=False, return_output=True)
+    retval, output = CoreTools.start_process(cmd, show_output=False, return_output=True)
 
-    if Retval != 0 or Output == "":
-        logger.error("GetOSNameWithLSB(): Couldn't get OS name! Returning 'Unknown'...")
+    if retval != 0 or output == "":
+        logger.error("get_os_name_with_lsb(): Couldn't get OS name! Returning 'Unknown'...")
         return "Unknown"
 
-    else:
-        logger.info("GetOSNameWithLSB(): Success. OS name is "+Output+". Returning it...")
-        return Output
+    #otherwise...
+    logger.info("get_os_name_with_lsb(): Success. OS name is "+output+". Returning it...")
+    return output
 
-def AskForOSName(Partition, OSArch, IsCurrentOS):
+def ask_for_os_name(partition, is_current_os):
     """Ask the user if an OS exists on the given partition."""
-    logger.info("AskForOSName(): Asking the user for the name of the OS in "+Partition+"...")
+    logger.info("ask_for_os_name(): Asking the user for the name of the OS in "+partition+"...")
 
-    if IsCurrentOS:
+    if is_current_os:
         DialogTools.show_msg_dlg(kind="warning", message="WxFixBoot couldn't find the name of the current OS. Please name it so that WxFixBoot can function correctly.")
-        Result = True
+        result = True
 
     else:
-        Result = DialogTools.show_yes_no_dlg(message="There is a Linux operating system on partition: "+Partition+" but WxFixBoot couldn't find its name. It isn't the currently running OS. Do you want to name it and include it in the list? Only click yes if you believe it is a recent OS. Click Yes if you want to name it, otherwise click No", buttons=("Name it", "Don't name it."))
+        result = DialogTools.show_yes_no_dlg(message="There is a Linux operating system on partition: "+partition+" but WxFixBoot couldn't find its name. It isn't the currently running OS. Do you want to name it and include it in the list? Only click yes if you believe it is a recent OS. Click Yes if you want to name it, otherwise click No", buttons=("Name it", "Don't name it."))
 
-    if Result == False:
-        logger.info("AskForOSName(): User didn't want to name the OS in "+Partition+"! Ignoring it...")
+    if result is False:
+        logger.info("ask_for_os_name(): User didn't want to name the OS in "+partition+"! Ignoring it...")
         #User reported no OS in this partition, ignore it.
         return None
 
-    else:
-        logger.debug("AskForOSName(): User reported recent Linux OS in "+Partition+" (or OS is current OS). Asking name of OS...")
-        #User reported that an OS is here.
-        Result = DialogTools.show_text_entry_dlg(message="Please enter the name of the operating system that is on "+Partition+".\nThe name you specify will be used later in the program", title="WxFixBoot - Enter OS Name")
+    #otherwise...
+    logger.debug("ask_for_os_name(): User reported recent Linux OS in "+partition+" (or OS is current OS). Asking name of OS...")
+    #User reported that an OS is here.
+    result = DialogTools.show_text_entry_dlg(message="Please enter the name of the operating system that is on "+partition+".\nThe name you specify will be used later in the program", title="WxFixBoot - Enter OS Name")
 
-        return Result
+    return result
