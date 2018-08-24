@@ -333,7 +333,7 @@ class InitThread(threading.Thread):
 
         except Exception:
             logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while starting WxFixBoot. Warning user and exiting.")
-            CoreTools.EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile starting up!")
+            CoreTools.emergency_exit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile starting up!")
 
     def MainCode(self):
         """Create the temporary mount point folder and set some default settings."""
@@ -385,8 +385,8 @@ class InitThread(threading.Thread):
         #Remove the temporary directory if it exists.
         if os.path.isdir("/tmp/wxfixboot/mountpoints"):
             #Check nothing is using it.
-            if "/tmp/wxfixboot/mountpoints" in CoreTools.start_process("mount", ReturnOutput=True)[1]:
-                CoreTools.EmergencyExit("There are mounted filesystems in /tmp/wxfixboot/mountpoints, WxFixBoot's temporary mountpoints directory! Please unmount any filesystems there and try again.")
+            if "/tmp/wxfixboot/mountpoints" in CoreTools.start_process("mount", return_output=True)[1]:
+                CoreTools.emergency_exit("There are mounted filesystems in /tmp/wxfixboot/mountpoints, WxFixBoot's temporary mountpoints directory! Please unmount any filesystems there and try again.")
 
             shutil.rmtree("/tmp/wxfixboot/mountpoints")
 
@@ -406,12 +406,12 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "4")
         logger.info("InitThread(): Done Checking For Live Disk!")
 
-        #Unmount all filesystems, to avoid any data corruption.
-        logger.info("InitThread(): Unmounting Filesystems...")
-        wx.CallAfter(self.ParentWindow.UpdateProgressText, "Unmounting Filesystems...")
-        MainStartupTools.UnmountAllFS()
+        #unmount all filesystems, to avoid any data corruption.
+        logger.info("InitThread(): unmounting Filesystems...")
+        wx.CallAfter(self.ParentWindow.UpdateProgressText, "unmounting Filesystems...")
+        MainStartupTools.unmountAllFS()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "5")
-        logger.info("InitThread(): Done Unmounting Filsystems!")
+        logger.info("InitThread(): Done unmounting Filsystems!")
 
         #Check filesystems.
         logger.info("InitThread(): Checking Filesystems...")
@@ -464,7 +464,7 @@ class InitThread(threading.Thread):
             logger.critical("InitThread(): No modifyable Linux installations found! If you think this is incorrect, please file a bug or ask a question on WxFixBoot's launchpad page. Exiting...")
 
             #Exit.
-            CoreTools.EmergencyExit("You don't appear to have any modifyable Linux installations on your hard disks. If you think this is incorrect, please file a bug or ask a question on WxFixBoot's launchpad page.")
+            CoreTools.emergency_exit("You don't appear to have any modifyable Linux installations on your hard disks. If you think this is incorrect, please file a bug or ask a question on WxFixBoot's launchpad page.")
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
@@ -2323,13 +2323,13 @@ class ProgressWindow(wx.Frame):
 
         if os.path.exists("/tmp/wxfixboot/mountpoints/dev"):
             for Dir in os.listdir("/tmp/wxfixboot/mountpoints/dev"):
-                #Call CoreTools.Unmount() on each directory to make sure that nothing is mounted there after this point.
-                if CoreTools.Unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
+                #Call CoreTools.unmount() on each directory to make sure that nothing is mounted there after this point.
+                if CoreTools.unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
                     #If we errored try removing chroot and trying again.
                     logger.warning("ProgressWindow().RestartWxFixBoot(): Failed to unmount /tmp/wxfixboot/mountpoints/dev/"+Dir+"! Trying to remove chroot first then trying again...")
-                    CoreTools.TearDownChroot("/tmp/wxfixboot/mountpoints/dev/"+Dir)
+                    CoreTools.teardown_chroot("/tmp/wxfixboot/mountpoints/dev/"+Dir)
 
-                    if CoreTools.Unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
+                    if CoreTools.unmount("/tmp/wxfixboot/mountpoints/dev/"+Dir) != 0:
                         logger.error("ProgressWindow().RestartWxFixBoot(): Couldn't unmount /tmp/wxfixboot/mountpoints/dev/"+Dir+"! Giving up, warning user, and aborting restart...")
                         Dlg = wx.MessageDialog(self.Panel, "Couldn't restart WxFixBoot because there are mounted filesystems in the temporary directory! Please try restarting your system and then try again.", "WxFixBoot - Error!", wx.OK | wx.ICON_ERROR)
                         Dlg.ShowModal()
@@ -2451,7 +2451,7 @@ class BackendThread(threading.Thread):
 
         except Exception:
             logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while running operations. Warning user and exiting.")
-            CoreTools.EmergencyExit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile running operations!")
+            CoreTools.emergency_exit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile running operations!")
 
     def StartOperations(self):
         """Start doing operations."""

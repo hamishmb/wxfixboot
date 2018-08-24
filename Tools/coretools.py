@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=logging-not-lazy
+#
+# Reason (logging-not-lazy): This is a more readable way of logging.
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
@@ -35,44 +39,43 @@ from . import dialogtools as DialogTools
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def start_process(ExecCmds, ShowOutput=True, ReturnOutput=False, Testing=False):
+def start_process(exec_cmds, show_output=True, return_output=False, testing=False):
     """Start a process given a string of commands to execute.
-    ShowOutput is boolean and specifies whether to show output in the outputbox (if exists) or not.
-    ReturnOutput is boolean and specifies whether to return the output back to the caller or not.
+    show_output is boolean and specifies whether to show output in the outputbox (if exists) or not.
+    return_output is boolean and specifies whether to return the output back to the caller or not.
     """
     #Make sure output is always in English.
-    ExecCmds = "LC_ALL=C "+ExecCmds
+    exec_cmds = "LC_ALL=C "+exec_cmds
 
     #Run the command(s).
-    logger.debug("start_process(): Starting process: "+ExecCmds)
-    cmd = subprocess.Popen(ExecCmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    logger.debug("start_process(): Starting process: "+exec_cmds)
+    cmd = subprocess.Popen(exec_cmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
     #Use a simpler output reader on startup to improve performance.
     if Startup:
-        line_list = read(cmd, Testing=Testing)
+        line_list = read(cmd, testing=testing)
 
     else:
-        line_list = read_and_send_output(cmd, ShowOutput)
+        line_list = read_and_send_output(cmd, show_output)
 
     #Save runcmd.returncode, as it tends to reset fairly quickly.
     ret_val = int(cmd.returncode)
 
     #Log this info in a debug message.
-    logger.debug("start_process(): Process: "+ExecCmds+": Return Value: "+unicode(ret_val)+", Output: \"\n\n"+'\n'.join(line_list)+"\"\n")
+    logger.debug("start_process(): Process: "+exec_cmds+": Return Value: "+unicode(ret_val)+", Output: \"\n\n"+'\n'.join(line_list)+"\"\n")
 
-    if ReturnOutput is False:
+    if return_output is False:
         #Return the return code back to whichever function ran this process, so it can handle any errors.
         return ret_val
 
-    elif Testing:
-        #Return the return code, as well as the output.
+    elif testing:
+        #Return the return code, as well as the output (not joining on newlines).
         return (ret_val, ''.join(line_list))
 
-    else:
-        #Return the return code, as well as the output.
-        return (ret_val, '\n'.join(line_list))
+    #Otherwise, just return the return code, as well as the output.
+    return (ret_val, '\n'.join(line_list))
 
-def read(cmd, Testing=False):
+def read(cmd, testing=False):
     """Read the cmd's output char by char, but do as little processing as possible to improve startup performance"""
     #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
     counter = 0
@@ -92,7 +95,7 @@ def read(cmd, Testing=False):
             #Interpret as Unicode and remove "NULL" characters.
             line = line.decode("UTF-8", errors="replace").replace("\x00", "")
 
-            if Testing:
+            if testing:
                 line_list.append(line)
 
             else:
@@ -102,8 +105,8 @@ def read(cmd, Testing=False):
             line = str("")
 
     return line_list
-    
-def read_and_send_output(cmd, ShowOutput):
+
+def read_and_send_output(cmd, show_output):
     """Read the cmd's output char by char, and send the output to the output box"""
     #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
     counter = 0
@@ -137,7 +140,7 @@ def read_and_send_output(cmd, ShowOutput):
             #Interpret as Unicode and remove "NULL" characters.
             line = line.decode("UTF-8", errors="replace").replace("\x00", "")
 
-            wx.CallAfter(ParentWindow.UpdateOutputBox, line, ShowOutput)
+            wx.CallAfter(ParentWindow.UpdateOutputBox, line, show_output)
             line_list.append(line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
             #Reset line.
@@ -150,253 +153,255 @@ def read_and_send_output(cmd, ShowOutput):
 
     return line_list
 
-def is_mounted(Partition, MountPoint=None):
+def is_mounted(partition, mount_point=None):
     """Checks if the given partition is mounted.
-    Partition is the given partition to check.
-    If MountPoint is specified, check if the partition is mounted there, rather than just if it's mounted.
+    partition is the given partition to check.
+    If mount_point is specified, check if the partition is mounted there, rather than just if it's mounted.
     Return boolean True/False.
     """
-    if MountPoint is None:
-        logger.debug("is_mounted(): Checking if "+Partition+" is mounted...")
-        mount_info = start_process("mount -l", ShowOutput=False, ReturnOutput=True)[1]
+    if mount_point is None:
+        logger.debug("is_mounted(): Checking if "+partition+" is mounted...")
+        mount_info = start_process("mount -l", show_output=False, return_output=True)[1]
 
         mounted = False
 
         for line in mount_info.split("\n"):
-            if line.split()[0] == Partition:
+            if line.split()[0] == partition:
                 mounted = True
 
     else:
         #Check where it's mounted to.
-        logger.debug("is_mounted(): Checking if "+Partition+" is mounted at "+MountPoint+"...")
+        logger.debug("is_mounted(): Checking if "+partition+" is mounted at "+mount_point+"...")
 
         mounted = False
 
-        if GetMountPointOf(Partition) == MountPoint:
+        if get_mount_point_of(partition) == mount_point:
             mounted = True
 
     if mounted:
         logger.debug("is_mounted(): It is. Returning True...")
         return True
 
-    else:
-        logger.debug("is_mounted(): It isn't. Returning False...")
-        return False
+    #else return false.
+    logger.debug("is_mounted(): It isn't. Returning False...")
+    return False
 
-def GetPartitionMountedAt(MountPoint):
+def get_partition_mounted_at(mount_point):
     """Returns the partition mounted at the given mountpoint, if any.
     Otherwise, return None"""
-    logger.info("GetPartitionMountedAt(): Trying to get partition mounted at "+MountPoint+"...")
+    logger.info("get_partition_mounted_at(): Trying to get partition mounted at "+mount_point+"...")
 
-    mount_info = start_process("mount -l", ShowOutput=False, ReturnOutput=True)[1]
+    mount_info = start_process("mount -l", show_output=False, return_output=True)[1]
     partition = None
 
     for line in mount_info.split("\n"):
         split_line = line.split()
 
-        if MountPoint == split_line[2]:
+        if mount_point == split_line[2]:
             partition = split_line[0]
 
     if partition != None:
-        logger.info("GetPartitionMountedAt(): Found it! Partition is "+partition+"...")
+        logger.info("get_partition_mounted_at(): Found it! partition is "+partition+"...")
 
     else:
-        logger.info("GetPartitionMountedAt(): Didn't find it...")
+        logger.info("get_partition_mounted_at(): Didn't find it...")
 
     return partition
 
-def GetMountPointOf(Partition):
+def get_mount_point_of(partition):
     """Returns the mountpoint of the given partition, if any.
     Otherwise, return None"""
-    logger.info("GetMountPointOf(): Trying to get mount point of partition "+Partition+"...")
+    logger.info("get_mount_point_of(): Trying to get mount point of partition "+partition+"...")
 
-    mount_info = start_process("mount -l", ShowOutput=False, ReturnOutput=True)[1]
+    mount_info = start_process("mount -l", show_output=False, return_output=True)[1]
     mount_point = None
 
     for line in mount_info.split("\n"):
         split_line = line.split()
 
-        if Partition == split_line[0]:
+        if partition == split_line[0]:
             mount_point = split_line[2]
 
     if mount_point != None:
-        logger.info("GetMountPointOf(): Found it! MountPoint is "+mount_point+"...")
+        logger.info("get_mount_point_of(): Found it! mount_point is "+mount_point+"...")
 
     else:
-        logger.info("GetMountPointOf(): Didn't find it...")
+        logger.info("get_mount_point_of(): Didn't find it...")
 
     return mount_point
 
-def MountPartition(Partition, MountPoint, Options=""):
+def mount_partition(partition, mount_point, options=""):
     """Mounts the given partition.
-    Partition is the partition to mount.
-    MountPoint is where you want to mount the partition.
-    Options is non-mandatory and contains whatever options you want to pass to the mount command.
-    The default value for Options is an empty string.
+    partition is the partition to mount.
+    mount_point is where you want to mount the partition.
+    options is non-mandatory and contains whatever options you want to pass to the mount command.
+    The default value for options is an empty string.
     """
-    if Options != "":
-        logger.info("MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with extra options "+Options+"...")
+    if options != "":
+        logger.info("mount_partition(): Preparing to mount "+partition+" at "+mount_point+" with extra options "+options+"...")
 
     else:
-        logger.info("MountPartition(): Preparing to mount "+Partition+" at "+MountPoint+" with no extra options...")
-        
-    mount_info = start_process("mount -l", ShowOutput=False, ReturnOutput=True)[1]
+        logger.info("mount_partition(): Preparing to mount "+partition+" at "+mount_point+" with no extra options...")
+
+    mount_info = start_process("mount -l", show_output=False, return_output=True)[1]
 
     #There is a partition mounted here. Check if our partition is already mounted in the right place.
-    if MountPoint == GetMountPointOf(Partition):
+    if mount_point == get_mount_point_of(partition):
         #The correct partition is already mounted here.
-        logger.debug("MountPartition(): Partition: "+Partition+" was already mounted at: "+MountPoint+". Continuing...")
+        logger.debug("mount_partition(): partition: "+partition+" was already mounted at: "+mount_point+". Continuing...")
         return 0
 
-    elif MountPoint in mount_info:
-        #Something else is in the way. Unmount that partition, and continue.
-        logger.warning("MountPartition(): Unmounting filesystem in the way at "+MountPoint+"...")
-        ret_val = Unmount(MountPoint)
+    elif mount_point in mount_info:
+        #Something else is in the way. unmount that partition, and continue.
+        logger.warning("mount_partition(): unmounting filesystem in the way at "+mount_point+"...")
+        ret_val = unmount(mount_point)
 
         if ret_val != 0:
-            logger.error("MountPartition(): Couldn't unmount "+MountPoint+", preventing the mounting of "+Partition+"! Skipping mount attempt.")
+            logger.error("mount_partition(): Couldn't unmount "+mount_point+", preventing the mounting of "+partition+"! Skipping mount attempt.")
             return False
 
     #Create the dir if needed.
-    if os.path.isdir(MountPoint) is False:
-        os.makedirs(MountPoint)
+    if os.path.isdir(mount_point) is False:
+        os.makedirs(mount_point)
 
     #Mount the device to the mount point.
-    ret_val = start_process("mount "+Options+" "+Partition+" "+MountPoint, ShowOutput=False)
+    ret_val = start_process("mount "+options+" "+partition+" "+mount_point, show_output=False)
 
     if ret_val == 0:
-        logger.debug("MountPartition(): Successfully mounted partition!")
+        logger.debug("mount_partition(): Successfully mounted partition!")
 
     else:
-        logger.warning("MountPartition(): Failed to mount partition!")
+        logger.warning("mount_partition(): Failed to mount partition!")
 
     return ret_val
 
-def RemountPartition(Partition, Mode="rw"):
+def remount_partition(partition, mode="rw"):
     """Remounts the given partition.
-    Partition is the partition to remount.
-    Mode is non-mandatory and is either rw or ro for read-write or read-only respectively.
-    The default value for Mode is rw.
+    partition is the partition to remount.
+    mode is non-mandatory and is either rw or ro for read-write or read-only respectively.
+    The default value for mode is rw.
     """
-    logger.debug("RemountPartition(): Remounting "+Partition+" as "+Mode+"...")
-    ret_val = start_process("mount -o remount,"+Mode+" "+Partition, ShowOutput=False)
+    logger.debug("remount_partition(): Remounting "+partition+" as "+mode+"...")
+    ret_val = start_process("mount -o remount,"+mode+" "+partition, show_output=False)
 
     if ret_val == 0:
-        logger.warning("RemountPartition(): Successfully remounted partition!")
+        logger.warning("remount_partition(): Successfully remounted partition!")
 
     else:
-        logger.info("RemountPartition(): Failed to remount partition!")
+        logger.info("remount_partition(): Failed to remount partition!")
 
     #Return the return value
     return ret_val
 
-def Unmount(MountPoint):
-    """Unmounts the given mountpoint.
-    MountPoint is the mountpoint to unmount.
-    MountPoint can also be a partition name (for example /dev/sda1).
+def unmount(mount_point):
+    """unmounts the given mountpoint.
+    mount_point is the mountpoint to unmount.
+    mount_point can also be a partition name (for example /dev/sda1).
     """
-    logger.debug("Unmount(): Preparing to unmount "+MountPoint)
+    logger.debug("unmount(): Preparing to unmount "+mount_point)
 
-    if MountPoint not in start_process("mount -l", ShowOutput=False, ReturnOutput=True)[1]:
-        logger.info("Unmount(): "+MountPoint+" was not mounted. Continuing...")
+    if mount_point not in start_process("mount -l", show_output=False, return_output=True)[1]:
+        logger.info("unmount(): "+mount_point+" was not mounted. Continuing...")
         ret_val = 0
 
     else:
-        logger.debug("Unmount(): Unmounting "+MountPoint+"...")
-        ret_val = start_process("umount "+MountPoint, ShowOutput=False)
+        logger.debug("unmount(): unmounting "+mount_point+"...")
+        ret_val = start_process("umount "+mount_point, show_output=False)
 
         if ret_val == 0:
-            logger.info("Unmount(): Successfully unmounted "+MountPoint+"!")
+            logger.info("unmount(): Successfully unmounted "+mount_point+"!")
 
         else:
-            logger.warning("Unmount(): Failed to unmount "+MountPoint+"!")
-        
+            logger.warning("unmount(): Failed to unmount "+mount_point+"!")
+
     #Return the return value
     return ret_val
 
-def UpdateChrootMtab(MountPoint):
+def update_chroot_mtab(mount_point):
     """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right."""
-    logger.debug("UpdateChrootMtab(): Updating /etc/mtab for chroot at: "+MountPoint+"...")
+    logger.debug("update_chroot_mtab(): Updating /etc/mtab for chroot at: "+mount_point+"...")
 
-    retval = start_process("cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab", ShowOutput=False)
+    retval = start_process("cp -vf /proc/self/mounts "+mount_point+"/etc/mtab", show_output=False)
 
     if retval != 0:
-        logger.warning("UpdateChrootMtab(): Failed to run command: cp -vf /proc/self/mounts "+MountPoint+"/etc/mtab! Chroot may not set up properly! This *probably* doesn't matter, but in rare situations it could cause problems. If the chrooted OS is Fedora-based, this is normal because /etc/mtab is a symlink to /proc/self/mounts.")
+        logger.warning("update_chroot_mtab(): Failed to run command: cp -vf /proc/self/mounts "+mount_point+"/etc/mtab! Chroot may not set up properly! This *probably* doesn't matter, but in rare situations it could cause problems. If the chrooted OS is Fedora-based, this is normal because /etc/mtab is a symlink to /proc/self/mounts.")
 
-    logger.debug("UpdateChrootMtab(): Finished updating /etc/mtab for chroot at: "+MountPoint+".")
+    logger.debug("update_chroot_mtab(): Finished updating /etc/mtab for chroot at: "+mount_point+".")
 
-def SetUpChroot(MountPoint):
+def setup_chroot(mount_point):
     """Set up a chroot for the given mountpoint."""
-    logger.debug("SetUpChroot(): Setting up chroot for MountPoint: "+MountPoint+"...")
+    logger.debug("setup_chroot(): Setting up chroot for mount_point: "+mount_point+"...")
 
     #Mount /dev, /dev/pts, /proc and /sys for the chroot.
-    #We might also need internet access in chroot, so to do this first backup MountPoint/etc/resolv.conf to MountPoint/etc/resolv.conf.bak (if it's a link, this will also preserve it),
-    #then copy current system's /etc/resolv.conf (the contents, not the link) to MountPoint/etc/resolv.conf, enabling internet access.
+    #We might also need internet access in chroot, so to do this first backup mount_point/etc/resolv.conf to mount_point/etc/resolv.conf.bak (if it's a link, this will also preserve it),
+    #then copy current system's /etc/resolv.conf (the contents, not the link) to mount_point/etc/resolv.conf, enabling internet access.
 
     mount_list = ("/dev", "/dev/pts", "/proc", "/sys")
 
     for file_system in mount_list:
-        if MountPartition(Partition=file_system, MountPoint=MountPoint+file_system, Options="--bind") != 0:
-            logger.error("SetUpChroot(): Failed to bind "+file_system+" to "+MountPoint+Filesystem+"! Chroot isn't set up properly! Attempting to continue anyway...")
+        if mount_partition(partition=file_system, mount_point=mount_point+file_system, options="--bind") != 0:
+            logger.error("setup_chroot(): Failed to bind "+file_system+" to "+mount_point+file_system+"! Chroot isn't set up properly! Attempting to continue anyway...")
 
-    exec_list = ("mv -vf "+MountPoint+"/etc/resolv.conf "+MountPoint+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+MountPoint+"/etc/resolv.conf")
+    exec_list = ("mv -vf "+mount_point+"/etc/resolv.conf "+mount_point+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+mount_point+"/etc/resolv.conf")
 
     for exec_cmd in exec_list:
-        ret_val = start_process(exec_cmd, ShowOutput=False, ReturnOutput=True)[0]
+        ret_val = start_process(exec_cmd, show_output=False, return_output=True)[0]
 
         if ret_val != 0:
-            logger.error("SetUpChroot(): Error: Failed to run command: '"+exec_cmd+"'! Chroot may not be set up properly! On Fedora systems this probably doesn't matter. Continuing anyway...")
+            logger.error("setup_chroot(): Error: Failed to run command: '"+exec_cmd+"'! Chroot may not be set up properly! On Fedora systems this probably doesn't matter. Continuing anyway...")
             #Ignore these errors, the only happen on Fedora and they don't really matter.
             ret_val = 0
 
-    UpdateChrootMtab(MountPoint=MountPoint)
+    update_chroot_mtab(mount_point=mount_point)
 
-    logger.debug("SetUpChroot(): Finished setting up chroot for MountPoint: "+MountPoint+"...")
+    logger.debug("setup_chroot(): Finished setting up chroot for mount_point: "+mount_point+"...")
     return ret_val
 
-def TearDownChroot(MountPoint):
+def teardown_chroot(mount_point):
     """Remove a chroot at the given mountpoint."""
-    logger.debug("TearDownChroot(): Removing chroot at MountPoint: "+MountPoint+"...")
+    logger.debug("teardown_chroot(): Removing chroot at mount_point: "+mount_point+"...")
 
-    #Unmount /dev/pts, /dev, /proc and /sys in the chroot.
-    unmount_list = (MountPoint+"/dev/pts", MountPoint+"/dev", MountPoint+"/proc", MountPoint+"/sys")
+    #unmount /dev/pts, /dev, /proc and /sys in the chroot.
+    unmount_list = (mount_point+"/dev/pts", mount_point+"/dev", mount_point+"/proc", mount_point+"/sys")
 
     for file_system in unmount_list:
-        if Unmount(file_system) != 0:
-            logger.error("TearDownChroot(): Faied to unmount "+file_system+"! Chroot isn't removed properly! Attempting to continue anyway...")
+        if unmount(file_system) != 0:
+            logger.error("teardown_chroot(): Faied to unmount "+file_system+"! Chroot isn't removed properly! Attempting to continue anyway...")
 
-    #We'll also need to replace the MountPoint/etc/resolv.conf with the backup file, MountPoint/etc/resolv.conf.bak.
-    ret_val = start_process("mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf", ShowOutput=False)
+    #We'll also need to replace the mount_point/etc/resolv.conf with the backup file, mount_point/etc/resolv.conf.bak.
+    ret_val = start_process("mv -vf "+mount_point+"/etc/resolv.conf.bak "+mount_point+"/etc/resolv.conf", show_output=False)
 
     if ret_val != 0:
-        logger.error("TearDownChroot(): Failed to run command: 'mv -vf "+MountPoint+"/etc/resolv.conf.bak "+MountPoint+"/etc/resolv.conf'! Return value was: "+unicode(ret_val)+". Chroot may not be removed properly!")
+        logger.error("teardown_chroot(): Failed to run command: 'mv -vf "+mount_point+"/etc/resolv.conf.bak "+mount_point+"/etc/resolv.conf'! Return value was: "+unicode(ret_val)+". Chroot may not be removed properly!")
 
-    logger.debug("TearDownChroot(): Finished removing chroot at MountPoint: "+MountPoint+"...")
+    logger.debug("teardown_chroot(): Finished removing chroot at mount_point: "+mount_point+"...")
     return ret_val
 
-def EmergencyExit(Message):
+def emergency_exit(message):
     """Handle emergency exits. Warn the user, log, and exit to terminal with the given message"""
-    logger.critical("EmergencyExit(): Emergency exit has been triggered! Giving user message dialog and saving the logfile...")
-    logger.critical("EmergencyExit(): The error is: "+Message)
+    logger.critical("emergency_exit(): Emergency exit has been triggered! Giving user message dialog and saving the logfile...")
+    logger.critical("emergency_exit(): The error is: "+message)
 
     #Warn the user.
-    DialogTools.ShowMsgDlg(Message="Emergency exit triggered.\n\n"+Message+"\n\nYou'll now be asked for a location to save the log file.\nIf you email me at hamishmb@live.co.uk with the contents of that file I'll be happy to help you fix this problem.", Kind="error")
+    DialogTools.ShowMsgDlg(Message="Emergency exit triggered.\n\n"+message+"\n\nYou'll now be asked for a location to save the log file.\nIf you email me at hamishmb@live.co.uk with the contents of that file I'll be happy to help you fix this problem.", Kind="error")
 
     #Shut down the logger.
     logging.shutdown()
 
     #Save the log file.
     log_file = DialogTools.ShowSaveFileDlg(Wildcard="Log Files|*.log")
-    start_process("mv -v /tmp/wxfixboot.log "+log_file, ShowOutput=False)
+    start_process("mv -v /tmp/wxfixboot.log "+log_file, show_output=False)
 
     #If we're using wayland, remove the workaround we have to use to make this work.
     #XXX Fix for running on Wayland until we get policy kit stuff done.
     try:
         subprocess.check_call("xhost -si:localuser:root", shell=True)
-    except subprocess.CalledProcessError: pass
+
+    except subprocess.CalledProcessError:
+        pass
 
     #Exit.
     DialogTools.ShowMsgDlg(Message="Done. WxFixBoot will now exit.")
     wx.Exit()
-    sys.stdout.write(Message+"\n")
-    os.exit(1) #TODO Was os._exit(1). Why? Does this work?
+    sys.stdout.write(message+"\n")
+    os._exit(1) #TODO Is there a better alternative that will work from a thread?

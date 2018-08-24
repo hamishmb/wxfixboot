@@ -48,7 +48,7 @@ def CheckInternetConnection():
         PacketLoss = "100%"
 
         logger.debug("CheckInternetConnection(): Running 'ping -c 5 -i 0.5 208.67.222.222'...")
-        Retval, Output = CoreTools.StartProcess("ping -c 5 -i 0.5 208.67.222.222", ShowOutput=False, ReturnOutput=True)
+        Retval, Output = CoreTools.StartProcess("ping -c 5 -i 0.5 208.67.222.222", show_output=False, return_output=True)
 
         if Retval != 0:
             #This errored for some reason. Probably no internet connection.
@@ -189,7 +189,7 @@ def FileSystemCheck(Type, manage_bootloader_function):
 
         if FileSystemsToCheck[Disk]["Remount"]:
             logger.debug("FileSystemCheck(): Remounting Disk: "+Disk+" Read-Write...")
-            Retval = CoreTools.MountPartition(Partition=Disk, MountPoint=FileSystemsToCheck[Disk]["MountPoint"])
+            Retval = CoreTools.mount_partition(partition=Disk, mount_point=FileSystemsToCheck[Disk]["MountPoint"])
 
             if Retval != 0:
                 logger.warning("FileSystemCheck(): Failed to remount "+Disk+" after check. We probably need to reboot first. Never mind...")

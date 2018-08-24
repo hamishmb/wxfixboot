@@ -75,7 +75,7 @@ def WaitUntilPackageManagerNotInUse(MountPoint, PackageManager):
 
     #Trap in while loop until package manager is free.
     while RetVal not in (0, 100): #100 when there are updates available on Fedora.
-        RetVal = CoreTools.start_process(Cmd, ShowOutput=False)
+        RetVal = CoreTools.start_process(Cmd, show_output=False)
         time.sleep(5)
 
 def FindMissingFSCKModules():
@@ -90,7 +90,7 @@ def FindMissingFSCKModules():
         #Check the FSType is known and isn't swap.
         if DiskInfo[Disk]["FileSystem"] not in ("Unknown", "N/A"):
             #Check if this module is present.
-            if CoreTools.start_process("which fsck."+DiskInfo[Disk]["FileSystem"], ShowOutput=False) != 0:
+            if CoreTools.start_process("which fsck."+DiskInfo[Disk]["FileSystem"], show_output=False) != 0:
                 #Couldn't find it, add it to the failed list.
                 logger.warning("FSCKModules(): Couldn't find FSCK module fsck."+DiskInfo[Disk]["FileSystem"]+"! Adding it to the list of missing modules...")
                 FailedList.append("fsck."+DiskInfo[Disk]["FileSystem"])
@@ -109,7 +109,7 @@ def FindCheckableFileSystems():
     #Do setup.
     DoNotCheckList = []
     FileSystemsToCheck = {}
-    RootFS = CoreTools.GetPartitionMountedAt("/")
+    RootFS = CoreTools.get_partition_mounted_at("/")
 
     #Get a list of missing fsck modules (if any) based on the existing filesystems.
     MissingFSCKModules = FindMissingFSCKModules()
@@ -144,10 +144,10 @@ def FindCheckableFileSystems():
                 RemountPartitionAfter = False
 
             else:
-                #Unmount the FS temporarily, to avoid data corruption.
-                MountPoint = CoreTools.GetMountPointOf(Disk)
+                #unmount the FS temporarily, to avoid data corruption.
+                MountPoint = CoreTools.get_mount_point_of(Disk)
 
-                if CoreTools.Unmount(Disk) != 0:
+                if CoreTools.unmount(Disk) != 0:
                     logger.warning("FindCheckableFileSystems(): Failed to unmount "+Disk+", which is necessary for safe disk checking! Ignoring it...")
                     CheckTheFS = False
                     RemountPartitionAfter = False
@@ -233,7 +233,7 @@ def BackupUEFIFiles(MountPoint):
     logger.info("BackupUEFIFiles(): Backing up "+MountPoint+"/boot/efi/boot/boot*.efi...")
 
     if os.path.isfile(MountPoint+"/boot/efi/EFI/boot/boot*.efi"):
-        if CoreTools.start_process("cp -v "+MountPoint+"/boot/efi/EFI/boot/boot*.efi "+MountPoint+"/boot/efi/EFI/boot/bkpbootx64.efi", ShowOutput=False) != 0:
+        if CoreTools.start_process("cp -v "+MountPoint+"/boot/efi/EFI/boot/boot*.efi "+MountPoint+"/boot/efi/EFI/boot/bkpbootx64.efi", show_output=False) != 0:
             #Log and warn user if this went wrong.
             logger.error("BackupUEFIFiles(): Failed to backup failsafe UEFI boot file! Warning user and continuing...")
             DialogTools.ShowMsgDlg(Kind="error", Message="Error! WxFixBoot failed to save your UEFI boot files to the backup directory! This probably isn't very important. Click okay to continue.")
@@ -242,7 +242,7 @@ def BackupUEFIFiles(MountPoint):
     logger.info("BackupUEFIFiles(): Backing up Windows's boot files if they exist...")
 
     if os.path.isfile(MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi"):
-        if CoreTools.start_process("cp -v "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", ShowOutput=False) != 0:
+        if CoreTools.start_process("cp -v "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", show_output=False) != 0:
             #Log and warn user if this went wrong.
             logger.error("BackupUEFIFiles(): Failed to backup Windows's UEFI boot files! Warning user and continuing...")
             DialogTools.ShowMsgDlg(Kind="error", Message="Warning: WxFixBoot failed to backup Windows's UEFI boot files! This probably isn't very important. Click okay to continue.")
@@ -274,38 +274,38 @@ def ManageUEFIFiles(OS, MountPoint):
         #We need to copy both elilo.efi, and elilo.conf to UEFIBootDir.
         logger.info("ManageUEFIFiles(): Copying elilo.efi, elilo.conf and elilomenu.msg to "+UEFIBootDir+"...")
 
-        if CoreTools.start_process("cp -v "+SourceDir+"/elilo.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False) != 0:
+        if CoreTools.start_process("cp -v "+SourceDir+"/elilo.efi "+UEFIBootDir+"/bootx64.efi", show_output=False) != 0:
             logger.error("ManageUEFIFiles(): Failed to copy "+SourceDir+"/elilo.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
             DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
-        if CoreTools.start_process("cp -v "+SourceDir+"/elilo.conf "+UEFIBootDir+"/", ShowOutput=False) != 0:
+        if CoreTools.start_process("cp -v "+SourceDir+"/elilo.conf "+UEFIBootDir+"/", show_output=False) != 0:
             logger.error("ManageUEFIFiles(): Failed to copy "+SourceDir+"/elilo.conf to "+UEFIBootDir+"/! Attempting to continue anyway...")
             DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
-        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+UEFIBootDir+"/", ShowOutput=False) != 0:
+        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+UEFIBootDir+"/", show_output=False) != 0:
             logger.error("ManageUEFIFiles(): Failed to copy elilomenu.msg to "+UEFIBootDir+"! Attempting to continue anyway...")
             DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
-        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+SourceDir+"/", ShowOutput=False) != 0:
+        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+SourceDir+"/", show_output=False) != 0:
             logger.error("ManageUEFIFiles(): Failed to copy elilomenu.msg to "+SourceDir+"/! Attempting to continue anyway...")
             DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         #If we were previously using GRUB-EFI, remove its EFI files.
         if BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
-            if CoreTools.start_process("rm -v "+SourceDir+"/grub*.efi", ShowOutput=False) != 0:
+            if CoreTools.start_process("rm -v "+SourceDir+"/grub*.efi", show_output=False) != 0:
                 logger.warning("ManageUEFIFiles(): Failed to remove "+SourceDir+"/grub*.efi! Attempting to continue anyway...")
 
     elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
         #We need to copy grub*.efi to UEFIBootDir.
         logger.info("ManageUEFIFiles(): Copying grub*.efi to "+UEFIBootDir+"...")
 
-        if CoreTools.start_process("cp -v "+SourceDir+"/grub*.efi "+UEFIBootDir+"/bootx64.efi", ShowOutput=False) != 0:
+        if CoreTools.start_process("cp -v "+SourceDir+"/grub*.efi "+UEFIBootDir+"/bootx64.efi", show_output=False) != 0:
             logger.error("ManageUEFIFiles(): Failed to copy "+SourceDir+"/grub*.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
             DialogTools.ShowMsgDlg(Kind="warning", Message="WxFixBoot failed to copy the new bootloader's UEFI files to the failsafe directory! This is likely not a problem. Click okay to continue.")
 
         #If we were previously using ELILO, remove its EFI files.
         if BootloaderInfo[OS]["Bootloader"] == "ELILO":
-            if CoreTools.start_process("rm -v "+SourceDir+"/elilo*", ShowOutput=False) != 0:
+            if CoreTools.start_process("rm -v "+SourceDir+"/elilo*", show_output=False) != 0:
                 logger.warning("ManageUEFIFiles(): Failed to remove "+SourceDir+"/elilo*! Attempting to continue anyway...")
 
     logger.info("ManageUEFIFiles(): Done!")
