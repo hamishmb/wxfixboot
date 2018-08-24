@@ -36,6 +36,12 @@ from .. import dialogtools as DialogTools
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+#Silence pylint errors about missing global dictionaries.
+DiskInfo = {}
+SystemInfo = {}
+BootloaderInfo = {}
+OSInfo = {}
+
 def CheckDepends():
     """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
     logger.info("MainStartupTools(): CheckDepends(): Checking dependencies...")
@@ -135,7 +141,7 @@ def MountCoreFS():
     logger.info("MountCoreFS(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
 
     #Don't worry about this error when running on Parted Magic.
-    if CoreTools.start_process("mount -avw") != 0 and SystemInfo["OnPartedMagic"] == False:
+    if CoreTools.start_process("mount -avw") != 0 and SystemInfo["OnPartedMagic"] is False:
         logger.critical("MountCoreFS(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
         CoreTools.emergency_exit("Failed to re-mount your filesystems after checking them!")
 
@@ -281,7 +287,7 @@ def GetOSs():
                     RootFSIsAlias = False
 
             if partition == RootFS or RootFSIsAlias:
-                Cmd =  "python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
+                Cmd = "python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
                 apt_cmd = "which apt-get"
                 yum_cmd = "which yum"
                 Chroot = False
@@ -314,12 +320,12 @@ def GetOSs():
                 OSName = CoreStartupTools.get_os_name_with_lsb(partition=partition, mount_point=MountPoint, is_current_os=is_current_os)
 
                 #If we really have to, ask the user.
-                if OSName == None:
+                if OSName is None:
                     logger.warning("GetOSs(): Asking user for OS name instead...")
                     OSName = CoreStartupTools.ask_for_os_name(partition=partition, is_current_os=is_current_os)
 
             #Look for APT.
-            PackageManager = CoreStartupTools.determine_package_manager(apt_cmd=apt_cmd, yum_cmd=yum_cmd) 
+            PackageManager = CoreStartupTools.determine_package_manager(apt_cmd=apt_cmd, yum_cmd=yum_cmd)
 
             #Also check if CoreStartupTools.ask_for_os_name was used to determine the name. If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
             if OSName != None and os_architecture != None and PackageManager != "Unknown":
@@ -332,7 +338,7 @@ def GetOSs():
                 OSInfo[OSName]["PackageManager"] = PackageManager
                 OSInfo[OSName]["RawFSTabInfo"], OSInfo[OSName]["EFIPartition"], OSInfo[OSName]["BootPartition"] = CoreStartupTools.get_fstab_info(MountPoint, OSName)
 
-                if Chroot == False:
+                if Chroot is False:
                     SystemInfo["CurrentOS"] = OSInfo[OSName].copy()
 
             if Chroot:
@@ -352,15 +358,15 @@ def GetOSs():
         if OS[0] not in ("Windows", "Mac"):
             LinuxOSs.append(OSName)
 
-    if len(LinuxOSs) >= 1:
-        logger.debug("GetOSs(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
-        return OSInfo, SystemInfo
-
-    else:
+    if len(LinuxOSs) < 1:
         logger.critical("GetOSs(): No Linux installations found! If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
 
         #Exit.
         CoreTools.emergency_exit("You don't appear to have any Linux installations on your hard disks. If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
+
+    #Otherwise...
+    logger.debug("GetOSs(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
+    return OSInfo, SystemInfo
 
 def GetFirmwareType():
     """Get the firmware type"""
@@ -428,7 +434,6 @@ def GetBootloaders():
         if not OSInfo[OS]["IsCurrentOS"]:
             #Mount the OS's partition.
             MountPoint = "/tmp/wxfixboot/mountpoints"+OSInfo[OS]["Partition"]
-            Chroot = True
 
             if CoreTools.mount_partition(OSInfo[OS]["Partition"], MountPoint) != 0:
                 logger.error("GetBootloaders(): Failed to mount "+OS+"'s partition! Skipping bootloader detection for this OS.")
@@ -442,7 +447,6 @@ def GetBootloaders():
 
         else:
             MountPoint = ""
-            Chroot = False
 
         #Mount a /boot partition if it exists.
         if OSInfo[OS]["BootPartition"] != "Unknown":
@@ -469,7 +473,7 @@ def GetBootloaders():
         #Look for bootloaders.
         BootloaderInfo[OS] = {}
         BootloaderInfo[OS]["OSName"] = OS
-        BootloaderInfo[OS]["Bootloader"], BootloaderInfo[OS]["AvailableBootloaders"] = CoreStartupTools.LookForBootloadersOnPartition(OS, OSInfo[OS]["PackageManager"], MountPoint, not OSInfo[OS]["IsCurrentOS"])
+        BootloaderInfo[OS]["Bootloader"], BootloaderInfo[OS]["AvailableBootloaders"] = CoreStartupTools.look_for_bootloaders_on_partition(OS, OSInfo[OS]["PackageManager"], MountPoint, not OSInfo[OS]["IsCurrentOS"])
 
         BootloaderInfo[OS]["Timeout"], BootloaderInfo[OS]["GlobalKernelOptions"], BootloaderInfo[OS]["BootDisk"], BootloaderInfo[OS]["BLSpecificDefaultOS"], BootloaderInfo[OS]["DefaultOS"] = (10, "Unknown", "Unknown", "Unknown", "Unknown")
         BootloaderInfo[OS]["MenuEntries"] = {OS: {}}
@@ -479,7 +483,7 @@ def GetBootloaders():
             BootloaderInfo[OS]["BootDisk"] = OSInfo[OS]["EFIPartition"]
 
         if BootloaderInfo[OS]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(MountPoint+"/etc/default/grub"):
-            GRUBDir, BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", mount_point=MountPoint)[0:2]
+            GRUBDir, BootloaderInfo[OS]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=MountPoint)[0:2]
 
             #Get GRUB2's config.
             #If we're using fedora, always look for grubenv in the EFI partition (the grubenv symlink is in /boot/grub2 but it doesn't work when we're chrooting).
@@ -579,7 +583,7 @@ def GetBootloaders():
                 logger.error("GetBootloaders(): Failed to unmount "+OS+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
 
     #Get default OSs.
-    for OS in OSInfo.keys():
+    for OS in OSInfo:
         #Set sensible defaults for Windows.
         if "Windows" in OS:
             BootloaderInfo[OS]["DefaultBootDevice"] = OSInfo[OS]["Partition"]
@@ -622,7 +626,7 @@ def FinalCheck():
     UnmodifyableOSs = []
 
     for OS in BootloaderInfo:
-        if BootloaderInfo[OS]["IsModifyable"] == False:
+        if BootloaderInfo[OS]["IsModifyable"] is False:
             UnmodifyableOSs.append(OS+", because "+BootloaderInfo[OS]["Comments"])
 
     if UnmodifyableOSs != []:
