@@ -57,7 +57,7 @@ def SetGRUB2Config(OS, filetoopen, BootloaderTimeout, KernelOptions):
     #Log if we couldn't match them.
     if BLSpecificDefaultOS == "Unknown":
         logger.warning("SetGRUB2Config(): Couldn't match! We will instead pick the 1st menu entry. Warning user...")
-        DialogTools.ShowMsgDlg(Message="Couldn't match the default OS you picked to any that "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" has detected! This doesn't matter, so instead, the first menu entry will be the default. Click okay to continue...")
+        DialogTools.show_msg_dlg(message="Couldn't match the default OS you picked to any that "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" has detected! This doesn't matter, so instead, the first menu entry will be the default. Click okay to continue...")
         BLSpecificDefaultOS = "0"
 
     #Open the file in read mode, so we can find the new config that needs setting. Also, use a list to temporarily store the modified lines.
@@ -345,7 +345,7 @@ def MakeLILOOSEntries(OS, filetoopen, MountPoint, KernelOptions):
             #We can't make an entry for this OS. Warn the user.
             logger.warning("MakeLILOOSEntries(): Couldn't find /vmlinuz or /initrd.img for "+OS+"! Telling the user we can't make an entry...")
 
-            Result = DialogTools.ShowMsgDlg(Message="Warning: The shortcut to the latest kernel or initrd weren't found for "+OS+"! Unfortunately, this means WxFixBoot can't make a bootloader entry for this OS. Click okay to continue.", Kind="Warning")
+            Result = DialogTools.show_msg_dlg(message="Warning: The shortcut to the latest kernel or initrd weren't found for "+OS+"! Unfortunately, this means WxFixBoot can't make a bootloader entry for this OS. Click okay to continue.", kind="Warning")
 
             continue
 
@@ -396,11 +396,11 @@ def MakeLILOOSEntries(OS, filetoopen, MountPoint, KernelOptions):
         if len(CompletedEntriesList) <= 0:
             #Something went wrong here! No OSs appear to have been added to the list. Warn the user.
             logger.error("MakeLILOOSEntries(): CompletedEntriesList is empty! This suggests that no OSs have been added to the list! Warn the user, and skip this part of the operation.")
-            DialogTools.ShowMsgDlg(Kind="error", Message="No Operating Systems have had entries created for them! If you canceled creating the entries, please reboot WxFixBoot and select only the option 'Update Bootloader Config'. If you didn't do that, and WxFixBoot either couldn't create them, or you see this error with no previous warnings, you may have to create your own bootloader config. If you wish to, you can email me directly via my Launchpad page (www.launchpad.net/~hamishmb) with the contents of /tmp/wxfixboot.log and I'll help you do that.")
+            DialogTools.show_msg_dlg(kind="error", message="No Operating Systems have had entries created for them! If you canceled creating the entries, please reboot WxFixBoot and select only the option 'Update Bootloader Config'. If you didn't do that, and WxFixBoot either couldn't create them, or you see this error with no previous warnings, you may have to create your own bootloader config. If you wish to, you can email me directly via my Launchpad page (www.launchpad.net/~hamishmb) with the contents of /tmp/wxfixboot.log and I'll help you do that.")
 
         else:
             #Ask the user for a new default OS.
-            DefaultOSName = DialogTools.ShowChoiceDlg(Message="The OS you previously selected as the default wasn't added to the boot menu. Please select a new OS you want to use as "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s Default OS. You are setting configuration for "+OS, Title="WxFixBoot - Select Default OS", Choices=CompletedEntriesList)
+            DefaultOSName = DialogTools.show_choice_dlg(message="The OS you previously selected as the default wasn't added to the boot menu. Please select a new OS you want to use as "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s Default OS. You are setting configuration for "+OS, title="WxFixBoot - Select Default OS", choicesCompletedEntriesList)
             logger.info("MakeLILOOSEntries(): User selected new default OS: "+DefaultOSName+"...")
 
     #Make the entry for the default OS.

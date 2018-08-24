@@ -100,7 +100,7 @@ def ManageBootloader(OS):
                 if Operation[-1] == "e":
                     Operation = Operation[0:-1]
 
-                Result = DialogTools.ShowYesNoDlg(Message="An error occured while "+Operation+"ing "+OS+"'s bootloader! This operating system may currently be in an unbootable state. What do you want to do? Click Yes to try again, and click No to cancel bootloader operations for this OS.", Title="WxFixBoot - Error "+Operation+"ing Bootloader!", Buttons=("Try Again", "Skip Bootloader Operations For This OS"))
+                Result = DialogTools.show_yes_no_dlg(message="An error occured while "+Operation+"ing "+OS+"'s bootloader! This operating system may currently be in an unbootable state. What do you want to do? Click Yes to try again, and click No to cancel bootloader operations for this OS.", title="WxFixBoot - Error "+Operation+"ing Bootloader!", buttons=("Try Again", "Skip Bootloader Operations For This OS"))
 
                 if Result:
                     logger.info("ManageBootloader(): Trying again and checking internet connection again...")
@@ -144,20 +144,20 @@ def RemoveOldBootloader(OS):
             #Mount the partition using the global mount function.
             if CoreTools.mount_partition(partition=OSInfo[OS]["Partition"], mount_point=MountPoint) != 0:
                 logger.error("RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warning the user and giving up...")
-                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"! Giving up. You will be prompted to try again if you wish.")
+                DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount the partition containing "+OS+"! Giving up. You will be prompted to try again if you wish.")
                 return False
 
         #Set up chroot.
         if CoreTools.setup_chroot(MountPoint) != 0:
             logger.error("RemoveOldBootloader(): Failed to set up chroot at "+MountPoint+"! Giving up...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set up a chroot for "+OS+"! Giving up. You will be prompted to try again if you wish.")
+            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to set up a chroot for "+OS+"! Giving up. You will be prompted to try again if you wish.")
             return False
 
     #Mount a /boot partition if it exists.
     if OSInfo[OS]["BootPartition"] != "Unknown":
         if CoreTools.mount_partition(OSInfo[OS]["BootPartition"], MountPoint+"/boot") != 0:
             logger.error("RemoveOldBootloader(): Failed to mount "+OS+"'s /boot partition! Skipping bootloader removal for this OS.")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! Giving up. You will be prompted to try again if you wish.")
+            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! Giving up. You will be prompted to try again if you wish.")
 
             if not OSInfo[OS]["IsCurrentOS"]:
                 CoreTools.teardown_chroot(MountPoint)
@@ -169,7 +169,7 @@ def RemoveOldBootloader(OS):
     if OSInfo[OS]["EFIPartition"] != "Unknown":
         if CoreTools.mount_partition(partition=OSInfo[OS]["EFIPartition"], mount_point=MountPoint+"/boot/efi") != 0:
             logger.error("RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["EFIPartition"]+"! to "+MountPoint+"/boot/efi! Aborting bootloader installation and warning user...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to mount the partition containing "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
+            DialogTools.show_msg_dlg(kind="error", message="WxfixBoot failed to mount the partition containing "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
             return False
 
     #Wait until no other application is using APT/YUM.
@@ -235,7 +235,7 @@ def RemoveOldBootloader(OS):
 
     if Retval != 0:
         logger.error("RemoveOldBootloader(): Failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! Warning user...")
-        DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"!")
+        DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"!")
         return False
 
     #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
@@ -263,13 +263,13 @@ def RemoveOldBootloader(OS):
     if Retval != 0:
         #Something went wrong! Log it and notify the user.
         logger.error("RemoveOldBootloader(): Failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! We'll continue anyway. Warn the user.")
-        DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that "+OS+" boots correctly after WxFixBoot finishes its operations. Reinstalling the bootloader again afterwards is recommended.")
+        DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to remove "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that "+OS+" boots correctly after WxFixBoot finishes its operations. Reinstalling the bootloader again afterwards is recommended.")
 
     #Log and notify the user that we're finished removing bootloaders.
     logger.info("RemoveOldBootloader(): Finished removing "+BootloaderInfo[OS]["Bootloader"]+"...")
     wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished removing "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"......")
     wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
-    DialogTools.ShowMsgDlg(Kind="info", Message="Finished removing "+BootloaderInfo[OS]["Bootloader"]+"! WxFixBoot will now install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" to "+OS+".")
+    DialogTools.show_msg_dlg(kind="info", message="Finished removing "+BootloaderInfo[OS]["Bootloader"]+"! WxFixBoot will now install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" to "+OS+".")
     return True
 
 def InstallNewBootloader(OS):
@@ -296,20 +296,20 @@ def InstallNewBootloader(OS):
         if unmountAfter:
             if CoreTools.mount_partition(partition=OSInfo[OS]["Partition"], mount_point=MountPoint) != 0:
                 logger.error("InstallNewBootloader(): Failed to mount "+OSInfo[OS]["Partition"]+"! Warn the user and skip this OS.")
-                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. Please close any open programs, then try again when prompted.")
+                DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount the partition containing "+OS+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. Please close any open programs, then try again when prompted.")
                 return False
 
         #Set up chroot.
         if CoreTools.setup_chroot(mount_point=MountPoint) != 0:
             logger.error("InstallNewBootloader(): Failed to set up chroot at "+MountPoint+"! Warning user and giving up...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set up a chroot for "+OS+"! Giving up. You will be prompted to try again if you wish.")
+            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to set up a chroot for "+OS+"! Giving up. You will be prompted to try again if you wish.")
             return False
 
         #If there's a seperate /boot partition for this OS, make sure it's mounted.
         if OSInfo[OS]["BootPartition"] != "Unknown":
             if CoreTools.mount_partition(partition=OSInfo[OS]["BootPartition"], mount_point=MountPoint+"/boot") != 0:
                 logger.error("RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["BootPartition"]+"! Warn the user and skip this OS.") 
-                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! Giving up. You will be prompted to try again if you wish.")
+                DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount the partition containing "+OS+"'s /boot partition! Giving up. You will be prompted to try again if you wish.")
                 return False
 
     #Update the package lists.
@@ -324,7 +324,7 @@ def InstallNewBootloader(OS):
 
     if CoreTools.start_process(Cmd) not in (0,100):
         logger.error("InstallNewBootloader(): Failed to Update the Package Information! Continuing anyway...")
-        DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to update "+OS+"'s package information! Giving up. You will be prompted to try again if you wish.")
+        DialogTools.show_msg_dlg(kind="error", message="WxfixBoot failed to update "+OS+"'s package information! Giving up. You will be prompted to try again if you wish.")
         return False
 
     wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...")
@@ -356,7 +356,7 @@ def InstallNewBootloader(OS):
         #Mount the UEFI partition at MountPoint/boot/efi.
         if CoreTools.mount_partition(partition=OSInfo[OS]["EFIPartition"], mount_point=MountPoint+"/boot/efi") != 0:
             logger.error("InstallNewBootloader(): Failed to mount "+OSInfo[OS]["EFIPartition"]+" to "+MountPoint+"/boot/efi! Aborting bootloader installation and warning user...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to mount the partition containing "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
+            DialogTools.show_msg_dlg(kind="error", message="WxfixBoot failed to mount the partition containing "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
             return False
 
         if OSInfo[OS]["PackageManager"] == "apt-get":
@@ -371,7 +371,7 @@ def InstallNewBootloader(OS):
         #unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
         if CoreTools.unmount(OSInfo[OS]["EFIPartition"]) != 0:
             logger.error("InstallNewBootloader(): Failed to unmount the EFI partition! Giving up and warning user...")
-            DialogTools.ShowMsgDlg(Message="Couldn't unmount "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.", Kind="error")
+            DialogTools.show_msg_dlg(message="Couldn't unmount "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.", kind="error")
             return False
 
         if UseChroot:
@@ -390,7 +390,7 @@ def InstallNewBootloader(OS):
 
     if Retval != 0:
         logger.error("InstallNewBootloader(): Failed to install new bootloader. Warn user...")
-        DialogTools.ShowMsgDlg(Kind="error", Message="WxfixBoot failed to install "+OS+"'s new bootloader! Continuing anyway...")
+        DialogTools.show_msg_dlg(kind="error", message="WxfixBoot failed to install "+OS+"'s new bootloader! Continuing anyway...")
 
     #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
     if OSInfo[OS]["EFIPartition"] != "Unknown":
@@ -416,7 +416,7 @@ def InstallNewBootloader(OS):
     if Retval != 0:
         #Something went wrong! Log it and notify the user.
         logger.error("InstallNewBootloader(): Failed to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"! This may mean the system (or this OS) is now unbootable! Warning the user and asking to try again.")
-        DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"! This may leave this OS, or your system, in an unbootable state. You will now be prompted to try again.")
+        DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to install "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"! This may leave this OS, or your system, in an unbootable state. You will now be prompted to try again.")
         return False
 
     wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished installing "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" in "+OS+"...###\n")
@@ -458,7 +458,7 @@ def SetNewBootloaderConfig(OS):
         #Set up chroot.
         if CoreTools.setup_chroot(mount_point=MountPoint) != 0:
             logger.error("SetNewBootloaderConfig(): Failed to set up chroot at "+MountPoint+"! Giving up...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to set up a chroot for "+OS+"! Giving up. You will be prompted to try again if you wish.")
+            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to set up a chroot for "+OS+"! Giving up. You will be prompted to try again if you wish.")
             return False
 
         wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
@@ -478,7 +478,7 @@ def SetNewBootloaderConfig(OS):
     if OSInfo[OS]["EFIPartition"] != "Unknown":
         if CoreTools.mount_partition(partition=OSInfo[OS]["EFIPartition"], mount_point=MountPoint+"/boot/efi") != 0:
             logger.error("RemoveOldBootloader(): Failed to mount "+OSInfo[OS]["EFIPartition"]+"! Warn the user and skip this OS.") 
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount the partition containing "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
+            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount the partition containing "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
             return False
 
     #On GRUB2, get the new menuentries so we can set the default OS.
@@ -503,7 +503,7 @@ def SetNewBootloaderConfig(OS):
             #Mount the UEFI partition at MountPoint/boot/efi.
             if CoreTools.mount_partition(partition=OSInfo[OS]["EFIPartition"], mount_point=MountPoint+"/boot/efi") != 0:
                 logger.error("SetNewBootloaderConfig(): Couldn't mount EFI partition "+OSInfo[OS]["EFIPartition"]+" to install bootloader! Giving up and warning user...")
-                DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to mount "+OS+"'s EFI partition! You will now be promtped to give up or try again.")
+                DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount "+OS+"'s EFI partition! You will now be promtped to give up or try again.")
                 return False
 
             #Now Install GRUB-UEFI to the UEFI Partition.
@@ -638,7 +638,7 @@ def SetNewBootloaderConfig(OS):
 
         if CoreTools.unmount(OSInfo[OS]["EFIPartition"]) != 0:
             logger.error("SetNewBootloaderConfig(): Failed to unmount "+OS+"'s EFI partition! Waning user and prompting to try again...")
-            DialogTools.ShowMsgDlg(Message="Couldn't unmount "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.", Kind="error")
+            DialogTools.show_msg_dlg(message="Couldn't unmount "+OS+"'s EFI partition! Giving up. You will be prompted to try again if you wish.", kind="error")
             return False
 
         #Update chroot mtab if needed.

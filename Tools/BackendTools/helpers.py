@@ -169,7 +169,7 @@ def FindCheckableFileSystems():
     #Report uncheckable partitions.
     if DoNotCheckList != []:
         #Some filesystems will not be checked. Tell the user.
-        DialogTools.ShowMsgDlg(Kind="info", Message="The following filesystems will not be checked:\n\n"+'\n'.join(DoNotCheckList)+".\n\nThe most likely reason for this is that some of the filesystems are in use, or that the required filesystem checkers weren't found. WxFixBoot will now continue to check the remaining filesystems.")
+        DialogTools.show_msg_dlg(kind="info", message="The following filesystems will not be checked:\n\n"+'\n'.join(DoNotCheckList)+".\n\nThe most likely reason for this is that some of the filesystems are in use, or that the required filesystem checkers weren't found. WxFixBoot will now continue to check the remaining filesystems.")
 
     logger.info("FindCheckableFileSystems(): Done! Filesystems that won't be checked: "+'\n'.join(DoNotCheckList)+"...")
     return FileSystemsToCheck
@@ -236,7 +236,7 @@ def BackupUEFIFiles(MountPoint):
         if CoreTools.start_process("cp -v "+MountPoint+"/boot/efi/EFI/boot/boot*.efi "+MountPoint+"/boot/efi/EFI/boot/bkpbootx64.efi", show_output=False) != 0:
             #Log and warn user if this went wrong.
             logger.error("BackupUEFIFiles(): Failed to backup failsafe UEFI boot file! Warning user and continuing...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="Error! WxFixBoot failed to save your UEFI boot files to the backup directory! This probably isn't very important. Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="error", message="Error! WxFixBoot failed to save your UEFI boot files to the backup directory! This probably isn't very important. Click okay to continue.")
 
     #Now do Windows's files, if they exist.
     logger.info("BackupUEFIFiles(): Backing up Windows's boot files if they exist...")
@@ -245,7 +245,7 @@ def BackupUEFIFiles(MountPoint):
         if CoreTools.start_process("cp -v "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", show_output=False) != 0:
             #Log and warn user if this went wrong.
             logger.error("BackupUEFIFiles(): Failed to backup Windows's UEFI boot files! Warning user and continuing...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="Warning: WxFixBoot failed to backup Windows's UEFI boot files! This probably isn't very important. Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="error", message="Warning: WxFixBoot failed to backup Windows's UEFI boot files! This probably isn't very important. Click okay to continue.")
 
     logger.info("BackupUEFIFiles(): Done!")
 
@@ -276,19 +276,19 @@ def ManageUEFIFiles(OS, MountPoint):
 
         if CoreTools.start_process("cp -v "+SourceDir+"/elilo.efi "+UEFIBootDir+"/bootx64.efi", show_output=False) != 0:
             logger.error("ManageUEFIFiles(): Failed to copy "+SourceDir+"/elilo.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         if CoreTools.start_process("cp -v "+SourceDir+"/elilo.conf "+UEFIBootDir+"/", show_output=False) != 0:
             logger.error("ManageUEFIFiles(): Failed to copy "+SourceDir+"/elilo.conf to "+UEFIBootDir+"/! Attempting to continue anyway...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+UEFIBootDir+"/", show_output=False) != 0:
             logger.error("ManageUEFIFiles(): Failed to copy elilomenu.msg to "+UEFIBootDir+"! Attempting to continue anyway...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+SourceDir+"/", show_output=False) != 0:
             logger.error("ManageUEFIFiles(): Failed to copy elilomenu.msg to "+SourceDir+"/! Attempting to continue anyway...")
-            DialogTools.ShowMsgDlg(Kind="error", Message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         #If we were previously using GRUB-EFI, remove its EFI files.
         if BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
@@ -301,7 +301,7 @@ def ManageUEFIFiles(OS, MountPoint):
 
         if CoreTools.start_process("cp -v "+SourceDir+"/grub*.efi "+UEFIBootDir+"/bootx64.efi", show_output=False) != 0:
             logger.error("ManageUEFIFiles(): Failed to copy "+SourceDir+"/grub*.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
-            DialogTools.ShowMsgDlg(Kind="warning", Message="WxFixBoot failed to copy the new bootloader's UEFI files to the failsafe directory! This is likely not a problem. Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="warning", message="WxFixBoot failed to copy the new bootloader's UEFI files to the failsafe directory! This is likely not a problem. Click okay to continue.")
 
         #If we were previously using ELILO, remove its EFI files.
         if BootloaderInfo[OS]["Bootloader"] == "ELILO":

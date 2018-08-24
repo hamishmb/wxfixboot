@@ -97,7 +97,7 @@ def CheckForLiveDisk():
     #Ask the user if we're running on a live disk.
     else:
         logger.info("MainStartupTools(): CheckForLiveDisk(): Asking the user if we're running on live media...")
-        SystemInfo["IsLiveDisk"] = DialogTools.ShowYesNoDlg(Message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", Title="WxFixBoot - Live Media?")
+        SystemInfo["IsLiveDisk"] = DialogTools.show_yes_no_dlg(message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", title="WxFixBoot - Live Media?")
         SystemInfo["OnPartedMagic"] = False
         logger.info("MainStartupTools(): CheckForLiveDisk(): Result: "+unicode(SystemInfo["IsLiveDisk"]))
 
@@ -109,7 +109,7 @@ def unmountAllFS():
     """unmount any unnecessary filesystems, to prevent data corruption."""
     #Warn about removing devices.
     logger.info("unmountAllFS(): unmounting all Filesystems...")
-    DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot is about to gather device information. After this point, you must not remove/add any devices from/to your computer, so do that now if you wish to.")
+    DialogTools.show_msg_dlg(kind="info", message="WxFixBoot is about to gather device information. After this point, you must not remove/add any devices from/to your computer, so do that now if you wish to.")
 
     #Attempt unmount of all filesystems.
     #logger.debug("unmountAllFS(): Running 'unmount -ad'...")
@@ -404,7 +404,7 @@ def GetFirmwareType():
             #It's UEFI.
             logger.warning("GetFirmwareType(): Detected Firmware Type as UEFI, but couldn't find UEFI variables!")
             SystemInfo["FirmwareType"] = "UEFI"
-            DialogTools.ShowMsgDlg(Kind="warning", Message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
+            DialogTools.show_msg_dlg(kind="warning", message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
 
 def GetBootloaders():
     """Find all bootloaders (for each OS), and gather some information about them"""
@@ -513,7 +513,7 @@ def GetBootloaders():
         if BootloaderInfo[OS]["GlobalKernelOptions"] == "Unknown":
             BootloaderInfo[OS]["GlobalKernelOptions"] = "quiet splash nomodeset"
             logger.warning("GetBootloaders(): Couldn't find "+OS+"'s global kernel options! Assuming 'quiet splash nomodeset'...")
-            DialogTools.ShowMsgDlg(Message="Couldn't find "+OS+"'s default kernel options! Loading safe defaults instead. Click okay to continue.", Kind="warning")
+            DialogTools.show_msg_dlg(message="Couldn't find "+OS+"'s default kernel options! Loading safe defaults instead. Click okay to continue.", kind="warning")
 
         #Determine if we can modify this OS from our current one.
         if OSInfo[OS]["Arch"] == SystemInfo["CurrentOSArch"] or (OSInfo[OS]["Arch"] == "i386" and SystemInfo["CurrentOSArch"] == "x86_64"):
@@ -626,7 +626,7 @@ def FinalCheck():
             UnmodifyableOSs.append(OS+", because "+BootloaderInfo[OS]["Comments"])
 
     if UnmodifyableOSs != []:
-        DialogTools.ShowMsgDlg(Message="Some of the OSs found on your system cannot be modified! These are:\n\n"+'\n'.join(UnmodifyableOSs)+"\n\nClick okay to continue.")
+        DialogTools.show_msg_dlg(message="Some of the OSs found on your system cannot be modified! These are:\n\n"+'\n'.join(UnmodifyableOSs)+"\n\nClick okay to continue.")
 
     #Warn if any bootloaders need reinstalling.
     NeedReinstalling = []
@@ -636,4 +636,4 @@ def FinalCheck():
             NeedReinstalling.append(OS)
 
     if NeedReinstalling != []:
-        DialogTools.ShowMsgDlg(Message="Some of the OSs found on your system have damaged bootloaders! These are:\n\n"+'\n'.join(NeedReinstalling)+"\n\nPlease reinstall the bootloaders for these operating systems using \"Bootloader Options\".\n\nClick okay to continue.")
+        DialogTools.show_msg_dlg(message="Some of the OSs found on your system have damaged bootloaders! These are:\n\n"+'\n'.join(NeedReinstalling)+"\n\nPlease reinstall the bootloaders for these operating systems using \"Bootloader Options\".\n\nClick okay to continue.")

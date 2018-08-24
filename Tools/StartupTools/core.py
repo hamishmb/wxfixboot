@@ -461,11 +461,11 @@ def AskForOSName(Partition, OSArch, IsCurrentOS):
     logger.info("AskForOSName(): Asking the user for the name of the OS in "+Partition+"...")
 
     if IsCurrentOS:
-        DialogTools.ShowMsgDlg(Kind="warning", Message="WxFixBoot couldn't find the name of the current OS. Please name it so that WxFixBoot can function correctly.")
+        DialogTools.show_msg_dlg(kind="warning", message="WxFixBoot couldn't find the name of the current OS. Please name it so that WxFixBoot can function correctly.")
         Result = True
 
     else:
-        Result = DialogTools.ShowYesNoDlg(Message="There is a Linux operating system on partition: "+Partition+" but WxFixBoot couldn't find its name. It isn't the currently running OS. Do you want to name it and include it in the list? Only click yes if you believe it is a recent OS. Click Yes if you want to name it, otherwise click No", Buttons=("Name it", "Don't name it."))
+        Result = DialogTools.show_yes_no_dlg(message="There is a Linux operating system on partition: "+Partition+" but WxFixBoot couldn't find its name. It isn't the currently running OS. Do you want to name it and include it in the list? Only click yes if you believe it is a recent OS. Click Yes if you want to name it, otherwise click No", buttons=("Name it", "Don't name it."))
 
     if Result == False:
         logger.info("AskForOSName(): User didn't want to name the OS in "+Partition+"! Ignoring it...")
@@ -475,6 +475,6 @@ def AskForOSName(Partition, OSArch, IsCurrentOS):
     else:
         logger.debug("AskForOSName(): User reported recent Linux OS in "+Partition+" (or OS is current OS). Asking name of OS...")
         #User reported that an OS is here.
-        Result = DialogTools.ShowTextEntryDlg(Message="Please enter the name of the operating system that is on "+Partition+".\nThe name you specify will be used later in the program", Title="WxFixBoot - Enter OS Name")
+        Result = DialogTools.show_text_entry_dlg(message="Please enter the name of the operating system that is on "+Partition+".\nThe name you specify will be used later in the program", title="WxFixBoot - Enter OS Name")
 
         return Result

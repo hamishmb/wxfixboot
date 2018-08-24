@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=logging-not-lazy
+#
+# Reason (logging-not-lazy): This is a more readable way of logging.
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
@@ -23,18 +27,18 @@ from __future__ import unicode_literals
 
 #Import modules.
 import time
-import wx
 import logging
+import wx
 
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 #Global declarations.
-DlgClosed = False
-DlgResult = False
+DLGCLOSED = False
+DLGRESULT = False
 
-def ShowThreadMsgDlg(msg, kind="info"):
+def show_thread_msg_dlg(msg, kind="info"):
     """Shows a message dialog from a thread upon instruction"""
     logger.debug("ShowThreadMessageDlg(): Showing Thread Message Dialog...")
     if kind == "info":
@@ -53,194 +57,196 @@ def ShowThreadMsgDlg(msg, kind="info"):
     dlg.ShowModal()
     dlg.Destroy()
 
-    global DlgClosed
-    DlgClosed = True
+    global DLGCLOSED
+    DLGCLOSED = True
 
     logger.debug("ShowThreadMessageDlg(): Thread Message Dialog has been closed by user.")
 
-def ShowMsgDlg(Message, Kind="info"):
+def show_msg_dlg(message, kind="info"):
     """Handle showing thread message dialogs, reducing code duplication and complications and errors.
-    It can be used like this: DialogTools().ShowMsgDlg(Kind=<kind>, Message=<message>).
-    Kind is one of 'info', 'warning' or 'error'.
-    Message is whatever you want the dialog to say.
+    It can be used like this: DialogTools().show_msg_dlg(kind=<kind>, message=<message>).
+    kind is one of 'info', 'warning' or 'error'.
+    message is whatever you want the dialog to say.
     """
-    global DlgClosed
-    DlgClosed = None
-    wx.CallAfter(ShowThreadMsgDlg, kind=Kind, msg=Message)
+    global DLGCLOSED
+    DLGCLOSED = None
+    wx.CallAfter(show_thread_msg_dlg, kind=kind, msg=message)
 
     #Trap the thread until the user responds.
-    while DlgClosed == None:
+    while DLGCLOSED is None:
         time.sleep(0.5)
 
-def ShowThreadYesNoDlg(msg, title="WxFixBoot - Question", buttons=(None, None)):
+def show_thread_yes_no_dlg(msg, title="WxFixBoot - Question", buttons=(None, None)):
     """Shows a yes/no dialog from a thread upon instruction"""
-    logger.debug("ShowThreadYesNoDlg(): Showing Thread Yes/No Dialog...")
+    logger.debug("show_thread_yes_no_dlg(): Showing Thread Yes/No Dialog...")
     dlg = wx.MessageDialog(ParentWindow.Panel, msg, title, wx.YES_NO | wx.ICON_QUESTION)
 
-    global DlgResult
+    global DLGRESULT
 
-    #Try to set custom buttons labels if needed (handle attribute error on wx 2.8.11).
+    #Try to set custom button labels if needed (handle attribute error on wx 2.8.11).
     if buttons != (None, None):
         try:
             if dlg.SetYesNoLabels(buttons[0], buttons[1]):
                 #If it worked get rid of the last unneccessary sentence in the message.
+                #(A click yes for X, click no for Y sentence).
                 dlg.SetMessage(' '.join(msg.split(".")[0:-1]))
 
-        except AttributeError: pass
+        except AttributeError:
+            pass
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_YES:
         dlg.Destroy()
-        DlgResult = True
+        DLGRESULT = True
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        DLGRESULT = False
 
-    logger.debug("ShowThreadYesNoDlg(): Result of Thread Yes/No Dialog was: "+unicode(DlgResult))
+    logger.debug("show_thread_yes_no_dlg(): Result of Thread Yes/No Dialog was: "+unicode(DLGRESULT))
 
-def ShowYesNoDlg(Message, Title="WxFixBoot - Question", Buttons=(None, None)):
+def show_yes_no_dlg(message, title="WxFixBoot - Question", buttons=(None, None)):
     """Handle showing thread yes/no dialogs, reducing code duplication and compilications and errors.
-    It can be used like this: DialogTools().ShowYesNoDlg(Message=<message>, Title=<title>)
-    Message is whatever you want the dialog to say.
-    Buttons is the text for the button labels.
-    Title sets the title bar text on the dialog.
+    It can be used like this: DialogTools().show_yes_no_dlg(message=<message>, title=<title>)
+    message is whatever you want the dialog to say.
+    buttons is the text for the button labels.
+    title sets the title bar text on the dialog.
     """
-    global DlgResult
-    DlgResult = None
+    global DLGRESULT
+    DLGRESULT = None
 
-    wx.CallAfter(ShowThreadYesNoDlg, msg=Message, title=Title, buttons=Buttons)
+    wx.CallAfter(show_thread_yes_no_dlg, msg=message, title=title, buttons=buttons)
 
     #Trap the thread until the user responds.
-    while DlgResult == None:
+    while DLGRESULT is None:
         time.sleep(0.5)
 
-    return DlgResult
+    return DLGRESULT
 
-def ShowThreadChoiceDlg(msg, choices, title="WxFixBoot - Select an Option"):
+def show_thread_choice_dlg(msg, choices, title="WxFixBoot - Select an Option"):
     """Shows a choice dialog from a thread upon instruction"""
-    global DlgResult
+    global DLGRESULT
 
-    logger.debug("ShowThreadChoiceDlg(): Showing Thread Choice Dialog...")
+    logger.debug("show_thread_choice_dlg(): Showing Thread Choice Dialog...")
     dlg = wx.SingleChoiceDialog(ParentWindow.Panel, msg, title, choices, pos=wx.DefaultPosition)
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
-        DlgResult = dlg.GetStringSelection()
+        DLGRESULT = dlg.GetStringSelection()
         dlg.Destroy()
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        DLGRESULT = False
 
-    logger.debug("ShowThreadChoiceDlg(): Result of Thread Choice Dialog was: "+unicode(DlgResult))
+    logger.debug("show_thread_choice_dlg(): Result of Thread Choice Dialog was: "+unicode(DLGRESULT))
 
-def ShowChoiceDlg(Message, Title, Choices, AllowCancel=False):
+def show_choice_dlg(message, title, choices, allow_cancel=False):
     """Handle showing thread choice dialogs, reducing code duplication and complications and errors.
-    It can be used like this: DialogTools().ShowChoiceDlg(Message=<message>, Title=<title>, Choices=<choices>)
-    Message is whatever you want the dialog to say.
-    Title sets the title bar text on the dialog.
-    Choices is a list of choices you want the dialog to display.
+    It can be used like this: DialogTools().show_choice_dlg(message=<message>, title=<title>, choices=<choices>)
+    message is whatever you want the dialog to say.
+    title sets the title bar text on the dialog.
+    choices is a list of choices you want the dialog to display.
     """
-    global DlgResult
+    global DLGRESULT
 
     while True:
-        DlgResult = None
+        DLGRESULT = None
 
-        wx.CallAfter(ShowThreadChoiceDlg, msg=Message, title=Title, choices=Choices)
+        wx.CallAfter(show_thread_choice_dlg, msg=message, title=title, choices=choices)
 
         #Trap the thread until the user responds.
-        while DlgResult == None:
+        while DLGRESULT is None:
             time.sleep(0.5)
 
-        #Don't let the user bypass any choice dialogs.
-        if DlgResult in ("", False) and AllowCancel == False:
-            logger.warning("ShowChoiceDlg(): User closed dialog without answering. Warning user and asking again...")
-            ShowMsgDlg(Kind="warning", Message="Please select an option.")
+        #Don't let the user bypass this choice dialog if we aren't allowing it.
+        if DLGRESULT in ("", False) and allow_cancel is False:
+            logger.warning("show_choice_dlg(): User closed dialog without answering. Warning user and asking again...")
+            show_msg_dlg(kind="warning", message="Please select an option.")
 
         else:
-            return DlgResult
+            return DLGRESULT
 
-def ShowThreadTextEntryDlg(msg, title="WxFixBoot - Text Entry"):
+def show_thread_text_entry_dlg(msg, title="WxFixBoot - Text Entry"):
     """Shows a text entry dialog from a thread upon instruction"""
-    global DlgResult
+    global DLGRESULT
 
-    logger.debug("ShowThreadTextEntryDlg(): Showing Thread Text Entry Dialog...")
+    logger.debug("show_thread_text_entry_dlg(): Showing Thread Text Entry Dialog...")
     dlg = wx.TextEntryDialog(ParentWindow.Panel, msg, title, "", style=wx.OK|wx.CANCEL, pos=wx.DefaultPosition)
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
-        DlgResult = dlg.GetValue()
+        DLGRESULT = dlg.GetValue()
         dlg.Destroy()
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        DLGRESULT = False
 
-    logger.debug("ShowThreadTextEntryDlg(): Result of Thread Text Entry Dlg was: "+unicode(DlgResult))
+    logger.debug("show_thread_text_entry_dlg(): Result of Thread Text Entry Dlg was: "+unicode(DLGRESULT))
 
-def ShowTextEntryDlg(Message, Title="WxFixBoot - Text Entry"):
+def show_text_entry_dlg(message, title="WxFixBoot - Text Entry"):
     """Handle showing thread text entry dialogs, reducing code duplication and compilications and errors.
-    It can be used like this: DialogTools().ShowTextEntryDlg(Message=<message>, Title=<title>)
-    Message is whatever you want the dialog to say.
-    Title sets the title bar text on the dialog.
+    It can be used like this: DialogTools().show_text_entry_dlg(message=<message>, title=<title>)
+    message is whatever you want the dialog to say.
+    title sets the title bar text on the dialog.
     """
-    global DlgResult
+    global DLGRESULT
 
     while True:
-        DlgResult = None
+        DLGRESULT = None
 
-        wx.CallAfter(ShowThreadTextEntryDlg, msg=Message, title=Title)
+        wx.CallAfter(show_thread_text_entry_dlg, msg=message, title=title)
 
         #Trap the thread until the user responds.
-        while DlgResult == None:
+        while DLGRESULT is None:
             time.sleep(0.5)
 
         #Stop the user from avoiding entering anything.
-        if DlgResult in ("", False):
-            ShowMsgDlg(Kind="warning", Message="Please enter a valid name.")
+        if DLGRESULT in ("", False):
+            show_msg_dlg(kind="warning", message="Please enter a valid name.")
 
         else:
-            return DlgResult
+            return DLGRESULT
 
-def ShowThreadSaveFiledlg(title="WxFixBoot - Select A File", wildcard="All Files/Devices (*)|*"):
+def show_thread_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All Files/Devices (*)|*"):
     """Shows a save file choice dialog from a thread upon instruction"""
-    global DlgResult
+    global DLGRESULT
 
-    logger.debug("ShowThreadSaveFileDlg(): Showing Thread Save File Dialog...")
+    logger.debug("show_thread_save_file_dlg(): Showing Thread Save File Dialog...")
     dlg = wx.FileDialog(ParentWindow.Panel, message=title, defaultDir="/home", wildcard=wildcard, style=wx.SAVE|wx.OVERWRITE_PROMPT)
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
         dlg.Destroy()
-        DlgResult = dlg.GetPath()
+        DLGRESULT = dlg.GetPath()
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        DLGRESULT = False
 
-    logger.debug("ShowThreadSaveFileDlg(): Result of Thread Save File Dialog was: "+unicode(DlgResult))
+    logger.debug("show_thread_save_file_dlg(): Result of Thread Save File Dialog was: "+unicode(DLGRESULT))
 
-def ShowSaveFileDlg(Title="WxFixBoot - Select A File", Wildcard="All Files/Devices (*)|*"):
+def show_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All Files/Devices (*)|*"):
     """Handle showing thread file dialogs, reducing code duplication and compilications and errors.
-    It can be used like this: ShowFileDlg(Title=<title>, Wildcard=<wildcard>)
-    Message is whatever you want the dialog to say.
-    Wildcard is a | seperated list of file types to show, including their names as visible to the user.
+    It can be used like this: ShowFileDlg(title=<title>, wildcard=<wildcard>)
+    message is whatever you want the dialog to say.
+    wildcard is a | seperated list of file types to show, including their names as visible to the user.
     """
-    global DlgResult
+    global DLGRESULT
 
     while True:
-        DlgResult = None
+        DLGRESULT = None
 
-        wx.CallAfter(ShowThreadSaveFiledlg, title=Title, wildcard=Wildcard)
+        wx.CallAfter(show_thread_save_file_dlg, title=title, wildcard=wildcard)
 
         #Trap the thread until the user responds.
-        while DlgResult == None:
+        while DLGRESULT is None:
             time.sleep(0.5)
 
         #Stop the user from avoiding entering anything.
-        if DlgResult == False:
-            ShowMsgDlg(Kind="warning", Message="Please select a valid file.")
+        if DLGRESULT is False:
+            show_msg_dlg(kind="warning", message="Please select a valid file.")
 
         else:
-            return DlgResult
+            return DLGRESULT

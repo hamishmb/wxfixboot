@@ -383,13 +383,13 @@ def emergency_exit(message):
     logger.critical("emergency_exit(): The error is: "+message)
 
     #Warn the user.
-    DialogTools.ShowMsgDlg(Message="Emergency exit triggered.\n\n"+message+"\n\nYou'll now be asked for a location to save the log file.\nIf you email me at hamishmb@live.co.uk with the contents of that file I'll be happy to help you fix this problem.", Kind="error")
+    DialogTools.show_msg_dlg(message="Emergency exit triggered.\n\n"+message+"\n\nYou'll now be asked for a location to save the log file.\nIf you email me at hamishmb@live.co.uk with the contents of that file I'll be happy to help you fix this problem.", kind="error")
 
     #Shut down the logger.
     logging.shutdown()
 
     #Save the log file.
-    log_file = DialogTools.ShowSaveFileDlg(Wildcard="Log Files|*.log")
+    log_file = DialogTools.show_save_file_dlg(wildcard"Log Files|*.log")
     start_process("mv -v /tmp/wxfixboot.log "+log_file, show_output=False)
 
     #If we're using wayland, remove the workaround we have to use to make this work.
@@ -401,7 +401,7 @@ def emergency_exit(message):
         pass
 
     #Exit.
-    DialogTools.ShowMsgDlg(Message="Done. WxFixBoot will now exit.")
+    DialogTools.show_msg_dlg(message="Done. WxFixBoot will now exit.")
     wx.Exit()
     sys.stdout.write(message+"\n")
     os._exit(1) #TODO Is there a better alternative that will work from a thread?

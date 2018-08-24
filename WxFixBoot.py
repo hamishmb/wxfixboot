@@ -2457,7 +2457,7 @@ class BackendThread(threading.Thread):
         """Start doing operations."""
         logger.debug("BackendThread().StartOperations(): Running operations...")
 
-        DialogTools.ShowMsgDlg(Kind="info", Message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
+        DialogTools.show_msg_dlg(kind="info", message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
 
         #Make dictionaries accessible.
         Tools.BackendTools.essentials.SystemInfo = SystemInfo
@@ -2491,7 +2491,7 @@ class BackendThread(threading.Thread):
             self.GenerateSystemReport()
 
         if SystemInfo["DisableBootloaderOperations"]:
-            DialogTools.ShowMsgDlg(Kind="warning", Message="Bootloader Operations were disabled. This is because "+SystemInfo["DisableBootloaderOperationsBecause"]+". Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="warning", message="Bootloader Operations were disabled. This is because "+SystemInfo["DisableBootloaderOperationsBecause"]+". Click okay to continue.")
 
         logger.info("BackendThread().StartOperations(): Finished Operation Running Code.")
 
@@ -2506,16 +2506,16 @@ class BackendThread(threading.Thread):
                     DialogMessage += " You performed bootloader operations on at least one OS, so please now reboot your system."
                     break
 
-        DialogTools.ShowMsgDlg(Kind="info", Message=DialogMessage)
+        DialogTools.show_msg_dlg(kind="info", message=DialogMessage)
 
         wx.CallAfter(self.ParentWindow.BackendThreadFinished)
 
     def GenerateSystemReport(self):
         """Create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary."""
-        DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot will now create your system report. Click okay to continue.")
+        DialogTools.show_msg_dlg(kind="info", message="WxFixBoot will now create your system report. Click okay to continue.")
 
         #Ask the user where to save the file.
-        ReportFile = DialogTools.ShowSaveFileDlg(Title="WxFixBoot - Select System Report File", Wildcard="Text Files|*.txt|Log Files|*.log|All Files/Devices (*)|*")
+        ReportFile = DialogTools.show_save_file_dlg(title="WxFixBoot - Select System Report File", Wildcard="Text Files|*.txt|Log Files|*.log|All Files/Devices (*)|*")
 
         #Write everything directly to the file.
         ReportList = open(ReportFile, 'w')

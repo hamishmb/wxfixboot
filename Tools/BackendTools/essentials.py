@@ -37,7 +37,7 @@ logger.setLevel(logging.DEBUG)
 
 def CheckInternetConnection():
     """Check the internet connection."""
-    DialogTools.ShowMsgDlg(Kind="info", Message="Your internet connection will now be tested to ensure it's safe to do bootloader operations. This will be done by pinging the OpenDNS DNS servers.")
+    DialogTools.show_msg_dlg(kind="info", message="Your internet connection will now be tested to ensure it's safe to do bootloader operations. This will be done by pinging the OpenDNS DNS servers.")
     Retry = True
 
     logger.info("CheckInternetConnection(): Checking the Internet Connection...")
@@ -69,7 +69,7 @@ def CheckInternetConnection():
         else:
             #Uh oh! We DON'T have a reliable internet connection! Ask the user to either try again, or skip Bootloader operations.
             logger.error("CheckInternetConnection(): Internet Connection test failed! Asking user to try again or disable bootloader operations...")
-            Result = DialogTools.ShowYesNoDlg(Message="Your Internet Connection failed the test! Without a working internet connection, you cannot perform bootloader operations. Click yes to try again, and click no to give up and skip bootloader operations.", Title="WxFixBoot - Disable Bootloader Operations?", Buttons=("Try again", "Cancel Bootloader Operations"))
+            Result = DialogTools.show_yes_no_dlg(message="Your Internet Connection failed the test! Without a working internet connection, you cannot perform bootloader operations. Click yes to try again, and click no to give up and skip bootloader operations.", title="WxFixBoot - Disable Bootloader Operations?", buttons=("Try again", "Cancel Bootloader Operations"))
 
             if Result == False:
                 logger.warning("CheckInternetConnection(): Disabling bootloader operations due to bad internet connection...")
@@ -99,7 +99,7 @@ def FileSystemCheck(Type, manage_bootloader_function):
     FileSystemsToCheckLength = len(FileSystemsToCheck)
     Checked = 0
 
-    DialogTools.ShowMsgDlg(Kind="info", Message="WxFixBoot will now perform the disk check. You may wish to open the terminal output box to view the progress of the disk checks.")
+    DialogTools.show_msg_dlg(kind="info", message="WxFixBoot will now perform the disk check. You may wish to open the terminal output box to view the progress of the disk checks.")
 
     #Run the check on the checkable Disks
     for Disk in FileSystemsToCheck:
@@ -133,7 +133,7 @@ def FileSystemCheck(Type, manage_bootloader_function):
             else:
                 ExecCmds = ""
                 logger.warning("FileSystemCheck(): Skipping Disk: "+Disk+", as WxFixBoot doesn't support checking it yet...")
-                DialogTools.ShowMsgDlg(Kind="error", Message="The filesystem on Disk: "+Disk+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Disk+" will now be skipped.")
+                DialogTools.show_msg_dlg(kind="error", message="The filesystem on Disk: "+Disk+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Disk+" will now be skipped.")
 
         else:
             #For disks that doesn't do bad sector checks with the normal FS checker, run badblocks manually on them.
@@ -161,7 +161,7 @@ def FileSystemCheck(Type, manage_bootloader_function):
 
             else:
                 ExecCmds = ""
-                DialogTools.ShowMsgDlg(Kind="info", Message="The filesystem on Disk: "+Disk+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Disk+" will now be skipped.")
+                DialogTools.show_msg_dlg(kind="info", message="The filesystem on Disk: "+Disk+" could not be checked, as WxFixBoot doesn't support checking it yet. "+Disk+" will now be skipped.")
 
         #Run the command, and remount the Disk if needed.
         if ExecCmds != "":
@@ -210,12 +210,12 @@ def HandleFilesystemCheckReturnValues(ExecCmds, Retval, Partition, manage_bootlo
         if ExecList[0] == "xfs_repair":
             #Fs Corruption Detected.
             logger.warning("HandleFilesystemCheckReturnValues(): xfs_repair detected filesystem corruption on FileSystem: "+Partition+". It's probably (and hopefully) been fixed, but we're logging this anyway.")
-            DialogTools.ShowMsgDlg(Kind="warning", Message="Corruption was found on the filesystem: "+Partition+"! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="warning", message="Corruption was found on the filesystem: "+Partition+"! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
 
         elif ExecList[0] in ('fsck.jfs', 'fsck.minix', 'fsck.reiserfs', 'fsck.vfat', 'fsck.ext2', 'fsck.ex3', 'fsck.ext4', 'fsck.ext4dev'):
             #Fixed Errors.
             logger.info("HandleFilesystemCheckReturnValues(): "+ExecList[0]+" successfully fixed errors on the partition: "+Partition+". Continuing...")
-            DialogTools.ShowMsgDlg(Kind="warning", Message="The filesystem checker found and successfully fixed errors on partition: "+Partition+". Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="warning", message="The filesystem checker found and successfully fixed errors on partition: "+Partition+". Click okay to continue.")
 
     else:
         #Something bad happened!
@@ -233,7 +233,7 @@ def HandleFilesystemCheckReturnValues(ExecCmds, Retval, Partition, manage_bootlo
         if BootloaderOperations:
             logger.error("HandleFilesystemCheckReturnValues(): Asking the user whether to skip bootloader operations...")
 
-            Result = DialogTools.ShowYesNoDlg(Message="Error! The filesystem checker gave exit value: "+unicode(Retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, your system could become unstable or unbootable. Do you want to disable bootloader operations, as is strongly recommended?", Title="WxFixBoot - Disable Bootloader Operations?", Buttons=("Disable Bootloader Operations", "Ignore and Continue Anyway"))
+            Result = DialogTools.show_yes_no_dlg(message="Error! The filesystem checker gave exit value: "+unicode(Retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+Partition+". If you perform bootloader operations on this partition, your system could become unstable or unbootable. Do you want to disable bootloader operations, as is strongly recommended?", title="WxFixBoot - Disable Bootloader Operations?", buttons=("Disable Bootloader Operations", "Ignore and Continue Anyway"))
 
             if Result:
                 #A good choice. WxFixBoot will now disable any bootloader operations.
