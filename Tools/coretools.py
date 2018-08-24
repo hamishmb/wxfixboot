@@ -389,7 +389,7 @@ def emergency_exit(message):
     logging.shutdown()
 
     #Save the log file.
-    log_file = DialogTools.show_save_file_dlg(wildcard"Log Files|*.log")
+    log_file = DialogTools.show_save_file_dlg(wildcard="Log Files|*.log")
     start_process("mv -v /tmp/wxfixboot.log "+log_file, show_output=False)
 
     #If we're using wayland, remove the workaround we have to use to make this work.

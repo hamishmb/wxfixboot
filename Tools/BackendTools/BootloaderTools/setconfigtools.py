@@ -400,7 +400,7 @@ def MakeLILOOSEntries(OS, filetoopen, MountPoint, KernelOptions):
 
         else:
             #Ask the user for a new default OS.
-            DefaultOSName = DialogTools.show_choice_dlg(message="The OS you previously selected as the default wasn't added to the boot menu. Please select a new OS you want to use as "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s Default OS. You are setting configuration for "+OS, title="WxFixBoot - Select Default OS", choicesCompletedEntriesList)
+            DefaultOSName = DialogTools.show_choice_dlg(message="The OS you previously selected as the default wasn't added to the boot menu. Please select a new OS you want to use as "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s Default OS. You are setting configuration for "+OS, title="WxFixBoot - Select Default OS", choices=CompletedEntriesList)
             logger.info("MakeLILOOSEntries(): User selected new default OS: "+DefaultOSName+"...")
 
     #Make the entry for the default OS.
