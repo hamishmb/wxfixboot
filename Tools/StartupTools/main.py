@@ -494,7 +494,7 @@ def get_bootloaders():
 
             #Try to find GRUB's location if this is GRUB2.
             if BootloaderInfo[os]["Bootloader"] == "GRUB2":
-                BootloaderInfo[os]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[os]["Partition"], "GRUB2")
+                BootloaderInfo[os]["BootDisk"] = BootloaderConfigObtainingTools.find_grub(OSInfo[os]["Partition"], "GRUB2")
 
         elif BootloaderInfo[os]["Bootloader"] == "ELILO" and os.path.isfile(mount_point+"/etc/elilo.conf"):
             BootloaderInfo[os]["MenuEntries"] = BootloaderConfigObtainingTools.ParseLILOMenuEntries(mount_point+"/etc/elilo.conf")
@@ -507,7 +507,7 @@ def get_bootloaders():
         elif BootloaderInfo[os]["Bootloader"] == "GRUB-LEGACY" and os.path.isfile(mount_point+"/boot/grub/menu.lst"):
             BootloaderInfo[os]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUBLEGACYMenuEntries(mount_point+"/boot/grub/menu.lst")
             BootloaderInfo[os]["Timeout"], BootloaderInfo[os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(mount_point+"/boot/grub/menu.lst", BootloaderInfo[os]["MenuEntries"])
-            BootloaderInfo[os]["BootDisk"] = BootloaderConfigObtainingTools.FindGRUB(OSInfo[os]["Partition"], "GRUB-LEGACY")
+            BootloaderInfo[os]["BootDisk"] = BootloaderConfigObtainingTools.find_grub(OSInfo[os]["Partition"], "GRUB-LEGACY")
 
             #Use safe default kernel options.
             logger.info("get_bootloaders(): "+os+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\"...")
