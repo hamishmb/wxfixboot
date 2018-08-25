@@ -395,28 +395,28 @@ class InitThread(threading.Thread):
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking For Dependencies...")
-        MainStartupTools.CheckDepends()
+        MainStartupTools.check_depends()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "2")
         logger.info("InitThread(): Done Checking For Dependencies!")
 
         #Check if we're on a Live Disk.
         logger.info("InitThread(): Checking For Live Disk...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking For Live Disk...")
-        MainStartupTools.CheckForLiveDisk()
+        MainStartupTools.check_for_live_disk()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "4")
         logger.info("InitThread(): Done Checking For Live Disk!")
 
         #unmount all filesystems, to avoid any data corruption.
         logger.info("InitThread(): unmounting Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "unmounting Filesystems...")
-        MainStartupTools.unmountAllFS()
+        MainStartupTools.unmount_all_filesystems()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "5")
         logger.info("InitThread(): Done unmounting Filsystems!")
 
         #Check filesystems.
         logger.info("InitThread(): Checking Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Filesystems...")
-        MainStartupTools.CheckFS()
+        MainStartupTools.check_filesystems()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "15")
         logger.info("InitThread(): Filesystems Checked!")
 
@@ -430,14 +430,14 @@ class InitThread(threading.Thread):
         #Mount all filesystems.
         logger.info("InitThread(): Mounting Core Filesystems...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Mounting Core Filesystems...")
-        MainStartupTools.MountCoreFS()
+        MainStartupTools.mount_core_filesystems()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "63")
         logger.info("InitThread(): Done Mounting Core Filsystems!")
 
         #Get a list of OSs.
         logger.info("InitThread(): Finding OSs...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Operating Systems...")
-        OSInfo, SystemInfo = MainStartupTools.GetOSs()
+        OSInfo, SystemInfo = MainStartupTools.get_oss()
 
         Tools.StartupTools.main.OSInfo = OSInfo
         Tools.StartupTools.core.OSInfo = OSInfo
@@ -448,14 +448,14 @@ class InitThread(threading.Thread):
         #Get the firmware type.
         logger.info("InitThread(): Determining Firmware Type...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Determining Firmware Type...")
-        MainStartupTools.GetFirmwareType()
+        MainStartupTools.get_firmware_type()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "70")
         logger.info("InitThread(): Determined Firmware Type as: "+SystemInfo["FirmwareType"])
 
         #New bootloader info getting function.
         logger.info("InitThread(): Finding all Bootloaders and getting their settings...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Finding Bootloaders...")
-        MainStartupTools.GetBootloaders()
+        MainStartupTools.get_bootloaders()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "80")
         logger.info("InitThread(): Done!")
 
@@ -469,7 +469,7 @@ class InitThread(threading.Thread):
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
         wx.CallAfter(self.ParentWindow.UpdateProgressText, "Checking Everything...")
-        MainStartupTools.FinalCheck()
+        MainStartupTools.final_check()
         wx.CallAfter(self.ParentWindow.UpdateProgressBar, "100")
         logger.info("InitThread(): Done Final Check!")
 
