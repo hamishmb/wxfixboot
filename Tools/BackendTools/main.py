@@ -489,7 +489,7 @@ def SetNewBootloaderConfig(OS):
         logger.info("SetNewBootloaderConfig(): Updating GRUB2 Configuration...")
         BootloaderConfigSettingTools.UpdateGRUB2(OS=OS, PackageManager=OSInfo[OS]["PackageManager"], UseChroot=UseChroot, mount_point=MountPoint)
 
-        BootloaderInfo[OS]["NewMenuEntries"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", mount_point=MountPoint)[1]
+        BootloaderInfo[OS]["NewMenuEntries"] = BootloaderConfigObtainingTools.parse_grub2_menu_data(MenuData="", mount_point=MountPoint)[1]
 
     #Look for the configuration file, based on which SetConfig() function we're about to run.
     if BootloaderInfo[OS]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):

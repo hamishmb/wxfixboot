@@ -483,7 +483,7 @@ def get_bootloaders():
             BootloaderInfo[os]["BootDisk"] = OSInfo[os]["EFIPartition"]
 
         if BootloaderInfo[os]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(mount_point+"/etc/default/grub"):
-            grub_dir, BootloaderInfo[os]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUB2MenuData(MenuData="", MountPoint=mount_point)[0:2]
+            grub_dir, BootloaderInfo[os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_grub2_menu_data(MenuData="", MountPoint=mount_point)[0:2]
 
             #Get GRUB2's config.
             #If we're using fedora, always look for grubenv in the EFI partition (the grubenv symlink is in /boot/grub2 but it doesn't work when we're chrooting).
@@ -497,16 +497,16 @@ def get_bootloaders():
                 BootloaderInfo[os]["BootDisk"] = BootloaderConfigObtainingTools.find_grub(OSInfo[os]["Partition"], "GRUB2")
 
         elif BootloaderInfo[os]["Bootloader"] == "ELILO" and os.path.isfile(mount_point+"/etc/elilo.conf"):
-            BootloaderInfo[os]["MenuEntries"] = BootloaderConfigObtainingTools.ParseLILOMenuEntries(mount_point+"/etc/elilo.conf")
-            BootloaderInfo[os]["Timeout"], BootloaderInfo[os]["GlobalKernelOptions"], BootloaderInfo[os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetLILOConfig(mount_point+"/etc/elilo.conf", OS=os)
+            BootloaderInfo[os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_lilo_menu_entries(mount_point+"/etc/elilo.conf")
+            BootloaderInfo[os]["Timeout"], BootloaderInfo[os]["GlobalKernelOptions"], BootloaderInfo[os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_lilo_config(mount_point+"/etc/elilo.conf", OS=os)
 
         elif BootloaderInfo[os]["Bootloader"] == "LILO" and os.path.isfile(mount_point+"/etc/lilo.conf"):
-            BootloaderInfo[os]["MenuEntries"] = BootloaderConfigObtainingTools.ParseLILOMenuEntries(mount_point+"/etc/lilo.conf")
-            BootloaderInfo[os]["Timeout"], BootloaderInfo[os]["GlobalKernelOptions"], BootloaderInfo[os]["BootDisk"], BootloaderInfo[os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetLILOConfig(mount_point+"/etc/lilo.conf", OS=os)
+            BootloaderInfo[os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_lilo_menu_entries(mount_point+"/etc/lilo.conf")
+            BootloaderInfo[os]["Timeout"], BootloaderInfo[os]["GlobalKernelOptions"], BootloaderInfo[os]["BootDisk"], BootloaderInfo[os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_lilo_config(mount_point+"/etc/lilo.conf", OS=os)
 
         elif BootloaderInfo[os]["Bootloader"] == "GRUB-LEGACY" and os.path.isfile(mount_point+"/boot/grub/menu.lst"):
-            BootloaderInfo[os]["MenuEntries"] = BootloaderConfigObtainingTools.ParseGRUBLEGACYMenuEntries(mount_point+"/boot/grub/menu.lst")
-            BootloaderInfo[os]["Timeout"], BootloaderInfo[os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.GetGRUBLEGACYConfig(mount_point+"/boot/grub/menu.lst", BootloaderInfo[os]["MenuEntries"])
+            BootloaderInfo[os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_grublegacy_menu_entries(mount_point+"/boot/grub/menu.lst")
+            BootloaderInfo[os]["Timeout"], BootloaderInfo[os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_grublegacy_config(mount_point+"/boot/grub/menu.lst", BootloaderInfo[os]["MenuEntries"])
             BootloaderInfo[os]["BootDisk"] = BootloaderConfigObtainingTools.find_grub(OSInfo[os]["Partition"], "GRUB-LEGACY")
 
             #Use safe default kernel options.
