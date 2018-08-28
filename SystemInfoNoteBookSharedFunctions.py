@@ -22,83 +22,86 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Import modules.
-import wx
 import logging
+import wx
 
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def BindEvents(self):
+def bind_events(self):
     """Bind all events for the caller"""
     self.Bind(wx.EVT_BUTTON, self.SystemInfoWindow.OnExit, self.OkayButton)
     self.Bind(wx.EVT_SIZE, self.OnSize)
 
-def CreateWidgets(self):
+def create_widgets(self):
     """Create all widgets for the caller"""
     self.TitleText = wx.StaticText(self, -1, self.Title)
-    self.ListCtrl = wx.ListCtrl(self, -1, style=wx.LC_REPORT|wx.LC_VRULES)
+    self.list_ctrl = wx.ListCtrl(self, -1, style=wx.LC_REPORT|wx.LC_VRULES)
     self.OkayButton = wx.Button(self, -1, "Okay")
 
-def SetupSizers(self):
+def setup_sizers(self):
     """Set up the sizers for the caller"""
-    #Make a button boxsizer.
-    BottomSizer = wx.BoxSizer(wx.HORIZONTAL)
-
     #Make a boxsizer.
-    MainSizer = wx.BoxSizer(wx.VERTICAL)
+    main_sizer = wx.BoxSizer(wx.VERTICAL)
 
     #Add each object to the main sizer.
-    MainSizer.Add(self.TitleText, 0, wx.ALL|wx.CENTER, 10)
-    MainSizer.Add(self.ListCtrl, 1, wx.EXPAND|wx.ALL ^ wx.TOP, 10)
-    MainSizer.Add(self.OkayButton, 0, wx.ALIGN_CENTER|wx.ALL ^ wx.TOP, 10)
+    main_sizer.Add(self.TitleText, 0, wx.ALL|wx.CENTER, 10)
+    main_sizer.Add(self.list_ctrl, 1, wx.EXPAND|wx.ALL ^ wx.TOP, 10)
+    main_sizer.Add(self.OkayButton, 0, wx.ALIGN_CENTER|wx.ALL ^ wx.TOP, 10)
 
     #Get the sizer set up for the frame.
-    self.SetSizer(MainSizer)
-    MainSizer.SetMinSize(wx.Size(780,310))
-    MainSizer.SetSizeHints(self)
+    self.SetSizer(main_sizer)
+    main_sizer.SetMinSize(wx.Size(780, 310))
+    main_sizer.SetSizeHints(self)
 
-def UpdateListCtrl(self, Event=None, Headings=[], Dictionary={}):
+def update_list_ctrl(self, event=None, headings=None, dictionary=None): #pylint: disable=unused-argument
     """Update the list control"""
-    logger.debug("UpdateListCtrl(): Clearing all objects in list ctrl...")
-    self.ListCtrl.ClearAll()
+    if headings is None:
+        headings = []
+
+    if dictionary is None:
+        dictionary = {}
+
+    logger.debug("update_list_ctrl(): Clearing all objects in list ctrl...")
+    self.list_ctrl.ClearAll()
 
     #Create the columns.
-    logger.debug("UpdateListCtrl(): Inserting columns into list ctrl...")
-    Column = 0
-    for Heading in Headings:
-        self.ListCtrl.InsertColumn(col=Column, heading=Heading, format=wx.LIST_FORMAT_CENTRE) 
-        Column += 1
+    logger.debug("update_list_ctrl(): Inserting columns into list ctrl...")
+    column = 0
+    for heading in headings:
+        self.list_ctrl.InsertColumn(col=column, heading=heading, format=wx.LIST_FORMAT_CENTRE)
+        column += 1
 
     #Add info from the custom module.
-    logger.debug("UpdateListCtrl(): Adding info to list ctrl...")
+    logger.debug("update_list_ctrl(): Adding info to list ctrl...")
 
-    Keys = Dictionary.keys()
-    Keys.sort()
+    keys = dictionary.keys()
+    keys.sort()
 
     #Do all of the data at the same time.
-    Number = -1
-    for Thing in Keys:
-        Number += 1
-        Info = Dictionary[Thing]
+    number = -1
+    for thing in keys:
+        number += 1
+        info = dictionary[thing]
 
-        Column = 0
-        for Heading in Headings:
-            Data = Info[Heading]
+        column = 0
+        for heading in headings:
+            data = info[heading]
 
-            if unicode(type(Data)) == type([]):
-                Data = ', '.join(Data)
+            if unicode(type(data)) == type([]):
+                data = ', '.join(data)
 
-            elif unicode(type(Data)) != type(""):
-                Data = unicode(Data)
+            elif unicode(type(data)) != type(""):
+                data = unicode(data)
 
-            if Column == 0:
-                self.ListCtrl.InsertStringItem(index=Number, label=Data)
+            if column == 0:
+                self.list_ctrl.InsertStringItem(index=number, label=data)
 
             else:
-                self.ListCtrl.SetStringItem(index=Number, col=Column, label=Data)
+                self.list_ctrl.SetStringItem(index=number, col=column, label=data)
 
-            Column += 1
+            column += 1
 
     #Auto Resize the columns.
     self.OnSize()
