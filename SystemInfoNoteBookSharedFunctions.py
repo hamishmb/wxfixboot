@@ -31,14 +31,14 @@ logger.setLevel(logging.DEBUG)
 
 def bind_events(self):
     """Bind all events for the caller"""
-    self.Bind(wx.EVT_BUTTON, self.SystemInfoWindow.OnExit, self.OkayButton)
-    self.Bind(wx.EVT_SIZE, self.OnSize)
+    self.Bind(wx.EVT_BUTTON, self.systeminfo_window.on_exit, self.okay_button)
+    self.Bind(wx.EVT_SIZE, self.on_size)
 
 def create_widgets(self):
     """Create all widgets for the caller"""
-    self.TitleText = wx.StaticText(self, -1, self.Title)
+    self.title_text = wx.StaticText(self, -1, self.title)
     self.list_ctrl = wx.ListCtrl(self, -1, style=wx.LC_REPORT|wx.LC_VRULES)
-    self.OkayButton = wx.Button(self, -1, "Okay")
+    self.okay_button = wx.Button(self, -1, "Okay")
 
 def setup_sizers(self):
     """Set up the sizers for the caller"""
@@ -46,9 +46,9 @@ def setup_sizers(self):
     main_sizer = wx.BoxSizer(wx.VERTICAL)
 
     #Add each object to the main sizer.
-    main_sizer.Add(self.TitleText, 0, wx.ALL|wx.CENTER, 10)
+    main_sizer.Add(self.title_text, 0, wx.ALL|wx.CENTER, 10)
     main_sizer.Add(self.list_ctrl, 1, wx.EXPAND|wx.ALL ^ wx.TOP, 10)
-    main_sizer.Add(self.OkayButton, 0, wx.ALIGN_CENTER|wx.ALL ^ wx.TOP, 10)
+    main_sizer.Add(self.okay_button, 0, wx.ALIGN_CENTER|wx.ALL ^ wx.TOP, 10)
 
     #Get the sizer set up for the frame.
     self.SetSizer(main_sizer)
@@ -104,4 +104,4 @@ def update_list_ctrl(self, event=None, headings=None, dictionary=None): #pylint:
             column += 1
 
     #Auto Resize the columns.
-    self.OnSize()
+    self.on_size()

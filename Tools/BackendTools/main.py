@@ -52,24 +52,24 @@ BootloaderInfo = {}
 
 #Silence other errors.
 Operations = []
-ParentWindow = None
+parent_window = None
 
 def manage_bootloader(_os):
     """Manage the installation and removal of each bootloader."""
     #Test the internet connection.
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking the Internet Connection...")
-    wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking the Internet Connection...###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Checking the Internet Connection...")
+    wx.CallAfter(parent_window.update_output_box, "\n###Checking the Internet Connection...###\n")
 
     EssentialBackendTools.check_internet_connection()
 
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished checking the Internet Connection...")
-    wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished checking the Internet Connection...###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Finished checking the Internet Connection...")
+    wx.CallAfter(parent_window.update_output_box, "\n###Finished checking the Internet Connection...###\n")
 
     #Don't do anything if bootloader operations have been disabled.
     if SystemInfo["DisableBootloaderOperations"]:
         logger.info("manage_bootloader(): Bootloader operations have been disabled, skipping this operation...")
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Skipped bootloader operations for "+_os+"...###\n")
+        wx.CallAfter(parent_window.update_current_progress, 100)
+        wx.CallAfter(parent_window.update_output_box, "\n###Skipped bootloader operations for "+_os+"...###\n")
         return True
 
     if BootloaderInfo[_os]["Settings"]["Reinstall"] or BootloaderInfo[_os]["Settings"]["Update"]:
@@ -119,13 +119,13 @@ def manage_bootloader(_os):
                     #Don't do anything if bootloader operations have been disabled.
                     if SystemInfo["DisableBootloaderOperations"]:
                         logger.info("manage_bootloader(): Bootloader operations have been disabled, skipping this operation...")
-                        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-                        wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Skipped bootloader operations for "+_os+"...###\n")
+                        wx.CallAfter(parent_window.update_current_progress, 100)
+                        wx.CallAfter(parent_window.update_output_box, "\n###Skipped bootloader operations for "+_os+"...###\n")
                         return True
 
                 else:
                     logger.error("manage_bootloader(): Skipping the rest of the bootloader operations for "+_os+"! Other operations will continue as normal. Returning False...")
-                    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+                    wx.CallAfter(parent_window.update_current_progress, 100)
                     return False
 
     logger.info("manage_bootloader(): Done!")
@@ -133,9 +133,9 @@ def manage_bootloader(_os):
 def remove_old_bootloader(_os):
     """Remove the currently installed bootloader."""
     logger.info("remove_old_bootloader(): Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...")
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27)
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"......")
-    wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_current_progress, 27)
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"......")
+    wx.CallAfter(parent_window.update_output_box, "\n###Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...###\n")
 
     #If this is the current OS, let the remover function know that we aren't using chroot.
     if OSInfo[_os]["IsCurrentOS"]:
@@ -184,16 +184,16 @@ def remove_old_bootloader(_os):
 
     #Wait until no other application is using APT/YUM.
     #Let user know what's happening.
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27)
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Waiting until "+_os+"'s package manager is free.\nClose any open applications if this message persists...")
-    wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Waiting until "+_os+"'s package manager is free...###\n")
+    wx.CallAfter(parent_window.update_current_progress, 27)
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Waiting until "+_os+"'s package manager is free.\nClose any open applications if this message persists...")
+    wx.CallAfter(parent_window.update_output_box, "\n###Waiting until "+_os+"'s package manager is free...###\n")
 
     logger.debug("remove_old_bootloader(): Waiting until "+_os+"'s package manager is free...")
     HelperBackendTools.wait_until_packagemanager_free(mount_point=mount_point, package_manager=OSInfo[_os]["PackageManager"])
 
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27)
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...")
-    wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_current_progress, 27)
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...")
+    wx.CallAfter(parent_window.update_output_box, "\n###Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...###\n")
 
     #Remove the bootloader.
     if BootloaderInfo[_os]["Bootloader"] == "GRUB2":
@@ -268,7 +268,7 @@ def remove_old_bootloader(_os):
         if CoreTools.unmount(mount_point) != 0:
             logger.error("remove_old_bootloader(): Couldn't unmount "+mount_point+"! Continuing anyway...")
 
-    wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_output_box, "\n###Finished removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...###\n")
 
     if retval != 0:
         #Something went wrong! Log it and notify the user.
@@ -277,17 +277,17 @@ def remove_old_bootloader(_os):
 
     #Log and notify the user that we're finished removing bootloaders.
     logger.info("remove_old_bootloader(): Finished removing "+BootloaderInfo[_os]["Bootloader"]+"...")
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"......")
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 50)
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Finished removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"......")
+    wx.CallAfter(parent_window.update_current_progress, 50)
     DialogTools.show_msg_dlg(kind="info", message="Finished removing "+BootloaderInfo[_os]["Bootloader"]+"! WxFixBoot will now install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" to "+_os+".")
     return True
 
 def install_new_bootloader(_os):
     """Install a new bootloader."""
     logger.info("install_new_bootloader(): Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 52)
-    wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
+    wx.CallAfter(parent_window.update_current_progress, 52)
+    wx.CallAfter(parent_window.update_output_box, "\n###Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
 
     #If this is the current OS, let the installer functions know that we aren't using chroot.
     if OSInfo[_os]["IsCurrentOS"]:
@@ -337,9 +337,9 @@ def install_new_bootloader(_os):
         DialogTools.show_msg_dlg(kind="error", message="WxfixBoot failed to update "+_os+"'s package information! Giving up. You will be prompted to try again if you wish.")
         return False
 
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 55)
-    wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
+    wx.CallAfter(parent_window.update_current_progress, 55)
+    wx.CallAfter(parent_window.update_output_box, "\n###Installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
 
     #Install the bootloader.
     if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB2":
@@ -429,20 +429,20 @@ def install_new_bootloader(_os):
         DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"! This may leave this OS, or your system, in an unbootable state. You will now be prompted to try again.")
         return False
 
-    wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_output_box, "\n###Finished installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
 
     #Log and notify the user that we're finished installing the bootloader.
     logger.info("install_new_bootloader(): Finished installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"...")
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finish installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 75)
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Finish installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
+    wx.CallAfter(parent_window.update_current_progress, 75)
     return True
 
 def set_new_bootloader_config(_os):
     """Manage setting new bootloader config."""
     logger.info("set_new_bootloader_config(): Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...")
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" config for "+_os+"...")
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 79)
-    wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" config for "+_os+"...")
+    wx.CallAfter(parent_window.update_current_progress, 79)
+    wx.CallAfter(parent_window.update_output_box, "\n###Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...###\n")
 
     #If this is the current OS, let the config functions know that we aren't using chroot.
     if OSInfo[_os]["IsCurrentOS"]:
@@ -471,7 +471,7 @@ def set_new_bootloader_config(_os):
             DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to set up a chroot for "+_os+"! Giving up. You will be prompted to try again if you wish.")
             return False
 
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 81)
+        wx.CallAfter(parent_window.update_current_progress, 81)
 
     #Mount a /boot partition if it exists.
     if OSInfo[_os]["BootPartition"] != "Unknown":
@@ -497,7 +497,7 @@ def set_new_bootloader_config(_os):
     if BootloaderInfo[_os]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
         #Update GRUB.
         logger.info("set_new_bootloader_config(): Updating GRUB2 Configuration...")
-        BootloaderConfigSettingTools.update_grub2(OS=_os, PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
+        BootloaderConfigSettingTools.update_grub2(_os=_os, package_manager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
 
         BootloaderInfo[_os]["NewMenuEntries"] = BootloaderConfigObtainingTools.parse_grub2_menu_data(menu_data="", mount_point=mount_point)[1]
 
@@ -507,7 +507,7 @@ def set_new_bootloader_config(_os):
         if os.path.isfile(mount_point+"/etc/default/grub"):
             #It does, we'll run the function to set the config now.
             logger.info("set_new_bootloader_config(): Setting GRUB2 Configuration...")
-            BootloaderConfigSettingTools.set_grub2_config(OS=_os, filetoopen=mount_point+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[_os]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
+            BootloaderConfigSettingTools.set_grub2_config(_os=_os, filetoopen=mount_point+"/etc/default/grub", bootloader_timeout=BootloaderInfo[_os]["Settings"]["NewTimeout"], kernel_options=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
 
         if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #Mount the UEFI partition at mount_point/boot/efi.
@@ -518,16 +518,16 @@ def set_new_bootloader_config(_os):
 
             #Now Install GRUB-UEFI to the UEFI Partition.
             logger.info("set_new_bootloader_config(): Installing GRUB-UEFI to "+OSInfo[_os]["EFIPartition"]+"...")
-            BootloaderConfigSettingTools.install_grub2_to_efi_partition(PackageManager=OSInfo[_os]["PackageManager"], mount_point=mount_point, use_chroot=use_chroot, UEFISystemPartitionMountPoint="/boot/efi", Arch=OSInfo[_os]["Arch"])
+            BootloaderConfigSettingTools.install_grub2_to_efi_partition(package_manager=OSInfo[_os]["PackageManager"], mount_point=mount_point, use_chroot=use_chroot, uefi_system_partition_mount_point="/boot/efi", arch=OSInfo[_os]["arch"])
 
         else:
             #Now Install GRUB2 to the MBR.
             logger.info("set_new_bootloader_config(): Installing GRUB2 to "+DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"]+"...")
-            BootloaderConfigSettingTools.install_grub2_to_mbr(PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point, Device=DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"])
+            BootloaderConfigSettingTools.install_grub2_to_mbr(package_manager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point, device=DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"])
 
         #Update GRUB.
         logger.info("set_new_bootloader_config(): Updating GRUB2 Configuration...")
-        BootloaderConfigSettingTools.update_grub2(OS=_os, PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
+        BootloaderConfigSettingTools.update_grub2(_os=_os, package_manager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
 
         if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #Make an entry in fstab for the UEFI Partition, if needed.
@@ -631,15 +631,15 @@ def set_new_bootloader_config(_os):
         if os.path.isfile(mount_point+"/etc/lilo.conf"):
             #It does, we'll run the function to set the config now.
             logger.info("set_new_bootloader_config(): Setting LILO Configuration...")
-            BootloaderConfigSettingTools.set_lilo_config(OS=_os, filetoopen=mount_point+"/etc/lilo.conf")
+            BootloaderConfigSettingTools.set_lilo_config(_os=_os, filetoopen=mount_point+"/etc/lilo.conf")
 
             #Also, set the OS entries.
             logger.info("set_new_bootloader_config(): Creating LILO OS Entries...")
-            BootloaderConfigSettingTools.make_lilo_os_entries(OS=_os, filetoopen=mount_point+"/etc/lilo.conf", mount_point=mount_point, KernelOptions=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
+            BootloaderConfigSettingTools.make_lilo_os_entries(_os=_os, filetoopen=mount_point+"/etc/lilo.conf", mount_point=mount_point, kernel_options=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
 
         #Now Install LILO to the MBR.
         logger.info("set_new_bootloader_config(): Installing LILO to the MBR...")
-        BootloaderConfigSettingTools.install_lilo_to_mbr(PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
+        BootloaderConfigSettingTools.install_lilo_to_mbr(use_chroot=use_chroot, mount_point=mount_point)
 
     elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "ELILO":
         #unmount the UEFI Partition now, and update mtab in the chroot.
@@ -670,15 +670,15 @@ def set_new_bootloader_config(_os):
         if os.path.isfile(mount_point+"/etc/elilo.conf"):
             #It does, we'll run the function to set the config now.
             logger.info("set_new_bootloader_config(): Setting ELILO Configuration...")
-            BootloaderConfigSettingTools.set_lilo_config(OS=_os, filetoopen=mount_point+"/etc/elilo.conf")
+            BootloaderConfigSettingTools.set_lilo_config(_os=_os, filetoopen=mount_point+"/etc/elilo.conf")
 
             #Also, set the OS entries.
             logger.info("set_new_bootloader_config(): Creating ELILO OS Entries...")
-            BootloaderConfigSettingTools.make_lilo_os_entries(OS=_os, filetoopen=mount_point+"/etc/elilo.conf", mount_point=mount_point, KernelOptions=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
+            BootloaderConfigSettingTools.make_lilo_os_entries(_os=_os, filetoopen=mount_point+"/etc/elilo.conf", mount_point=mount_point, kernel_options=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
 
         #Now Install ELILO to the UEFI Partition.
         logger.info("set_new_bootloader_config(): Installing ELILO to "+OSInfo[_os]["EFIPartition"]+"...")
-        BootloaderConfigSettingTools.install_elilo_to_partition(OS=_os, PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
+        BootloaderConfigSettingTools.install_elilo_to_partition(_os=_os, package_manager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
 
         #Mount the UEFI partition at mount_point/boot/efi.
         if CoreTools.mount_partition(partition=OSInfo[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
@@ -713,7 +713,7 @@ def set_new_bootloader_config(_os):
             logger.error("set_new_bootloader_config(): Failed to unmount "+mount_point+"! Continuing anyway...")
 
     logger.debug("set_new_bootloader_config(): Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...")
-    wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...###\n")
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"!")
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
+    wx.CallAfter(parent_window.update_output_box, "\n###Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"!")
+    wx.CallAfter(parent_window.update_current_progress, 100)
     return True

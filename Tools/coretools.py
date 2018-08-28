@@ -39,6 +39,10 @@ from . import dialogtools as DialogTools
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+#Define global variables
+parent_window = None
+startup = None
+
 def start_process(exec_cmds, show_output=True, return_output=False, testing=False):
     """Start a process given a string of commands to execute.
     show_output is boolean and specifies whether to show output in the outputbox (if exists) or not.
@@ -52,7 +56,7 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
     cmd = subprocess.Popen(exec_cmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
     #Use a simpler output reader on startup to improve performance.
-    if Startup:
+    if startup:
         line_list = read(cmd, testing=testing)
 
     else:
@@ -140,7 +144,7 @@ def read_and_send_output(cmd, show_output):
             #Interpret as Unicode and remove "NULL" characters.
             line = line.decode("UTF-8", errors="replace").replace("\x00", "")
 
-            wx.CallAfter(ParentWindow.UpdateOutputBox, line, show_output)
+            wx.CallAfter(parent_window.update_output_box, line, show_output)
             line_list.append(line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
             #Reset line.

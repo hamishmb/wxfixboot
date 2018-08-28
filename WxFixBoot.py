@@ -2078,7 +2078,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.save_gui_state(_os=self.os_choice.GetStringSelection())
 
         #Send a message to MainWindow so it can refresh.
-        wx.CallAfter(self.parent_window.refresh_main_window, "Closed")
+        wx.CallAfter(self.parent_window.refresh_main_window)
 
         self.Destroy()
 

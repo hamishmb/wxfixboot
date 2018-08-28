@@ -41,7 +41,7 @@ DiskInfo = {}
 
 #Silence other errors.
 Operations = []
-ParentWindow = None
+parent_window = None
 
 def check_internet_connection():
     """Check the internet connection."""
@@ -93,13 +93,13 @@ def filesystem_check(_type, manage_bootloader_function):
     logger.debug("filesystem_check(): Starting...")
 
     #Update Current Operation Text.
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Preparing for Filesystem Check...")
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 10)
-    wx.CallAfter(ParentWindow.UpdateoutputBox, "\n###Preparing to do the Filesystem Check...###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Preparing for Filesystem Check...")
+    wx.CallAfter(parent_window.update_current_progress, 10)
+    wx.CallAfter(parent_window.update_output_box, "\n###Preparing to do the Filesystem Check...###\n")
 
     #Determine which Disks are to be checked.
     filesystems_to_check = HelperBackendTools.find_checkable_file_systems()
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30)
+    wx.CallAfter(parent_window.update_current_progress, 30)
 
     #Find the length of the list (this is needed to update the progressbars).
     filesystems_to_check_length = len(filesystems_to_check)
@@ -111,9 +111,9 @@ def filesystem_check(_type, manage_bootloader_function):
     for disk in filesystems_to_check:
         #Gather info.
         logger.info("filesystem_check():: Checking "+disk+"...")
-        wx.CallAfter(ParentWindow.UpdateoutputBox, "\n###Checking Disk: "+disk+"###\n")
-        wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking Disk: "+disk)
-        wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30+((50//filesystems_to_check_length)*(checked+1)))
+        wx.CallAfter(parent_window.update_output_box, "\n###Checking Disk: "+disk+"###\n")
+        wx.CallAfter(parent_window.update_current_operation_text, Message="Checking Disk: "+disk)
+        wx.CallAfter(parent_window.update_current_progress, 30+((50//filesystems_to_check_length)*(checked+1)))
         run_badblocks = False
 
         #Create a command list that will work based on the fstype of this Disk and the type of check we're performing. If there aren't any use cases for the fstype, display a message to the user and skip it.
@@ -203,9 +203,9 @@ def filesystem_check(_type, manage_bootloader_function):
         checked += 1
 
     #Update Current Operation Text.
-    wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished Filesystem Check!")
-    wx.CallAfter(ParentWindow.UpdateCurrentProgress, 100)
-    wx.CallAfter(ParentWindow.UpdateoutputBox, "\n###Finished Filesystem Check!###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, Message="Finished Filesystem Check!")
+    wx.CallAfter(parent_window.update_current_progress, 100)
+    wx.CallAfter(parent_window.update_output_box, "\n###Finished Filesystem Check!###\n")
 
 def handle_filesystem_check_return_values(exec_cmds, retval, partition, manage_bootloader_function):
     """Handle Filesystem Checker return codes."""
