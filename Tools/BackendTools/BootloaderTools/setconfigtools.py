@@ -49,7 +49,7 @@ def SetGRUB2Config(OS, filetoopen, BootloaderTimeout, KernelOptions):
     BLSpecificDefaultOS = "Unknown"
 
     for Entry in BootloaderInfo[OS]["NewMenuEntries"]["MainMenu"]["Order"]:
-        if HelperBackendTools.PartitionMatchesOS(BootloaderInfo[OS]["NewMenuEntries"]["MainMenu"][Entry]["Partition"], BootloaderInfo[OS]["Settings"]["DefaultOS"]):
+        if HelperBackendTools.partition_matches_os(BootloaderInfo[OS]["NewMenuEntries"]["MainMenu"][Entry]["Partition"], BootloaderInfo[OS]["Settings"]["DefaultOS"]):
             BLSpecificDefaultOS = BootloaderInfo[OS]["NewMenuEntries"]["MainMenu"][Entry]["ID"]
             logger.info("SetGRUB2Config(): Found Default OS's GRUB2 ID...")
             break

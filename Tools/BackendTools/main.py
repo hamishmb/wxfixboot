@@ -179,7 +179,7 @@ def RemoveOldBootloader(OS):
     wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Waiting until "+OS+"'s package manager is free...###\n")
 
     logger.debug("RemoveOldBootloader(): Waiting until "+OS+"'s package manager is free...")
-    HelperBackendTools.WaitUntilPackageManagerNotInUse(mount_point=MountPoint, PackageManager=OSInfo[OS]["PackageManager"])
+    HelperBackendTools.wait_until_packagemanager_free(mount_point=MountPoint, PackageManager=OSInfo[OS]["PackageManager"])
 
     wx.CallAfter(ParentWindow.UpdateCurrentProgress, 27)
     wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Removing "+BootloaderInfo[OS]["Bootloader"]+" from "+OS+"...")
@@ -521,11 +521,11 @@ def SetNewBootloaderConfig(OS):
 
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #Make an entry in fstab for the UEFI Partition, if needed.
-            HelperBackendTools.WriteFSTABEntryForUEFIPartition(OS=OS, MountPoint=MountPoint)
+            HelperBackendTools.write_fstab_entry_for_uefi_partition(OS=OS, MountPoint=MountPoint)
 
             #Copy and backup EFI files where needed.
-            HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
-            HelperBackendTools.ManageUEFIFiles(OS=OS, MountPoint=MountPoint)
+            HelperBackendTools.backup_uefi_files(MountPoint=MountPoint)
+            HelperBackendTools.manage_uefi_files(OS=OS, MountPoint=MountPoint)
 
         if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI" and OSInfo[OS]["PackageManager"] == "yum":
             #If we're switching to GRUB-UEFI from BIOS it can mess up GRUB2 and change the boot commands to linux and initrd instead of linuxefi and initrdefi, preventing boot.
@@ -675,8 +675,8 @@ def SetNewBootloaderConfig(OS):
             logger.error("SetNewBootloaderConfig(): Failed to mount EFI partition "+OSInfo[OS]["EFIPartition"]+"! Continuing anyway...")
 
         #Copy and backup UEFI files where needed.
-        HelperBackendTools.BackupUEFIFiles(MountPoint=MountPoint)
-        HelperBackendTools.ManageUEFIFiles(OS=OS, MountPoint=MountPoint)
+        HelperBackendTools.backup_uefi_files(MountPoint=MountPoint)
+        HelperBackendTools.manage_uefi_files(OS=OS, MountPoint=MountPoint)
 
         #unmount the EFI partition.
         if CoreTools.unmount(OSInfo[OS]["EFIPartition"]) != 0:

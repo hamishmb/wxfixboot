@@ -98,7 +98,7 @@ def filesystem_check(_type, manage_bootloader_function):
     wx.CallAfter(ParentWindow.UpdateoutputBox, "\n###Preparing to do the Filesystem Check...###\n")
 
     #Determine which Disks are to be checked.
-    filesystems_to_check = HelperBackendTools.FindCheckableFileSystems()
+    filesystems_to_check = HelperBackendTools.find_checkable_file_systems()
     wx.CallAfter(ParentWindow.UpdateCurrentProgress, 30)
 
     #Find the length of the list (this is needed to update the progressbars).

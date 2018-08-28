@@ -34,278 +34,285 @@ from .. import dialogtools as DialogTools
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def PartitionMatchesOS(Partition, OS):
+#Silence pylint errors about missing global dictionaries.
+OSInfo = {}
+SystemInfo = {}
+DiskInfo = {}
+BootloaderInfo = {}
+
+def partition_matches_os(partition, _os):
     """Matches the given boot device to an OS, using the info we gathered at startup using the function above"""
     #Try to match it by UUID or by name, looking for the same type of match we got before, to avoid false positives.
-    logger.debug("PartitionMatchesOS(): Partition To Match: "+Partition+"...")
-    logger.debug("PartitionMatchesOS(): OS to match with: "+OS+"...")
-    logger.debug("PartitionMatchesOS(): Trying to match (1st) with: "+OSInfo[OS]["Partition"]+"...")
-    logger.debug("PartitionMatchesOS(): Trying to match (2nd) with: "+OSInfo[OS]["BootPartition"]+"...")
-    logger.debug("PartitionMatchesOS(): Trying to match (3rd) with: "+OSInfo[OS]["EFIPartition"]+"...")
+    logger.debug("partition_matches_os(): Partition To Match: "+partition+"...")
+    logger.debug("partition_matches_os(): OS to match with: "+_os+"...")
+    logger.debug("partition_matches_os(): Trying to match (1st) with: "+OSInfo[_os]["Partition"]+"...")
+    logger.debug("partition_matches_os(): Trying to match (2nd) with: "+OSInfo[_os]["BootPartition"]+"...")
+    logger.debug("partition_matches_os(): Trying to match (3rd) with: "+OSInfo[_os]["EFIPartition"]+"...")
 
     #If partition is unknown ignore it.
-    if Partition == "Unknown":
+    if partition == "Unknown":
         return False
 
     #If the eg EFI partition isn't known, don't do the rest of the test in the if statement to avoid erors (short-circuit logic).
-    if OSInfo[OS]["Partition"] != "Unknown" and Partition in (OSInfo[OS]["Partition"], DiskInfo[OSInfo[OS]["Partition"]]["UUID"]):
+    if OSInfo[_os]["Partition"] != "Unknown" and partition in (OSInfo[_os]["Partition"], DiskInfo[OSInfo[_os]["Partition"]]["UUID"]):
         return True
 
-    elif OSInfo[OS]["BootPartition"] != "Unknown" and Partition in (OSInfo[OS]["BootPartition"], DiskInfo[OSInfo[OS]["BootPartition"]]["UUID"]):
+    elif OSInfo[_os]["BootPartition"] != "Unknown" and partition in (OSInfo[_os]["BootPartition"], DiskInfo[OSInfo[_os]["BootPartition"]]["UUID"]):
         return True
 
-    elif OSInfo[OS]["EFIPartition"] != "Unknown" and Partition in (OSInfo[OS]["EFIPartition"], DiskInfo[OSInfo[OS]["EFIPartition"]]["UUID"]):
+    elif OSInfo[_os]["EFIPartition"] != "Unknown" and partition in (OSInfo[_os]["EFIPartition"], DiskInfo[OSInfo[_os]["EFIPartition"]]["UUID"]):
         return True
 
-    else:
-        return False
 
-def WaitUntilPackageManagerNotInUse(MountPoint, PackageManager):
+    #Otherwise return false.
+    return False
+
+def wait_until_packagemanager_free(mount_point, package_manager):
     """Check if the package manager is in use, and if so, wait until it is no longer in use."""
-    if PackageManager == "apt-get":
-        Cmd = "apt-get check"
+    if package_manager == "apt-get":
+        cmd = "apt-get check"
 
-    elif PackageManager == "yum":
-        Cmd = "yum -C check-update"
+    elif package_manager == "yum":
+        cmd = "yum -C check-update"
 
-    if MountPoint != "":
-        Cmd = "chroot "+MountPoint+" "+Cmd
+    if mount_point != "":
+        cmd = "chroot "+mount_point+" "+cmd
 
-    RetVal = 1
+    retval = 1
 
-    #Trap in while loop until package manager is free.
-    while RetVal not in (0, 100): #100 when there are updates available on Fedora.
-        RetVal = CoreTools.start_process(Cmd, show_output=False)
+    #Trap in while loop until package manager is free. TODO Fix for if no package cache.
+    while retval not in (0, 100): #100 when there are updates available on Fedora.
+        retval = CoreTools.start_process(cmd, show_output=False)
         time.sleep(5)
 
-def FindMissingFSCKModules():
+def find_missing_fsck_modules():
     """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc)."""
-    logger.info("FindMissingFSCKModules(): Looking for missing FSCK modules to ignore...")
-    FailedList = []
+    logger.info("find_missing_fsck_modules(): Looking for missing FSCK modules to ignore...")
+    failed_list = []
 
-    Keys = DiskInfo.keys()
-    Keys.sort()
+    keys = DiskInfo.keys()
+    keys.sort()
 
-    for Disk in Keys:
+    for disk in keys:
         #Check the FSType is known and isn't swap.
-        if DiskInfo[Disk]["FileSystem"] not in ("Unknown", "N/A"):
+        if DiskInfo[disk]["FileSystem"] not in ("Unknown", "N/A"):
             #Check if this module is present.
-            if CoreTools.start_process("which fsck."+DiskInfo[Disk]["FileSystem"], show_output=False) != 0:
+            if CoreTools.start_process("which fsck."+DiskInfo[disk]["FileSystem"], show_output=False) != 0:
                 #Couldn't find it, add it to the failed list.
-                logger.warning("FSCKModules(): Couldn't find FSCK module fsck."+DiskInfo[Disk]["FileSystem"]+"! Adding it to the list of missing modules...")
-                FailedList.append("fsck."+DiskInfo[Disk]["FileSystem"])
+                logger.warning("FSCKModules(): Couldn't find FSCK module fsck."+DiskInfo[disk]["FileSystem"]+"! Adding it to the list of missing modules...")
+                failed_list.append("fsck."+DiskInfo[disk]["FileSystem"])
 
             else:
-                logger.debug("FSCKModules(): Found fsck."+DiskInfo[Disk]["FileSystem"]+"...")
+                logger.debug("FSCKModules(): Found fsck."+DiskInfo[disk]["FileSystem"]+"...")
 
     #Return the list, so FSCheck functions know which FSes to ignore.
-    logger.info("FindMissingFSCKModules(): Done! Missing FSCK modules: "+', '.join(FailedList))
-    return FailedList
+    logger.info("find_missing_fsck_modules(): Done! Missing FSCK modules: "+', '.join(failed_list))
+    return failed_list
 
-def FindCheckableFileSystems():
+def find_checkable_file_systems():
     """Find all checkable filesystems, and then return them to EssentialBackendTools().filesystem_check()"""
-    logger.info("FindCheckableFileSystems(): Finding and returning all filesystems/partitions that can be checked...")
+    logger.info("find_checkable_file_systems(): Finding and returning all filesystems/partitions that can be checked...")
 
     #Do setup.
-    DoNotCheckList = []
-    FileSystemsToCheck = {}
-    RootFS = CoreTools.get_partition_mounted_at("/")
+    do_not_check_list = []
+    filesystems_to_check = {}
+    root_fs = CoreTools.get_partition_mounted_at("/")
 
     #Get a list of missing fsck modules (if any) based on the existing filesystems.
-    MissingFSCKModules = FindMissingFSCKModules()
+    missing_fsck_modules = find_missing_fsck_modules()
 
-    Keys = DiskInfo.keys()
-    Keys.sort()
+    keys = DiskInfo.keys()
+    keys.sort()
 
     #Determine checkable partitions.
-    for Disk in Keys:
+    for disk in keys:
         #Ignore all devices.
-        if DiskInfo[Disk]["Type"] == "Device":
+        if DiskInfo[disk]["Type"] == "Device":
             continue
 
-        #Check if the required fsck module is present, and that the partition isn't RootFS
-        if "fsck."+DiskInfo[Disk]["FileSystem"] in MissingFSCKModules:
-            MountPoint = "None"
-            CheckTheFS = False
-            RemountPartitionAfter = False
+        #Check if the required fsck module is present, and that the partition isn't root_fs
+        if "fsck."+DiskInfo[disk]["FileSystem"] in missing_fsck_modules:
+            mount_point = "None"
+            check_this_fs = False
+            remount_fs_after = False
 
         else:
-            #If we're not running on a live disk, skip the filesystem if it's the same as RootFS (in which case checking it may corrupt data).
-            if SystemInfo["IsLiveDisk"] == False and Disk == RootFS:
-                MountPoint = "/"
-                CheckTheFS = False
-                RemountPartitionAfter = False
+            #If we're not running on a live disk, skip the filesystem if it's the same as root_fs (in which case checking it may corrupt data).
+            if SystemInfo["IsLiveDisk"] is False and disk == root_fs:
+                mount_point = "/"
+                check_this_fs = False
+                remount_fs_after = False
                 continue
 
             #Check if the partition is mounted.
-            if CoreTools.is_mounted(Disk) == False:
-                MountPoint = "None"
-                CheckTheFS = True
-                RemountPartitionAfter = False
+            if CoreTools.is_mounted(disk) is False:
+                mount_point = "None"
+                check_this_fs = True
+                remount_fs_after = False
 
             else:
                 #unmount the FS temporarily, to avoid data corruption.
-                MountPoint = CoreTools.get_mount_point_of(Disk)
+                mount_point = CoreTools.get_mount_point_of(disk)
 
-                if CoreTools.unmount(Disk) != 0:
-                    logger.warning("FindCheckableFileSystems(): Failed to unmount "+Disk+", which is necessary for safe disk checking! Ignoring it...")
-                    CheckTheFS = False
-                    RemountPartitionAfter = False
+                if CoreTools.unmount(disk) != 0:
+                    logger.warning("find_checkable_file_systems(): Failed to unmount "+disk+", which is necessary for safe disk checking! Ignoring it...")
+                    check_this_fs = False
+                    remount_fs_after = False
 
                 else:
-                    CheckTheFS = True
-                    RemountPartitionAfter = True
+                    check_this_fs = True
+                    remount_fs_after = True
 
-        if CheckTheFS:
+        if check_this_fs:
             #Add it to the dictionary for checking.
-            FileSystemsToCheck[Disk] = {}
-            FileSystemsToCheck[Disk]["Remount"] = RemountPartitionAfter
-            FileSystemsToCheck[Disk]["MountPoint"] = MountPoint
+            filesystems_to_check[disk] = {}
+            filesystems_to_check[disk]["Remount"] = remount_fs_after
+            filesystems_to_check[disk]["MountPoint"] = mount_point
 
         else:
             #Add it to the non-checkable list
-            DoNotCheckList.append(Disk+" with Filesystem: "+DiskInfo[Disk]["FileSystem"])
+            do_not_check_list.append(disk+" with Filesystem: "+DiskInfo[disk]["FileSystem"])
 
     #Report uncheckable partitions.
-    if DoNotCheckList != []:
+    if do_not_check_list != []:
         #Some filesystems will not be checked. Tell the user.
-        DialogTools.show_msg_dlg(kind="info", message="The following filesystems will not be checked:\n\n"+'\n'.join(DoNotCheckList)+".\n\nThe most likely reason for this is that some of the filesystems are in use, or that the required filesystem checkers weren't found. WxFixBoot will now continue to check the remaining filesystems.")
+        DialogTools.show_msg_dlg(kind="info", message="The following filesystems will not be checked:\n\n"+'\n'.join(do_not_check_list)+".\n\nThe most likely reason for this is that some of the filesystems are in use, or that the required filesystem checkers weren't found. WxFixBoot will now continue to check the remaining filesystems.")
 
-    logger.info("FindCheckableFileSystems(): Done! Filesystems that won't be checked: "+'\n'.join(DoNotCheckList)+"...")
-    return FileSystemsToCheck
+    logger.info("find_checkable_file_systems(): Done! Filesystems that won't be checked: "+'\n'.join(do_not_check_list)+"...")
+    return filesystems_to_check
 
-def WriteFSTABEntryForUEFIPartition(OS, MountPoint):
+def write_fstab_entry_for_uefi_partition(_os, mount_point):
     """Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one. DISABLED***"""
-    return True
+    return True #FIXME Disabled cos breaks things.
 
-    logger.info("WriteFSTABEntryForUEFIPartition(): Preparing to write an fstab entry for the UEFI partition ("+OSInfo[OS]["EFIPartition"]+")...")
+    logger.info("write_fstab_entry_for_uefi_partition(): Preparing to write an fstab entry for the UEFI partition ("+OSInfo[_os]["EFIPartition"]+")...")
 
-    WriteEntry = True
+    write_entry = True
 
-    #Make the directory MountPoint/boot/efi if it doesn't already exist.
-    if os.path.isdir(MountPoint+"/boot/efi") == False:
-        os.makedirs(MountPoint+"/boot/efi")
+    #Make the directory mount_point/boot/efi if it doesn't already exist.
+    if os.path.isdir(mount_point+"/boot/efi") is False:
+        os.makedirs(mount_point+"/boot/efi")
 
-    #Open the MountPoint/etc/fstab file for reading. If we aren't using chroot, this'll just be /etc/fstab, otherwise, /tmp/wxfixboot/mountpoints/dev/sdxy/etc/fstab. Also, save its contents in a variable.
-    fstab = open(MountPoint+"/etc/fstab", "r")
-    NewFileContents = []
+    #Open the mount_point/etc/fstab file for reading. If we aren't using chroot, this'll just be /etc/fstab, otherwise, /tmp/wxfixboot/mountpoints/dev/sdxy/etc/fstab. Also, save its contents in a variable.
+    fstab = open(mount_point+"/etc/fstab", "r")
+    new_file_contents = []
 
     for line in fstab:
-        if OSInfo[OS]["EFIPartition"] in line or "UUID="+DiskInfo[OSInfo[OS]["EFIPartition"]]["UUID"] in line:
+        if OSInfo[_os]["EFIPartition"] in line or "UUID="+DiskInfo[OSInfo[_os]["EFIPartition"]]["UUID"] in line:
             #This fstab already has an entry for the UEFI System Partition!
-            WriteEntry = False
+            write_entry = False
 
-        NewFileContents.append(line)
+        new_file_contents.append(line)
 
     #Check if we need to write the entry.
-    if WriteEntry == False:
+    if write_entry is False:
         #We don't!
-        logger.info("WriteFSTABEntryForUEFIPartition(): fstab entry already present! Skipping...")
+        logger.info("write_fstab_entry_for_uefi_partition(): fstab entry already present! Skipping...")
         fstab.close()
 
     else:
         #We do. If we can use the UUID, then we will, but otherwise we'll use the standard device name.
-        logger.info("WriteFSTABEntryForUEFIPartition(): Writing fstab entry...")
-        NewFileContents.append("\n#fstab entry for UEFI System Partition ("+OSInfo[OS]["EFIPartition"]+"), written by WxFixBoot.\n")
+        logger.info("write_fstab_entry_for_uefi_partition(): Writing fstab entry...")
+        new_file_contents.append("\n#fstab entry for UEFI System Partition ("+OSInfo[_os]["EFIPartition"]+"), written by WxFixBoot.\n")
 
-        if DiskInfo[OSInfo[OS]["EFIPartition"]]["UUID"] != "Unknown":
-            logger.info("WriteFSTABEntryForUEFIPartition(): Using UUID to prevent problems down the line...")
-            NewFileContents.append("UUID="+DiskInfo[OSInfo[OS]["EFIPartition"]]["UUID"]+" /boot/efi vfat defaults 0 2\n")
+        if DiskInfo[OSInfo[_os]["EFIPartition"]]["UUID"] != "Unknown":
+            logger.info("write_fstab_entry_for_uefi_partition(): Using UUID to prevent problems down the line...")
+            new_file_contents.append("UUID="+DiskInfo[OSInfo[_os]["EFIPartition"]]["UUID"]+" /boot/efi vfat defaults 0 2\n")
 
         else:
-            logger.warning("WriteFSTABEntryForUEFIPartition(): We have no UUID for the UEFI Partition: "+OSInfo[OS]["EFIPartition"]+"! This isn't good, and may cause problems down the line. Continuing anyway, using device name instead...")
-            NewFileContents.append(OSInfo[OS]["EFIPartition"]+" /boot/efi vfat defaults 0 2\n")
+            logger.warning("write_fstab_entry_for_uefi_partition(): We have no UUID for the UEFI Partition: "+OSInfo[_os]["EFIPartition"]+"! This isn't good, and may cause problems down the line. Continuing anyway, using device name instead...")
+            new_file_contents.append(OSInfo[_os]["EFIPartition"]+" /boot/efi vfat defaults 0 2\n")
 
         #Write the finished lines to the file.
         fstab.close()
-        fstab = open(MountPoint+"/etc/fstab", 'w')
-        fstab.write(''.join(NewFileContents))
+        fstab = open(mount_point+"/etc/fstab", 'w')
+        fstab.write(''.join(new_file_contents))
         fstab.close()
 
-        logger.info("WriteFSTABEntryForUEFIPartition(): Done!")
+        logger.info("write_fstab_entry_for_uefi_partition(): Done!")
 
-def BackupUEFIFiles(MountPoint):
+def backup_uefi_files(mount_point):
     """Backup some .efi files, just in case something goes wrong.""" #NOTE: v2.1: Make this smarter when we detect Windows.
-    logger.info("BackupUEFIFiles(): Backing up UEFI Files...")
+    logger.info("backup_uefi_files(): Backing up UEFI Files...")
 
     #We'll backup /EFI/boot/bootx64.efi if it exists, and we'll also backup Windows's uefi files, if they exist.
     #First do /EFI/boot/bootx64.efi. Fortunately, the UEFI partition is always a fat32/fat16 filesystem, so case doesn't matter.
-    logger.info("BackupUEFIFiles(): Backing up "+MountPoint+"/boot/efi/boot/boot*.efi...")
+    logger.info("backup_uefi_files(): Backing up "+mount_point+"/boot/efi/boot/boot*.efi...")
 
-    if os.path.isfile(MountPoint+"/boot/efi/EFI/boot/boot*.efi"):
-        if CoreTools.start_process("cp -v "+MountPoint+"/boot/efi/EFI/boot/boot*.efi "+MountPoint+"/boot/efi/EFI/boot/bkpbootx64.efi", show_output=False) != 0:
+    if os.path.isfile(mount_point+"/boot/efi/EFI/boot/boot*.efi"):
+        if CoreTools.start_process("cp -v "+mount_point+"/boot/efi/EFI/boot/boot*.efi "+mount_point+"/boot/efi/EFI/boot/bkpbootx64.efi", show_output=False) != 0:
             #Log and warn user if this went wrong.
-            logger.error("BackupUEFIFiles(): Failed to backup failsafe UEFI boot file! Warning user and continuing...")
+            logger.error("backup_uefi_files(): Failed to backup failsafe UEFI boot file! Warning user and continuing...")
             DialogTools.show_msg_dlg(kind="error", message="Error! WxFixBoot failed to save your UEFI boot files to the backup directory! This probably isn't very important. Click okay to continue.")
 
     #Now do Windows's files, if they exist.
-    logger.info("BackupUEFIFiles(): Backing up Windows's boot files if they exist...")
+    logger.info("backup_uefi_files(): Backing up Windows's boot files if they exist...")
 
-    if os.path.isfile(MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi"):
-        if CoreTools.start_process("cp -v "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+MountPoint+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", show_output=False) != 0:
+    if os.path.isfile(mount_point+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi"):
+        if CoreTools.start_process("cp -v "+mount_point+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+mount_point+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", show_output=False) != 0:
             #Log and warn user if this went wrong.
-            logger.error("BackupUEFIFiles(): Failed to backup Windows's UEFI boot files! Warning user and continuing...")
+            logger.error("backup_uefi_files(): Failed to backup Windows's UEFI boot files! Warning user and continuing...")
             DialogTools.show_msg_dlg(kind="error", message="Warning: WxFixBoot failed to backup Windows's UEFI boot files! This probably isn't very important. Click okay to continue.")
 
-    logger.info("BackupUEFIFiles(): Done!")
+    logger.info("backup_uefi_files(): Done!")
 
-def ManageUEFIFiles(OS, MountPoint):
+def manage_uefi_files(_os, mount_point):
     """Manage UEFI bootloader files."""
-    logger.info("ManageUEFIFiles(): Copying UEFI Files to UEFIBootDir...")
+    logger.info("manage_uefi_files(): Copying UEFI Files to uefi_boot_dir...")
 
     #First, let's check if EFI/boot already exists. This is a fat32/fat16 filesystem, so case doesn't matter.
-    if os.path.isdir(MountPoint+"/boot/efi/EFI/boot"):
-        UEFIBootDir = MountPoint+"/boot/efi/EFI/boot"
+    if os.path.isdir(mount_point+"/boot/efi/EFI/boot"):
+        uefi_boot_dir = mount_point+"/boot/efi/EFI/boot"
 
     else:
         #It doesn't, so we'll create it.
-        UEFIBootDir = MountPoint+"/boot/efi/EFI/boot"
-        os.mkdir(UEFIBootDir)
+        uefi_boot_dir = mount_point+"/boot/efi/EFI/boot"
+        os.mkdir(uefi_boot_dir)
 
     #Do this different depending on whether the OS is ubuntu or fedora-based.
-    if OSInfo[OS]["PackageManager"] == "apt-get":
-        SourceDir = MountPoint+"/boot/efi/EFI/ubuntu"
+    if OSInfo[_os]["package_manager"] == "apt-get":
+        source_dir = mount_point+"/boot/efi/EFI/ubuntu"
 
-    elif OSInfo[OS]["PackageManager"] == "yum":
-        SourceDir = MountPoint+"/boot/efi/EFI/fedora"
-        
+    elif OSInfo[_os]["package_manager"] == "yum":
+        source_dir = mount_point+"/boot/efi/EFI/fedora"
+
     #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
-    if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
-        #We need to copy both elilo.efi, and elilo.conf to UEFIBootDir.
-        logger.info("ManageUEFIFiles(): Copying elilo.efi, elilo.conf and elilomenu.msg to "+UEFIBootDir+"...")
+    if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "ELILO":
+        #We need to copy both elilo.efi, and elilo.conf to uefi_boot_dir.
+        logger.info("manage_uefi_files(): Copying elilo.efi, elilo.conf and elilomenu.msg to "+uefi_boot_dir+"...")
 
-        if CoreTools.start_process("cp -v "+SourceDir+"/elilo.efi "+UEFIBootDir+"/bootx64.efi", show_output=False) != 0:
-            logger.error("ManageUEFIFiles(): Failed to copy "+SourceDir+"/elilo.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
+        if CoreTools.start_process("cp -v "+source_dir+"/elilo.efi "+uefi_boot_dir+"/bootx64.efi", show_output=False) != 0:
+            logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/elilo.efi to "+uefi_boot_dir+"/bootx64.efi! Attempting to continue anyway...")
             DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
-        if CoreTools.start_process("cp -v "+SourceDir+"/elilo.conf "+UEFIBootDir+"/", show_output=False) != 0:
-            logger.error("ManageUEFIFiles(): Failed to copy "+SourceDir+"/elilo.conf to "+UEFIBootDir+"/! Attempting to continue anyway...")
+        if CoreTools.start_process("cp -v "+source_dir+"/elilo.conf "+uefi_boot_dir+"/", show_output=False) != 0:
+            logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/elilo.conf to "+uefi_boot_dir+"/! Attempting to continue anyway...")
             DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
-        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+UEFIBootDir+"/", show_output=False) != 0:
-            logger.error("ManageUEFIFiles(): Failed to copy elilomenu.msg to "+UEFIBootDir+"! Attempting to continue anyway...")
+        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+uefi_boot_dir+"/", show_output=False) != 0:
+            logger.error("manage_uefi_files(): Failed to copy elilomenu.msg to "+uefi_boot_dir+"! Attempting to continue anyway...")
             DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
-        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+SourceDir+"/", show_output=False) != 0:
-            logger.error("ManageUEFIFiles(): Failed to copy elilomenu.msg to "+SourceDir+"/! Attempting to continue anyway...")
+        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+source_dir+"/", show_output=False) != 0:
+            logger.error("manage_uefi_files(): Failed to copy elilomenu.msg to "+source_dir+"/! Attempting to continue anyway...")
             DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         #If we were previously using GRUB-EFI, remove its EFI files.
-        if BootloaderInfo[OS]["Bootloader"] == "GRUB-UEFI":
-            if CoreTools.start_process("rm -v "+SourceDir+"/grub*.efi", show_output=False) != 0:
-                logger.warning("ManageUEFIFiles(): Failed to remove "+SourceDir+"/grub*.efi! Attempting to continue anyway...")
+        if BootloaderInfo[_os]["Bootloader"] == "GRUB-UEFI":
+            if CoreTools.start_process("rm -v "+source_dir+"/grub*.efi", show_output=False) != 0:
+                logger.warning("manage_uefi_files(): Failed to remove "+source_dir+"/grub*.efi! Attempting to continue anyway...")
 
-    elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB-UEFI":
-        #We need to copy grub*.efi to UEFIBootDir.
-        logger.info("ManageUEFIFiles(): Copying grub*.efi to "+UEFIBootDir+"...")
+    elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+        #We need to copy grub*.efi to uefi_boot_dir.
+        logger.info("manage_uefi_files(): Copying grub*.efi to "+uefi_boot_dir+"...")
 
-        if CoreTools.start_process("cp -v "+SourceDir+"/grub*.efi "+UEFIBootDir+"/bootx64.efi", show_output=False) != 0:
-            logger.error("ManageUEFIFiles(): Failed to copy "+SourceDir+"/grub*.efi to "+UEFIBootDir+"/bootx64.efi! Attempting to continue anyway...")
+        if CoreTools.start_process("cp -v "+source_dir+"/grub*.efi "+uefi_boot_dir+"/bootx64.efi", show_output=False) != 0:
+            logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/grub*.efi to "+uefi_boot_dir+"/bootx64.efi! Attempting to continue anyway...")
             DialogTools.show_msg_dlg(kind="warning", message="WxFixBoot failed to copy the new bootloader's UEFI files to the failsafe directory! This is likely not a problem. Click okay to continue.")
 
         #If we were previously using ELILO, remove its EFI files.
-        if BootloaderInfo[OS]["Bootloader"] == "ELILO":
-            if CoreTools.start_process("rm -v "+SourceDir+"/elilo*", show_output=False) != 0:
-                logger.warning("ManageUEFIFiles(): Failed to remove "+SourceDir+"/elilo*! Attempting to continue anyway...")
+        if BootloaderInfo[_os]["Bootloader"] == "ELILO":
+            if CoreTools.start_process("rm -v "+source_dir+"/elilo*", show_output=False) != 0:
+                logger.warning("manage_uefi_files(): Failed to remove "+source_dir+"/elilo*! Attempting to continue anyway...")
 
-    logger.info("ManageUEFIFiles(): Done!")
+    logger.info("manage_uefi_files(): Done!")
