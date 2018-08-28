@@ -771,18 +771,18 @@ class MainWindow(wx.Frame):
         #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
         #Do essential processes first.
         if Settings["QuickFSCheck"]:
-            Operations.append((EssentialBackendTools.filesystem_check, "Quick", Tools.BackendTools.main.ManageBootloader))
+            Operations.append((EssentialBackendTools.filesystem_check, "Quick", Tools.BackendTools.main.manage_bootloader))
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.filesystem_check to Operations...")
 
         if Settings["BadSectorCheck"]:
-            Operations.append((EssentialBackendTools.filesystem_check, "Thorough", Tools.BackendTools.main.ManageBootloader))
+            Operations.append((EssentialBackendTools.filesystem_check, "Thorough", Tools.BackendTools.main.manage_bootloader))
             logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.filesystem_check to Operations...")
 
         #Now do other processes.
         for OS in BootloaderInfo.keys():
             if BootloaderInfo[OS]["Settings"]["ChangeThisOS"]:
-                Operations.append((MainBackendTools.ManageBootloader, OS))
-                logger.info("MainWindow().CountOperations(): Added (MainBackendTools.ManageBootloader, "+OS+") to Operations...")
+                Operations.append((MainBackendTools.manage_bootloader, OS))
+                logger.info("MainWindow().CountOperations(): Added (MainBackendTools.manage_bootloader, "+OS+") to Operations...")
 
         NumberOfOperations = len(Operations)
 
@@ -2502,7 +2502,7 @@ class BackendThread(threading.Thread):
 
         for Function in Operations:
             if type(Function) == type(()):
-                if MainBackendTools.ManageBootloader in Function:
+                if MainBackendTools.manage_bootloader in Function:
                     DialogMessage += " You performed bootloader operations on at least one OS, so please now reboot your system."
                     break
 
