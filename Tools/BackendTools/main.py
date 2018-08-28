@@ -497,7 +497,7 @@ def set_new_bootloader_config(_os):
     if BootloaderInfo[_os]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
         #Update GRUB.
         logger.info("set_new_bootloader_config(): Updating GRUB2 Configuration...")
-        BootloaderConfigSettingTools.UpdateGRUB2(OS=_os, PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
+        BootloaderConfigSettingTools.update_grub2(OS=_os, PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
 
         BootloaderInfo[_os]["NewMenuEntries"] = BootloaderConfigObtainingTools.parse_grub2_menu_data(menu_data="", mount_point=mount_point)[1]
 
@@ -507,7 +507,7 @@ def set_new_bootloader_config(_os):
         if os.path.isfile(mount_point+"/etc/default/grub"):
             #It does, we'll run the function to set the config now.
             logger.info("set_new_bootloader_config(): Setting GRUB2 Configuration...")
-            BootloaderConfigSettingTools.SetGRUB2Config(OS=_os, filetoopen=mount_point+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[_os]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
+            BootloaderConfigSettingTools.set_grub2_config(OS=_os, filetoopen=mount_point+"/etc/default/grub", BootloaderTimeout=BootloaderInfo[_os]["Settings"]["NewTimeout"], KernelOptions=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
 
         if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #Mount the UEFI partition at mount_point/boot/efi.
@@ -518,16 +518,16 @@ def set_new_bootloader_config(_os):
 
             #Now Install GRUB-UEFI to the UEFI Partition.
             logger.info("set_new_bootloader_config(): Installing GRUB-UEFI to "+OSInfo[_os]["EFIPartition"]+"...")
-            BootloaderConfigSettingTools.InstallGRUB2ToEFIPartition(PackageManager=OSInfo[_os]["PackageManager"], mount_point=mount_point, use_chroot=use_chroot, UEFISystemPartitionMountPoint="/boot/efi", Arch=OSInfo[_os]["Arch"])
+            BootloaderConfigSettingTools.install_grub2_to_efi_partition(PackageManager=OSInfo[_os]["PackageManager"], mount_point=mount_point, use_chroot=use_chroot, UEFISystemPartitionMountPoint="/boot/efi", Arch=OSInfo[_os]["Arch"])
 
         else:
             #Now Install GRUB2 to the MBR.
             logger.info("set_new_bootloader_config(): Installing GRUB2 to "+DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"]+"...")
-            BootloaderConfigSettingTools.InstallGRUB2ToMBR(PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point, Device=DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"])
+            BootloaderConfigSettingTools.install_grub2_to_mbr(PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point, Device=DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"])
 
         #Update GRUB.
         logger.info("set_new_bootloader_config(): Updating GRUB2 Configuration...")
-        BootloaderConfigSettingTools.UpdateGRUB2(OS=_os, PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
+        BootloaderConfigSettingTools.update_grub2(OS=_os, PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
 
         if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #Make an entry in fstab for the UEFI Partition, if needed.
@@ -631,15 +631,15 @@ def set_new_bootloader_config(_os):
         if os.path.isfile(mount_point+"/etc/lilo.conf"):
             #It does, we'll run the function to set the config now.
             logger.info("set_new_bootloader_config(): Setting LILO Configuration...")
-            BootloaderConfigSettingTools.SetLILOConfig(OS=_os, filetoopen=mount_point+"/etc/lilo.conf")
+            BootloaderConfigSettingTools.set_lilo_config(OS=_os, filetoopen=mount_point+"/etc/lilo.conf")
 
             #Also, set the OS entries.
             logger.info("set_new_bootloader_config(): Creating LILO OS Entries...")
-            BootloaderConfigSettingTools.MakeLILOOSEntries(OS=_os, filetoopen=mount_point+"/etc/lilo.conf", mount_point=mount_point, KernelOptions=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
+            BootloaderConfigSettingTools.make_lilo_os_entries(OS=_os, filetoopen=mount_point+"/etc/lilo.conf", mount_point=mount_point, KernelOptions=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
 
         #Now Install LILO to the MBR.
         logger.info("set_new_bootloader_config(): Installing LILO to the MBR...")
-        BootloaderConfigSettingTools.InstallLILOToMBR(PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
+        BootloaderConfigSettingTools.install_lilo_to_mbr(PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
 
     elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "ELILO":
         #unmount the UEFI Partition now, and update mtab in the chroot.
@@ -670,15 +670,15 @@ def set_new_bootloader_config(_os):
         if os.path.isfile(mount_point+"/etc/elilo.conf"):
             #It does, we'll run the function to set the config now.
             logger.info("set_new_bootloader_config(): Setting ELILO Configuration...")
-            BootloaderConfigSettingTools.SetLILOConfig(OS=_os, filetoopen=mount_point+"/etc/elilo.conf")
+            BootloaderConfigSettingTools.set_lilo_config(OS=_os, filetoopen=mount_point+"/etc/elilo.conf")
 
             #Also, set the OS entries.
             logger.info("set_new_bootloader_config(): Creating ELILO OS Entries...")
-            BootloaderConfigSettingTools.MakeLILOOSEntries(OS=_os, filetoopen=mount_point+"/etc/elilo.conf", mount_point=mount_point, KernelOptions=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
+            BootloaderConfigSettingTools.make_lilo_os_entries(OS=_os, filetoopen=mount_point+"/etc/elilo.conf", mount_point=mount_point, KernelOptions=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
 
         #Now Install ELILO to the UEFI Partition.
         logger.info("set_new_bootloader_config(): Installing ELILO to "+OSInfo[_os]["EFIPartition"]+"...")
-        BootloaderConfigSettingTools.InstallELILOToPartition(OS=_os, PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
+        BootloaderConfigSettingTools.install_elilo_to_partition(OS=_os, PackageManager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
 
         #Mount the UEFI partition at mount_point/boot/efi.
         if CoreTools.mount_partition(partition=OSInfo[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:

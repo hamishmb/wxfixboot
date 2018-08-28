@@ -27,7 +27,7 @@ import sys
 import logging
 
 #Import other modules.
-from .. import helpers
+from .. import helpers as HelperBackendTools
 
 sys.path.append('../../..') #Need to be able to import the Tools module from here.
 import Tools.coretools as CoreTools
@@ -37,282 +37,287 @@ import Tools.dialogtools as DialogTools
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def SetGRUB2Config(OS, filetoopen, BootloaderTimeout, KernelOptions):
+#Silence pylint errors about missing global dictionaries.
+OSInfo = {}
+DiskInfo = {}
+BootloaderInfo = {}
+
+def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
     """Set GRUB2 config."""
-    logger.info("SetGRUB2Config(): Setting GRUB2 Config in "+filetoopen+"...")
-    SetTimeout, SetKOpts, SetDefault = (False, False, False)
+    logger.info("set_grub2_config(): Setting GRUB2 Config in "+filetoopen+"...")
+    set_timeout, set_kernel_options, set_default = (False, False, False)
 
     #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
-    logger.info("SetGRUB2Config(): Attempting to match the WxFixBoot's default OS for this bootloader to any OS that GRUB2 detected...")
+    logger.info("set_grub2_config(): Attempting to match the WxFixBoot's default OS for this bootloader to any OS that GRUB2 detected...")
 
     #Find the ID for the menu entry that correspondes to that OS (Main Menu only to avoid recovery options + misc).
-    BLSpecificDefaultOS = "Unknown"
+    botloader_specific_default_os = "Unknown"
 
-    for Entry in BootloaderInfo[OS]["NewMenuEntries"]["MainMenu"]["Order"]:
-        if HelperBackendTools.partition_matches_os(BootloaderInfo[OS]["NewMenuEntries"]["MainMenu"][Entry]["Partition"], BootloaderInfo[OS]["Settings"]["DefaultOS"]):
-            BLSpecificDefaultOS = BootloaderInfo[OS]["NewMenuEntries"]["MainMenu"][Entry]["ID"]
-            logger.info("SetGRUB2Config(): Found Default OS's GRUB2 ID...")
+    for entry in BootloaderInfo[_os]["NewMenuEntries"]["MainMenu"]["Order"]:
+        if HelperBackendTools.partition_matches_os(BootloaderInfo[_os]["NewMenuEntries"]["MainMenu"][entry]["Partition"], BootloaderInfo[_os]["Settings"]["DefaultOS"]):
+            botloader_specific_default_os = BootloaderInfo[_os]["NewMenuEntries"]["MainMenu"][entry]["ID"]
+            logger.info("set_grub2_config(): Found Default OS's GRUB2 ID...")
             break
 
     #Log if we couldn't match them.
-    if BLSpecificDefaultOS == "Unknown":
-        logger.warning("SetGRUB2Config(): Couldn't match! We will instead pick the 1st menu entry. Warning user...")
-        DialogTools.show_msg_dlg(message="Couldn't match the default OS you picked to any that "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+" has detected! This doesn't matter, so instead, the first menu entry will be the default. Click okay to continue...")
-        BLSpecificDefaultOS = "0"
+    if botloader_specific_default_os == "Unknown":
+        logger.warning("set_grub2_config(): Couldn't match! We will instead pick the 1st menu entry. Warning user...")
+        DialogTools.show_msg_dlg(message="Couldn't match the default OS you picked to any that "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" has detected! This doesn't matter, so instead, the first menu entry will be the default. Click okay to continue...")
+        botloader_specific_default_os = "0"
 
     #Open the file in read mode, so we can find the new config that needs setting. Also, use a list to temporarily store the modified lines.
-    logger.debug("SetGRUB2Config(): Attempting to modify existing lines in the config file first, without making any new ones...")
-    ConfigFile = open(filetoopen, 'r')
-    NewFileContents = []
+    logger.debug("set_grub2_config(): Attempting to modify existing lines in the config file first, without making any new ones...")
+    config_file = open(filetoopen, 'r')
+    new_file_contents = []
 
     #Loop through each line in the file, paying attention only to the important ones.
-    for line in ConfigFile:
+    for line in config_file:
         #Look for the timeout setting.
-        if 'GRUB_TIMEOUT' in line and '=' in line and SetTimeout == False:
-            #Found it! Set the value to the current value of BootloaderTimeout.
-            logger.debug("SetGRUB2Config(): Found GRUB_TIMEOUT, setting it to '"+unicode(BootloaderTimeout)+"'...")
-            SetTimeout = True
-            line = "GRUB_TIMEOUT="+unicode(BootloaderTimeout)+"\n"
+        if 'GRUB_TIMEOUT' in line and '=' in line and set_timeout is False:
+            #Found it! Set the value to the current value of bootloader_timeout.
+            logger.debug("set_grub2_config(): Found GRUB_TIMEOUT, setting it to '"+unicode(bootloader_timeout)+"'...")
+            set_timeout = True
+            line = "GRUB_TIMEOUT="+unicode(bootloader_timeout)+"\n"
 
         #Look for kernel options setting.
-        elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line and SetKOpts == False:
-            #Found it! Set it to the options in KernelOptions, carefully making sure we aren't double-quoting it.
-            logger.debug("SetGRUB2Config(): Found GRUB_CMDLINE_LINUX_DEFAULT, setting it to '"+KernelOptions+"'...")
-            SetKOpts = True
-            line = "GRUB_CMDLINE_LINUX_DEFAULT='"+KernelOptions+"'\n"
+        elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line and set_kernel_options is False:
+            #Found it! Set it to the options in kernel_options, carefully making sure we aren't double-quoting it.
+            logger.debug("set_grub2_config(): Found GRUB_CMDLINE_LINUX_DEFAULT, setting it to '"+kernel_options+"'...")
+            set_kernel_options = True
+            line = "GRUB_CMDLINE_LINUX_DEFAULT='"+kernel_options+"'\n"
 
         #Look for the "GRUB_DEFAULT" setting.
-        elif "GRUB_DEFAULT" in line and '=' in line and SetDefault == False:
+        elif "GRUB_DEFAULT" in line and '=' in line and set_default is False:
             #Found it. Set it to 'saved', so we can set the default bootloader.
-            logger.debug("SetGRUB2Config(): Found GRUB_DEFAULT, setting it to '"+BLSpecificDefaultOS+"' (ID of default OS)...")
-            SetDefault = True
-            line = "GRUB_DEFAULT="+BLSpecificDefaultOS+"\n"
+            logger.debug("set_grub2_config(): Found GRUB_DEFAULT, setting it to '"+botloader_specific_default_os+"' (ID of default OS)...")
+            set_default = True
+            line = "GRUB_DEFAULT="+botloader_specific_default_os+"\n"
 
         #Comment out the GRUB_HIDDEN_TIMEOUT line.
         elif 'GRUB_HIDDEN_TIMEOUT' in line and 'GRUB_HIDDEN_TIMEOUT_QUIET' not in line and '=' in line and '#' not in line:
-            logger.debug("SetGRUB2Config(): Commenting out GRUB_HIDDEN_TIMEOUT...")
+            logger.debug("set_grub2_config(): Commenting out GRUB_HIDDEN_TIMEOUT...")
             line = "#"+line
 
         #Comment out the GRUB_CMDLINE_LINUX line.
         elif 'GRUB_CMDLINE_LINUX' in line and 'GRUB_CMDLINE_LINUX_DEFAULT' not in line and '=' in line and '#' not in line:
-            logger.debug("SetGRUB2Config(): Commenting out GRUB_CMDLINE_LINUX...")
+            logger.debug("set_grub2_config(): Commenting out GRUB_CMDLINE_LINUX...")
             line = "#"+line
 
-        NewFileContents.append(line)
+        new_file_contents.append(line)
 
     #Check that everything was set. If not, write that config now.
-    if SetTimeout == False:
-        logger.debug("SetGRUB2Config(): Didn't find GRUB_TIMEOUT in config file. Creating and setting it to '"+unicode(BootloaerTimeout)+"'...")
-        NewFileContents.append("GRUB_TIMEOUT="+unicode(BootloaderTimeout)+"\n")
+    if set_timeout is False:
+        logger.debug("set_grub2_config(): Didn't find GRUB_TIMEOUT in config file. Creating and setting it to '"+unicode(bootloader_timeout)+"'...")
+        new_file_contents.append("GRUB_TIMEOUT="+unicode(bootloader_timeout)+"\n")
 
-    if SetKOpts == False:
-        Temp = KernelOptions.replace('\"', '').replace("\'", "").replace("\n", "")
-        logger.debug("SetGRUB2Config(): Didn't find GRUB_CMDLINE_LINUX_DEFAULT in config file. Creating and setting it to '"+KernelOptions+"'...")
-        NewFileContents.append("GRUB_CMDLINE_LINUX_DEFAULT='"+Temp+"'\n")
+    if set_kernel_options is False:
+        temp = kernel_options.replace('\"', '').replace("\'", "").replace("\n", "")
+        logger.debug("set_grub2_config(): Didn't find GRUB_CMDLINE_LINUX_DEFAULT in config file. Creating and setting it to '"+kernel_options+"'...")
+        new_file_contents.append("GRUB_CMDLINE_LINUX_DEFAULT='"+temp+"'\n")
 
-    if SetDefault == False:
-        logger.debug("SetGRUB2Config(): Didn't find GRUB_DEFAULT in config file. Creating and setting it to 'saved'...")
-        NewFileContents.append("GRUB_DEFAULT="+BLSpecificDefaultOS+"\n")
+    if set_default is False:
+        logger.debug("set_grub2_config(): Didn't find GRUB_DEFAULT in config file. Creating and setting it to 'saved'...")
+        new_file_contents.append("GRUB_DEFAULT="+botloader_specific_default_os+"\n")
 
     #Write the finished lines to the file.
-    logger.info("SetGRUB2Config(): Writing new config to file...")
-    ConfigFile.close()
-    ConfigFile = open(filetoopen, 'w')
-    ConfigFile.write(''.join(NewFileContents))
-    ConfigFile.close()
+    logger.info("set_grub2_config(): Writing new config to file...")
+    config_file.close()
+    config_file = open(filetoopen, 'w')
+    config_file.write(''.join(new_file_contents))
+    config_file.close()
 
-    logger.info("SetGRUB2Config(): Done!")
+    logger.info("set_grub2_config(): Done!")
 
-def InstallGRUB2ToMBR(PackageManager, UseChroot, MountPoint, Device):
+def install_grub2_to_mbr(package_manager, use_chroot, mount_point, device):
     """Install GRUB2 (BIOS version) into the MBR of the hard drive"""
     #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the MBR.
     #Use --force to make sure grub installs iteven on a GPT disk with no bios boot partition.
     #Can flag as a warning on Fedora systems when just updating, but ignore it.
-    if PackageManager == "apt-get":
-        Cmd = "grub-install --force "+Device
+    if package_manager == "apt-get":
+        cmd = "grub-install --force "+device
 
-    elif PackageManager == "yum":
-        Cmd = "grub2-install --force --target=i386-pc "+Device
+    elif package_manager == "yum":
+        cmd = "grub2-install --force --target=i386-pc "+device
 
-    if UseChroot:
-        Cmd = "chroot "+MountPoint+" "+Cmd
+    if use_chroot:
+        cmd = "chroot "+mount_point+" "+cmd
 
-    Retval = CoreTools.start_process(Cmd, show_output=False)
+    retval = CoreTools.start_process(cmd, show_output=False)
 
     #Return the return value.
-    return Retval
+    return retval
 
-def InstallGRUB2ToEFIPartition(PackageManager, UseChroot, MountPoint, UEFISystemPartitionMountPoint, Arch):
+def install_grub2_to_efi_partition(package_manager, use_chroot, mount_point, uefi_system_partition_mount_point, arch):
     """Install GRUB2 (EFI/UEFI version) into the EFI/UEFI partition"""
     #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
-    if PackageManager == "apt-get":
-        Cmd = "grub-install --efi-directory="+UEFISystemPartitionMountPoint+" --target="+Arch+"-efi"
+    if package_manager == "apt-get":
+        cmd = "grub-install --efi-directory="+uefi_system_partition_mount_point+" --target="+arch+"-efi"
 
-    elif PackageManager == "yum":
+    elif package_manager == "yum":
         #Don't install on fedora, it messes stuff up.
-        Cmd = "echo 'Disabled on Fedora'"
+        cmd = "echo 'Disabled on Fedora'"
 
-    if UseChroot:
-        Cmd = "chroot "+MountPoint+" "+Cmd
+    if use_chroot:
+        cmd = "chroot "+mount_point+" "+cmd
 
-    Retval = CoreTools.start_process(Cmd, show_output=False)
+    retval = CoreTools.start_process(cmd, show_output=False)
 
     #Return the return value.
-    return Retval
+    return retval
 
-def UpdateGRUB2(OS, PackageManager, UseChroot, MountPoint):
+def update_grub2(_os, package_manager, use_chroot, mount_point):
     """Run 'update-grub' to update GRUB2's (BIOS and EFI/UEFI) configuration and bootloader menu"""
     #We need to update grub.
-    if PackageManager == "apt-get":
-        Cmd = "update-grub2"
+    if package_manager == "apt-get":
+        cmd = "update-grub2"
 
-    elif PackageManager == "yum" and BootloaderInfo[OS]["Settings"]["NewBootloader"] == "GRUB2":
-        Cmd = "grub2-mkconfig -o /boot/grub2/grub.cfg"
+    elif package_manager == "yum" and BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB2":
+        cmd = "grub2-mkconfig -o /boot/grub2/grub.cfg"
 
-    elif PackageManager == "yum":
-        Cmd = "grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg"
+    elif package_manager == "yum":
+        cmd = "grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg"
 
-    if UseChroot:
-        Cmd = "chroot "+MountPoint+" "+Cmd
+    if use_chroot:
+        cmd = "chroot "+mount_point+" "+cmd
 
-    Retval = CoreTools.start_process(Cmd, show_output=False)
+    retval = CoreTools.start_process(cmd, show_output=False)
 
     #Return the return value.
-    return Retval
+    return retval
 
-def SetLILOConfig(OS, filetoopen):
+def set_lilo_config(_os, filetoopen):
     """Set config for both LILO and ELILO"""
-    logger.info("SetLILOConfig(): Setting LILO config in "+filetoopen+"...")
-    SetTimeout, SetBootDevice = (False, False)
+    logger.info("set_lilo_config(): Setting LILO config in "+filetoopen+"...")
+    set_timeout, set_boot_device = (False, False)
 
     #Find the ID for the boot device if possible.
-    logger.info("SetLILOConfig(): Getting ID for boot device...")
+    logger.info("set_lilo_config(): Getting ID for boot device...")
 
-    if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO":
-        if DiskInfo[DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]]["ID"] != "Unknown":
+    if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "LILO":
+        if DiskInfo[DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"]]["ID"] != "Unknown":
             #Good, we've got the ID.
-            logger.debug("SetLILOConfig(): Found ID /dev/disk/by-id/"+DiskInfo[DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]]["ID"]+"...")
+            logger.debug("set_lilo_config(): Found ID /dev/disk/by-id/"+DiskInfo[DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"]]["ID"]+"...")
 
-            #Set it to RootDevice's ID.                    
-            BootDevice = "/dev/disk/by-id/"+DiskInfo[DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]]["ID"]
+            #Set it to RootDevice's ID.
+            boot_device = "/dev/disk/by-id/"+DiskInfo[DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"]]["ID"]
 
         else:
             #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
-            logger.warning("SetLILOConfig(): We don't have the ID! Using "+DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]+" instead. This may cause problems if the device name changes!")
-            BootDevice = DiskInfo[OSInfo[OS]["Partition"]]["HostDevice"]
+            logger.warning("set_lilo_config(): We don't have the ID! Using "+DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"]+" instead. This may cause problems if the device name changes!")
+            boot_device = DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"]
 
-    elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
-        if DiskInfo[OSInfo[OS]["EFIPartition"]]["ID"] != "Unknown":
+    elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "ELILO":
+        if DiskInfo[OSInfo[_os]["EFIPartition"]]["ID"] != "Unknown":
             #Good, we've got the ID.
-            logger.debug("SetLILOConfig(): Found ID /dev/disk/by-id/"+DiskInfo[OSInfo[OS]["EFIPartition"]]["ID"]+"...")
+            logger.debug("set_lilo_config(): Found ID /dev/disk/by-id/"+DiskInfo[OSInfo[_os]["EFIPartition"]]["ID"]+"...")
 
-            #Set it to RootDevice's ID.                    
-            BootDevice = "/dev/disk/by-id/"+DiskInfo[OSInfo[OS]["EFIPartition"]]["ID"]
+            #Set it to RootDevice's ID.
+            boot_device = "/dev/disk/by-id/"+DiskInfo[OSInfo[_os]["EFIPartition"]]["ID"]
 
         else:
             #Not so good... We'll have to use the device name, which may change, especially if we're using chroot.
-            logger.warning("SetLILOConfig(): We don't have the ID! Using "+OSInfo[OS]["EFIPartition"]+" instead. This may cause problems if the device name changes!")
-            BootDevice = OSInfo[OS]["EFIPartition"]
+            logger.warning("set_lilo_config(): We don't have the ID! Using "+OSInfo[_os]["EFIPartition"]+" instead. This may cause problems if the device name changes!")
+            boot_device = OSInfo[_os]["EFIPartition"]
 
     #Open the file in read mode, so we can find the important bits of config to edit. Also, use a list to temporarily store the modified lines.
-    logger.debug("SetLILOConfig(): Attempting to modify existing lines in the config file first, without creating any new ones...")
-    ConfigFile = open(filetoopen, 'r')
-    NewFileContents = []
+    logger.debug("set_lilo_config(): Attempting to modify existing lines in the config file first, without creating any new ones...")
+    config_file = open(filetoopen, 'r')
+    new_file_contents = []
 
     #Loop through each line in the file, paying attention only to the important ones.
-    for line in ConfigFile:
+    for line in config_file:
         #Look for the timeout setting (ELILO).
-        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO" and 'delay' in line and '=' in line and '#' not in line and SetTimeout == False:
+        if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "ELILO" and 'delay' in line and '=' in line and '#' not in line and set_timeout is False:
             #Found it! Set it to our value.
-            logger.debug("SetLILOConfig(): Found timeout setting, setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...") 
-            SetTimeout = True
+            logger.debug("set_lilo_config(): Found timeout setting, setting it to "+unicode(BootloaderInfo[_os]["Settings"]["NewTimeout"])+"...")
+            set_timeout = True
 
             #Also set prompt to use the text menu, chooser to textmenu, and the text menu file.
-            logger.debug("SetLILOConfig(): Setting up ELILO's text menu...")
-            NewFileContents.append("prompt\n")
-            NewFileContents.append("chooser=textmenu\n")
-            NewFileContents.append("message=elilomenu.msg\n")
+            logger.debug("set_lilo_config(): Setting up ELILO's text menu...")
+            new_file_contents.append("prompt\n")
+            new_file_contents.append("chooser=textmenu\n")
+            new_file_contents.append("message=elilomenu.msg\n")
 
-            line = "delay="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"]*10)+"\n"
+            line = "delay="+unicode(BootloaderInfo[_os]["Settings"]["NewTimeout"]*10)+"\n"
 
         #Look for the timeout setting (LILO).
-        elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO" and 'timeout' in line and '=' in line and '#' not in line and SetTimeout == False:
+        elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "LILO" and 'timeout' in line and '=' in line and '#' not in line and set_timeout is False:
             #Found it! Set it to our value.
-            logger.debug("SetLILOConfig(): Found timeout setting, setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
-            SetTimeout = True
-            line = "timeout="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"]*10)+"\n"
+            logger.debug("set_lilo_config(): Found timeout setting, setting it to "+unicode(BootloaderInfo[_os]["Settings"]["NewTimeout"])+"...")
+            set_timeout = True
+            line = "timeout="+unicode(BootloaderInfo[_os]["Settings"]["NewTimeout"]*10)+"\n"
 
         #Look for the 'boot' setting.
-        elif 'boot' in line and '=' in line and '#' not in line and 'map' not in line and SetBootDevice == False: 
+        elif 'boot' in line and '=' in line and '#' not in line and 'map' not in line and set_boot_device is False:
             #Found it, seperate the line.
-            logger.debug("SetLILOConfig(): Found boot setting, setting it to "+BootDevice+"...")
-            SetBootDevice = True
+            logger.debug("set_lilo_config(): Found boot setting, setting it to "+boot_device+"...")
+            set_boot_device = True
 
             #Reassemble the line.
-            line = "boot="+BootDevice+"\n"
+            line = "boot="+boot_device+"\n"
 
         #Get rid of any boot entries.
         elif 'image=' in line or '\t' in line:
             #Skip this line, and don't append it to the list.
-            logger.debug("SetLILOConfig(): Found boot entry, removing it...")
+            logger.debug("set_lilo_config(): Found boot entry, removing it...")
             continue
 
-        NewFileContents.append(line)
+        new_file_contents.append(line)
 
     #Check that everything was set. If not, write that config now.
-    if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO" and SetTimeout == False:
-        logger.debug("SetLILOConfig(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
+    if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "ELILO" and set_timeout is False:
+        logger.debug("set_lilo_config(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderInfo[_os]["Settings"]["NewTimeout"])+"...")
 
         #Also set prompt to use the text menu, chooser to textmenu, and the text menu file.
-        logger.debug("SetLILOConfig(): Setting up ELILO's text menu...")
-        NewFileContents.append("prompt\n")
-        NewFileContents.append("chooser=textmenu\n")
-        NewFileContents.append("message=elilomenu.msg\n")
+        logger.debug("set_lilo_config(): Setting up ELILO's text menu...")
+        new_file_contents.append("prompt\n")
+        new_file_contents.append("chooser=textmenu\n")
+        new_file_contents.append("message=elilomenu.msg\n")
 
-        NewFileContents.append("delay="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"\n")
+        new_file_contents.append("delay="+unicode(BootloaderInfo[_os]["Settings"]["NewTimeout"])+"\n")
 
-    elif BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO" and SetTimeout == False:
-        logger.debug("SetLILOConfig(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"...")
-        NewFileContents.append("timeout="+unicode(BootloaderInfo[OS]["Settings"]["NewTimeout"])+"\n")
+    elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "LILO" and set_timeout is False:
+        logger.debug("set_lilo_config(): Didn't find timeout in config file. Creating it and setting it to "+unicode(BootloaderInfo[_os]["Settings"]["NewTimeout"])+"...")
+        new_file_contents.append("timeout="+unicode(BootloaderInfo[_os]["Settings"]["NewTimeout"])+"\n")
 
     #Use LILO's compact option to speed the boot process up.
-    if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "LILO":
-        NewFileContents.append("compact\n")
+    if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "LILO":
+        new_file_contents.append("compact\n")
 
-    if SetBootDevice == False:
+    if set_boot_device is False:
         #Now let's find the ID of RootDevice.
-        logger.debug("SetLILOConfig(): Didn't find boot setting in config file. Creating it and setting it to "+BootDevice+"...")
-        NewFileContents.append("boot="+BootDevice+"\n")
+        logger.debug("set_lilo_config(): Didn't find boot setting in config file. Creating it and setting it to "+boot_device+"...")
+        new_file_contents.append("boot="+boot_device+"\n")
 
     #Write the finished lines to the file.
-    logger.info("SetLILOConfig(): Writing new config to file...")
-    ConfigFile.close()
-    ConfigFile = open(filetoopen, 'w')
-    ConfigFile.write(''.join(NewFileContents))
-    ConfigFile.close()
+    logger.info("set_lilo_config(): Writing new config to file...")
+    config_file.close()
+    config_file = open(filetoopen, 'w')
+    config_file.write(''.join(new_file_contents))
+    config_file.close()
 
-    logger.info("SetLILOConfig(): Done!")
+    logger.info("set_lilo_config(): Done!")
 
-def MakeLILOOSEntries(OS, filetoopen, MountPoint, KernelOptions):
+def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
     """Make OS Entries in the bootloader menu for LILO and ELILO, and then the default OS"""
-    logger.info("MakeLILOOSEntries(): Preparing to make OS entries for "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"...")
+    logger.info("make_lilo_os_entries(): Preparing to make OS entries for "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"...")
     #Okay, we've saved the kopts, timeout, and the boot device in the list.
     #Now we'll set the OS entries, and then the default OS.
     #Open the file, and add each entry to a temporary list, which will be written to the file later.
-    ConfigFile = open(filetoopen, 'r')
-    NewFileContents = []
+    config_file = open(filetoopen, 'r')
+    new_file_contents = []
 
     #First, make sure everything else comes first, because LILO and ELILO are picky with the placement of the image files (they must be at the end of the file).
     #We'll also make a placeholder for the default OS, so it comes before the image entries too.
     #Also remove existing entries first.
-    logger.debug("MakeLILOOSEntries(): Making placeholder for default OS if needed...")
+    logger.debug("make_lilo_os_entries(): Making placeholder for default OS if needed...")
 
-    Temp = False
+    temp = False
 
-    for line in ConfigFile:
+    for line in config_file:
         if 'default' in line and '=' in line and '#' not in line:
             #The place holder already exists. Set a variable so we don't make one.
-            Temp = True
+            temp = True
 
         elif ("image" in line or "initrd" in line or "label" in line) and "=" in line:
             continue
@@ -320,171 +325,171 @@ def MakeLILOOSEntries(OS, filetoopen, MountPoint, KernelOptions):
         elif "read-only" in line or "read-write" in line:
             continue
 
-        NewFileContents.append(line)
+        new_file_contents.append(line)
 
     #If there isn't a placeholder, make one now.
-    if Temp == False:
-        NewFileContents.append("default=setthis\n")
+    if temp is False:
+        new_file_contents.append("default=setthis\n")
 
     #Make the OS entries.
-    logger.info("MakeLILOOSEntries(): Making OS Entries...")
+    logger.info("make_lilo_os_entries(): Making OS Entries...")
 
-    if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
-        NewFileContents.append("#################### ELILO per-image section ####################")
+    if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "ELILO":
+        new_file_contents.append("#################### ELILO per-image section ####################")
 
     #As we make these entries, we'll record which ones were actually made, as the user can cancel them if it looks like it won't work.
-    CompletedEntriesList = []
+    completed_entries_list = []
 
-    Keys = OSInfo.keys()
-    Keys.sort()
+    keys = OSInfo.keys()
+    keys.sort()
 
-    for OS in Keys:
-        logger.info("MakeLILOOSEntries(): Preparing to make an entry for: "+OS)
+    for _os in keys:
+        logger.info("make_lilo_os_entries(): Preparing to make an entry for: "+_os)
 
-        if not os.path.isfile(MountPoint+"/vmlinuz") or not os.path.isfile(MountPoint+"/initrd.img"):
+        if not os.path.isfile(mount_point+"/vmlinuz") or not os.path.isfile(mount_point+"/initrd.img"):
             #We can't make an entry for this OS. Warn the user.
-            logger.warning("MakeLILOOSEntries(): Couldn't find /vmlinuz or /initrd.img for "+OS+"! Telling the user we can't make an entry...")
+            logger.warning("make_lilo_os_entries(): Couldn't find /vmlinuz or /initrd.img for "+_os+"! Telling the user we can't make an entry...")
 
-            Result = DialogTools.show_msg_dlg(message="Warning: The shortcut to the latest kernel or initrd weren't found for "+OS+"! Unfortunately, this means WxFixBoot can't make a bootloader entry for this OS. Click okay to continue.", kind="Warning")
+            DialogTools.show_msg_dlg(message="Warning: The shortcut to the latest kernel or initrd weren't found for "+_os+"! Unfortunately, this means WxFixBoot can't make a bootloader entry for this OS. Click okay to continue.", kind="Warning")
 
             continue
 
         #Names in LILO are not allowed to have spaces, so let's remove the spaces from them.
-        OSName = OS.replace(' ','')
+        os_name = _os.replace(' ', '')
 
         #Check that the name is no longer than 15 characters.
-        if len(OSName) > 15:
+        if len(os_name) > 15:
             #The name is too long! Truncate it to 15 characters.
-            logger.warning("MakeLILOOSEntries(): Truncating OS Name: "+OSName+" to 15 characters...")
-            OSName = OSName[0:15]
+            logger.warning("make_lilo_os_entries(): Truncating OS Name: "+os_name+" to 15 characters...")
+            os_name = os_name[0:15]
 
         #Now let's make the entries (both standard and recovery).
-        AssembleLILOMenuEntry(OSName, OS, KernelOptions, NewFileContents)
-        AssembleLILOMenuEntry(OSName[0:-4]+"recv", OS, KernelOptions+" recovery", NewFileContents)
+        assemble_lilo_menu_entry(os_name, _os, kernel_options, new_file_contents)
+        assemble_lilo_menu_entry(os_name[0:-4]+"recv", _os, kernel_options+" recovery", new_file_contents)
 
         #Add this OS to the Completed Entries List, because if we got this far it's done and added.
-        logger.debug("MakeLILOOSEntries(): OS Entry for "+OS+" is done!")
-        CompletedEntriesList.append(OSName)
+        logger.debug("make_lilo_os_entries(): OS Entry for "+_os+" is done!")
+        completed_entries_list.append(os_name)
 
     #Now set the default OS.
     #First, write the semi-finished lines to the file.
-    logger.info("MakeLILOOSEntries(): Writing OS Entries and config to file...")
-    ConfigFile.close()
-    ConfigFile = open(filetoopen, 'w')
-    ConfigFile.write(''.join(NewFileContents))
-    ConfigFile.close()
-    logger.info("MakeLILOOSEntries(): Done!")
+    logger.info("make_lilo_os_entries(): Writing OS Entries and config to file...")
+    config_file.close()
+    config_file = open(filetoopen, 'w')
+    config_file.write(''.join(new_file_contents))
+    config_file.close()
+    logger.info("make_lilo_os_entries(): Done!")
 
     #Open the file again, with the new files written.
-    logger.debug("MakeLILOOSEntries(): Preparing to set default OS to boot...")
-    ConfigFile = open(filetoopen, 'r')
-    NewFileContents = []
+    logger.debug("make_lilo_os_entries(): Preparing to set default OS to boot...")
+    config_file = open(filetoopen, 'r')
+    new_file_contents = []
 
     #Remove all of the spaces, truncating the OS name if necessary.
-    DefaultOSName = BootloaderInfo[OS]["Settings"]["DefaultOS"].replace(' ','')
+    defaultos_name = BootloaderInfo[_os]["Settings"]["DefaultOS"].replace(' ', '')
 
     #Check that the name is no longer than 15 characters.
-    if len(DefaultOSName) > 15:
+    if len(defaultos_name) > 15:
         #The name is too long! Truncate it to 15 characters.
-        logger.warning("MakeLILOOSEntries(): Truncating OS Name: "+DefaultOSName+" to 15 characters...")
-        DefaultOSName = DefaultOSName[0:15]
+        logger.warning("make_lilo_os_entries(): Truncating OS Name: "+defaultos_name+" to 15 characters...")
+        defaultos_name = defaultos_name[0:15]
 
     #Now, check if its entry was added to the file, and ask the user for a new one if it wasn't.
-    if DefaultOSName not in CompletedEntriesList:
-        logger.info("MakeLILOOSEntries(): Default OS not in the Completed Entries List! Asking the user for a new one...")
+    if defaultos_name not in completed_entries_list:
+        logger.info("make_lilo_os_entries(): Default OS not in the Completed Entries List! Asking the user for a new one...")
 
-        if len(CompletedEntriesList) <= 0:
+        if len(completed_entries_list) <= 0:
             #Something went wrong here! No OSs appear to have been added to the list. Warn the user.
-            logger.error("MakeLILOOSEntries(): CompletedEntriesList is empty! This suggests that no OSs have been added to the list! Warn the user, and skip this part of the operation.")
+            logger.error("make_lilo_os_entries(): completed_entries_list is empty! This suggests that no OSs have been added to the list! Warn the user, and skip this part of the operation.")
             DialogTools.show_msg_dlg(kind="error", message="No Operating Systems have had entries created for them! If you canceled creating the entries, please reboot WxFixBoot and select only the option 'Update Bootloader Config'. If you didn't do that, and WxFixBoot either couldn't create them, or you see this error with no previous warnings, you may have to create your own bootloader config. If you wish to, you can email me directly via my Launchpad page (www.launchpad.net/~hamishmb) with the contents of /tmp/wxfixboot.log and I'll help you do that.")
 
         else:
             #Ask the user for a new default OS.
-            DefaultOSName = DialogTools.show_choice_dlg(message="The OS you previously selected as the default wasn't added to the boot menu. Please select a new OS you want to use as "+BootloaderInfo[OS]["Settings"]["NewBootloader"]+"'s Default OS. You are setting configuration for "+OS, title="WxFixBoot - Select Default OS", choices=CompletedEntriesList)
-            logger.info("MakeLILOOSEntries(): User selected new default OS: "+DefaultOSName+"...")
+            defaultos_name = DialogTools.show_choice_dlg(message="The OS you previously selected as the default wasn't added to the boot menu. Please select a new OS you want to use as "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s Default OS. You are setting configuration for "+_os, title="WxFixBoot - Select Default OS", choices=completed_entries_list)
+            logger.info("make_lilo_os_entries(): User selected new default OS: "+defaultos_name+"...")
 
     #Make the entry for the default OS.
-    logger.debug("MakeLILOOSEntries(): Setting default OS...")
-    SetDefaultOS = False
+    logger.debug("make_lilo_os_entries(): Setting default OS...")
+    set_defaultos = False #TODO check this is set and take action if not.
 
-    for line in ConfigFile:
+    for line in config_file:
         if 'default' in line and '=' in line and '#' not in line:
-            logger.debug("MakeLILOOSEntries(): Found default OS setting, setting it to "+DefaultOSName+"...")
-            line = "default="+DefaultOSName+"\n"
+            logger.debug("make_lilo_os_entries(): Found default OS setting, setting it to "+defaultos_name+"...")
+            line = "default="+defaultos_name+"\n"
 
-        NewFileContents.append(line)
+        new_file_contents.append(line)
 
     #Write the finished lines to the file.
-    logger.info("MakeLILOOSEntries(): Writing finished config to file...")
-    ConfigFile.close()
-    ConfigFile = open(filetoopen, 'w')
-    ConfigFile.write(''.join(NewFileContents))
-    ConfigFile.close()
+    logger.info("make_lilo_os_entries(): Writing finished config to file...")
+    config_file.close()
+    config_file = open(filetoopen, 'w')
+    config_file.write(''.join(new_file_contents))
+    config_file.close()
 
-    logger.info("MakeLILOOSEntries(): Done!")
+    logger.info("make_lilo_os_entries(): Done!")
 
-def AssembleLILOMenuEntry(OSName, OS, KernelOptions, NewFileContents):
+def assemble_lilo_menu_entry(os_name, _os, kernel_options, new_file_contents):
     """Create a LILO menu entry in the config file, and return it"""
     #Set kernel and initrd.
-    logger.info("AssembleLILOMenuEntry(): Adding /vmlinuz to the config file...")
-    NewFileContents.append("\nimage=/vmlinuz\n")
+    logger.info("assemble_lilo_menu_entry(): Adding /vmlinuz to the config file...")
+    new_file_contents.append("\nimage=/vmlinuz\n")
 
-    logger.info("AssembleLILOMenuEntry(): Adding /initrd.img to the config file...")
-    NewFileContents.append("\tinitrd=/initrd.img\n")
+    logger.info("assemble_lilo_menu_entry(): Adding /initrd.img to the config file...")
+    new_file_contents.append("\tinitrd=/initrd.img\n")
 
     #Set the root device.
     #Use UUID's here if we can.
-    logger.debug("AssembleLILOMenuEntry(): Setting OS rootfs as a UUID if possible...")
+    logger.debug("assemble_lilo_menu_entry(): Setting OS rootfs as a UUID if possible...")
 
-    if DiskInfo[OSInfo[OS]["Partition"]]["UUID"] == "Unknown":
-        logger.warning("AssembleLILOMenuEntry(): Setting OS rootfs to "+OSInfo[OS]["Partition"]+"! This might not work cos it can change!")
-        NewFileContents.append("\troot="+OSInfo[OS]["Partition"]+"\n")
+    if DiskInfo[OSInfo[_os]["Partition"]]["UUID"] == "Unknown":
+        logger.warning("assemble_lilo_menu_entry(): Setting OS rootfs to "+OSInfo[_os]["Partition"]+"! This might not work cos it can change!")
+        new_file_contents.append("\troot="+OSInfo[_os]["Partition"]+"\n")
 
     else:
-        logger.debug("AssembleLILOMenuEntry(): Setting OS rootfs to "+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"...")
+        logger.debug("assemble_lilo_menu_entry(): Setting OS rootfs to "+DiskInfo[OSInfo[_os]["Partition"]]["UUID"]+"...")
 
-        if BootloaderInfo[OS]["Settings"]["NewBootloader"] == "ELILO":
-            NewFileContents.append("\troot=UUID="+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"\n")
+        if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "ELILO":
+            new_file_contents.append("\troot=UUID="+DiskInfo[OSInfo[_os]["Partition"]]["UUID"]+"\n")
 
         else:
-            NewFileContents.append("\troot=\"UUID="+DiskInfo[OSInfo[OS]["Partition"]]["UUID"]+"\"\n")
+            new_file_contents.append("\troot=\"UUID="+DiskInfo[OSInfo[_os]["Partition"]]["UUID"]+"\"\n")
 
     #Set the label.
-    logger.debug("AssembleLILOMenuEntry(): Setting OS label to "+OSName+"...")
-    NewFileContents.append("\tlabel="+OSName+"\n")
+    logger.debug("assemble_lilo_menu_entry(): Setting OS label to "+os_name+"...")
+    new_file_contents.append("\tlabel="+os_name+"\n")
 
     #Set the kernel options.
-    logger.debug("AssembleLILOMenuEntry(): Setting OS Kernel Options to "+KernelOptions+"...")
-    NewFileContents.append("\tappend=\""+KernelOptions+"\"\n")
+    logger.debug("assemble_lilo_menu_entry(): Setting OS Kernel Options to "+kernel_options+"...")
+    new_file_contents.append("\tappend=\""+kernel_options+"\"\n")
 
     #Set one other necessary boot option.
-    logger.debug("AssembleLILOMenuEntry(): Adding 'read-only' to mount rootfs in ro mode on startup...")
-    NewFileContents.append("\tread-only\n")
+    logger.debug("assemble_lilo_menu_entry(): Adding 'read-only' to mount rootfs in ro mode on startup...")
+    new_file_contents.append("\tread-only\n")
 
-    return NewFileContents
+    return new_file_contents
 
-def InstallLILOToMBR(PackageManager, UseChroot, MountPoint):
+def install_lilo_to_mbr(use_chroot, mount_point):
     """Install LILO into the MBR."""
-    Cmd = "lilo"
+    cmd = "lilo"
 
-    if UseChroot:
-        Cmd = "chroot "+MountPoint+" "+Cmd
+    if use_chroot:
+        cmd = "chroot "+mount_point+" "+cmd
 
-    Retval = CoreTools.start_process(Cmd, show_output=False)
+    retval = CoreTools.start_process(cmd, show_output=False)
 
     #Return the return value.
-    return Retval
+    return retval
 
-def InstallELILOToPartition(OS, PackageManager, UseChroot, MountPoint):
+def install_elilo_to_partition(_os, package_manager, use_chroot, mount_point):
     """Install ELILO to the EFI/UEFI Partition"""
     #Okay, we've modified the kernel options and the timeout. Now we need to install grub to the UEFI partition.
-    if PackageManager == "apt-get":
-        Cmd = "elilo -b "+BootloaderInfo[OS]["BootDisk"]+" --efiboot"
+    if package_manager == "apt-get":
+        cmd = "elilo -b "+BootloaderInfo[_os]["BootDisk"]+" --efiboot"
 
-    if UseChroot:
-        Cmd = "chroot "+MountPoint+" "+Cmd
+    if use_chroot:
+        cmd = "chroot "+mount_point+" "+cmd
 
-    Retval = CoreTools.start_process(Cmd, show_output=False)
+    retval = CoreTools.start_process(cmd, show_output=False)
 
     #Return the return value.
-    return Retval
+    return retval
