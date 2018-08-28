@@ -771,12 +771,12 @@ class MainWindow(wx.Frame):
         #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
         #Do essential processes first.
         if Settings["QuickFSCheck"]:
-            Operations.append((EssentialBackendTools.FileSystemCheck, "Quick", Tools.BackendTools.main.ManageBootloader))
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.FileSystemCheck to Operations...")
+            Operations.append((EssentialBackendTools.filesystem_check, "Quick", Tools.BackendTools.main.ManageBootloader))
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.filesystem_check to Operations...")
 
         if Settings["BadSectorCheck"]:
-            Operations.append((EssentialBackendTools.FileSystemCheck, "Thorough", Tools.BackendTools.main.ManageBootloader))
-            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.FileSystemCheck to Operations...")
+            Operations.append((EssentialBackendTools.filesystem_check, "Thorough", Tools.BackendTools.main.ManageBootloader))
+            logger.info("MainWindow().CountOperations(): Added EssentialBackendTools.filesystem_check to Operations...")
 
         #Now do other processes.
         for OS in BootloaderInfo.keys():

@@ -103,7 +103,7 @@ def FindMissingFSCKModules():
     return FailedList
 
 def FindCheckableFileSystems():
-    """Find all checkable filesystems, and then return them to EssentialBackendTools().FileSystemCheck()"""
+    """Find all checkable filesystems, and then return them to EssentialBackendTools().filesystem_check()"""
     logger.info("FindCheckableFileSystems(): Finding and returning all filesystems/partitions that can be checked...")
 
     #Do setup.

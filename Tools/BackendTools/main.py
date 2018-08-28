@@ -50,7 +50,7 @@ def ManageBootloader(OS):
     wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Checking the Internet Connection...")
     wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Checking the Internet Connection...###\n")
 
-    EssentialBackendTools.CheckInternetConnection()
+    EssentialBackendTools.check_internet_connection()
 
     wx.CallAfter(ParentWindow.UpdateCurrentOpText, Message="Finished checking the Internet Connection...")
     wx.CallAfter(ParentWindow.UpdateOutputBox, "\n###Finished checking the Internet Connection...###\n")
@@ -104,7 +104,7 @@ def ManageBootloader(OS):
 
                 if Result:
                     logger.info("ManageBootloader(): Trying again and checking internet connection again...")
-                    EssentialBackendTools.CheckInternetConnection()
+                    EssentialBackendTools.check_internet_connection()
 
                     #Don't do anything if bootloader operations have been disabled.
                     if SystemInfo["DisableBootloaderOperations"]:
