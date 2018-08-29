@@ -23,38 +23,33 @@ from __future__ import unicode_literals
 
 #Import modules.
 import unittest
-import wx
 import subprocess
 import re
 import logging
 import plistlib
 import os
-import time
 import getopt
 import sys
 from bs4 import BeautifulSoup
 
 #Global vars.
-Version = "3.0.0"
+VERSION = "3.0.0"
 
 #Custom made modules.
 import GetDevInfo
 import Tools
 
-from GetDevInfo.getdevinfo import Main as DevInfoTools
-from Tools.coretools import Main as CoreTools
-from Tools.dialogtools import Main as DialogTools
+import GetDevInfo.getdevinfo as DevInfoTools
+import Tools.coretools as CoreTools
+import Tools.dialogtools as DialogTools
 
-from Tools.BackendTools.helpers import Main as HelperBackendTools
-from Tools.BackendTools.essentials import Main as EssentialBackendTools
+import Tools.BackendTools.helpers as HelperBackendTools
+import Tools.BackendTools.essentials as EssentialBackendTools
 
-from Tools.StartupTools.core import Main as CoreStartupTools
-from Tools.StartupTools.main import Main as MainStartupTools
-from Tools.StartupTools.getbootloaderconfigtools import Main as BootloaderConfigObtainingTools
+import Tools.StartupTools.core as CoreStartupTools
+import Tools.StartupTools.main as MainStartupTools
 
 #Import test modules.
-import Tests
-
 from Tests import DialogFunctionsForTests
 from Tests.GetDevInfo import GetDevInfoTests
 from Tests.Tools import CoreToolsTests
@@ -79,7 +74,7 @@ def usage():
     print("       -m, --main:                   Run tests for main file (WxFixBoot.py).")
     print("       -a, --all:                    Run all the tests. The default.\n")
     print("       -t, --tests:                  Ignored.")
-    print("WxFixBoot "+Version+" is released under the GNU GPL Version 3")
+    print("WxFixBoot "+VERSION+" is released under the GNU GPL Version 3")
     print("Copyright (C) Hamish McIntyre-Bhatty 2013-2018")
 
 #Exit if not running as root.
@@ -138,7 +133,7 @@ logger = logging
 
 #Setup custom-made modules (make global variables accessible inside the packages).
 #*DialogTools is defined in the test suite files in an as-needed basis.*
-#* ^ They are modified versions that log messages and results to enable better test automation without needing user intervention as much.*
+#* ^ They are modified versions that log messages and results to enable better test automation without needing user intervention as much.* FIXME DEPRECATED
 
 GetDevInfo.getdevinfo.subprocess = subprocess
 GetDevInfo.getdevinfo.re = re
@@ -147,37 +142,7 @@ GetDevInfo.getdevinfo.logger = logger
 GetDevInfo.getdevinfo.plistlib = plistlib
 GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
-Tools.coretools.wx = wx
-Tools.coretools.subprocess = subprocess
-Tools.coretools.sys = sys
-Tools.coretools.logger = logger
-Tools.coretools.logging = logging
-Tools.coretools.os = os
-
-Tools.dialogtools.wx = wx
-Tools.dialogtools.logger = logger
-Tools.dialogtools.time = time
-
-Tools.BackendTools.helpers.logger = logger
-Tools.BackendTools.helpers.os = os
-Tools.BackendTools.helpers.time = time
-Tools.BackendTools.helpers.CoreTools = CoreTools()
-
-Tools.BackendTools.essentials.wx = wx
-Tools.BackendTools.essentials.logger = logger
-Tools.BackendTools.essentials.CoreTools = CoreTools()
-Tools.BackendTools.essentials.HelperBackendTools = HelperBackendTools()
-
-Tools.StartupTools.core.logger = logger
-Tools.StartupTools.core.CoreTools = CoreTools()
-
-Tools.StartupTools.main.logger = logger
-Tools.StartupTools.main.os = os
-Tools.StartupTools.main.CoreTools = CoreTools()
-Tools.StartupTools.main.CoreStartupTools = CoreStartupTools()
-Tools.StartupTools.main.BootloaderConfigObtainingTools = BootloaderConfigObtainingTools()
-
-#Setup test modules.
+#Setup test modules. FIXME DEPRECATED
 #GetDevInfo tests.
 GetDevInfoTests.DevInfoTools = DevInfoTools
 GetDevInfoTests.GetDevInfo = GetDevInfo

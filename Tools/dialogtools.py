@@ -54,6 +54,8 @@ def show_thread_msg_dlg(msg, kind="info"):
         title = "WxFixBoot - Error"
         style = wx.OK | wx.ICON_ERROR
 
+    print("Parent: ", parent_window)
+
     dlg = wx.MessageDialog(parent_window.panel, msg, title, style, pos=wx.DefaultPosition)
     dlg.ShowModal()
     dlg.Destroy()

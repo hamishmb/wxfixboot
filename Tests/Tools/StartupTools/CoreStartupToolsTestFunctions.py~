@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# CoreStartupTools test functions for WxFixBoot Version 2.0.2
+# CoreStartupTools test functions for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -23,15 +23,23 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-def DeterminePackageManager(APTCmd, YUMCmd):
+#Import modules.
+import sys
+
+#Import other modules.
+sys.path.append('../..') #Need to be able to import the Tools module from here.
+
+import Tools.coretools as CoreTools
+
+def determine_package_manager(apt_cmd, yum_cmd):
     """Determine and return the package manager using the given command strings."""
-    PackageManager = "Unknown"
+    package_manager = "Unknown"
 
-    for Cmd in (APTCmd, YUMCmd):
-        Retval = CoreTools.StartProcess(Cmd, ShowOutput=False)
+    for cmd in (apt_cmd, yum_cmd):
+        retval = CoreTools.start_process(cmd, show_output=False)
 
-        if Retval != 0:
-            if Cmd == APTCmd:
+        if retval != 0:
+            if cmd == apt_cmd:
                 #Couldn't find apt!
                 continue
 
@@ -39,114 +47,114 @@ def DeterminePackageManager(APTCmd, YUMCmd):
                 pass
 
         else:
-            if Cmd == APTCmd:
+            if cmd == apt_cmd:
                 #Found APT!
-                PackageManager = "apt-get"
+                package_manager = "apt-get"
                 break
 
             else:
                 #Found YUM!
-                PackageManager = "yum"
+                package_manager = "yum"
                 break
 
-    return PackageManager
+    return package_manager
 
-def GetFSTabInfo(MountPoint, OSName):
-    """Get /etc/fstab info and related info (EFI Partition, /boot partition) for the given OS at the given mountpoint."""
+def get_fstab_info(mount_point, os_name):
+    """Get /etc/fstab info and related info (EFI partition, /boot partition) for the given OS at the given mountpoint."""
     #Do some setup.
-    EFIPartition = "Unknown"
-    BootPartition = "Unknown"
+    efi_partition = "Unknown"
+    boot_partition = "Unknown"
 
     #Read the raw contents of the /etc/fstab file.
-    FSTabFile = open(MountPoint+"/etc/fstab", "r")
-    RawFSTABContents = FSTabFile.read().split("\n")
-    FSTabFile.close()
+    fstab_file = open(mount_point+"/etc/fstab", "r")
+    raw_fstab_contents = fstab_file.read().split("\n")
+    fstab_file.close()
 
     #Gather some info from it.
-    for Line in RawFSTABContents:
+    for line in raw_fstab_contents:
         #Ignore any comments.
-        if "#" in Line or Line == "":
+        if "#" in line or line == "":
             continue
 
         #Try to find this OS's EFI and boot partitions (if there are any).
-        if Line.split()[1] == "/boot/efi" or Line.split()[1] == "/boot":
-            Temp = Line.split()[0]
+        if line.split()[1] == "/boot/efi" or line.split()[1] == "/boot":
+            temp = line.split()[0]
 
             #If we have a UUID, convert it into a device node.
-            if "UUID=" in Temp:
-                UUID = Temp.split("=")[1]
+            if "UUID=" in temp:
+                uuid = temp.split("=")[1]
 
-                for Disk in DiskInfo.keys():
-                    if DiskInfo[Disk]["UUID"] == UUID:
-                        Temp = Disk
+                for disk in DiskInfo.keys():
+                    if DiskInfo[disk]["UUID"] == uuid:
+                        temp = disk
                         break
 
             #In case we had a UUID with no match, check again before adding it to OSInfo, else ignore it.
-            if "/dev/" in Temp:
-                Disk = Temp
+            if "/dev/" in temp:
+                disk = temp
 
             else:
-                Disk = "Unknown"
+                disk = "Unknown"
 
         #Try to find this OS's /boot partition (if there is one).
-        if Line.split()[1] == "/boot/efi":
-            EFIPartition = Disk
+        if line.split()[1] == "/boot/efi":
+            efi_partition = disk
 
-        elif Line.split()[1] == "/boot":
-            BootPartition = Disk
+        elif line.split()[1] == "/boot":
+            boot_partition = disk
 
     #Return stuff.
-    return (RawFSTABContents, EFIPartition, BootPartition)
+    return (raw_fstab_contents, efi_partition, boot_partition)
 
-def DetermineOSArchitecture(MountPoint):
+def determine_os_architecture(mount_point):
     """Look for OS architecture on given partition."""
     #Do setup.
-    OSArch = None
-    Cmd = "arch"
+    os_arch = None
+    cmd = "arch"
 
     while True:
-        if MountPoint != "":
-            Cmd = "chroot "+MountPoint+" "+Cmd
+        if mount_point != "":
+            cmd = "chroot "+mount_point+" "+cmd
 
-        Retval, OSArch = CoreTools.StartProcess(Cmd, ReturnOutput=True)
+        retval, os_arch = CoreTools.start_process(cmd, return_output=True)
 
         #If the command failed, try a second approach.
-        if Retval != 0 and "arch" in Cmd:
-            Cmd = "file /sbin/init"
+        if retval != 0 and "arch" in cmd:
+            cmd = "file /sbin/init"
 
-        elif Retval != 0:
-            OSArch = None
+        elif retval != 0:
+            os_arch = None
             break
 
         else:
             break
 
     #If the command that worked was 'arch', or both failed, we can just return it.
-    if "arch" in Cmd or Retval != 0:
+    if "arch" in cmd or retval != 0:
         #Return the arch (or None, if we didn't find it).
-        return OSArch
+        return os_arch
 
     else:
-        if "32-bit" in OSArch:
-            OSArch = "i386"
+        if "32-bit" in os_arch:
+            os_arch = "i386"
 
         else:
-            OSArch = "x86_64"
+            os_arch = "x86_64"
 
-        return OSArch
+        return os_arch
 
-def GetOSNameWithLSB(Partition, MountPoint, IsCurrentOS):
+def get_os_name_with_lsb(partition, mount_point, is_current_os):
     """Attempt to get an OS's name using lsb_release -sd as a fallback."""
-    if IsCurrentOS:
-        Cmd = "lsb_release -sd"
+    if is_current_os:
+        cmd = "lsb_release -sd"
 
     else:
-        Cmd = "chroot "+MountPoint+" lsb_release -sd"
+        cmd = "chroot "+mount_point+" lsb_release -sd"
 
-    Retval, Output = CoreTools.StartProcess(Cmd, ShowOutput=False, ReturnOutput=True)
+    retval, output = CoreTools.start_process(cmd, show_output=False, return_output=True)
 
-    if Retval != 0 or Output == "":
+    if retval != 0 or output == "":
         return "Unknown"
 
-    else:
-        return Output
+    #Otherwise...
+    return output

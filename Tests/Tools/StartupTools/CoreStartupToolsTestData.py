@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # CoreStartupTools test data for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -21,5 +21,5 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-def ReturnEmptyDiskInfoDict():
+def return_empty_disk_info_dict():
     return {}

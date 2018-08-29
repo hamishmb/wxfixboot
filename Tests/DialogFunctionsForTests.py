@@ -26,146 +26,150 @@ from __future__ import unicode_literals
 import wx
 
 #These hold results from the dialog functions.
-MsgDlgMessages = []
-YesNoDlgResults = []
-ChoiceDlgResults = []
-TextEntryDlgResults = []
-SaveFileDlgResults = []
+MSG_DLG_MESSAGES = []
+YESNO_DLG_RESULTS = []
+CHOICE_DLG_RESULTS = []
+TEXT_ENTRY_DLG_RESULTS = []
+SAVE_FILE_DLG_RESULTS = []
 
-def AskUserIfCorrect(Info):
-    Dlg = wx.MessageDialog(None, "Was the correct dialog shown and displayed properly? Was your result "+unicode(Info)+"?", "WxFixBoot - Dialog Tests", wx.YES_NO | wx.ICON_QUESTION)
+#Define global variables to silence pylint warnings.
+parent_window = None
 
-    if Dlg.ShowModal() == wx.ID_YES:
-        Result = True
+def ask_user_if_correct(info):
+    dlg = wx.MessageDialog(None, "Was the correct dialog shown and displayed properly? Was your result "+unicode(info)+"?", "WxFixBoot - Dialog Tests", wx.YES_NO | wx.ICON_QUESTION)
+
+    if dlg.ShowModal() == wx.ID_YES:
+        result = True
 
     else:
-        Result = False
+        result = False
 
-    Dlg.Destroy()
+    dlg.Destroy()
 
-    return Result
+    return result
 
 #These all trick the Tools into calling a different function to those found in DialogTools without modifying the code.
-#Return DlgResult too so it behaves the same way.
+#Return dlg_result too so it behaves the same way.
 
-def ShowMsgDlg(Message, Kind="info"):
+def show_msg_dlg(message, kind="info"):
     """Shows a message dialog from a thread upon instruction. All of these windows are logged but silenced."""
-    if Kind == "info":
-        Title = "WxFixBoot - Information"
-        style = wx.OK | wx.ICON_INFORMATION
+    if kind == "info":
+        title = "WxFixBoot - Information" #pylint: disable=unused-variable
+        style = wx.OK | wx.ICON_INFORMATION #pylint: disable=unused-variable
 
-    elif Kind == "warning":
-        Title = "WxFixBoot - Warning"
-        style = wx.OK | wx.ICON_EXCLAMATION
+    elif kind == "warning":
+        title = "WxFixBoot - Warning" #pylint: disable=unused-variable
+        style = wx.OK | wx.ICON_EXCLAMATION #pylint: disable=unused-variable
 
-    elif Kind == "error":
-        Title = "WxFixBoot - Error"
-        style = wx.OK | wx.ICON_ERROR
+    elif kind == "error":
+        title = "WxFixBoot - Error" #pylint: disable=unused-variable
+        style = wx.OK | wx.ICON_ERROR #pylint: disable=unused-variable
 
-    MsgDlgMessages.append(Message)
+    MSG_DLG_MESSAGES.append(message)
 
-def ShowRealMsgDlg(Message, Kind="info"):
+def show_real_msg_dlg(message, kind="info"):
     """Shows a message dialog from a thread upon instruction"""
-    if Kind == "info":
-        Title = "WxFixBoot - Information"
+    if kind == "info":
+        title = "WxFixBoot - Information"
         style = wx.OK | wx.ICON_INFORMATION
 
-    elif Kind == "warning":
-        Title = "WxFixBoot - Warning"
+    elif kind == "warning":
+        title = "WxFixBoot - Warning"
         style = wx.OK | wx.ICON_EXCLAMATION
 
-    elif Kind == "error":
-        Title = "WxFixBoot - Error"
+    elif kind == "error":
+        title = "WxFixBoot - Error"
         style = wx.OK | wx.ICON_ERROR
 
-    dlg = wx.MessageDialog(ParentWindow, Message, Title, style, pos=wx.DefaultPosition)
+    dlg = wx.MessageDialog(parent_window, message, title, style, pos=wx.DefaultPosition)
     dlg.ShowModal()
     dlg.Destroy()
     wx.Yield()
 
-def ShowYesNoDlg(Message, Title="WxFixBoot - Question", Buttons=(None, None)):
+def show_yes_no_dlg(message, title="WxFixBoot - Question", buttons=(None, None)):
     """Shows a yes/no dialog from a thread upon instruction"""
-    dlg = wx.MessageDialog(ParentWindow, Message, Title, wx.YES_NO | wx.ICON_QUESTION)
+    dlg = wx.MessageDialog(parent_window, message, title, wx.YES_NO | wx.ICON_QUESTION)
 
-    #Try to set custom Buttons labels if needed (handle attribute error on wx 2.8.11).
-    if Buttons != (None, None):
+    #Try to set custom buttons labels if needed (handle attribute error on wx 2.8.11).
+    if buttons != (None, None):
         try:
-            if dlg.SetYesNoLabels(Buttons[0], Buttons[1]):
+            if dlg.SetYesNoLabels(buttons[0], buttons[1]):
                 #If it worked get rid of the last unneccessary sentence in the message.
-                dlg.SetMessage(' '.join(Message.split(".")[0:-1]))
+                dlg.SetMessage(' '.join(message.split(".")[0:-1]))
 
-        except AttributeError: pass
+        except AttributeError:
+            pass
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting dlg_result to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_YES:
         dlg.Destroy()
-        DlgResult = True
+        dlg_result = True
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        dlg_result = False
 
     wx.Yield()
 
-    YesNoDlgResults.append(DlgResult)
+    YESNO_DLG_RESULTS.append(dlg_result)
 
-    return DlgResult
+    return dlg_result
 
-def ShowChoiceDlg(Message, Choices, Title="WxFixBoot - Select an Option"):
+def show_choice_dlg(message, choices, title="WxFixBoot - Select an Option"):
     """Shows a choice dialog from a thread upon instruction"""
-    dlg = wx.SingleChoiceDialog(ParentWindow, Message, Title, Choices, pos=wx.DefaultPosition)
+    dlg = wx.SingleChoiceDialog(parent_window, message, title, choices, pos=wx.DefaultPosition)
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting dlg_result to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
-        DlgResult = dlg.GetStringSelection()
+        dlg_result = dlg.GetStringSelection()
         dlg.Destroy()
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        dlg_result = False
 
     wx.Yield()
 
-    ChoiceDlgResults.append(DlgResult)
+    CHOICE_DLG_RESULTS.append(dlg_result)
 
-    return DlgResult
+    return dlg_result
 
-def ShowTextEntryDlg(Message, Title="WxFixBoot - Text Entry"):
+def show_text_entry_dlg(message, title="WxFixBoot - Text Entry"):
     """Shows a text entry dialog from a thread upon instruction"""
-    dlg = wx.TextEntryDialog(ParentWindow, Message, Title, "", style=wx.OK|wx.CANCEL, pos=wx.DefaultPosition)
+    dlg = wx.TextEntryDialog(parent_window, message, title, "", style=wx.OK|wx.CANCEL, pos=wx.DefaultPosition)
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting dlg_result to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
-        DlgResult = dlg.GetValue()
+        dlg_result = dlg.GetValue()
         dlg.Destroy()
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        dlg_result = False
 
     wx.Yield()
 
-    TextEntryDlgResults.append(DlgResult)
+    TEXT_ENTRY_DLG_RESULTS.append(dlg_result)
 
-    return DlgResult
+    return dlg_result
 
-def ShowSaveFiledlg(Title="WxFixBoot - Select A File", Wildcard="All Files/Devices (*)|*"):
+def show_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All Files/Devices (*)|*"):
     """Shows a save file choice dialog from a thread upon instruction"""
-    dlg = wx.FileDialog(ParentWindow, message=Title, defaultDir="/home", wildcard=Wildcard, style=wx.SAVE|wx.OVERWRITE_PROMPT)
+    dlg = wx.FileDialog(parent_window, message=title, defaultDir="/home", wildcard=wildcard, style=wx.SAVE|wx.OVERWRITE_PROMPT)
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting dlg_result to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
         dlg.Destroy()
-        DlgResult = dlg.GetPath()
+        dlg_result = dlg.GetPath()
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        dlg_result = False
 
     wx.Yield()
 
-    SaveFileDlgResults.append(DlgResult)
+    SAVE_FILE_DLG_RESULTS.append(dlg_result)
 
-    return DlgResult
+    return dlg_result
 
 #End Main Class.

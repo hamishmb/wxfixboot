@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # MainStartupTools test data for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -21,11 +21,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-def ReturnFakeBLInfo1():
+def return_fake_bl_info1():
     return {"Linux Mint": {"IsModifyable": True, "Comments": "x86_64 architecture", "MenuEntries": {}}, "Windows Vistarg": {"IsModifyable": False, "Comments": "Windows cannot be modified with WxFixBoot", "MenuEntries": {}}, "macOS Sierra": {"IsModifyable": False, "Comments": "macOS cannot be modifyed with WxFixBoot", "MenuEntries": {}}, "Fedora Core 25": {"IsModifyable": True, "Comments": "i386 architecture", "MenuEntries": {}}}
 
-def ReturnFakeBLInfo2():
+def return_fake_bl_info2():
     return {"Linux Mint": {"IsModifyable": True, "Comments": "x86_64 architecture", "MenuEntries": {}}, "Fedora Core 25": {"IsModifyable": True, "Comments": "i386 architecture", "MenuEntries": {}}}
 
-def ReturnFinalCheckResults1():
+def return_final_check_results1():
     return "Some of the OSs found on your system cannot be modified! These are:\n\nWindows Vistarg, because Windows cannot be modified with WxFixBoot\nmacOS Sierra, because macOS cannot be modifyed with WxFixBoot\n\nClick okay to continue."

@@ -23,8 +23,14 @@ from __future__ import unicode_literals
 
 #Import modules
 import unittest
+import sys
 import wx
-import time
+
+#Import other modules.
+sys.path.append('../..') #Need to be able to import the Tools module from here.
+
+import Tools
+import Tools.dialogtools as DialogTools
 
 class TestPanel(wx.Panel):
     def __init__(self, parent):
@@ -35,42 +41,42 @@ class TestPanel(wx.Panel):
 class TestWindow(wx.Frame):
     def __init__(self):
         """Initialises TestWindow"""
-        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1,1), style=wx.SIMPLE_BORDER)
+        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1), style=wx.SIMPLE_BORDER)
 
 #No need for assertions, we're just making sure the functions run without errors here.
 class TestShowThreadDlgs(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
-        self.Frame = TestWindow()
-        self.Panel = TestPanel(self.Frame)
-        Tools.dialogtools.ParentWindow = self
+        self.frame = TestWindow()
+        self.panel = TestPanel(self.frame)
+        Tools.dialogtools.parent_window = self
 
     def tearDown(self):
-        del Tools.dialogtools.ParentWindow
+        del Tools.dialogtools.parent_window
 
-        self.Panel.Destroy()
-        del self.Panel
+        self.panel.Destroy()
+        del self.panel
 
-        self.Frame.Destroy()
-        del self.Frame
+        self.frame.Destroy()
+        del self.frame
 
         self.app.Destroy()
         del self.app
 
     def testMsgDlg(self):
-        DialogTools().ShowThreadMsgDlg("Test message from WxFixBoot")
+        DialogTools.show_thread_msg_dlg("Test message from WxFixBoot")
 
     def testYesNoDlg(self):
-        DialogTools().ShowThreadYesNoDlg("Test message from WxFixBoot. Click Yes")
-        DialogTools().ShowThreadYesNoDlg("Test message from WxFixBoot. Click No")
-        DialogTools().ShowThreadYesNoDlg("Test message from WxFixBoot. Click either button. If you can see this part of the message, custom buttons aren't supported on your system", buttons=("Yay", "Nay"))
+        DialogTools.show_thread_yes_no_dlg("Test message from WxFixBoot. Click Yes")
+        DialogTools.show_thread_yes_no_dlg("Test message from WxFixBoot. Click No")
+        DialogTools.show_thread_yes_no_dlg("Test message from WxFixBoot. Click either button. If you can see this part of the message, custom buttons aren't supported on your system", buttons=("Yay", "Nay"))
 
     def testChoiceDlg(self):
-        DialogTools().ShowThreadChoiceDlg("Test message from WxFixBoot. What do programmers convert into software? Select \"Pizza & Caffeine\"", choices=["Cheese & Milk", "Pizza & Caffeine", "Dry Bread & Water"])
-        DialogTools().ShowThreadChoiceDlg("Test message from WxFixBoot. Select \"Turtles\"", choices=["Turtles", "Tortoises", "Terrapins"])
+        DialogTools.show_thread_choice_dlg("Test message from WxFixBoot. What do programmers convert into software? Select \"Pizza & Caffeine\"", choices=["Cheese & Milk", "Pizza & Caffeine", "Dry Bread & Water"])
+        DialogTools.show_thread_choice_dlg("Test message from WxFixBoot. Select \"Turtles\"", choices=["Turtles", "Tortoises", "Terrapins"])
 
     def testTextEntryDlg(self):
-        DialogTools().ShowThreadTextEntryDlg("Test message from WxFixBoot. Type \"Linux\"")
+        DialogTools.show_thread_text_entry_dlg("Test message from WxFixBoot. Type \"Linux\"")
 
     def testSaveFileDlg(self):
-        DialogTools().ShowThreadSaveFiledlg("Test message from WxFixBoot. Enter a path and filename.")
+        DialogTools.show_thread_save_file_dlg("Test message from WxFixBoot. Enter a path and filename.")

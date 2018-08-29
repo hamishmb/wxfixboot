@@ -23,11 +23,20 @@ from __future__ import unicode_literals
 
 #Import modules
 import unittest
+import sys
 import wx
 
 #Import test functions & data.
 from . import CoreStartupToolsTestFunctions as Functions
 from . import CoreStartupToolsTestData as Data
+
+#Import other modules.
+sys.path.append('../..') #Need to be able to import the Tools module from here.
+
+import Tools
+import Tools.coretools as CoreTools
+import Tools.StartupTools.core as CoreStartupTools
+import Tests.DialogFunctionsForTests as DialogFunctionsForTests
 
 class TestPanel(wx.Panel):
     def __init__(self, parent):
@@ -42,94 +51,94 @@ class TestWindow(wx.Frame):
 
 class TestDeterminePackageManager(unittest.TestCase):
     def setUp(self):
-        Tools.coretools.Startup = True
-        Functions.CoreTools = CoreTools()
+        Tools.coretools.startup = True
+        Functions.CoreTools = CoreTools
 
     def tearDown(self):
-        del Tools.coretools.Startup
+        del Tools.coretools.startup
         del Functions.CoreTools
 
     def testDeterminePackageManager1(self):
-        self.assertEqual(CoreStartupTools().DeterminePackageManager(APTCmd="which apt-get", YUMCmd="which yum"), Functions.DeterminePackageManager(APTCmd="which apt-get", YUMCmd="which yum"))
+        self.assertEqual(CoreStartupTools.determine_package_manager(apt_cmd="which apt-get", yum_cmd="which yum"), Functions.determine_package_manager(apt_cmd="which apt-get", yum_cmd="which yum"))
 
 class TestGetFSTabInfo(unittest.TestCase): #*** Do another test with a fake fstab file(s) XD ***
     def setUp(self):
-        Tools.StartupTools.core.DiskInfo = Data.ReturnEmptyDiskInfoDict()
-        Functions.DiskInfo = Data.ReturnEmptyDiskInfoDict()
+        Tools.StartupTools.core.DiskInfo = Data.return_empty_disk_info_dict()
+        Functions.DiskInfo = Data.return_empty_disk_info_dict()
 
     def tearDown(self):
         del Tools.StartupTools.core.DiskInfo
         del Functions.DiskInfo
 
     def testGetFSTabInfo1(self):
-        self.assertEqual(CoreStartupTools().GetFSTabInfo(MountPoint="", OSName="ThisIsATest"), Functions.GetFSTabInfo(MountPoint="", OSName="ThisIsATest"))
+        self.assertEqual(CoreStartupTools.get_fstab_info(mount_point="", os_name="ThisIsATest"), Functions.get_fstab_info(mount_point="", os_name="ThisIsATest"))
 
 class TestDetermineOSArchitecture(unittest.TestCase):
     def setUp(self):
-        Tools.coretools.Startup = True
-        Functions.CoreTools = CoreTools()
+        Tools.coretools.startup = True
+        Functions.CoreTools = CoreTools
 
     def tearDown(self):
-        del Tools.coretools.Startup
+        del Tools.coretools.startup
         del Functions.CoreTools
 
     def testDetermineOSArchitecture1(self):
-        self.assertEqual(CoreStartupTools().DetermineOSArchitecture(MountPoint=""), Functions.DetermineOSArchitecture(MountPoint=""))
+        self.assertEqual(CoreStartupTools.determine_os_architecture(mount_point=""), Functions.determine_os_architecture(mount_point=""))
 
 class TestGetOSNameWithLSB(unittest.TestCase):
     def setUp(self):
-        Tools.coretools.Startup = True
-        Functions.CoreTools = CoreTools()
+        Tools.coretools.startup = True
+        Functions.CoreTools = CoreTools
 
     def tearDown(self):
-        del Tools.coretools.Startup
+        del Tools.coretools.startup
         del Functions.CoreTools
 
     def testGetOSNameWithLSB(self):
-        self.assertEqual(CoreStartupTools().GetOSNameWithLSB(Partition="RootFS", MountPoint="", IsCurrentOS=True), Functions.GetOSNameWithLSB(Partition="RootFS", MountPoint="", IsCurrentOS=True))
+        self.assertEqual(CoreStartupTools.get_os_name_with_lsb(partition="RootFS", mount_point="", is_current_os=True), Functions.get_os_name_with_lsb(partition="RootFS", mount_point="", is_current_os=True))
 
 class TestAskForOSName(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
-        self.Frame = TestWindow()
-        self.Panel = TestPanel(self.Frame)
+        self.frame = TestWindow()
+        self.panel = TestPanel(self.frame)
 
-        DialogFunctionsForTests.ParentWindow = self.Panel
+        DialogFunctionsForTests.parent_window = self.panel
 
         Tools.StartupTools.core.DialogTools = DialogFunctionsForTests
 
     def tearDown(self):
         del Tools.StartupTools.core.DialogTools
-        del DialogFunctionsForTests.ParentWindow
+        del DialogFunctionsForTests.parent_window
 
-        self.Panel.Destroy()
-        del self.Panel
+        self.panel.Destroy()
+        del self.panel
 
-        self.Frame.Destroy()
-        del self.Frame
+        self.frame.Destroy()
+        del self.frame
 
         self.app.Destroy()
         del self.app
 
     def testAskForOSName1(self):
-        DialogFunctionsForTests.ShowRealMsgDlg(Message="Enter \"Linux\" in the text entry dialog that you're about to be shown.")
-        Result = CoreStartupTools().AskForOSName(Partition="RootFS", OSArch="x86_64", IsCurrentOS=True)
-        self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], "WxFixBoot couldn't find the name of the current OS. Please name it so that WxFixBoot can function correctly.")
-        self.assertIsNot(DialogFunctionsForTests.TextEntryDlgResults[-1], False, "User didn't follow the instructions.")
-        self.assertEqual(DialogFunctionsForTests.TextEntryDlgResults[-1], "Linux")
-        self.assertEqual(Result, "Linux")
+        DialogFunctionsForTests.show_real_msg_dlg(message="Enter \"Linux\" in the text entry dialog that you're about to be shown.")
+        result = CoreStartupTools.ask_for_os_name(partition="RootFS", is_current_os=True)
+        self.assertEqual(DialogFunctionsForTests.MSG_DLG_MESSAGES[-1], "WxFixBoot couldn't find the name of the current OS. Please name it so that WxFixBoot can function correctly.")
+        self.assertIsNot(DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1], False, "User didn't follow the instructions.")
+        self.assertEqual(DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1], "Linux")
+        self.assertEqual(result, "Linux")
 
     def testAskForOSName2(self):
-        DialogFunctionsForTests.ShowRealMsgDlg(Message="Click \"No\" in the yes/no dialog that you're about to be shown.")
-        Result = CoreStartupTools().AskForOSName(Partition="RootFS", OSArch="x86_64", IsCurrentOS=False)
-        self.assertFalse(DialogFunctionsForTests.YesNoDlgResults[-1], "User didn't follow the instructions.")
-        self.assertIsNot(DialogFunctionsForTests.TextEntryDlgResults[-1], True, "User didn't follow the instructions.")
-        self.assertIsNone(Result)
+        DialogFunctionsForTests.show_real_msg_dlg(message="Click \"No\" in the yes/no dialog that you're about to be shown.")
+        result = CoreStartupTools.ask_for_os_name(partition="RootFS", is_current_os=False)
+        self.assertFalse(DialogFunctionsForTests.YESNO_DLG_RESULTS[-1], "User didn't follow the instructions.")
+        self.assertIsNot(DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1], True, "User didn't follow the instructions.")
+        self.assertIsNone(result)
 
     def testAskForOSName3(self):
-        DialogFunctionsForTests.ShowRealMsgDlg(Message="Click \"Yes\" in the yes/no dialog that you're about to be shown, then enter \"Linux\" in the text entry dialog.")
-        Result = CoreStartupTools().AskForOSName(Partition="RootFS", OSArch="x86_64", IsCurrentOS=False)
-        self.assertTrue(DialogFunctionsForTests.YesNoDlgResults[-1], "User didn't follow the instructions.")
-        self.assertIsNot(DialogFunctionsForTests.TextEntryDlgResults[-1], False, "User didn't follow the instructions.")
-        self.assertEqual(DialogFunctionsForTests.TextEntryDlgResults[-1], "Linux")
-        self.assertEqual(Result, "Linux")
+        DialogFunctionsForTests.show_real_msg_dlg(message="Click \"Yes\" in the yes/no dialog that you're about to be shown, then enter \"Linux\" in the text entry dialog.")
+        result = CoreStartupTools.ask_for_os_name(partition="RootFS", is_current_os=False)
+        self.assertTrue(DialogFunctionsForTests.YESNO_DLG_RESULTS[-1], "User didn't follow the instructions.")
+        self.assertIsNot(DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1], False, "User didn't follow the instructions.")
+        self.assertEqual(DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1], "Linux")
+        self.assertEqual(result, "Linux")

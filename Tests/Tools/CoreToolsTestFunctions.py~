@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-# CoreTools test functions for WxFixBoot Version 2.0.2
+# CoreTools test functions for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -23,112 +23,117 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-def StartProcess(Command, ReturnOutput=False):
-    """Start a given process, and return output and return value if needed"""
-    runcmd = subprocess.Popen("LC_ALL=C "+Command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+#Import modules.
+import time
+import os
+import subprocess
 
-    while runcmd.poll() == None:
+def start_process(command, return_output=False):
+    """Start a given process, and return output and return value if needed"""
+    runcmd = subprocess.Popen("LC_ALL=C "+command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
+    while runcmd.poll() is None:
         time.sleep(0.25)
 
     #Save runcmd.stdout.readlines, and runcmd.returncode, as they tend to reset fairly quickly. Handle unicode properly.
-    Output = []
+    output = []
 
     for line in runcmd.stdout.readlines():
-        Output.append(line.decode("UTF-8", errors="ignore"))
+        output.append(line.decode("UTF-8", errors="ignore"))
 
-    Retval = int(runcmd.returncode)
+    retval = int(runcmd.returncode)
 
-    if ReturnOutput == False:
+    if return_output is False:
         #Return the return code back to whichever function ran this process, so it can handle any errors.
-        return Retval
+        return retval
 
     else:
         #Return the return code, as well as the output.
-        return Retval, ''.join(Output)
+        return retval, ''.join(output)
 
-def IsMounted(Partition, MountPoint=None):
+def is_mounted(partition, mount_point=None):
     """Checks if the given partition is mounted.
-    Partition is the given partition to check.
-    If MountPoint is specified, check if the partition is mounted there, rather than just if it's mounted.
+    partition is the given partition to check.
+    If mount_point is specified, check if the partition is mounted there, rather than just if it's mounted.
     Return boolean True/False.
     """
-    if MountPoint == None:
-        MountInfo = StartProcess("mount", ReturnOutput=True)[1]
+    if mount_point is None:
+        mount_info = start_process("mount", return_output=True)[1]
 
-        Mounted = False
+        mounted = False
 
         #Linux fix: Accept any mountpoint when called with just one argument.
-        for Line in MountInfo.split("\n"):
-            if len(Line) != 0:
-                if Line.split()[0] == Partition or Line.split()[2] == Partition:
-                    Mounted = True
+        for line in mount_info.split("\n"):
+            if line:
+                if line.split()[0] == partition or line.split()[2] == partition:
+                    mounted = True
                     break
 
     else:
         #Check where it's mounted to.
-        Mounted = False
+        mounted = False
 
-        if GetMountPointOf(Partition) == MountPoint:
-            Mounted = True
+        if get_mount_point_of(partition) == mount_point:
+            mounted = True
 
-    return Mounted
+    return mounted
 
-def GetMountPointOf( Partition):
+def get_mount_point_of(partition):
     """Returns the mountpoint of the given partition, if any.
     Otherwise, return None"""
-    MountInfo = StartProcess("mount", ReturnOutput=True)[1]
-    MountPoint = None
+    mount_info = start_process("mount", return_output=True)[1]
+    mount_point = None
 
-    for Line in MountInfo.split("\n"):
-        SplitLine = Line.split()
+    for line in mount_info.split("\n"):
+        split_line = line.split()
 
-        if len(SplitLine) != 0:
-            if Partition == SplitLine[0]:
-                MountPoint = SplitLine[2]
+        if split_line:
+            if partition == split_line[0]:
+                mount_point = split_line[2]
                 break
 
-    return MountPoint
+    return mount_point
 
-def MountPartition(Partition, MountPoint, Options=""):
+def mount_partition(partition, mount_point, options=""):
     """Mounts the given partition.
-    Partition is the partition to mount.
-    MountPoint is where you want to mount the partition.
-    Options is non-mandatory and contains whatever options you want to pass to the mount command.
-    The default value for Options is an empty string.
+    partition is the partition to mount.
+    mount_point is where you want to mount the partition.
+    options is non-mandatory and contains whatever options you want to pass to the mount command.
+    The default value for options is an empty string.
     """     
-    MountInfo = StartProcess("mount", ReturnOutput=True)[1]
+    mount_info = start_process("mount", return_output=True)[1]
 
     #There is a partition mounted here. Check if our partition is already mounted in the right place.
-    if MountPoint == GetMountPointOf(Partition):
+    if mount_point == get_mount_point_of(partition):
         #The correct partition is already mounted here.
         return 0
 
-    elif MountPoint in MountInfo:
+    elif mount_point in mount_info:
         #Something else is in the way. Unmount that partition, and continue.
-        if UnmountDisk(MountPoint) != 0:
+        if unmount_disk(mount_point) != 0:
             return False
 
     #Create the dir if needed.
-    if os.path.isdir(MountPoint) == False:
-        os.makedirs(MountPoint)
+    if os.path.isdir(mount_point) is False:
+        os.makedirs(mount_point)
     
     #Mount the device to the mount point.
-    Retval = StartProcess("mount "+Options+" "+Partition+" "+MountPoint)
+    retval = start_process("mount "+options+" "+partition+" "+mount_point)
 
-    return Retval
+    return retval
 
-def UnmountDisk(Disk):
+def unmount_disk(disk):
     """Unmount the given disk"""
     #Check if it is mounted.
-    if IsMounted(Disk) == False:
+    if is_mounted(disk) is False:
         #The disk isn't mounted.
-        #Set Retval to 0.
-        Retval = 0
+        #Set retval to 0.
+        retval = 0
 
     else:
         #The disk is mounted.
         #Unmount it.
-        Retval = StartProcess(Command="umount "+Disk, ReturnOutput=False)
+        retval = start_process(command="umount "+disk, return_output=False)
             
     #Return the return value
-    return Retval
+    return retval

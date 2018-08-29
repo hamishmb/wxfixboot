@@ -23,12 +23,27 @@ from __future__ import unicode_literals
 
 #Import modules
 import unittest
-import wx
+import sys
 import os
+import wx
 
 #Import test functions & data.
 from . import MainStartupToolsTestFunctions as Functions
 from . import MainStartupToolsTestData as Data
+
+#Import other modules.
+sys.path.append('../../..') #Need to be able to import the Tools module from here.
+
+import Tools
+import Tools.coretools as CoreTools
+import Tools.StartupTools.core as CoreStartupTools
+import Tools.StartupTools.main as MainStartupTools
+import Tests.DialogFunctionsForTests as DialogTools
+
+#FIXME DEPRECATED
+import GetDevInfo
+from GetDevInfo.getdevinfo import Main as DevInfoTools
+DevInfoTools = DevInfoTools()
 
 class TestPanel(wx.Panel):
     def __init__(self, parent):
@@ -39,79 +54,79 @@ class TestPanel(wx.Panel):
 class TestWindow(wx.Frame):
     def __init__(self):
         """Initialises TestWindow"""
-        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1,1), style=wx.SIMPLE_BORDER)
+        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1), style=wx.SIMPLE_BORDER)
 
 class TestCheckDepends(unittest.TestCase):
     def setUp(self):
-        Tools.coretools.Startup = True
-        Functions.CoreTools = CoreTools()
+        Tools.coretools.startup = True
+        Functions.CoreTools = CoreTools
 
     def tearDown(self):
-        del Tools.coretools.Startup
+        del Tools.coretools.startup
         del Functions.CoreTools
 
         #Reset emergency exit stuff.
-        Functions.WouldEmergencyExit = False
-        Functions.WouldEmergencyExitBecause = []
+        Functions.WOULD_EMERGENCY_EXIT = False
+        Functions.WOULD_EMERGENCY_EXIT_BECAUSE = []
 
     def testCheckDepends1(self):
         #Run the Functions version first, because it will be a problem for us if a real Emergency exit is triggered.
-        Functions.CheckDepends()
-        self.assertFalse(Functions.WouldEmergencyExit, Functions.WouldEmergencyExitBecause) #Let user know about the problem.
+        Functions.check_depends()
+        self.assertFalse(Functions.WOULD_EMERGENCY_EXIT, Functions.WOULD_EMERGENCY_EXIT_BECAUSE) #Let user know about the problem.
 
         #If we got here okay, run the real thing. If it runs without error, we're fine.
-        MainStartupTools().CheckDepends()
+        MainStartupTools.check_depends()
 
 class TestCheckForLiveDisk(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
-        self.Frame = TestWindow()
-        self.Panel = TestPanel(self.Frame)
+        self.frame = TestWindow()
+        self.panel = TestPanel(self.frame)
 
-        DialogFunctionsForTests.ParentWindow = self.Panel
+        DialogTools.parent_window = self.panel
 
-        Tools.coretools.Startup = True
+        Tools.coretools.startup = True
 
         Tools.StartupTools.main.SystemInfo = {}
-        Tools.StartupTools.main.DialogTools = DialogFunctionsForTests
+        Tools.StartupTools.main.DialogTools = DialogTools
 
         Functions.SystemInfo = {}
-        Functions.CoreTools = CoreTools()
-        Functions.CoreStartupTools = CoreStartupTools()
+        Functions.CoreTools = CoreTools
+        Functions.CoreStartupTools = CoreStartupTools
 
     def tearDown(self):
-        del Tools.coretools.Startup
-        del DialogFunctionsForTests.ParentWindow
+        del Tools.coretools.startup
+        del DialogTools.parent_window
         del Tools.StartupTools.main.SystemInfo
         del Tools.StartupTools.main.DialogTools
         del Functions.SystemInfo
         del Functions.CoreTools
         del Functions.CoreStartupTools
 
-        self.Panel.Destroy()
-        del self.Panel
+        self.panel.Destroy()
+        del self.panel
 
-        self.Frame.Destroy()
-        del self.Frame
+        self.frame.Destroy()
+        del self.frame
 
         self.app.Destroy()
         del self.app
 
     def testCheckForLiveDisk1(self):
-        Functions.CheckForLiveDisk()
-        MainStartupTools().CheckForLiveDisk()
+        Functions.check_for_live_disk()
+        MainStartupTools.check_for_live_disk()
 
         self.assertEqual(Functions.SystemInfo, Tools.StartupTools.main.SystemInfo)
 
 class TestGetOSs(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
-        self.Frame = TestWindow()
-        self.Panel = TestPanel(self.Frame)
+        self.frame = TestWindow()
+        self.panel = TestPanel(self.frame)
 
-        DialogFunctionsForTests.ParentWindow = self.Panel
-        Tools.coretools.Startup = True
-        DevInfoTools().GetInfo(Standalone=True) #We need real disk info for these ones.
+        DialogTools.parent_window = self.panel
+        Tools.coretools.startup = True
+        DevInfoTools.GetInfo(Standalone=True) #We need real disk info for these ones.
         self.DiskInfo = GetDevInfo.getdevinfo.DiskInfo
         Functions.DiskInfo = self.DiskInfo
         Tools.StartupTools.main.DiskInfo = self.DiskInfo
@@ -121,15 +136,15 @@ class TestGetOSs(unittest.TestCase):
         Tools.StartupTools.main.SystemInfo = {}
         Functions.SystemInfo = {}
 
-        Functions.CoreTools = CoreTools()
-        Functions.CoreStartupTools = CoreStartupTools()
+        Functions.CoreTools = CoreTools
+        Functions.CoreStartupTools = CoreStartupTools
         Functions.os = os
 
-        Tools.StartupTools.core.DialogTools = DialogFunctionsForTests
+        Tools.StartupTools.core.DialogTools = DialogTools
 
     def tearDown(self):
-        del DialogFunctionsForTests.ParentWindow
-        del Tools.coretools.Startup
+        del DialogTools.parent_window
+        del Tools.coretools.startup
         del GetDevInfo.getdevinfo.DiskInfo
         del self.DiskInfo
         del Functions.DiskInfo
@@ -143,41 +158,41 @@ class TestGetOSs(unittest.TestCase):
         del Tools.StartupTools.main.SystemInfo
         del Tools.StartupTools.core.DialogTools
 
-        self.Panel.Destroy()
-        del self.Panel
+        self.panel.Destroy()
+        del self.panel
 
-        self.Frame.Destroy()
-        del self.Frame
+        self.frame.Destroy()
+        del self.frame
 
         self.app.Destroy()
         del self.app
 
     def testGetOSs1(self):
         #Only run if there are Linux OSs, because otherwise the unmodified functions could cause an emergency exit which would mess up testing.
-        if Functions.GetOSs() != ("Unknown", "Unknown"):
-            self.assertEqual(MainStartupTools().GetOSs(), Functions.GetOSs())
+        if Functions.get_oss() != ("Unknown", "Unknown"):
+            self.assertEqual(MainStartupTools.get_oss(), Functions.get_oss())
 
 class TestGetFirmwareType(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
-        self.Frame = TestWindow()
-        self.Panel = TestPanel(self.Frame)
+        self.frame = TestWindow()
+        self.panel = TestPanel(self.frame)
 
-        DialogFunctionsForTests.ParentWindow = self.Panel
+        DialogTools.parent_window = self.panel
 
-        Tools.coretools.Startup = True
+        Tools.coretools.startup = True
 
         Tools.StartupTools.main.SystemInfo = {}
-        Tools.StartupTools.main.DialogTools = DialogFunctionsForTests
+        Tools.StartupTools.main.DialogTools = DialogTools
 
         Functions.SystemInfo = {}
-        Functions.CoreTools = CoreTools()
-        Functions.DialogTools = DialogFunctionsForTests
+        Functions.CoreTools = CoreTools
+        Functions.DialogTools = DialogTools
         Functions.os = os
 
     def tearDown(self):
-        del Tools.coretools.Startup
-        del DialogFunctionsForTests.ParentWindow
+        del Tools.coretools.startup
+        del DialogTools.parent_window
         del Tools.StartupTools.main.SystemInfo
         del Tools.StartupTools.main.DialogTools
         del Functions.SystemInfo
@@ -187,33 +202,33 @@ class TestGetFirmwareType(unittest.TestCase):
 
     def testGetFirmwareType1(self):
         #Run them.
-        MainStartupTools().GetFirmwareType()
-        Functions.GetFirmwareType()
+        MainStartupTools.get_firmware_type()
+        Functions.get_firmware_type()
 
         #Test that the result is the same.
         self.assertEqual(Tools.StartupTools.main.SystemInfo, Functions.SystemInfo)
 
         #If a dialog was going to be displayed to the user, make sure it would be displayed both times.
-        if len(DialogFunctionsForTests.MsgDlgMessages) > 0 and DialogFunctionsForTests.MsgDlgMessages[-1] == "Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.":
-            self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], DialogFunctionsForTests.MsgDlgMessages[-2])
+        if DialogTools.MSG_DLG_MESSAGES and DialogTools.MSG_DLG_MESSAGES[-1] == "Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.":
+            self.assertEqual(DialogTools.MSG_DLG_MESSAGES[-1], DialogTools.MSG_DLG_MESSAGES[-2])
 
 class TestFinalCheck(unittest.TestCase):
     def setUp(self):
-        Tools.StartupTools.main.DialogTools = DialogFunctionsForTests
+        Tools.StartupTools.main.DialogTools = DialogTools
 
     def tearDown(self):
         del Tools.StartupTools.main.DialogTools
         del Tools.StartupTools.main.BootloaderInfo #Will be present after test.
-        DialogFunctionsForTests.MsgDlgMessages = [] #Reset so we can check if there are any new messages from the 2nd test.
+        DialogTools.MSG_DLG_MESSAGES = [] #Reset so we can check if there are any new messages from the 2nd test.
 
     def testFinalCheck1(self):
         #Get the dict for this test.
-        Tools.StartupTools.main.BootloaderInfo = Data.ReturnFakeBLInfo1()
-        MainStartupTools().FinalCheck()
-        self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], Data.ReturnFinalCheckResults1())
+        Tools.StartupTools.main.BootloaderInfo = Data.return_fake_bl_info1()
+        MainStartupTools.final_check()
+        self.assertEqual(DialogTools.MSG_DLG_MESSAGES[-1], Data.return_final_check_results1())
 
     def testFinalCheck2(self):
         #Get the dict for this test.
-        Tools.StartupTools.main.BootloaderInfo = Data.ReturnFakeBLInfo2()
-        MainStartupTools().FinalCheck()
-        self.assertTrue(len(DialogFunctionsForTests.MsgDlgMessages) == 0)
+        Tools.StartupTools.main.BootloaderInfo = Data.return_fake_bl_info2()
+        MainStartupTools.final_check()
+        self.assertFalse(DialogTools.MSG_DLG_MESSAGES)
