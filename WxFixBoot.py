@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Import other modules
+#Import other modulesS
 import traceback
 import threading
 import subprocess
@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "28/8/2018"
+RELEASEDATE = "29/8/2018"
 
 #Define other global variables.
 SESSION_ENDING = False
@@ -170,7 +170,7 @@ class InitialPanel(wx.Panel):
         _dc.SetClippingRect(self.GetUpdateRegion().GetBox())
 
         _dc.Clear()
-        splash = wx.Bitmap("/usr/share/wxfixboot/images/splash.jpg")
+        splash = wx.Bitmap("/usr/share/wxfixboot/images/splash.png")
         _dc.DrawBitmap(splash, 0, 0)
 
 #End Initialization Panel.
@@ -196,7 +196,7 @@ class InitialWindow(wx.Frame):
 
         #Set the frame's icon.
         global APPICON
-        APPICON = wx.Icon("/usr/share/wxfixboot/images/Logo.png", wx.BITMAP_TYPE_PNG)
+        APPICON = wx.Icon("/usr/share/wxfixboot/images/logo.png", wx.BITMAP_TYPE_PNG)
         wx.Frame.SetIcon(self, APPICON)
 
         #Create the progress bar and text.
@@ -542,7 +542,7 @@ class MainWindow(wx.Frame):
         self.welcome_text = wx.StaticText(self.panel, -1, "Welcome to WxFixBoot!")
 
         #Add an image.
-        img = wx.Image("/usr/share/wxfixboot/images/Logo.png", wx.BITMAP_TYPE_PNG)
+        img = wx.Image("/usr/share/pixmaps/wxfixboot.png", wx.BITMAP_TYPE_PNG)
         self.logo = wx.StaticBitmap(self.panel, -1, wx.BitmapFromImage(img))
 
     def create_buttons(self):
@@ -671,7 +671,9 @@ class MainWindow(wx.Frame):
         aboutbox.Description = "Utility to fix the bootloader on a\ncomputer quickly"
         aboutbox.WebSite = ("https://www.hamishmb.com", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty"]
-        aboutbox.Artists = ["Holly McIntyre-Bhatty (Logo and Splash Screen)"]
+        aboutbox.Artists = ["Bhuna https://www.instagram.com/bhuna42/",
+                            "Holly McIntyre-Bhatty (Old Artwork)"]
+
         aboutbox.License = "WxFixBoot is free software: you can redistribute it and/or modify it\nunder the terms of the GNU General Public License version 3 or,\nat your option, any later version.\n\nWxFixBoot is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>."
 
         #Show the AboutBox.
