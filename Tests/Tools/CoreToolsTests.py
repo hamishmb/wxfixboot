@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # CoreTools tests for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -63,7 +63,7 @@ class TestStartProcess(unittest.TestCase):
         del Tools.coretools.startup
 
     def testStartProcess(self):
-        for command in self.commands.keys():
+        for command in self.commands:
             retval, output = CoreTools.start_process(command, return_output=True, testing=True)
             self.assertEqual(retval, self.commands[command]["Retval"])
             self.assertEqual(output, self.commands[command]["Output"])
@@ -334,4 +334,3 @@ class TestMountPartition(unittest.TestCase):
         #Clean up.
         if os.path.isdir(self.mount_point+"/subdir"):
             os.rmdir(self.mount_point+"/subdir")
-

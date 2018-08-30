@@ -34,8 +34,7 @@ import Tests.DialogFunctionsForTests as DialogTools
 import Tools.BackendTools.essentials as EssentialBackendTools
 import Tools.BackendTools.main as MainBackendTools
 
-#Import test functions & data.
-from . import EssentialBackendToolsTestFunctions as Functions
+#Import test data.
 from . import EssentialBackendToolsTestData as Data
 
 class TestPanel(wx.Panel):

@@ -108,13 +108,11 @@ class TestFindMissingFSCKModules(unittest.TestCase):
         Tools.coretools.startup = True
         Tools.BackendTools.helpers.DiskInfo = Data.return_fake_disk_info()
         Functions.DiskInfo = Data.return_fake_disk_info()
-        Functions.CoreTools = CoreTools
 
     def tearDown(self):
         del Tools.coretools.startup
         del Tools.BackendTools.helpers.DiskInfo
         del Functions.DiskInfo
-        del Functions.CoreTools
 
     @unittest.skipUnless(Functions.CanPerformFindMissingFSCKModulesTest1(), "FSCK modules not available on system.")
     def testFindMissingFSCKModules1(self):
@@ -134,7 +132,6 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         DevInfoTools.GetInfo(Standalone=True) #We need real disk info for these ones.
         self.DiskInfo = GetDevInfo.getdevinfo.DiskInfo
         Functions.DiskInfo = self.DiskInfo
-        Functions.CoreTools = CoreTools
         Tools.BackendTools.helpers.DiskInfo = self.DiskInfo
         Tools.BackendTools.helpers.DialogTools = DialogTools
 
@@ -144,7 +141,6 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         del GetDevInfo.getdevinfo.DiskInfo
         del self.DiskInfo
         del Functions.DiskInfo
-        del Functions.CoreTools
         del Tools.BackendTools.helpers.DiskInfo
         del Tools.BackendTools.helpers.DialogTools
 

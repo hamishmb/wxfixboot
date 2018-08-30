@@ -47,9 +47,8 @@ def start_process(command, return_output=False):
         #Return the return code back to whichever function ran this process, so it can handle any errors.
         return retval
 
-    else:
-        #Return the return code, as well as the output.
-        return retval, ''.join(output)
+    #Otherwise, return the return code, as well as the output.
+    return retval, ''.join(output)
 
 def is_mounted(partition, mount_point=None):
     """Checks if the given partition is mounted.

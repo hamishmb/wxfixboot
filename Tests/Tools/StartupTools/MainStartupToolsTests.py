@@ -59,11 +59,9 @@ class TestWindow(wx.Frame):
 class TestCheckDepends(unittest.TestCase):
     def setUp(self):
         Tools.coretools.startup = True
-        Functions.CoreTools = CoreTools
 
     def tearDown(self):
         del Tools.coretools.startup
-        del Functions.CoreTools
 
         #Reset emergency exit stuff.
         Functions.WOULD_EMERGENCY_EXIT = False
@@ -87,21 +85,9 @@ class TestCheckForLiveDisk(unittest.TestCase):
 
         Tools.coretools.startup = True
 
-        Tools.StartupTools.main.SystemInfo = {}
-        Tools.StartupTools.main.DialogTools = DialogTools
-
-        Functions.SystemInfo = {}
-        Functions.CoreTools = CoreTools
-        Functions.CoreStartupTools = CoreStartupTools
-
     def tearDown(self):
         del Tools.coretools.startup
         del DialogTools.parent_window
-        del Tools.StartupTools.main.SystemInfo
-        del Tools.StartupTools.main.DialogTools
-        del Functions.SystemInfo
-        del Functions.CoreTools
-        del Functions.CoreStartupTools
 
         self.panel.Destroy()
         del self.panel
@@ -128,35 +114,12 @@ class TestGetOSs(unittest.TestCase):
         Tools.coretools.startup = True
         DevInfoTools.GetInfo(Standalone=True) #We need real disk info for these ones.
         self.DiskInfo = GetDevInfo.getdevinfo.DiskInfo
-        Functions.DiskInfo = self.DiskInfo
-        Tools.StartupTools.main.DiskInfo = self.DiskInfo
-        Tools.StartupTools.core.DiskInfo = self.DiskInfo
-        Tools.StartupTools.core.os = os
-
-        Tools.StartupTools.main.SystemInfo = {}
-        Functions.SystemInfo = {}
-
-        Functions.CoreTools = CoreTools
-        Functions.CoreStartupTools = CoreStartupTools
-        Functions.os = os
-
-        Tools.StartupTools.core.DialogTools = DialogTools
 
     def tearDown(self):
         del DialogTools.parent_window
         del Tools.coretools.startup
         del GetDevInfo.getdevinfo.DiskInfo
         del self.DiskInfo
-        del Functions.DiskInfo
-        del Functions.SystemInfo
-        del Functions.CoreTools
-        del Functions.CoreStartupTools
-        del Functions.os
-        del Tools.StartupTools.main.DiskInfo
-        del Tools.StartupTools.core.DiskInfo
-        del Tools.StartupTools.core.os
-        del Tools.StartupTools.main.SystemInfo
-        del Tools.StartupTools.core.DialogTools
 
         self.panel.Destroy()
         del self.panel
@@ -182,23 +145,9 @@ class TestGetFirmwareType(unittest.TestCase):
 
         Tools.coretools.startup = True
 
-        Tools.StartupTools.main.SystemInfo = {}
-        Tools.StartupTools.main.DialogTools = DialogTools
-
-        Functions.SystemInfo = {}
-        Functions.CoreTools = CoreTools
-        Functions.DialogTools = DialogTools
-        Functions.os = os
-
     def tearDown(self):
         del Tools.coretools.startup
         del DialogTools.parent_window
-        del Tools.StartupTools.main.SystemInfo
-        del Tools.StartupTools.main.DialogTools
-        del Functions.SystemInfo
-        del Functions.CoreTools
-        del Functions.DialogTools
-        del Functions.os
 
     def testGetFirmwareType1(self):
         #Run them.

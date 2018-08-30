@@ -81,7 +81,7 @@ def wait_until_packagemanager_free(mount_point, package_manager):
     retval = 1
 
     #Trap in while loop until package manager is free. TODO Fix for if no package cache.
-    while retval not in (0, 100): #100 when there are updates available on Fedora.
+    while retval not in (0, 100): #100 when there are updates available on Fedora. FIXME breaks ubuntu check - usual busy retval is 100!
         retval = CoreTools.start_process(cmd, show_output=False)
         time.sleep(5)
 

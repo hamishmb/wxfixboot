@@ -27,7 +27,7 @@ from __future__ import unicode_literals
 import sys
 
 #Import other modules.
-sys.path.append('../..') #Need to be able to import the Tools module from here.
+sys.path.append('../../..') #Need to be able to import the Tools module from here.
 
 import Tools.coretools as CoreTools
 

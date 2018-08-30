@@ -52,11 +52,9 @@ class TestWindow(wx.Frame):
 class TestDeterminePackageManager(unittest.TestCase):
     def setUp(self):
         Tools.coretools.startup = True
-        Functions.CoreTools = CoreTools
 
     def tearDown(self):
         del Tools.coretools.startup
-        del Functions.CoreTools
 
     def testDeterminePackageManager1(self):
         self.assertEqual(CoreStartupTools.determine_package_manager(apt_cmd="which apt-get", yum_cmd="which yum"), Functions.determine_package_manager(apt_cmd="which apt-get", yum_cmd="which yum"))
@@ -76,11 +74,9 @@ class TestGetFSTabInfo(unittest.TestCase): #*** Do another test with a fake fsta
 class TestDetermineOSArchitecture(unittest.TestCase):
     def setUp(self):
         Tools.coretools.startup = True
-        Functions.CoreTools = CoreTools
 
     def tearDown(self):
         del Tools.coretools.startup
-        del Functions.CoreTools
 
     def testDetermineOSArchitecture1(self):
         self.assertEqual(CoreStartupTools.determine_os_architecture(mount_point=""), Functions.determine_os_architecture(mount_point=""))
@@ -88,11 +84,9 @@ class TestDetermineOSArchitecture(unittest.TestCase):
 class TestGetOSNameWithLSB(unittest.TestCase):
     def setUp(self):
         Tools.coretools.startup = True
-        Functions.CoreTools = CoreTools
 
     def tearDown(self):
         del Tools.coretools.startup
-        del Functions.CoreTools
 
     def testGetOSNameWithLSB(self):
         self.assertEqual(CoreStartupTools.get_os_name_with_lsb(partition="RootFS", mount_point="", is_current_os=True), Functions.get_os_name_with_lsb(partition="RootFS", mount_point="", is_current_os=True))
