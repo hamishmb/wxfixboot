@@ -35,9 +35,8 @@ import Tools.coretools as CoreTools
 import Tests.DialogFunctionsForTests as DialogTools
 import Tools.BackendTools.helpers as HelperBackendTools
 
-import GetDevInfo
-from GetDevInfo.getdevinfo import Main as DevInfoToolsCallable #FIXME DEPRECATED
-DevInfoTools = DevInfoToolsCallable() #FIXME DEPRECATED
+import getdevinfo
+import getdevinfo.linux
 
 #Declare global dictionaries to silence pylint warnings.
 SystemInfo = {}
@@ -129,8 +128,7 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         DialogTools.parent_window = self.panel
 
         Tools.coretools.startup = True
-        DevInfoTools.GetInfo(Standalone=True) #We need real disk info for these ones.
-        self.DiskInfo = GetDevInfo.getdevinfo.DiskInfo
+        self.DiskInfo = getdevinfo.getdevinfo.get_info() #We need real disk info for these ones.
         Functions.DiskInfo = self.DiskInfo
         Tools.BackendTools.helpers.DiskInfo = self.DiskInfo
         Tools.BackendTools.helpers.DialogTools = DialogTools
@@ -138,7 +136,6 @@ class TestFindCheckableFileSystems(unittest.TestCase):
     def tearDown(self):
         del Tools.coretools.startup
         del DialogTools.parent_window
-        del GetDevInfo.getdevinfo.DiskInfo
         del self.DiskInfo
         del Functions.DiskInfo
         del Tools.BackendTools.helpers.DiskInfo

@@ -40,10 +40,8 @@ import Tools.StartupTools.core as CoreStartupTools
 import Tools.StartupTools.main as MainStartupTools
 import Tests.DialogFunctionsForTests as DialogTools
 
-#FIXME DEPRECATED
-import GetDevInfo
-from GetDevInfo.getdevinfo import Main as DevInfoTools
-DevInfoTools = DevInfoTools()
+import getdevinfo
+import getdevinfo.linux
 
 class TestPanel(wx.Panel):
     def __init__(self, parent):
@@ -112,13 +110,17 @@ class TestGetOSs(unittest.TestCase):
 
         DialogTools.parent_window = self.panel
         Tools.coretools.startup = True
-        DevInfoTools.GetInfo(Standalone=True) #We need real disk info for these ones.
-        self.DiskInfo = GetDevInfo.getdevinfo.DiskInfo
+        self.DiskInfo = getdevinfo.getdevinfo.get_info() #We need real disk info for these ones.
+        Functions.DiskInfo = self.DiskInfo
+        Tools.StartupTools.main.DiskInfo = self.DiskInfo
+        Tools.StartupTools.core.DiskInfo = self.DiskInfo
 
     def tearDown(self):
         del DialogTools.parent_window
         del Tools.coretools.startup
-        del GetDevInfo.getdevinfo.DiskInfo
+        del Tools.StartupTools.main.DiskInfo
+        del Tools.StartupTools.core.DiskInfo
+        del Functions.DiskInfo
         del self.DiskInfo
 
         self.panel.Destroy()

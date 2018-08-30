@@ -36,10 +36,8 @@ from bs4 import BeautifulSoup
 VERSION = "3.0.0"
 
 #Custom made modules.
-import GetDevInfo
 import Tools
 
-import GetDevInfo.getdevinfo as DevInfoTools
 import Tools.coretools as CoreTools
 import Tools.dialogtools as DialogTools
 
@@ -51,7 +49,6 @@ import Tools.StartupTools.main as MainStartupTools
 
 #Import test modules.
 from Tests import DialogFunctionsForTests
-from Tests.GetDevInfo import GetDevInfoTests
 from Tests.Tools import CoreToolsTests
 from Tests.Tools import DialogToolsTests
 
@@ -68,7 +65,6 @@ def usage():
     print("       -D, --debug:                  Set logging level to debug, to show all logging messages. Default: show only critical logging messages.")
     print("       -s, --startuptools            Run tests for all StartupTools modules.")
     print("       -b, --backendtools            Run tests for all BackendTools modules.")
-    print("       -g, --getdevinfo:             Run tests for GetDevInfo module.")
     print("       -c, --coretools:              Run tests for CoreTools module.")
     print("       -d, --dialogtools:            Run tests for DialogTools module.")
     print("       -m, --main:                   Run tests for main file (WxFixBoot.py).")
@@ -83,7 +79,7 @@ if os.geteuid() != 0:
 
 #Check all cmdline options are valid.
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hDdsbgcmat", ["help", "debug", "startuptools", "backendtools", "getdevinfo", "coretools", "main", "all", "tests"])
+    opts, args = getopt.getopt(sys.argv[1:], "hDdsbcmat", ["help", "debug", "startuptools", "backendtools", "coretools", "main", "all", "tests"])
 
 except getopt.GetoptError as err:
     #Invalid option. Show the help message and then exit.
@@ -93,15 +89,13 @@ except getopt.GetoptError as err:
     sys.exit(2)
 
 #Set up which tests to run based on options given.
-TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests, MainStartupToolsTests] #*** Set up full defaults when finished ***
+TestSuites = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests, MainStartupToolsTests] #*** Set up full defaults when finished ***
 
 #Log only critical message by default.
 loggerLevel = logging.CRITICAL
 
 for o, a in opts:
-    if o in ["-g", "--getdevinfo"]:
-        TestSuites = [GetDevInfoTests]
-    elif o in ["-c", "--coretools"]:
+    if o in ["-c", "--coretools"]:
         TestSuites = [CoreToolsTests]
     elif o in ["-d", "--dialogtools"]:
         TestSuites = [DialogToolsTests]
@@ -115,7 +109,7 @@ for o, a in opts:
         #TestSuites = [MainTests]
         assert False, "Not implemented yet"
     elif o in ["-a", "--all"]:
-        TestSuites = [GetDevInfoTests, CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests, MainStartupToolsTests]
+        TestSuites = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests, MainStartupToolsTests]
         #TestSuites.append(MainTests)
     elif o in ["-t", "--tests"]:
         pass
@@ -130,60 +124,6 @@ for o, a in opts:
 #Set up the logger (silence all except critical logging messages).
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=loggerLevel)
 logger = logging
-
-#Setup custom-made modules (make global variables accessible inside the packages).
-#*DialogTools is defined in the test suite files in an as-needed basis.*
-#* ^ They are modified versions that log messages and results to enable better test automation without needing user intervention as much.* FIXME DEPRECATED
-
-GetDevInfo.getdevinfo.subprocess = subprocess
-GetDevInfo.getdevinfo.re = re
-GetDevInfo.getdevinfo.os = os
-GetDevInfo.getdevinfo.logger = logger
-GetDevInfo.getdevinfo.plistlib = plistlib
-GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
-
-#Setup test modules. FIXME DEPRECATED
-#GetDevInfo tests.
-GetDevInfoTests.DevInfoTools = DevInfoTools
-GetDevInfoTests.GetDevInfo = GetDevInfo
-
-#Core tools tests.
-CoreToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
-CoreToolsTests.CoreTools = CoreTools
-CoreToolsTests.Tools = Tools
-
-#Dialog tools tests.
-DialogToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
-DialogToolsTests.DialogTools = DialogTools
-DialogToolsTests.Tools = Tools
-
-#Helper Backend tools tests.
-HelperBackendToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
-HelperBackendToolsTests.HelperBackendTools = HelperBackendTools
-HelperBackendToolsTests.CoreTools = CoreTools
-HelperBackendToolsTests.DevInfoTools = DevInfoTools
-HelperBackendToolsTests.GetDevInfo = GetDevInfo
-HelperBackendToolsTests.Tools = Tools
-
-#Essential Backend tools tests.
-EssentialBackendToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
-EssentialBackendToolsTests.EssentialBackendTools = EssentialBackendTools
-EssentialBackendToolsTests.Tools = Tools
-
-#Core Startup tools tests.
-CoreStartupToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
-CoreStartupToolsTests.CoreTools = CoreTools
-CoreStartupToolsTests.CoreStartupTools = CoreStartupTools
-CoreStartupToolsTests.Tools = Tools
-
-#Main Startup tools tests.
-MainStartupToolsTests.DialogFunctionsForTests = DialogFunctionsForTests
-MainStartupToolsTests.CoreTools = CoreTools
-MainStartupToolsTests.MainStartupTools = MainStartupTools
-MainStartupToolsTests.CoreStartupTools = CoreStartupTools
-MainStartupToolsTests.DevInfoTools = DevInfoTools
-MainStartupToolsTests.GetDevInfo = GetDevInfo
-MainStartupToolsTests.Tools = Tools
 
 if __name__ == "__main__":
     for SuiteModule in TestSuites:

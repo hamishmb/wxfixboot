@@ -113,7 +113,7 @@ def find_checkable_file_systems():
             #Add it to the dictionary for checking.
             filesystems_to_check[disk] = {}
             filesystems_to_check[disk]["Remount"] = remount_partition_after
-            filesystems_to_check[disk]["mount_point"] = mount_point
+            filesystems_to_check[disk]["MountPoint"] = mount_point
 
         else:
             #Add it to the non-checkable list
