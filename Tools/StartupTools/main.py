@@ -155,6 +155,8 @@ def get_oss():
     keys = DiskInfo.keys()
     keys.sort()
 
+    print(keys)
+
     for partition in keys:
         if DiskInfo[partition]["Type"] == "Device":
             continue

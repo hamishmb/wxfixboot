@@ -39,6 +39,9 @@ import wx.lib.stattext
 
 from bs4 import BeautifulSoup
 
+import getdevinfo
+import getdevinfo.linux
+
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
 RELEASEDATE = "30/8/2018"
@@ -111,9 +114,6 @@ for OPTION, ARGUMENT in OPTIONS:
         assert False, "unhandled option"
 
 #Import custom-made modules
-import GetDevInfo
-from GetDevInfo.getdevinfo import Main as DevInfoToolsCallable #FIXME DEPRECATED
-
 import Tools
 import Tools.coretools as CoreTools
 import Tools.dialogtools as DialogTools
@@ -122,16 +122,6 @@ import Tools.BackendTools.essentials as EssentialBackendTools
 import Tools.BackendTools.main as MainBackendTools
 
 import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
-
-#Access these modules without the "()" so conditional tests can work. FIXME IN PROCESS OF REMOVING
-DevInfoTools = DevInfoToolsCallable() #FIXME DEPRECATED
-
-#Setup custom-made modules (make global variables accessible inside the packages). FIXME in process of removing
-#GetDevInfo Package.
-GetDevInfo.getdevinfo.subprocess = subprocess
-GetDevInfo.getdevinfo.os = os
-GetDevInfo.getdevinfo.logger = logger
-GetDevInfo.getdevinfo.BeautifulSoup = BeautifulSoup
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
@@ -144,7 +134,7 @@ class GetDiskInformation(threading.Thread):
     def run(self):
         """Get Disk Information and return it as a list with embedded lists"""
         #Use a module I've written to collect data about connected Disks, and return it.
-        wx.CallAfter(self.parent_window.ReceiveDiskInfo, DevInfoTools.GetInfo())
+        wx.CallAfter(self.parent_window.ReceiveDiskInfo, getdevinfo.getdevinfo.get_info())
 
 #End Disk Information Handler thread.
 #Begin Starter Class
@@ -362,19 +352,14 @@ class InitThread(threading.Thread):
         Settings = {}
 
         #Make dictionaries available to modules.
-        Tools.coretools.DiskInfo = DiskInfo
-        Tools.StartupTools.core.DiskInfo = DiskInfo
         Tools.StartupTools.core.OSInfo = OSInfo
         Tools.StartupTools.core.BootloaderInfo = BootloaderInfo
         Tools.StartupTools.core.SystemInfo = SystemInfo
         Tools.StartupTools.core.Settings = Settings
-        Tools.StartupTools.main.DiskInfo = DiskInfo
         Tools.StartupTools.main.BootloaderInfo = BootloaderInfo
         Tools.StartupTools.main.SystemInfo = SystemInfo
         Tools.StartupTools.main.Settings = Settings
-        Tools.StartupTools.getbootloaderconfigtools.DiskInfo = DiskInfo
         Tools.StartupTools.getbootloaderconfigtools.BootloaderInfo = BootloaderInfo
-        GetDevInfo.getdevinfo.DiskInfo = DiskInfo
 
         #Let CoreTools know we're starting up.
         Tools.coretools.startup = True
@@ -434,7 +419,13 @@ class InitThread(threading.Thread):
         #Get device info.
         logger.info("InitThread(): Getting Device Information...")
         wx.CallAfter(self.parent_window.update_progress_text, "Getting Device Information...")
-        DevInfoTools.GetInfo()
+        DiskInfo = getdevinfo.getdevinfo.get_info()
+
+        Tools.coretools.DiskInfo = DiskInfo
+        Tools.StartupTools.core.DiskInfo = DiskInfo
+        Tools.StartupTools.main.DiskInfo = DiskInfo
+        Tools.StartupTools.getbootloaderconfigtools.DiskInfo = DiskInfo
+
         wx.CallAfter(self.parent_window.update_progress_bar, "60")
         logger.info("InitThread(): Finished Getting Device Information...")
 
