@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # EssentialBackendTools test functions for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -23,94 +23,101 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#These all trick the EssentialBackendTools to calling a different function to those found in DialogTools without modifying the code.
-#Return DlgResult too so it behaves the same way.
+#Import modules.
+import wx
 
-def ShowMsgDlg(Message, Kind="info"):
+#Silence a pylint error by declaring this global variable.
+parent_window = None
+
+#These all trick the EssentialBackendTools to calling a different function to those found in DialogTools without modifying the code. TODO Still needed? No threading support here.
+#Return dlg_result (not global here) too so it behaves the same way.
+
+def show_msg_dlg(message, kind="info"):
     """Shows a message dialog from a thread upon instruction"""
-    if Kind == "info":
-        Title = "WxFixBoot - Information"
+    if kind == "info":
+        title = "WxFixBoot - Information"
         style = wx.OK | wx.ICON_INFORMATION
 
-    elif Kind == "warning":
-        Title = "WxFixBoot - Warning"
+    elif kind == "warning":
+        title = "WxFixBoot - Warning"
         style = wx.OK | wx.ICON_EXCLAMATION
 
-    elif Kind == "error":
-        Title = "WxFixBoot - Error"
+    elif kind == "error":
+        title = "WxFixBoot - Error"
         style = wx.OK | wx.ICON_ERROR
 
-    dlg = wx.MessageDialog(ParentWindow.Panel, Message, Title, style, pos=wx.DefaultPosition)
+    dlg = wx.MessageDialog(parent_window.panel, message, title, style, pos=wx.DefaultPosition)
     dlg.ShowModal()
     dlg.Destroy()
 
-def ShowYesNoDlg(Message, Title="WxFixBoot - Question", Buttons=(None, None)):
+def show_yes_no_dlg(message, title="WxFixBoot - Question", buttons=(None, None)):
     """Shows a yes/no dialog from a thread upon instruction"""
-    dlg = wx.MessageDialog(ParentWindow.Panel, Message, Title, wx.YES_NO | wx.ICON_QUESTION)
+    dlg = wx.MessageDialog(parent_window.panel, message, title, wx.YES_NO | wx.ICON_QUESTION)
 
-    #Try to set custom Buttons labels if needed (handle attribute error on wx 2.8.11).
-    if Buttons != (None, None):
+    #Try to set custom buttons labels if needed (handle attribute error on wx 2.8.11).
+    if buttons != (None, None):
         try:
-            if dlg.SetYesNoLabels(Buttons[0], Buttons[1]):
+            if dlg.SetYesNoLabels(buttons[0], buttons[1]):
                 #If it worked get rid of the last unneccessary sentence in the message.
-                dlg.SetMessage(' '.join(Message.split(".")[0:-1]))
+                dlg.SetMessage(' '.join(message.split(".")[0:-1]))
 
-        except AttributeError: pass
+        except AttributeError:
+            pass
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting dlg_result to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_YES:
         dlg.Destroy()
-        DlgResult = True
+        dlg_result = True
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        dlg_result = False
 
-    return DlgResult
+    return dlg_result
 
-def ShowChoiceDlg(Message, Choices, Title="WxFixBoot - Select an Option"):
+def show_choice_dlg(message, choices, title="WxFixBoot - Select an Option"):
     """Shows a choice dialog from a thread upon instruction"""
-    dlg = wx.SingleChoiceDialog(ParentWindow.Panel, Message, Title, Choices, pos=wx.DefaultPosition)
+    dlg = wx.SingleChoiceDialog(parent_window.panel, message, title, choices, pos=wx.DefaultPosition)
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting dlg_result to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
-        DlgResult = dlg.GetStringSelection()
+        dlg_result = dlg.GetStringSelection()
         dlg.Destroy()
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        dlg_result = False
 
-    return DlgResult
+    return dlg_result
 
-def ShowTextEntryDlg(Message, Title="WxFixBoot - Text Entry"):
+def show_text_entry_dlg(message, title="WxFixBoot - Text Entry"):
     """Shows a text entry dialog from a thread upon instruction"""
-    dlg = wx.TextEntryDialog(ParentWindow.Panel, Message, Title, "", style=wx.OK|wx.CANCEL, pos=wx.DefaultPosition)
+    dlg = wx.TextEntryDialog(parent_window.panel, message, title, "", style=wx.OK|wx.CANCEL, pos=wx.DefaultPosition)
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting dlg_result to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
-        DlgResult = dlg.GetValue()
+        dlg_result = dlg.GetValue()
         dlg.Destroy()
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        dlg_result = False
 
-    return DlgResult
+    return dlg_result
 
-def ShowSaveFiledlg(Title="WxFixBoot - Select A File", Wildcard="All Files/Devices (*)|*"):
+def show_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All Files/Devices (*)|*"):
     """Shows a save file choice dialog from a thread upon instruction"""
-    dlg = wx.FileDialog(ParentWindow.Panel, message=Title, defaultDir="/home", wildcard=Wildcard, style=wx.SAVE|wx.OVERWRITE_PROMPT)
+    dlg = wx.FileDialog(parent_window.panel, message=title, defaultDir="/home", wildcard=wildcard, style=wx.SAVE|wx.OVERWRITE_PROMPT)
 
-    #Where possible, destroy just before setting DlgResult to avoid potential race conditions.
+    #Where possible, destroy just before setting dlg_result to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
         dlg.Destroy()
-        DlgResult = dlg.GetPath()
+        dlg_result = dlg.GetPath()
 
     else:
         dlg.Destroy()
-        DlgResult = False
+        dlg_result = False
 
-    return DlgResult
+    return dlg_result
 
 #End Main Class.

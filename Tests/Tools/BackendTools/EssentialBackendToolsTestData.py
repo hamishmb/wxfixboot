@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # EssentialBackendTools test data for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -22,11 +22,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Functions to return test data.
-def ReturnInitialSystemInfoDict():
+def return_initial_system_info_dict():
     return {"DisableBootloaderOperationsBecause": []}
 
-def ReturnSystemInfoDictWithDisabledBLOpts():
+def return_system_info_dict_with_disabled_bl_opts():
     return {"DisableBootloaderOperations": True, "DisableBootloaderOperationsBecause": ["Internet Connection test failed."]}
 
-def ReturnSystemInfoDictWithEnabledBLOpts():
+def return_system_info_dict_with_enabled_bl_opts():
     return {"DisableBootloaderOperations": False, "DisableBootloaderOperationsBecause": []}

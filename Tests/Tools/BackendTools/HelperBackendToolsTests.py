@@ -23,16 +23,29 @@ from __future__ import unicode_literals
 
 #Import modules
 import unittest
-import wx
-import os
+import sys
 import subprocess
+import wx
+
+#Import other modules.
+sys.path.append('../../..') #Need to be able to import the Tools module from here.
+
+import Tools
+import Tools.coretools as CoreTools
+import Tests.DialogFunctionsForTests as DialogTools
+import Tools.BackendTools.helpers as HelperBackendTools
+
+import GetDevInfo
+from GetDevInfo.getdevinfo import Main as DevInfoToolsCallable #FIXME DEPRECATED
+DevInfoTools = DevInfoToolsCallable() #FIXME DEPRECATED
+
+#Declare global dictionaries to silence pylint warnings.
+SystemInfo = {}
+DiskInfo = {}
 
 #Import test functions & data.
 from . import HelperBackendToolsTestFunctions as Functions
 from . import HelperBackendToolsTestData as Data
-
-#Setup test functions.
-Functions.os = os
 
 class TestPanel(wx.Panel):
     def __init__(self, parent):
@@ -48,86 +61,86 @@ class TestWindow(wx.Frame):
 class TestWaitUntilPackageManagerNotInUse(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
-        self.Frame = TestWindow()
-        self.Panel = TestPanel(self.Frame)
+        self.frame = TestWindow()
+        self.panel = TestPanel(self.frame)
 
-        Tools.coretools.Startup = True
+        Tools.coretools.startup = True
 
-        DialogFunctionsForTests.ParentWindow = self.Panel
+        DialogTools.parent_window = self.panel
 
     def tearDown(self):
-        del Tools.coretools.Startup
-        del DialogFunctionsForTests.ParentWindow
+        del Tools.coretools.startup
+        del DialogTools.parent_window
 
-        self.Panel.Destroy()
-        del self.Panel
+        self.panel.Destroy()
+        del self.panel
 
-        self.Frame.Destroy()
-        del self.Frame
+        self.frame.Destroy()
+        del self.frame
 
         self.app.Destroy()
         del self.app
 
     @unittest.skipUnless(subprocess.Popen("which apt-get", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't apt-get.")
     def testWaitUntilPackageManagerNotInUse1(self):
-        DialogFunctionsForTests.ShowRealMsgDlg("Please ensure the package manager is not in use.")
-        HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="apt-get")
+        DialogTools.show_real_msg_dlg("Please ensure the package manager is not in use.")
+        HelperBackendTools.wait_until_packagemanager_free(mount_point="", package_manager="apt-get")
 
     @unittest.skipUnless(subprocess.Popen("which apt-get", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't apt-get.")
     def testWaitUntilPackageManagerNotInUse2(self):
         #Ask user to enable internet connection.
-        DialogFunctionsForTests.ShowRealMsgDlg("Please open Synaptic or similar to lock the package manager, then click ok. After a few seconds, close it.")
-        HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="apt-get")
+        DialogTools.show_real_msg_dlg("Please open Synaptic or similar to lock the package manager, then click ok. After a few seconds, close it.")
+        HelperBackendTools.wait_until_packagemanager_free(mount_point="", package_manager="apt-get")
 
     @unittest.skipUnless(subprocess.Popen("which yum", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't yum.")
     def testWaitUntilPackageManagerNotInUse3(self):
-        DialogFunctionsForTests.ShowRealMsgDlg("Please ensure the package manager is not in use.")
-        HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="yum")
+        DialogTools.show_real_msg_dlg("Please ensure the package manager is not in use.")
+        HelperBackendTools.wait_until_packagemanager_free(mount_point="", package_manager="yum")
 
     @unittest.skipUnless(subprocess.Popen("which yum", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't yum.")
     def testWaitUntilPackageManagerNotInUse4(self):
         #Ask user to enable internet connection.
-        DialogFunctionsForTests.ShowRealMsgDlg("Please open YUM Extender or similar to lock the package manager, then click ok. After a few seconds, close it.")
-        HelperBackendTools().WaitUntilPackageManagerNotInUse(MountPoint="", PackageManager="yum")
+        DialogTools.show_real_msg_dlg("Please open YUM Extender or similar to lock the package manager, then click ok. After a few seconds, close it.")
+        HelperBackendTools.wait_until_packagemanager_free(mount_point="", package_manager="yum")
 
 class TestFindMissingFSCKModules(unittest.TestCase):
     def setUp(self):
-        Tools.coretools.Startup = True
-        Tools.BackendTools.helpers.DiskInfo = Data.ReturnFakeDiskInfo()
-        Functions.DiskInfo = Data.ReturnFakeDiskInfo()
-        Functions.CoreTools = CoreTools()
+        Tools.coretools.startup = True
+        Tools.BackendTools.helpers.DiskInfo = Data.return_fake_disk_info()
+        Functions.DiskInfo = Data.return_fake_disk_info()
+        Functions.CoreTools = CoreTools
 
     def tearDown(self):
-        del Tools.coretools.Startup
+        del Tools.coretools.startup
         del Tools.BackendTools.helpers.DiskInfo
         del Functions.DiskInfo
         del Functions.CoreTools
 
     @unittest.skipUnless(Functions.CanPerformFindMissingFSCKModulesTest1(), "FSCK modules not available on system.")
     def testFindMissingFSCKModules1(self):
-        self.assertEqual(HelperBackendTools().FindMissingFSCKModules(), Data.ReturnExpectedResultFindingMissingFSCKModules())
+        self.assertEqual(HelperBackendTools.find_missing_fsck_modules(), Data.return_expected_result_finding_missing_fsck_modules())
 
     def testFindMissingFSCKModules2(self):
-        self.assertEqual(HelperBackendTools().FindMissingFSCKModules(), Functions.FindMissingFSCKModules())
+        self.assertEqual(HelperBackendTools.find_missing_fsck_modules(), Functions.find_missing_fsck_modules())
 
 class TestFindCheckableFileSystems(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
-        self.Frame = TestWindow()
-        self.Panel = TestPanel(self.Frame)
-        DialogFunctionsForTests.ParentWindow = self.Panel
+        self.frame = TestWindow()
+        self.panel = TestPanel(self.frame)
+        DialogTools.parent_window = self.panel
 
-        Tools.coretools.Startup = True
-        DevInfoTools().GetInfo(Standalone=True) #We need real disk info for these ones.
+        Tools.coretools.startup = True
+        DevInfoTools.GetInfo(Standalone=True) #We need real disk info for these ones.
         self.DiskInfo = GetDevInfo.getdevinfo.DiskInfo
         Functions.DiskInfo = self.DiskInfo
-        Functions.CoreTools = CoreTools()
+        Functions.CoreTools = CoreTools
         Tools.BackendTools.helpers.DiskInfo = self.DiskInfo
-        Tools.BackendTools.helpers.DialogTools = DialogFunctionsForTests
+        Tools.BackendTools.helpers.DialogTools = DialogTools
 
     def tearDown(self):
-        del Tools.coretools.Startup
-        del DialogFunctionsForTests.ParentWindow
+        del Tools.coretools.startup
+        del DialogTools.parent_window
         del GetDevInfo.getdevinfo.DiskInfo
         del self.DiskInfo
         del Functions.DiskInfo
@@ -135,60 +148,23 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         del Tools.BackendTools.helpers.DiskInfo
         del Tools.BackendTools.helpers.DialogTools
 
-        self.Panel.Destroy()
-        del self.Panel
+        self.panel.Destroy()
+        del self.panel
 
-        self.Frame.Destroy()
-        del self.Frame
+        self.frame.Destroy()
+        del self.frame
 
         self.app.Destroy()
         del self.app
 
     def testFindCheckableFileSystems1(self):
         #More setup.
-        Tools.BackendTools.helpers.SystemInfo = Data.ReturnInitialSystemInfoDict()
-        Functions.SystemInfo = Data.ReturnInitialSystemInfoDict()
+        Tools.BackendTools.helpers.SystemInfo = Data.return_initial_system_info_dict()
+        Functions.SystemInfo = Data.return_initial_system_info_dict()
 
         #Test.
-        self.assertEqual(Functions.FindCheckableFileSystems(), HelperBackendTools().FindCheckableFileSystems())
+        self.assertEqual(Functions.find_checkable_file_systems(), HelperBackendTools.find_checkable_file_systems())
 
         #More teardown.
         del Tools.BackendTools.helpers.SystemInfo
         del Functions.SystemInfo
-
-class TestHandleFilesystemCheckReturnValues(unittest.TestCase):
-    def setUp(self):
-        self.app = wx.App()
-        self.Frame = TestWindow()
-        self.Panel = TestPanel(self.Frame)
-        DialogFunctionsForTests.ParentWindow = self.Panel
-
-        self.SystemInfo = Data.ReturnInitialSystemInfoDict()
-        Tools.BackendTools.helpers.SystemInfo = self.SystemInfo
-        Tools.BackendTools.helpers.DialogTools = DialogFunctionsForTests
-
-    def tearDown(self):
-        del self.SystemInfo
-        del DialogFunctionsForTests.ParentWindow
-        del Tools.BackendTools.helpers.SystemInfo
-        del Tools.BackendTools.helpers.DialogTools
-
-        self.Panel.Destroy()
-        del self.Panel
-
-        self.Frame.Destroy()
-        del self.Frame
-
-        self.app.Destroy()
-        del self.app
-
-    def testHandleFilesystemCheckReturnValues1(self):
-        #All of these should behave in exactly the same way.
-        HelperBackendTools().HandleFilesystemCheckReturnValues(ExecCmds="xfs_repair -Pvd /dev/sda1", Retval=1, Partition="/dev/sda1")
-        self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
-
-        HelperBackendTools().HandleFilesystemCheckReturnValues(ExecCmds="xfs_repair -Pvd /dev/sda1", Retval=2, Partition="/dev/sda1")
-        self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
-
-        HelperBackendTools().HandleFilesystemCheckReturnValues(ExecCmds="xfs_repair -Pvd /dev/sda1", Retval=3, Partition="/dev/sda1")
-        self.assertEqual(DialogFunctionsForTests.MsgDlgMessages[-1], "Corruption was found on the filesystem: /dev/sda1! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")

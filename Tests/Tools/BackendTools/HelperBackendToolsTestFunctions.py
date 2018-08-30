@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # HelperBackendTools test functions for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -23,95 +23,109 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+#Import modules
+import os
+import sys
+
+#Import other modules.
+sys.path.append('../../..') #Need to be able to import the Tools module from here.
+
+import Tools.coretools as CoreTools
+
+#Declare global dictionaries to silence pylint warnings.
+DiskInfo = {}
+SystemInfo = {}
+
 #For comparing to functions with same name in HelpersBackendTools.
-def FindMissingFSCKModules():
+def find_missing_fsck_modules():
     """Check for and return all missing fsck modules (fsck.vfat, fsck.minix, etc)."""
-    FailedList = []
+    failed_list = []
 
-    Keys = DiskInfo.keys()
-    Keys.sort()
+    keys = DiskInfo.keys()
+    keys.sort()
 
-    for Disk in Keys:
+    for disk in keys:
         #Check the FSType is known and isn't swap.
-        if DiskInfo[Disk]["FileSystem"] not in ("Unknown", "N/A"):
+        if DiskInfo[disk]["FileSystem"] not in ("Unknown", "N/A"):
             #Check if this module is present.
-            if CoreTools.StartProcess("which fsck."+DiskInfo[Disk]["FileSystem"], ShowOutput=False) != 0:
+            if CoreTools.start_process("which fsck."+DiskInfo[disk]["FileSystem"], show_output=False) != 0:
                 #Couldn't find it, add it to the failed list.
-                FailedList.append("fsck."+DiskInfo[Disk]["FileSystem"])
+                failed_list.append("fsck."+DiskInfo[disk]["FileSystem"])
 
             else:
                 pass
 
     #Return the list, so FSCheck functions know which FSes to ignore.
-    return FailedList
+    return failed_list
 
-def FindCheckableFileSystems():
+def find_checkable_file_systems():
     """Find all checkable filesystems, and then return them to EssentialBackendTools().FileSystemCheck()"""
     #Do setup.
-    DoNotCheckList = []
-    FileSystemsToCheck = {}
-    RootFS = CoreTools.GetPartitionMountedAt("/")
+    do_not_check_list = []
+    filesystems_to_check = {}
+    root_fs = CoreTools.get_partition_mounted_at("/")
 
     #Get a list of missing fsck modules (if any) based on the existing filesystems.
-    MissingFSCKModules = FindMissingFSCKModules()
+    missing_fsck_modules = find_missing_fsck_modules()
 
-    Keys = DiskInfo.keys()
-    Keys.sort()
+    keys = DiskInfo.keys()
+    keys.sort()
 
     #Determine checkable partitions.
-    for Disk in Keys:
+    for disk in keys:
         #Ignore all devices.
-        if DiskInfo[Disk]["Type"] == "Device":
+        if DiskInfo[disk]["Type"] == "Device":
             continue
 
-        #Check if the required fsck module is present, and that the partition isn't RootFS
-        if "fsck."+DiskInfo[Disk]["FileSystem"] in MissingFSCKModules:
-            MountPoint = "None"
-            CheckTheFS = False
-            RemountPartitionAfter = False
+        #Check if the required fsck module is present, and that the partition isn't root_fs
+        if "fsck."+DiskInfo[disk]["FileSystem"] in missing_fsck_modules:
+            mount_point = "None"
+            check_the_fs = False
+            remount_partition_after = False
 
         else:
-            #If we're not running on a live disk, skip the filesystem if it's the same as RootFS (in which case checking it may corrupt data).
-            if SystemInfo["IsLiveDisk"] == False and Disk == RootFS:
-                MountPoint = "/"
-                CheckTheFS = False
-                RemountPartitionAfter = False
+            #If we're not running on a live disk, skip the filesystem if it's the same as root_fs (in which case checking it may corrupt data).
+            if SystemInfo["IsLiveDisk"] is False and disk == root_fs:
+                mount_point = "/"
+                check_the_fs = False
+                remount_partition_after = False
                 continue
 
             #Check if the partition is mounted.
-            if CoreTools.IsMounted(Disk) == False:
-                MountPoint = "None"
-                CheckTheFS = True
-                RemountPartitionAfter = False
+            if CoreTools.is_mounted(disk) is False:
+                mount_point = "None"
+                check_the_fs = True
+                remount_partition_after = False
 
             else:
                 #Unmount the FS temporarily, to avoid data corruption.
-                MountPoint = CoreTools.GetMountPointOf(Disk)
+                mount_point = CoreTools.get_mount_point_of(disk)
 
-                if MountPoint in ("/", "/home"): #Don't actually unmount, would cause differences in output. Try to simulate if it was successful or not instead.
-                    CheckTheFS = False
-                    RemountPartitionAfter = False
+                if mount_point in ("/", "/home"): #Don't actually unmount, would cause differences in output. Try to simulate if it was successful or not instead.
+                    check_the_fs = False
+                    remount_partition_after = False
 
                 else:
-                    CheckTheFS = True
-                    RemountPartitionAfter = True
+                    check_the_fs = True
+                    remount_partition_after = True
 
-        if CheckTheFS:
+        if check_the_fs:
             #Add it to the dictionary for checking.
-            FileSystemsToCheck[Disk] = {}
-            FileSystemsToCheck[Disk]["Remount"] = RemountPartitionAfter
-            FileSystemsToCheck[Disk]["MountPoint"] = MountPoint
+            filesystems_to_check[disk] = {}
+            filesystems_to_check[disk]["Remount"] = remount_partition_after
+            filesystems_to_check[disk]["mount_point"] = mount_point
 
         else:
             #Add it to the non-checkable list
-            DoNotCheckList.append(Disk+" with Filesystem: "+DiskInfo[Disk]["FileSystem"])
+            do_not_check_list.append(disk+" with Filesystem: "+DiskInfo[disk]["FileSystem"])
 
     #Report uncheckable partitions.
-    if DoNotCheckList != []: pass
+    if do_not_check_list != []:
+        pass
         #Some filesystems will not be checked. Tell the user. ***DISABLED
-        #DialogTools.ShowMsgDlg(Kind="info", Message="The following filesystems will not be checked:\n\n"+'\n'.join(DoNotCheckList)+".\n\nThe most likely reason for this is that some of the filesystems are in use, or that the required filesystem checkers weren't found. WxFixBoot will now continue to check the remaining filesystems.")
+        #DialogTools.ShowMsgDlg(Kind="info", Message="The following filesystems will not be checked:\n\n"+'\n'.join(do_not_check_list)+".\n\nThe most likely reason for this is that some of the filesystems are in use, or that the required filesystem checkers weren't found. WxFixBoot will now continue to check the remaining filesystems.")
 
-    return FileSystemsToCheck
+    return filesystems_to_check
 
 #Checks if system can perform certain tests.
 def CanPerformFindMissingFSCKModulesTest1():

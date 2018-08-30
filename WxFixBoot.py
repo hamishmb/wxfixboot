@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "29/8/2018"
+RELEASEDATE = "30/8/2018"
 
 #Define other global variables.
 SESSION_ENDING = False
