@@ -427,11 +427,11 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Done Checking For Live Disk!")
 
         #unmount all filesystems, to avoid any data corruption.
-        logger.info("InitThread(): unmounting Filesystems...")
-        wx.CallAfter(self.parent_window.update_progress_text, "unmounting Filesystems...")
+        logger.info("InitThread(): Unmounting Filesystems...")
+        wx.CallAfter(self.parent_window.update_progress_text, "Unmounting Filesystems...")
         MainStartupTools.unmount_all_filesystems()
         wx.CallAfter(self.parent_window.update_progress_bar, "5")
-        logger.info("InitThread(): Done unmounting Filsystems!")
+        logger.info("InitThread(): Done Unmounting Filsystems!")
 
         #Check filesystems.
         logger.info("InitThread(): Checking Filesystems...")
@@ -2534,7 +2534,7 @@ class BackendThread(threading.Thread):
                 function()
 
             else:
-                function[0](function[1])
+                function[0](function[1:])
 
         if Settings["MakeSystemSummary"]:
             self.generate_system_report()
