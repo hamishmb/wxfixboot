@@ -276,10 +276,10 @@ def manage_uefi_files(_os, mount_point):
         os.mkdir(uefi_boot_dir)
 
     #Do this different depending on whether the OS is ubuntu or fedora-based.
-    if OSInfo[_os]["package_manager"] == "apt-get":
+    if OSInfo[_os]["PackageManager"] == "apt-get":
         source_dir = mount_point+"/boot/efi/EFI/ubuntu"
 
-    elif OSInfo[_os]["package_manager"] == "yum":
+    elif OSInfo[_os]["PackageManager"] == "yum":
         source_dir = mount_point+"/boot/efi/EFI/fedora"
 
     #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
