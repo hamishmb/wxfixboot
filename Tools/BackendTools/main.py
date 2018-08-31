@@ -523,7 +523,7 @@ def set_new_bootloader_config(_os):
 
             #Now Install GRUB-UEFI to the UEFI Partition.
             logger.info("set_new_bootloader_config(): Installing GRUB-UEFI to "+OSInfo[_os]["EFIPartition"]+"...")
-            BootloaderConfigSettingTools.install_grub2_to_efi_partition(package_manager=OSInfo[_os]["PackageManager"], mount_point=mount_point, use_chroot=use_chroot, uefi_system_partition_mount_point="/boot/efi", arch=OSInfo[_os]["arch"])
+            BootloaderConfigSettingTools.install_grub2_to_efi_partition(package_manager=OSInfo[_os]["PackageManager"], mount_point=mount_point, use_chroot=use_chroot, uefi_system_partition_mount_point="/boot/efi", arch=OSInfo[_os]["Arch"])
 
         else:
             #Now Install GRUB2 to the MBR.
