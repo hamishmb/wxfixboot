@@ -27,8 +27,14 @@ from __future__ import unicode_literals
 
 #Import modules.
 import time
+import sys
 import logging
 import wx
+
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
+    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
@@ -53,8 +59,6 @@ def show_thread_msg_dlg(msg, kind="info"):
     elif kind == "error":
         title = "WxFixBoot - Error"
         style = wx.OK | wx.ICON_ERROR
-
-    print("Parent: ", parent_window)
 
     dlg = wx.MessageDialog(parent_window.panel, msg, title, style, pos=wx.DefaultPosition)
     dlg.ShowModal()

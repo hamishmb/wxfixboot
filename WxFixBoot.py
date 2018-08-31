@@ -37,17 +37,36 @@ import wx.html
 import wx.lib.statbmp
 import wx.lib.stattext
 
+#Compatibility with wxPython 4.
+if int(wx.version()[0]) >= 4:
+    import wx.adv
+    from wx.adv import AboutDialogInfo as wxAboutDialogInfo
+    from wx.adv import AboutBox as wxAboutBox
+
+else:
+    from wx import AboutDialogInfo as wxAboutDialogInfo
+    from wx import AboutBox as wxAboutBox
+
 from bs4 import BeautifulSoup
 
 import getdevinfo
 import getdevinfo.linux
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    #Disable cos necessary to keep supporting python 2.
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
+
+    #Plist hack for Python 3.
+    plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
+
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "30/8/2018"
+RELEASEDATE = "31/8/2018"
 
 #Define other global variables.
 SESSION_ENDING = False
+CLASSIC_WXPYTHON = int(wx.version()[0]) < 4
 APPICON = None
 OUTPUT_LOG = None
 OPERATIONS = None
@@ -157,7 +176,12 @@ class InitialPanel(wx.Panel):
     def on_erase_background(self, event): #pylint: disable=unused-argument
         """Redraw the background image when needed"""
         _dc = wx.ClientDC(self)
-        _dc.SetClippingRect(self.GetUpdateRegion().GetBox())
+
+        if CLASSIC_WXPYTHON:
+            _dc.SetClippingRect(self.GetUpdateRegion().GetBox())
+
+        else:
+            _dc.SetClippingRegion(self.GetUpdateRegion().GetBox())
 
         _dc.Clear()
         splash = wx.Bitmap("/usr/share/wxfixboot/images/splash.png")
@@ -534,7 +558,12 @@ class MainWindow(wx.Frame):
 
         #Add an image.
         img = wx.Image("/usr/share/pixmaps/wxfixboot.png", wx.BITMAP_TYPE_PNG)
-        self.logo = wx.StaticBitmap(self.panel, -1, wx.BitmapFromImage(img))
+
+        if CLASSIC_WXPYTHON:
+            self.logo = wx.StaticBitmap(self.panel, -1, wx.BitmapFromImage(img))
+
+        else:
+            self.logo = wx.StaticBitmap(self.panel, -1, wx.Bitmap(img))
 
     def create_buttons(self):
         """Create the buttons"""
@@ -654,12 +683,15 @@ class MainWindow(wx.Frame):
     def on_about(self, event=None): #pylint: disable=unused-argument
         """Shows the About Box"""
         logger.debug("MainWindow().on_about(): Showing About Box...")
-        aboutbox = wx.AboutDialogInfo()
+        aboutbox = wxAboutDialogInfo()
         aboutbox.Name = "WxFixBoot"
         aboutbox.SetIcon(APPICON)
         aboutbox.Version = VERSION
         aboutbox.Copyright = "(C) 2013-2018 Hamish McIntyre-Bhatty"
-        aboutbox.Description = "Utility to fix the bootloader on a\ncomputer quickly"
+        aboutbox.Description = "Utility to fix the bootloader on a\ncomputer quickly\n\nPython version " \
+                               + sys.version.split()[0] \
+                               + "\nwxPython version " + wx.version()
+
         aboutbox.WebSite = ("https://www.hamishmb.com", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty"]
         aboutbox.Artists = ["Bhuna https://www.instagram.com/bhuna42/",
@@ -668,7 +700,7 @@ class MainWindow(wx.Frame):
         aboutbox.License = "WxFixBoot is free software: you can redistribute it and/or modify it\nunder the terms of the GNU General Public License version 3 or,\nat your option, any later version.\n\nWxFixBoot is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>."
 
         #Show the AboutBox.
-        wx.AboutBox(aboutbox)
+        wxAboutBox(aboutbox)
 
     def setup_sizers(self):
         """Setup sizers for MainWindow"""
@@ -884,7 +916,7 @@ class SystemInfoPage1(wx.Panel):
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
-        width = self.list_ctrl.GetClientSizeTuple()[0]
+        width = self.list_ctrl.GetClientSize()[0]
 
         self.list_ctrl.SetColumnWidth(0, int(width * 0.15))
         self.list_ctrl.SetColumnWidth(1, int(width * 0.1))
@@ -921,7 +953,7 @@ class SystemInfoPage2(wx.Panel):
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
-        width = self.list_ctrl.GetClientSizeTuple()[0]
+        width = self.list_ctrl.GetClientSize()[0]
 
         self.list_ctrl.SetColumnWidth(0, int(width * 0.15))
         self.list_ctrl.SetColumnWidth(1, int(width * 0.1))
@@ -958,7 +990,7 @@ class SystemInfoPage3(wx.Panel):
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
-        width = self.list_ctrl.GetClientSizeTuple()[0]
+        width = self.list_ctrl.GetClientSize()[0]
 
         self.list_ctrl.SetColumnWidth(0, int(width * 0.15))
         self.list_ctrl.SetColumnWidth(1, int(width * 0.15))
@@ -993,7 +1025,7 @@ class SystemInfoPage4(wx.Panel):
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
-        width = self.list_ctrl.GetClientSizeTuple()[0]
+        width = self.list_ctrl.GetClientSize()[0]
 
         self.list_ctrl.SetColumnWidth(0, int(width * 0.4))
         self.list_ctrl.SetColumnWidth(1, int(width * 0.1))
@@ -1029,7 +1061,7 @@ class SystemInfoPage5(wx.Panel):
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
-        width = self.list_ctrl.GetClientSizeTuple()[0]
+        width = self.list_ctrl.GetClientSize()[0]
 
         self.list_ctrl.SetColumnWidth(0, int(width * 0.4))
         self.list_ctrl.SetColumnWidth(1, int(width * 0.1))
@@ -1064,7 +1096,7 @@ class SystemInfoPage6(wx.Panel):
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
-        width = self.list_ctrl.GetClientSizeTuple()[0]
+        width = self.list_ctrl.GetClientSize()[0]
 
         self.list_ctrl.SetColumnWidth(0, int(width * 0.4))
         self.list_ctrl.SetColumnWidth(1, int(width * 0.1))
@@ -1251,7 +1283,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.os_choice.SetStringSelection(SystemInfo["PreviousOSChoice"])
 
         #Basic Options.
-        self.defaultos_choice = wx.Choice(self.panel, -1, choices=OSInfo.keys())
+        self.defaultos_choice = wx.Choice(self.panel, -1, choices=list(OSInfo.keys()))
 
         #Advanced Options.
         self.new_bootloader_choice = wx.Choice(self.panel, -1, choices=[])
@@ -1286,8 +1318,14 @@ class BootloaderOptionsWindow(wx.Frame):
         #Arrows.
         img1 = wx.Image("/usr/share/wxfixboot/images/ArrowDown.png", wx.BITMAP_TYPE_PNG)
         img2 = wx.Image("/usr/share/wxfixboot/images/ArrowRight.png", wx.BITMAP_TYPE_PNG)
-        self.down_arrow_image = wx.BitmapFromImage(img1)
-        self.right_arrow_image = wx.BitmapFromImage(img2)
+
+        if CLASSIC_WXPYTHON:
+            self.down_arrow_image = wx.BitmapFromImage(img1)
+            self.right_arrow_image = wx.BitmapFromImage(img2)
+
+        else:
+            self.down_arrow_image = wx.Bitmap(img1)
+            self.right_arrow_image = wx.Bitmap(img2)
 
         self.arrow1 = wx.lib.statbmp.GenStaticBitmap(self.panel, -1, self.down_arrow_image)
         self.arrow2 = wx.lib.statbmp.GenStaticBitmap(self.panel, -1, self.down_arrow_image)
@@ -1302,7 +1340,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
-        width = self.list_ctrl.GetClientSizeTuple()[0]
+        width = self.list_ctrl.GetClientSize()[0]
 
         self.list_ctrl.SetColumnWidth(0, int(width * 0.4))
         self.list_ctrl.SetColumnWidth(1, int(width * 0.1))
@@ -2538,7 +2576,7 @@ class BackendThread(threading.Thread):
 
         #Do Disk Information
         report_list.write("\n##########Disk Information##########\n")
-        disk_list = DiskInfo.keys()
+        disk_list = list(DiskInfo.keys())
         disk_list.sort()
 
         report_list.write("All Disks: "+', '.join(disk_list)+"\n\n")
@@ -2563,7 +2601,7 @@ class BackendThread(threading.Thread):
 
         #Do OS Information.
         report_list.write("\n##########OS Information##########\n")
-        os_list = OSInfo.keys()
+        os_list = list(OSInfo.keys())
         os_list.sort()
 
         report_list.write("Detected Operating Systems: "+', '.join(OSInfo.keys())+"\n")
@@ -2596,7 +2634,7 @@ class BackendThread(threading.Thread):
             report_list.write("but they weren't actually done.\n")
             report_list.write("Bootloader Operations were disabled because: "+SystemInfo["DisableBootloaderOperationsBecause"]+"\n\n")
 
-        bootloader_oss = BootloaderInfo.keys()
+        bootloader_oss = list(BootloaderInfo.keys())
         bootloader_oss.sort()
 
         for _os in bootloader_oss:

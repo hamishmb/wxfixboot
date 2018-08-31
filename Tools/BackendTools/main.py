@@ -40,6 +40,11 @@ from .. import dialogtools as DialogTools
 sys.path.append('../..') #Need to be able to import the Tools module from here.
 import Tools.StartupTools.getbootloaderconfigtools as BootloaderConfigObtainingTools
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
+    str = bytes #pylint: disable=redefined-builtin,invalid-name
+
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

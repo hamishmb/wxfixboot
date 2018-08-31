@@ -23,7 +23,15 @@ from __future__ import unicode_literals
 
 #Import modules.
 import logging
+import sys
 import wx
+
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    #Disable cos necessary to keep supporting python 2.
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
+
+CLASSIC_WXPYTHON = int(wx.version()[0]) < 4
 
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
@@ -76,8 +84,13 @@ def update_list_ctrl(self, event=None, headings=None, dictionary=None): #pylint:
     #Add info from the custom module.
     logger.debug("update_list_ctrl(): Adding info to list ctrl...")
 
-    keys = dictionary.keys()
+    keys = list(dictionary.keys())
     keys.sort()
+
+    #Compatibility with wxpython < 4.
+    if CLASSIC_WXPYTHON:
+        self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
+        self.list_ctrl.InsertItem = self.list_ctrl.InsertStringItem
 
     #Do all of the data at the same time.
     number = -1
@@ -96,10 +109,10 @@ def update_list_ctrl(self, event=None, headings=None, dictionary=None): #pylint:
                 data = unicode(data)
 
             if column == 0:
-                self.list_ctrl.InsertStringItem(index=number, label=data)
+                self.list_ctrl.InsertItem(number, label=data)
 
             else:
-                self.list_ctrl.SetStringItem(index=number, col=column, label=data)
+                self.list_ctrl.SetItem(number, column, label=data)
 
             column += 1
 

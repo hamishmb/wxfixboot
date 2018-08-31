@@ -35,6 +35,11 @@ import wx
 #Import other modules.
 from . import dialogtools as DialogTools
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
+    str = bytes #pylint: disable=redefined-builtin,invalid-name
+
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -83,19 +88,19 @@ def read(cmd, testing=False):
     """Read the cmd's output char by char, but do as little processing as possible to improve startup performance"""
     #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
     counter = 0
-    line = str("")
+    line = str(b"")
     line_list = []
 
     while cmd.poll() is None or counter < 100:
         char = cmd.stdout.read(1)
 
-        if char == "":
+        if char == b"":
             counter += 1
             continue
 
         line += char
 
-        if char in ("\n", "\r"):
+        if char in (b"\n", b"\r"):
             #Interpret as Unicode and remove "NULL" characters.
             line = line.decode("UTF-8", errors="replace").replace("\x00", "")
 
@@ -106,7 +111,7 @@ def read(cmd, testing=False):
                 line_list.append(line.replace("\n", "").replace("\r", ""))
 
             #Reset line.
-            line = str("")
+            line = str(b"")
 
     return line_list
 
@@ -114,7 +119,7 @@ def read_and_send_output(cmd, show_output):
     """Read the cmd's output char by char, and send the output to the output box"""
     #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
     counter = 0
-    line = str("")
+    line = str(b"")
     line_list = []
     hold = False
     send_line = False
@@ -122,7 +127,7 @@ def read_and_send_output(cmd, show_output):
     while cmd.poll() is None or counter < 100:
         char = cmd.stdout.read(1)
 
-        if char == "":
+        if char == b"":
             counter += 1
             continue
 
@@ -130,9 +135,9 @@ def read_and_send_output(cmd, show_output):
 
         if hold:
             #Check if this char is \n.
-            if char == "\n":
+            if char == b"\n":
                 #Send the line as is but replace \r\n with \n.
-                line = str(line.replace("\r\n", "\n"))
+                line = str(line.replace(b"\r\n", b"\n"))
 
             else:
                 #Send the line as is.
@@ -140,7 +145,7 @@ def read_and_send_output(cmd, show_output):
 
             hold = False
 
-        if char in ("\n", "\x08") or send_line:
+        if char in (b"\n", b"\x08") or send_line:
             #Interpret as Unicode and remove "NULL" characters.
             line = line.decode("UTF-8", errors="replace").replace("\x00", "")
 
@@ -148,7 +153,7 @@ def read_and_send_output(cmd, show_output):
             line_list.append(line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
             #Reset line.
-            line = str("")
+            line = str(b"")
             send_line = False
 
         elif char == "\r":

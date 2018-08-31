@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 #Import modules.
 import os
+import sys
 import logging
 
 #Import other modules.
@@ -31,6 +32,11 @@ from . import getbootloaderconfigtools as BootloaderConfigObtainingTools
 
 from .. import coretools as CoreTools
 from .. import dialogtools as DialogTools
+
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
+    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
@@ -152,10 +158,8 @@ def get_oss():
     OSInfo = {}
 
     #Get Linux OSs.
-    keys = DiskInfo.keys()
+    keys = list(DiskInfo.keys())
     keys.sort()
-
-    print(keys)
 
     for partition in keys:
         if DiskInfo[partition]["Type"] == "Device":
@@ -418,7 +422,7 @@ def get_bootloaders():
     """Find all bootloaders (for each OS), and gather some information about them"""
     SystemInfo["ModifyableOSs"] = []
 
-    keys = OSInfo.keys()
+    keys = list(OSInfo.keys())
     keys.sort()
 
     for _os in keys:

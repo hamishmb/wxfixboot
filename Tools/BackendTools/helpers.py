@@ -23,12 +23,18 @@ from __future__ import unicode_literals
 
 #Import modules
 import os
+import sys
 import time
 import logging
 
 #Import other modules.
 from .. import coretools as CoreTools
 from .. import dialogtools as DialogTools
+
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
+    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
