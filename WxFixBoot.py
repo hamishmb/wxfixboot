@@ -2534,7 +2534,7 @@ class BackendThread(threading.Thread):
                 function()
 
             else:
-                function[0](function[1:])
+                function[0](*function[1:])
 
         if Settings["MakeSystemSummary"]:
             self.generate_system_report()
