@@ -2589,7 +2589,7 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tPartitions: "+', '.join(DiskInfo[disk]["Partitions"])+"\n")
             report_list.write("\t\tVendor: "+DiskInfo[disk]["Vendor"]+"\n")
             report_list.write("\t\tProduct: "+DiskInfo[disk]["Product"]+"\n")
-            report_list.write("\t\tRaw Capacity: "+DiskInfo[disk]["raw_capacity"]+"\n") #XXX Temporary before the case is fixed in GetDevInfo.
+            #report_list.write("\t\tRaw Capacity: "+DiskInfo[disk]["RawCapacity"]+"\n") #XXX Temporary before the case is fixed in GetDevInfo.
             report_list.write("\t\tHuman-readable Capacity: "+DiskInfo[disk]["Capacity"]+"\n")
             report_list.write("\t\tDescription: "+DiskInfo[disk]["Description"]+"\n")
             report_list.write("\t\tFlags: "+', '.join(DiskInfo[disk]["Flags"])+"\n")
