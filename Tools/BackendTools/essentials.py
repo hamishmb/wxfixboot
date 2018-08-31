@@ -99,7 +99,7 @@ def filesystem_check(_type, manage_bootloader_function):
     logger.debug("filesystem_check(): Starting...")
 
     #Update Current Operation Text.
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Preparing for Filesystem Check...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Preparing for Filesystem Check...")
     wx.CallAfter(parent_window.update_current_progress, 10)
     wx.CallAfter(parent_window.update_output_box, "\n###Preparing to do the Filesystem Check...###\n")
 
@@ -118,7 +118,7 @@ def filesystem_check(_type, manage_bootloader_function):
         #Gather info.
         logger.info("filesystem_check():: Checking "+disk+"...")
         wx.CallAfter(parent_window.update_output_box, "\n###Checking Disk: "+disk+"###\n")
-        wx.CallAfter(parent_window.update_current_operation_text, Message="Checking Disk: "+disk)
+        wx.CallAfter(parent_window.update_current_operation_text, message="Checking Disk: "+disk)
         wx.CallAfter(parent_window.update_current_progress, 30+((50//filesystems_to_check_length)*(checked+1)))
         run_badblocks = False
 
@@ -209,7 +209,7 @@ def filesystem_check(_type, manage_bootloader_function):
         checked += 1
 
     #Update Current Operation Text.
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Finished Filesystem Check!")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Finished Filesystem Check!")
     wx.CallAfter(parent_window.update_current_progress, 100)
     wx.CallAfter(parent_window.update_output_box, "\n###Finished Filesystem Check!###\n")
 

@@ -62,12 +62,12 @@ parent_window = None
 def manage_bootloader(_os):
     """Manage the installation and removal of each bootloader."""
     #Test the internet connection.
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Checking the Internet Connection...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Checking the Internet Connection...")
     wx.CallAfter(parent_window.update_output_box, "\n###Checking the Internet Connection...###\n")
 
     EssentialBackendTools.check_internet_connection()
 
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Finished checking the Internet Connection...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Finished checking the Internet Connection...")
     wx.CallAfter(parent_window.update_output_box, "\n###Finished checking the Internet Connection...###\n")
 
     #Don't do anything if bootloader operations have been disabled.
@@ -139,7 +139,7 @@ def remove_old_bootloader(_os):
     """Remove the currently installed bootloader."""
     logger.info("remove_old_bootloader(): Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...")
     wx.CallAfter(parent_window.update_current_progress, 27)
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"......")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"......")
     wx.CallAfter(parent_window.update_output_box, "\n###Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...###\n")
 
     #If this is the current OS, let the remover function know that we aren't using chroot.
@@ -190,14 +190,14 @@ def remove_old_bootloader(_os):
     #Wait until no other application is using APT/YUM.
     #Let user know what's happening.
     wx.CallAfter(parent_window.update_current_progress, 27)
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Waiting until "+_os+"'s package manager is free.\nClose any open applications if this message persists...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Waiting until "+_os+"'s package manager is free.\nClose any open applications if this message persists...")
     wx.CallAfter(parent_window.update_output_box, "\n###Waiting until "+_os+"'s package manager is free...###\n")
 
     logger.debug("remove_old_bootloader(): Waiting until "+_os+"'s package manager is free...")
     HelperBackendTools.wait_until_packagemanager_free(mount_point=mount_point, package_manager=OSInfo[_os]["PackageManager"])
 
     wx.CallAfter(parent_window.update_current_progress, 27)
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...")
     wx.CallAfter(parent_window.update_output_box, "\n###Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...###\n")
 
     #Remove the bootloader.
@@ -282,7 +282,7 @@ def remove_old_bootloader(_os):
 
     #Log and notify the user that we're finished removing bootloaders.
     logger.info("remove_old_bootloader(): Finished removing "+BootloaderInfo[_os]["Bootloader"]+"...")
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Finished removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"......")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Finished removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"......")
     wx.CallAfter(parent_window.update_current_progress, 50)
     DialogTools.show_msg_dlg(kind="info", message="Finished removing "+BootloaderInfo[_os]["Bootloader"]+"! WxFixBoot will now install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" to "+_os+".")
     return True
@@ -292,7 +292,7 @@ def install_new_bootloader(_os):
     logger.info("install_new_bootloader(): Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
     wx.CallAfter(parent_window.update_current_progress, 52)
     wx.CallAfter(parent_window.update_output_box, "\n###Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
 
     #If this is the current OS, let the installer functions know that we aren't using chroot.
     if OSInfo[_os]["IsCurrentOS"]:
@@ -342,7 +342,7 @@ def install_new_bootloader(_os):
         DialogTools.show_msg_dlg(kind="error", message="WxfixBoot failed to update "+_os+"'s package information! Giving up. You will be prompted to try again if you wish.")
         return False
 
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
     wx.CallAfter(parent_window.update_current_progress, 55)
     wx.CallAfter(parent_window.update_output_box, "\n###Installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
 
@@ -438,14 +438,14 @@ def install_new_bootloader(_os):
 
     #Log and notify the user that we're finished installing the bootloader.
     logger.info("install_new_bootloader(): Finished installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"...")
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Finish installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Finish installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
     wx.CallAfter(parent_window.update_current_progress, 75)
     return True
 
 def set_new_bootloader_config(_os):
     """Manage setting new bootloader config."""
     logger.info("set_new_bootloader_config(): Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...")
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" config for "+_os+"...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" config for "+_os+"...")
     wx.CallAfter(parent_window.update_current_progress, 79)
     wx.CallAfter(parent_window.update_output_box, "\n###Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...###\n")
 
@@ -719,6 +719,6 @@ def set_new_bootloader_config(_os):
 
     logger.debug("set_new_bootloader_config(): Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...")
     wx.CallAfter(parent_window.update_output_box, "\n###Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...###\n")
-    wx.CallAfter(parent_window.update_current_operation_text, Message="Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"!")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"!")
     wx.CallAfter(parent_window.update_current_progress, 100)
     return True
