@@ -58,6 +58,14 @@ from Tests.Tools.BackendTools import EssentialBackendToolsTests
 from Tests.Tools.StartupTools import CoreStartupToolsTests
 from Tests.Tools.StartupTools import MainStartupToolsTests
 
+#Make unicode an alias for str in Python 3.
+if sys.version_info[0] == 3:
+    #Disable cos necessary to keep supporting python 2.
+    unicode = str #pylint: disable=redefined-builtin,invalid-name
+
+    #Plist hack for Python 3.
+    plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
+
 def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
     print("Options:\n")

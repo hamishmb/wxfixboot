@@ -111,7 +111,7 @@ def get_oss():
     OSInfo = {}
 
     #Get Linux OSs.
-    keys = DiskInfo.keys()
+    keys = list(DiskInfo.keys())
     keys.sort()
 
     for partition in keys:
