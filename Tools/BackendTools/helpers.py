@@ -96,7 +96,7 @@ def find_missing_fsck_modules():
     logger.info("find_missing_fsck_modules(): Looking for missing FSCK modules to ignore...")
     failed_list = []
 
-    keys = DiskInfo.keys()
+    keys = list(DiskInfo.keys())
     keys.sort()
 
     for disk in keys:
@@ -127,7 +127,7 @@ def find_checkable_file_systems():
     #Get a list of missing fsck modules (if any) based on the existing filesystems.
     missing_fsck_modules = find_missing_fsck_modules()
 
-    keys = DiskInfo.keys()
+    keys = list(DiskInfo.keys())
     keys.sort()
 
     #Determine checkable partitions.

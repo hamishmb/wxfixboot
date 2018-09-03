@@ -345,7 +345,7 @@ def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
     #As we make these entries, we'll record which ones were actually made, as the user can cancel them if it looks like it won't work.
     completed_entries_list = []
 
-    keys = OSInfo.keys()
+    keys = list(OSInfo.keys())
     keys.sort()
 
     for _os in keys:
