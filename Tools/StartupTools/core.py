@@ -49,7 +49,7 @@ def make_bootloaderinfo_entry_for_macos(the_os):
     """Makes an entry in BootloaderInfo for macOS"""
     BootloaderInfo[the_os] = {}
     BootloaderInfo[the_os]["OSName"] = the_os
-    BootloaderInfo[the_os]["Bootloader"] = "BootX/BootROM/boot.efi"
+    BootloaderInfo[the_os]["Bootloader"] = "iBoot/BootX"
     BootloaderInfo[the_os]["AvailableBootloaders"] = []
     BootloaderInfo[the_os]["MenuEntries"] = {}
     BootloaderInfo[the_os]["IsModifyable"] = False
