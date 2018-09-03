@@ -169,7 +169,7 @@ def read_and_send_output(cmd, show_output):
             line = str(b"")
             send_line = False
 
-        elif char == "\r":
+        elif char == b"\r":
             #Take the next character too in case it's \n, so we can just handle \r\n as \n.
             hold = True
 
