@@ -56,9 +56,11 @@ def find_grub(os_partition, grub_version):
         look_for = ("ZRrI", "")
 
     for disk in likely_grub_install_disks:
-        logger.info("find_grub(): "+DiskInfo[disk]["Name"]+" "+', '.join(DiskInfo[disk]["BootRecordStrings"]))
+        logger.info("find_grub(): "+DiskInfo[disk]["Name"]+" "+', '.join(unicode(DiskInfo[disk]["BootRecordStrings"])))
 
         for line in DiskInfo[disk]["BootRecordStrings"]:
+            line = unicode(line)
+
             #Check that we have the right version of GRUB, and double check that GRUB is present.
             if line in look_for and "GRUB" in DiskInfo[disk]["BootRecordStrings"]:
                 logger.info("find_grub(): Found "+grub_version+" on "+disk+"...")
