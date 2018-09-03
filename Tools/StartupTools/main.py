@@ -166,9 +166,9 @@ def get_oss():
             continue
 
         elif DiskInfo[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
-            #Look for Mac OS X.
-            os_name = "Mac OS X ("+partition+")"
-            logger.debug("get_oss(): Looking for Mac OS X on "+partition+"...")
+            #Look for macOS.
+            os_name = "macOS ("+partition+")"
+            logger.debug("get_oss(): Looking for macOS on "+partition+"...")
 
             #Check if we need to mount the partition.
             was_mounted = False
@@ -361,14 +361,14 @@ def get_oss():
 
     #Get list of Linux OSs.
     for _os in OSInfo:
-        if _os[0] not in ("Windows", "Mac"):
+        if _os[0] not in ("Windows", "macOS"):
             linux_oss.append(os_name)
 
     if len(linux_oss) < 1:
-        logger.critical("get_oss(): No Linux installations found! If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
+        logger.critical("get_oss(): No Linux installations found! If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or macOS, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
 
         #Exit.
-        CoreTools.emergency_exit("You don't appear to have any Linux installations on your hard disks. If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
+        CoreTools.emergency_exit("You don't appear to have any Linux installations on your hard disks. If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or macOS, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
 
     #Otherwise...
     logger.debug("get_oss(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
@@ -431,8 +431,8 @@ def get_bootloaders():
             CoreStartupTools.make_bootloaderinfo_entry_for_windows(_os)
             continue
 
-        #Same for Mac OS X.
-        elif "Mac" in _os:
+        #Same for macOS.
+        elif "macOS" in _os:
             CoreStartupTools.make_bootloaderinfo_entry_for_macos(_os)
             continue
 
@@ -596,8 +596,8 @@ def get_bootloaders():
             BootloaderInfo[_os]["DefaultOS"] = _os
             continue
 
-        #Same for Mac OS X.
-        elif "Mac" in _os:
+        #Same for macOS.
+        elif "macOS" in _os:
             BootloaderInfo[_os]["DefaultBootDevice"] = OSInfo[_os]["Partition"]
             BootloaderInfo[_os]["DefaultOS"] = _os
             continue

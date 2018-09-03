@@ -46,14 +46,14 @@ BootloaderInfo = {}
 OSInfo = {}
 
 def make_bootloaderinfo_entry_for_macos(the_os):
-    """Makes an entry in BootloaderInfo for Mac OS X"""
+    """Makes an entry in BootloaderInfo for macOS"""
     BootloaderInfo[the_os] = {}
     BootloaderInfo[the_os]["OSName"] = the_os
     BootloaderInfo[the_os]["Bootloader"] = "BootX/BootROM/boot.efi"
     BootloaderInfo[the_os]["AvailableBootloaders"] = []
     BootloaderInfo[the_os]["MenuEntries"] = {}
     BootloaderInfo[the_os]["IsModifyable"] = False
-    BootloaderInfo[the_os]["Comments"] = "WxFixBoot cannot modify Mac OS X."
+    BootloaderInfo[the_os]["Comments"] = "WxFixBoot cannot modify macOS."
     BootloaderInfo[the_os]["Timeout"], BootloaderInfo[the_os]["GlobalKernelOptions"], BootloaderInfo[the_os]["BootDisk"], BootloaderInfo[the_os]["BLSpecificDefaultOS"], BootloaderInfo[the_os]["DefaultOS"] = (10, "Unknown", OSInfo[the_os]["Partition"], the_os, the_os)
 
     #Initialise some default no-action settings.
