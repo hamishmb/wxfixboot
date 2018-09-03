@@ -856,7 +856,7 @@ class MainWindow(wx.Frame):
 
             if answer == wx.ID_YES:
                 #Ask the user where to save it.
-                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home", wildcard="Log Files (*.log)|*.log" , style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home", wildcard="Log Files (*.log)|*.log" , style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
                 answer = dlg.ShowModal()
                 _file = dlg.GetPath()
                 dlg.Destroy()
@@ -1764,7 +1764,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Determine what to do here.
         if _file == "Specify File Path...":
-            dlg = wx.FileDialog(self.panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.SAVE)
+            dlg = wx.FileDialog(self.panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.FD_SAVE)
 
             if dlg.ShowModal() == wx.ID_OK:
                 _file = dlg.GetPath()
@@ -1797,7 +1797,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Determine what to do here.
         if _file == "Specify File Path...":
-            dlg = wx.FileDialog(self.panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.OPEN)
+            dlg = wx.FileDialog(self.panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.FD_OPEN)
 
             if dlg.ShowModal() == wx.ID_OK:
                 _file = dlg.GetPath()
@@ -2445,7 +2445,7 @@ class ProgressWindow(wx.Frame):
 
             if answer == wx.ID_YES:
                 #Ask the user where to save it.
-                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home", wildcard="Log Files (*.log)|*.log" , style=wx.SAVE|wx.OVERWRITE_PROMPT)
+                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home", wildcard="Log Files (*.log)|*.log" , style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
                 answer = dlg.ShowModal()
                 _file = dlg.GetPath()
                 dlg.Destroy()
