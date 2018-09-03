@@ -149,11 +149,9 @@ def read_and_send_output(cmd, show_output):
             if char == b"\n":
                 #Send the line as is but replace \r\n with \n.
                 line = str(line.replace(b"\r\n", b"\n"))
-                print(line)
 
             else:
                 #Send the line as is.
-                print(line)
                 send_line = True
 
             hold = False
