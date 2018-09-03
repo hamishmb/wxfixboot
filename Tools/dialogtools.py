@@ -221,7 +221,7 @@ def show_thread_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All F
     global DLGRESULT
 
     logger.debug("show_thread_save_file_dlg(): Showing Thread Save File Dialog...")
-    dlg = wx.FileDialog(parent_window.panel, message=title, defaultDir="/home", wildcard=wildcard, style=wx.SAVE|wx.OVERWRITE_PROMPT)
+    dlg = wx.FileDialog(parent_window.panel, message=title, defaultDir="/home", wildcard=wildcard, style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
     #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
