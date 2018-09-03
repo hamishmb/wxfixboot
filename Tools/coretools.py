@@ -113,6 +113,17 @@ def read(cmd, testing=False):
             #Reset line.
             line = str(b"")
 
+    #Catch it if there's not a newline at the end.
+    if line != b"":
+        #Interpret as Unicode and remove "NULL" characters.
+        line = line.decode("UTF-8", errors="ignore").replace("\x00", "")
+
+        if testing:
+            line_list.append(line)
+
+        else:
+            line_list.append(line.replace("\n", "").replace("\r", ""))
+
     return line_list
 
 def read_and_send_output(cmd, show_output):
@@ -159,6 +170,14 @@ def read_and_send_output(cmd, show_output):
         elif char == "\r":
             #Take the next character too in case it's \n, so we can just handle \r\n as \n.
             hold = True
+
+    #Catch it if there's not a newline at the end.
+    if line != b"":
+        #Interpret as Unicode and remove "NULL" characters.
+        line = line.decode("UTF-8", errors="ignore").replace("\x00", "")
+
+        wx.CallAfter(parent_window.update_output_box, line, show_output)
+        line_list.append(line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
     return line_list
 
