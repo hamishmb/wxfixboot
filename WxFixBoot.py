@@ -2597,7 +2597,7 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tFilesystem: "+DiskInfo[disk]["FileSystem"]+"\n")
             report_list.write("\t\tUUID: "+DiskInfo[disk]["UUID"]+"\n")
             report_list.write("\t\tID: "+DiskInfo[disk]["ID"]+"\n")
-            report_list.write("\t\tBoot Record Strings: "+', '.join(DiskInfo[disk]["BootRecordStrings"])+"\n\n")
+            report_list.write("\t\tBoot Record Strings: "+', '.join(unicode(DiskInfo[disk]["BootRecordStrings"]))+"\n\n")
 
         #Do OS Information.
         report_list.write("\n##########OS Information##########\n")
