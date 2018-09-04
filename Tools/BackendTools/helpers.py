@@ -34,6 +34,7 @@ import logging
 #Import other modules.
 from .. import coretools as CoreTools
 from .. import dialogtools as DialogTools
+from ..dictionaries import *
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -44,33 +45,27 @@ if sys.version_info[0] == 3:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-#Silence pylint errors about missing global dictionaries.
-OSInfo = {}
-SystemInfo = {}
-DiskInfo = {}
-BootloaderInfo = {}
-
 def partition_matches_os(partition, _os):
     """Matches the given boot device to an OS, using the info we gathered at startup using the function above"""
     #Try to match it by UUID or by name, looking for the same type of match we got before, to avoid false positives.
     logger.debug("partition_matches_os(): Partition To Match: "+partition+"...")
     logger.debug("partition_matches_os(): OS to match with: "+_os+"...")
-    logger.debug("partition_matches_os(): Trying to match (1st) with: "+OSInfo[_os]["Partition"]+"...")
-    logger.debug("partition_matches_os(): Trying to match (2nd) with: "+OSInfo[_os]["BootPartition"]+"...")
-    logger.debug("partition_matches_os(): Trying to match (3rd) with: "+OSInfo[_os]["EFIPartition"]+"...")
+    logger.debug("partition_matches_os(): Trying to match (1st) with: "+OS_INFO[_os]["Partition"]+"...")
+    logger.debug("partition_matches_os(): Trying to match (2nd) with: "+OS_INFO[_os]["BootPartition"]+"...")
+    logger.debug("partition_matches_os(): Trying to match (3rd) with: "+OS_INFO[_os]["EFIPartition"]+"...")
 
     #If partition is unknown ignore it.
     if partition == "Unknown":
         return False
 
     #If the eg EFI partition isn't known, don't do the rest of the test in the if statement to avoid erors (short-circuit logic).
-    if OSInfo[_os]["Partition"] != "Unknown" and partition in (OSInfo[_os]["Partition"], DiskInfo[OSInfo[_os]["Partition"]]["UUID"]):
+    if OS_INFO[_os]["Partition"] != "Unknown" and partition in (OS_INFO[_os]["Partition"], DISK_INFO[OS_INFO[_os]["Partition"]]["UUID"]):
         return True
 
-    elif OSInfo[_os]["BootPartition"] != "Unknown" and partition in (OSInfo[_os]["BootPartition"], DiskInfo[OSInfo[_os]["BootPartition"]]["UUID"]):
+    elif OS_INFO[_os]["BootPartition"] != "Unknown" and partition in (OS_INFO[_os]["BootPartition"], DISK_INFO[OS_INFO[_os]["BootPartition"]]["UUID"]):
         return True
 
-    elif OSInfo[_os]["EFIPartition"] != "Unknown" and partition in (OSInfo[_os]["EFIPartition"], DiskInfo[OSInfo[_os]["EFIPartition"]]["UUID"]):
+    elif OS_INFO[_os]["EFIPartition"] != "Unknown" and partition in (OS_INFO[_os]["EFIPartition"], DISK_INFO[OS_INFO[_os]["EFIPartition"]]["UUID"]):
         return True
 
 
@@ -100,20 +95,20 @@ def find_missing_fsck_modules():
     logger.info("find_missing_fsck_modules(): Looking for missing FSCK modules to ignore...")
     failed_list = []
 
-    keys = list(DiskInfo.keys())
+    keys = list(DISK_INFO.keys())
     keys.sort()
 
     for disk in keys:
         #Check the FSType is known and isn't swap.
-        if DiskInfo[disk]["FileSystem"] not in ("Unknown", "N/A"):
+        if DISK_INFO[disk]["FileSystem"] not in ("Unknown", "N/A"):
             #Check if this module is present.
-            if CoreTools.start_process("which fsck."+DiskInfo[disk]["FileSystem"], show_output=False) != 0:
+            if CoreTools.start_process("which fsck."+DISK_INFO[disk]["FileSystem"], show_output=False) != 0:
                 #Couldn't find it, add it to the failed list.
-                logger.warning("FSCKModules(): Couldn't find FSCK module fsck."+DiskInfo[disk]["FileSystem"]+"! Adding it to the list of missing modules...")
-                failed_list.append("fsck."+DiskInfo[disk]["FileSystem"])
+                logger.warning("FSCKModules(): Couldn't find FSCK module fsck."+DISK_INFO[disk]["FileSystem"]+"! Adding it to the list of missing modules...")
+                failed_list.append("fsck."+DISK_INFO[disk]["FileSystem"])
 
             else:
-                logger.debug("FSCKModules(): Found fsck."+DiskInfo[disk]["FileSystem"]+"...")
+                logger.debug("FSCKModules(): Found fsck."+DISK_INFO[disk]["FileSystem"]+"...")
 
     #Return the list, so FSCheck functions know which FSes to ignore.
     logger.info("find_missing_fsck_modules(): Done! Missing FSCK modules: "+', '.join(failed_list))
@@ -131,24 +126,24 @@ def find_checkable_file_systems():
     #Get a list of missing fsck modules (if any) based on the existing filesystems.
     missing_fsck_modules = find_missing_fsck_modules()
 
-    keys = list(DiskInfo.keys())
+    keys = list(DISK_INFO.keys())
     keys.sort()
 
     #Determine checkable partitions.
     for disk in keys:
         #Ignore all devices.
-        if DiskInfo[disk]["Type"] == "Device":
+        if DISK_INFO[disk]["Type"] == "Device":
             continue
 
         #Check if the required fsck module is present, and that the partition isn't root_fs
-        if "fsck."+DiskInfo[disk]["FileSystem"] in missing_fsck_modules:
+        if "fsck."+DISK_INFO[disk]["FileSystem"] in missing_fsck_modules:
             mount_point = "None"
             check_this_fs = False
             remount_fs_after = False
 
         else:
             #If we're not running on a live disk, skip the filesystem if it's the same as root_fs (in which case checking it may corrupt data).
-            if SystemInfo["IsLiveDisk"] is False and disk == root_fs:
+            if SYSTEM_INFO["IsLiveDisk"] is False and disk == root_fs:
                 mount_point = "/"
                 check_this_fs = False
                 remount_fs_after = False
@@ -181,7 +176,7 @@ def find_checkable_file_systems():
 
         else:
             #Add it to the non-checkable list
-            do_not_check_list.append(disk+" with Filesystem: "+DiskInfo[disk]["FileSystem"])
+            do_not_check_list.append(disk+" with Filesystem: "+DISK_INFO[disk]["FileSystem"])
 
     #Report uncheckable partitions.
     if do_not_check_list != []:
@@ -195,7 +190,7 @@ def write_fstab_entry_for_uefi_partition(_os, mount_point):
     """Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one. DISABLED***"""
     return True #FIXME Disabled cos breaks things.
 
-    logger.info("write_fstab_entry_for_uefi_partition(): Preparing to write an fstab entry for the UEFI partition ("+OSInfo[_os]["EFIPartition"]+")...")
+    logger.info("write_fstab_entry_for_uefi_partition(): Preparing to write an fstab entry for the UEFI partition ("+OS_INFO[_os]["EFIPartition"]+")...")
 
     write_entry = True
 
@@ -208,7 +203,7 @@ def write_fstab_entry_for_uefi_partition(_os, mount_point):
     new_file_contents = []
 
     for line in fstab:
-        if OSInfo[_os]["EFIPartition"] in line or "UUID="+DiskInfo[OSInfo[_os]["EFIPartition"]]["UUID"] in line:
+        if OS_INFO[_os]["EFIPartition"] in line or "UUID="+DISK_INFO[OS_INFO[_os]["EFIPartition"]]["UUID"] in line:
             #This fstab already has an entry for the UEFI System Partition!
             write_entry = False
 
@@ -223,15 +218,15 @@ def write_fstab_entry_for_uefi_partition(_os, mount_point):
     else:
         #We do. If we can use the UUID, then we will, but otherwise we'll use the standard device name.
         logger.info("write_fstab_entry_for_uefi_partition(): Writing fstab entry...")
-        new_file_contents.append("\n#fstab entry for UEFI System Partition ("+OSInfo[_os]["EFIPartition"]+"), written by WxFixBoot.\n")
+        new_file_contents.append("\n#fstab entry for UEFI System Partition ("+OS_INFO[_os]["EFIPartition"]+"), written by WxFixBoot.\n")
 
-        if DiskInfo[OSInfo[_os]["EFIPartition"]]["UUID"] != "Unknown":
+        if DISK_INFO[OS_INFO[_os]["EFIPartition"]]["UUID"] != "Unknown":
             logger.info("write_fstab_entry_for_uefi_partition(): Using UUID to prevent problems down the line...")
-            new_file_contents.append("UUID="+DiskInfo[OSInfo[_os]["EFIPartition"]]["UUID"]+" /boot/efi vfat defaults 0 2\n")
+            new_file_contents.append("UUID="+DISK_INFO[OS_INFO[_os]["EFIPartition"]]["UUID"]+" /boot/efi vfat defaults 0 2\n")
 
         else:
-            logger.warning("write_fstab_entry_for_uefi_partition(): We have no UUID for the UEFI Partition: "+OSInfo[_os]["EFIPartition"]+"! This isn't good, and may cause problems down the line. Continuing anyway, using device name instead...")
-            new_file_contents.append(OSInfo[_os]["EFIPartition"]+" /boot/efi vfat defaults 0 2\n")
+            logger.warning("write_fstab_entry_for_uefi_partition(): We have no UUID for the UEFI Partition: "+OS_INFO[_os]["EFIPartition"]+"! This isn't good, and may cause problems down the line. Continuing anyway, using device name instead...")
+            new_file_contents.append(OS_INFO[_os]["EFIPartition"]+" /boot/efi vfat defaults 0 2\n")
 
         #Write the finished lines to the file.
         fstab.close()
@@ -280,14 +275,14 @@ def manage_uefi_files(_os, mount_point):
         os.mkdir(uefi_boot_dir)
 
     #Do this different depending on whether the OS is ubuntu or fedora-based.
-    if OSInfo[_os]["PackageManager"] == "apt-get":
+    if OS_INFO[_os]["PackageManager"] == "apt-get":
         source_dir = mount_point+"/boot/efi/EFI/ubuntu"
 
-    elif OSInfo[_os]["PackageManager"] == "yum":
+    elif OS_INFO[_os]["PackageManager"] == "yum":
         source_dir = mount_point+"/boot/efi/EFI/fedora"
 
     #Do it differently depending on whether the now-installed UEFI bootloader is ELILO or GRUB-UEFI.
-    if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "ELILO":
+    if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO":
         #We need to copy both elilo.efi, and elilo.conf to uefi_boot_dir.
         logger.info("manage_uefi_files(): Copying elilo.efi, elilo.conf and elilomenu.msg to "+uefi_boot_dir+"...")
 
@@ -308,11 +303,11 @@ def manage_uefi_files(_os, mount_point):
             DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the new bootloader's UEFI files to the failsafe directory! This could potentially be a problem, but it's probably fine. Click okay to continue.")
 
         #If we were previously using GRUB-EFI, remove its EFI files.
-        if BootloaderInfo[_os]["Bootloader"] == "GRUB-UEFI":
+        if BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB-UEFI":
             if CoreTools.start_process("rm -v "+source_dir+"/grub*.efi", show_output=False) != 0:
                 logger.warning("manage_uefi_files(): Failed to remove "+source_dir+"/grub*.efi! Attempting to continue anyway...")
 
-    elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+    elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
         #We need to copy grub*.efi to uefi_boot_dir.
         logger.info("manage_uefi_files(): Copying grub*.efi to "+uefi_boot_dir+"...")
 
@@ -321,7 +316,7 @@ def manage_uefi_files(_os, mount_point):
             DialogTools.show_msg_dlg(kind="warning", message="WxFixBoot failed to copy the new bootloader's UEFI files to the failsafe directory! This is likely not a problem. Click okay to continue.")
 
         #If we were previously using ELILO, remove its EFI files.
-        if BootloaderInfo[_os]["Bootloader"] == "ELILO":
+        if BOOTLOADER_INFO[_os]["Bootloader"] == "ELILO":
             if CoreTools.start_process("rm -v "+source_dir+"/elilo*", show_output=False) != 0:
                 logger.warning("manage_uefi_files(): Failed to remove "+source_dir+"/elilo*! Attempting to continue anyway...")
 

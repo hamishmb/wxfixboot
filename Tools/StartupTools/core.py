@@ -33,6 +33,7 @@ import logging
 #Import other modules.
 from .. import coretools as CoreTools
 from .. import dialogtools as DialogTools
+from ..dictionaries import *
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -43,108 +44,102 @@ if sys.version_info[0] == 3:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-#Silence pylint errors about missing global dictionaries.
-DiskInfo = {}
-SystemInfo = {}
-BootloaderInfo = {}
-OSInfo = {}
-
 def make_bootloaderinfo_entry_for_macos(the_os):
     """Makes an entry in BootloaderInfo for macOS"""
-    BootloaderInfo[the_os] = {}
-    BootloaderInfo[the_os]["OSName"] = the_os
-    BootloaderInfo[the_os]["Bootloader"] = "iBoot/BootX"
-    BootloaderInfo[the_os]["AvailableBootloaders"] = []
-    BootloaderInfo[the_os]["MenuEntries"] = {}
-    BootloaderInfo[the_os]["IsModifyable"] = False
-    BootloaderInfo[the_os]["Comments"] = "WxFixBoot cannot modify macOS."
-    BootloaderInfo[the_os]["Timeout"], BootloaderInfo[the_os]["GlobalKernelOptions"], BootloaderInfo[the_os]["BootDisk"], BootloaderInfo[the_os]["BLSpecificDefaultOS"], BootloaderInfo[the_os]["DefaultOS"] = (10, "Unknown", OSInfo[the_os]["Partition"], the_os, the_os)
+    BOOTLOADER_INFO[the_os] = {}
+    BOOTLOADER_INFO[the_os]["OSName"] = the_os
+    BOOTLOADER_INFO[the_os]["Bootloader"] = "iBoot/BootX"
+    BOOTLOADER_INFO[the_os]["AvailableBootloaders"] = []
+    BOOTLOADER_INFO[the_os]["MenuEntries"] = {}
+    BOOTLOADER_INFO[the_os]["IsModifyable"] = False
+    BOOTLOADER_INFO[the_os]["Comments"] = "WxFixBoot cannot modify macOS."
+    BOOTLOADER_INFO[the_os]["Timeout"], BOOTLOADER_INFO[the_os]["GlobalKernelOptions"], BOOTLOADER_INFO[the_os]["BootDisk"], BOOTLOADER_INFO[the_os]["BLSpecificDefaultOS"], BOOTLOADER_INFO[the_os]["DefaultOS"] = (10, "Unknown", OS_INFO[the_os]["Partition"], the_os, the_os)
 
     #Initialise some default no-action settings.
-    BootloaderInfo[the_os]["Settings"] = {}
-    BootloaderInfo[the_os]["Settings"]["Reinstall"] = False
-    BootloaderInfo[the_os]["Settings"]["Update"] = False
-    BootloaderInfo[the_os]["Settings"]["KeepExistingTimeout"] = False
-    BootloaderInfo[the_os]["Settings"]["KeepExistingKernelOptions"] = False
-    BootloaderInfo[the_os]["Settings"]["NewKernelOptions"] = BootloaderInfo[the_os]["GlobalKernelOptions"]
-    BootloaderInfo[the_os]["Settings"]["NewTimeout"] = BootloaderInfo[the_os]["Timeout"]
-    BootloaderInfo[the_os]["Settings"]["DefaultOS"] = BootloaderInfo[the_os]["DefaultOS"]
-    BootloaderInfo[the_os]["Settings"]["InstallNewBootloader"] = False
-    BootloaderInfo[the_os]["Settings"]["NewBootloader"] = "-- Please Select --"
-    BootloaderInfo[the_os]["Settings"]["BackupBootloader"] = False
-    BootloaderInfo[the_os]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
-    BootloaderInfo[the_os]["Settings"]["RestoreBootloader"] = False
-    BootloaderInfo[the_os]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
-    BootloaderInfo[the_os]["Settings"]["ChangeThisOS"] = False
+    BOOTLOADER_INFO[the_os]["Settings"] = {}
+    BOOTLOADER_INFO[the_os]["Settings"]["Reinstall"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["Update"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["KeepExistingTimeout"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["KeepExistingKernelOptions"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["NewKernelOptions"] = BOOTLOADER_INFO[the_os]["GlobalKernelOptions"]
+    BOOTLOADER_INFO[the_os]["Settings"]["NewTimeout"] = BOOTLOADER_INFO[the_os]["Timeout"]
+    BOOTLOADER_INFO[the_os]["Settings"]["DefaultOS"] = BOOTLOADER_INFO[the_os]["DefaultOS"]
+    BOOTLOADER_INFO[the_os]["Settings"]["InstallNewBootloader"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["NewBootloader"] = "-- Please Select --"
+    BOOTLOADER_INFO[the_os]["Settings"]["BackupBootloader"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
+    BOOTLOADER_INFO[the_os]["Settings"]["RestoreBootloader"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
+    BOOTLOADER_INFO[the_os]["Settings"]["ChangeThisOS"] = False
 
     #Initialise GUI state for the_os (True = Enabled, False = Disabled).
-    BootloaderInfo[the_os]["GUIState"] = {}
-    BootloaderInfo[the_os]["GUIState"]["ReinstallCheckBoxState"] = True
-    BootloaderInfo[the_os]["GUIState"]["UpdateCheckBoxState"] = True
-    BootloaderInfo[the_os]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
-    BootloaderInfo[the_os]["GUIState"]["NewTimeoutSpinnerState"] = False
-    BootloaderInfo[the_os]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
-    BootloaderInfo[the_os]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
-    BootloaderInfo[the_os]["GUIState"]["DefaultOSChoiceState"] = False
-    BootloaderInfo[the_os]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
-    BootloaderInfo[the_os]["GUIState"]["NewBootloaderChoiceState"] = False
-    BootloaderInfo[the_os]["GUIState"]["BackupBootloaderCheckBoxState"] = True
-    BootloaderInfo[the_os]["GUIState"]["BackupBootloaderChoiceState"] = False
-    BootloaderInfo[the_os]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
-    BootloaderInfo[the_os]["GUIState"]["RestoreBootloaderChoiceState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"] = {}
+    BOOTLOADER_INFO[the_os]["GUIState"]["ReinstallCheckBoxState"] = True
+    BOOTLOADER_INFO[the_os]["GUIState"]["UpdateCheckBoxState"] = True
+    BOOTLOADER_INFO[the_os]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["NewTimeoutSpinnerState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["DefaultOSChoiceState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
+    BOOTLOADER_INFO[the_os]["GUIState"]["NewBootloaderChoiceState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["BackupBootloaderCheckBoxState"] = True
+    BOOTLOADER_INFO[the_os]["GUIState"]["BackupBootloaderChoiceState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
+    BOOTLOADER_INFO[the_os]["GUIState"]["RestoreBootloaderChoiceState"] = False
 
 def make_bootloaderinfo_entry_for_windows(the_os):
     """Makes an entry in BootloaderInfo for Windows"""
-    BootloaderInfo[the_os] = {}
-    BootloaderInfo[the_os]["OSName"] = the_os
+    BOOTLOADER_INFO[the_os] = {}
+    BOOTLOADER_INFO[the_os]["OSName"] = the_os
 
     if the_os == "Windows 95/98/ME":
-        BootloaderInfo[the_os]["Bootloader"] = "AUTOEXEC.BAT"
+        BOOTLOADER_INFO[the_os]["Bootloader"] = "AUTOEXEC.BAT"
 
     elif the_os == "Windows XP":
-        BootloaderInfo[the_os]["Bootloader"] = "NTLoader"
+        BOOTLOADER_INFO[the_os]["Bootloader"] = "NTLoader"
 
     else:
-        BootloaderInfo[the_os]["Bootloader"] = "Windows Boot Manager"
+        BOOTLOADER_INFO[the_os]["Bootloader"] = "Windows Boot Manager"
 
-    BootloaderInfo[the_os]["AvailableBootloaders"] = []
-    BootloaderInfo[the_os]["MenuEntries"] = {}
-    BootloaderInfo[the_os]["IsModifyable"] = False
-    BootloaderInfo[the_os]["Comments"] = "WxFixBoot cannot modify Windows."
-    BootloaderInfo[the_os]["Timeout"], BootloaderInfo[the_os]["GlobalKernelOptions"], BootloaderInfo[the_os]["BootDisk"], BootloaderInfo[the_os]["BLSpecificDefaultOS"], BootloaderInfo[the_os]["DefaultOS"] = (10, "Unknown", "Unknown", the_os, the_os)
+    BOOTLOADER_INFO[the_os]["AvailableBootloaders"] = []
+    BOOTLOADER_INFO[the_os]["MenuEntries"] = {}
+    BOOTLOADER_INFO[the_os]["IsModifyable"] = False
+    BOOTLOADER_INFO[the_os]["Comments"] = "WxFixBoot cannot modify Windows."
+    BOOTLOADER_INFO[the_os]["Timeout"], BOOTLOADER_INFO[the_os]["GlobalKernelOptions"], BOOTLOADER_INFO[the_os]["BootDisk"], BOOTLOADER_INFO[the_os]["BLSpecificDefaultOS"], BOOTLOADER_INFO[the_os]["DefaultOS"] = (10, "Unknown", "Unknown", the_os, the_os)
 
     #Initialise some default no-action settings.
-    BootloaderInfo[the_os]["Settings"] = {}
-    BootloaderInfo[the_os]["Settings"]["Reinstall"] = False
-    BootloaderInfo[the_os]["Settings"]["Update"] = False
-    BootloaderInfo[the_os]["Settings"]["KeepExistingTimeout"] = False
-    BootloaderInfo[the_os]["Settings"]["KeepExistingKernelOptions"] = False
-    BootloaderInfo[the_os]["Settings"]["NewKernelOptions"] = BootloaderInfo[the_os]["GlobalKernelOptions"]
-    BootloaderInfo[the_os]["Settings"]["NewTimeout"] = BootloaderInfo[the_os]["Timeout"]
-    BootloaderInfo[the_os]["Settings"]["DefaultOS"] = BootloaderInfo[the_os]["DefaultOS"]
-    BootloaderInfo[the_os]["Settings"]["InstallNewBootloader"] = False
-    BootloaderInfo[the_os]["Settings"]["NewBootloader"] = "-- Please Select --"
-    BootloaderInfo[the_os]["Settings"]["BackupBootloader"] = False
-    BootloaderInfo[the_os]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
-    BootloaderInfo[the_os]["Settings"]["RestoreBootloader"] = False
-    BootloaderInfo[the_os]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
-    BootloaderInfo[the_os]["Settings"]["ChangeThisOS"] = False
+    BOOTLOADER_INFO[the_os]["Settings"] = {}
+    BOOTLOADER_INFO[the_os]["Settings"]["Reinstall"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["Update"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["KeepExistingTimeout"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["KeepExistingKernelOptions"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["NewKernelOptions"] = BOOTLOADER_INFO[the_os]["GlobalKernelOptions"]
+    BOOTLOADER_INFO[the_os]["Settings"]["NewTimeout"] = BOOTLOADER_INFO[the_os]["Timeout"]
+    BOOTLOADER_INFO[the_os]["Settings"]["DefaultOS"] = BOOTLOADER_INFO[the_os]["DefaultOS"]
+    BOOTLOADER_INFO[the_os]["Settings"]["InstallNewBootloader"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["NewBootloader"] = "-- Please Select --"
+    BOOTLOADER_INFO[the_os]["Settings"]["BackupBootloader"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
+    BOOTLOADER_INFO[the_os]["Settings"]["RestoreBootloader"] = False
+    BOOTLOADER_INFO[the_os]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
+    BOOTLOADER_INFO[the_os]["Settings"]["ChangeThisOS"] = False
 
     #Initialise GUI state for this the_os (True = Enabled, False = Disabled).
-    BootloaderInfo[the_os]["GUIState"] = {}
-    BootloaderInfo[the_os]["GUIState"]["ReinstallCheckBoxState"] = True
-    BootloaderInfo[the_os]["GUIState"]["UpdateCheckBoxState"] = True
-    BootloaderInfo[the_os]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
-    BootloaderInfo[the_os]["GUIState"]["NewTimeoutSpinnerState"] = False
-    BootloaderInfo[the_os]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
-    BootloaderInfo[the_os]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
-    BootloaderInfo[the_os]["GUIState"]["DefaultOSChoiceState"] = False
-    BootloaderInfo[the_os]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
-    BootloaderInfo[the_os]["GUIState"]["NewBootloaderChoiceState"] = False
-    BootloaderInfo[the_os]["GUIState"]["BackupBootloaderCheckBoxState"] = True
-    BootloaderInfo[the_os]["GUIState"]["BackupBootloaderChoiceState"] = False
-    BootloaderInfo[the_os]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
-    BootloaderInfo[the_os]["GUIState"]["RestoreBootloaderChoiceState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"] = {}
+    BOOTLOADER_INFO[the_os]["GUIState"]["ReinstallCheckBoxState"] = True
+    BOOTLOADER_INFO[the_os]["GUIState"]["UpdateCheckBoxState"] = True
+    BOOTLOADER_INFO[the_os]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["NewTimeoutSpinnerState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["DefaultOSChoiceState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
+    BOOTLOADER_INFO[the_os]["GUIState"]["NewBootloaderChoiceState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["BackupBootloaderCheckBoxState"] = True
+    BOOTLOADER_INFO[the_os]["GUIState"]["BackupBootloaderChoiceState"] = False
+    BOOTLOADER_INFO[the_os]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
+    BOOTLOADER_INFO[the_os]["GUIState"]["RestoreBootloaderChoiceState"] = False
 
 def has_windows_9x(mount_point):
     """Try to find a Windows 9X installation. Return True if found, False if not."""
@@ -174,11 +169,11 @@ def get_defaultoss_partition(the_os):
     """Get the partition for the given OS's default OS to boot"""
     default_boot_device = "Unknown"
 
-    for menu in BootloaderInfo[the_os]["MenuEntries"]:
-        for entry in BootloaderInfo[the_os]["MenuEntries"][menu]:
+    for menu in BOOTLOADER_INFO[the_os]["MenuEntries"]:
+        for entry in BOOTLOADER_INFO[the_os]["MenuEntries"][menu]:
 
-            if entry == BootloaderInfo[the_os]["BLSpecificDefaultOS"]:
-                default_boot_device = BootloaderInfo[the_os]["MenuEntries"][menu][entry]["Partition"]
+            if entry == BOOTLOADER_INFO[the_os]["BLSpecificDefaultOS"]:
+                default_boot_device = BOOTLOADER_INFO[the_os]["MenuEntries"][menu][entry]["Partition"]
                 logger.info("get_defaultoss_partition(): Found Default OS's partition...")
                 break
 
@@ -187,48 +182,48 @@ def get_defaultoss_partition(the_os):
             break
 
     if default_boot_device != "Unknown":
-        BootloaderInfo[the_os]["DefaultBootDevice"] = default_boot_device
+        BOOTLOADER_INFO[the_os]["DefaultBootDevice"] = default_boot_device
 
         #Try to get the UUID too.
-        if BootloaderInfo[the_os]["DefaultBootDevice"] in DiskInfo:
-            BootloaderInfo[the_os]["DefaultBootDeviceUUID"] = DiskInfo[BootloaderInfo[the_os]["DefaultBootDevice"]]["UUID"]
+        if BOOTLOADER_INFO[the_os]["DefaultBootDevice"] in DISK_INFO:
+            BOOTLOADER_INFO[the_os]["DefaultBootDeviceUUID"] = DISK_INFO[BOOTLOADER_INFO[the_os]["DefaultBootDevice"]]["UUID"]
 
         else:
-            BootloaderInfo[the_os]["DefaultBootDeviceUUID"] = "Unknown"
+            BOOTLOADER_INFO[the_os]["DefaultBootDeviceUUID"] = "Unknown"
 
 def match_partition_to_os(the_os):
-    """Matches the default boot device (in a menu entry) to an OS in OSInfo"""
-    BootloaderInfo[the_os]["DefaultBootDeviceMatchedWith"] = "Unknown"
-    BootloaderInfo[the_os]["DefaultOS"] = "Unknown"
+    """Matches the default boot device (in a menu entry) to an OS in OS_INFO"""
+    BOOTLOADER_INFO[the_os]["DefaultBootDeviceMatchedWith"] = "Unknown"
+    BOOTLOADER_INFO[the_os]["DefaultOS"] = "Unknown"
 
-    for os_name in OSInfo:
-        if os_name not in BootloaderInfo:
+    for os_name in OS_INFO:
+        if os_name not in BOOTLOADER_INFO:
             continue
 
-        if "DefaultBootDeviceUUID" in BootloaderInfo[the_os]:
-            disk = BootloaderInfo[the_os]["DefaultBootDeviceUUID"]
+        if "DefaultBootDeviceUUID" in BOOTLOADER_INFO[the_os]:
+            disk = BOOTLOADER_INFO[the_os]["DefaultBootDeviceUUID"]
 
         else:
-            disk = BootloaderInfo[the_os]["DefaultBootDevice"]
+            disk = BOOTLOADER_INFO[the_os]["DefaultBootDevice"]
 
-        if OSInfo[os_name]["Partition"] != "Unknown" and disk in (OSInfo[os_name]["Partition"], DiskInfo[OSInfo[os_name]["Partition"]]["UUID"]):
+        if OS_INFO[os_name]["Partition"] != "Unknown" and disk in (OS_INFO[os_name]["Partition"], DISK_INFO[OS_INFO[os_name]["Partition"]]["UUID"]):
             #Set it.
-            BootloaderInfo[the_os]["DefaultBootDeviceMatchedWith"] = "Partition"
-            BootloaderInfo[the_os]["DefaultOS"] = os_name
+            BOOTLOADER_INFO[the_os]["DefaultBootDeviceMatchedWith"] = "Partition"
+            BOOTLOADER_INFO[the_os]["DefaultOS"] = os_name
             logger.info("match_partition_to_os(): Successfully matched with the partition. The Default OS is "+os_name+"...")
             break
 
-        elif OSInfo[os_name]["BootPartition"] != "Unknown" and disk in (OSInfo[os_name]["BootPartition"], DiskInfo[OSInfo[os_name]["BootPartition"]]["UUID"]):
+        elif OS_INFO[os_name]["BootPartition"] != "Unknown" and disk in (OS_INFO[os_name]["BootPartition"], DISK_INFO[OS_INFO[os_name]["BootPartition"]]["UUID"]):
             #Set it.
-            BootloaderInfo[the_os]["DefaultBootDeviceMatchedWith"] = "BootPartition"
-            BootloaderInfo[the_os]["DefaultOS"] = os_name
+            BOOTLOADER_INFO[the_os]["DefaultBootDeviceMatchedWith"] = "BootPartition"
+            BOOTLOADER_INFO[the_os]["DefaultOS"] = os_name
             logger.info("match_partition_to_os(): Successfully matched with the boot partition. The Default OS is "+os_name+"...")
             break
 
-        elif OSInfo[os_name]["EFIPartition"] != "Unknown" and disk in (OSInfo[os_name]["EFIPartition"], DiskInfo[OSInfo[os_name]["EFIPartition"]]["UUID"]):
+        elif OS_INFO[os_name]["EFIPartition"] != "Unknown" and disk in (OS_INFO[os_name]["EFIPartition"], DISK_INFO[OS_INFO[os_name]["EFIPartition"]]["UUID"]):
             #Set it.
-            BootloaderInfo[the_os]["DefaultBootDeviceMatchedWith"] = "EFIPartition"
-            BootloaderInfo[the_os]["DefaultOS"] = os_name
+            BOOTLOADER_INFO[the_os]["DefaultBootDeviceMatchedWith"] = "EFIPartition"
+            BOOTLOADER_INFO[the_os]["DefaultOS"] = os_name
             logger.info("match_partition_to_os(): Successfully matched with the EFI partition. The Default OS is "+os_name+"...")
             break
 
@@ -311,7 +306,7 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
         if found:
             #On Fedora, GRUB2 for BIOS and GRUB2 for UEFI are both installed by default!
             #To figure out which way we're booting (and which is being used), see whether we are booting in EFI mode or not.
-            if package_dictionary[package] == "GRUB-UEFI" and OSInfo[the_os]["PackageManager"] == "yum" and SystemInfo["FirmwareType"] == "BIOS":
+            if package_dictionary[package] == "GRUB-UEFI" and OS_INFO[the_os]["PackageManager"] == "yum" and SYSTEM_INFO["FirmwareType"] == "BIOS":
                 #We're booting with GRUB2.
                 continue
 
@@ -384,12 +379,12 @@ def get_fstab_info(mount_point, os_name):
                 uuid = temp.split("=")[1]
                 logger.debug("get_fstab_info(): Found UUID "+uuid+". Trying to find device name...")
 
-                for disk in DiskInfo:
-                    if DiskInfo[disk]["UUID"] == uuid:
+                for disk in DISK_INFO:
+                    if DISK_INFO[disk]["UUID"] == uuid:
                         temp = disk
                         break
 
-            #In case we had a UUID with no match, check again before adding it to OSInfo, else ignore it.
+            #In case we had a UUID with no match, check again before adding it to OS_INFO, else ignore it.
             if "/dev/" in temp:
                 logger.debug("get_fstab_info(): Found EFI/Boot Partition "+temp+"...")
                 disk = temp

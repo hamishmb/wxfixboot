@@ -30,6 +30,9 @@ import os
 import sys
 import logging
 
+#Import other modules.
+from ..dictionaries import *
+
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
     unicode = str #pylint: disable=redefined-builtin,invalid-name
@@ -39,16 +42,12 @@ if sys.version_info[0] == 3:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-#Silence pylint errors about missing global dictionaries.
-DiskInfo = {}
-BootloaderInfo = {}
-
 def find_grub(os_partition, grub_version):
     """Find GRUB for the given OS."""
     logger.info("find_grub(): Looking for "+grub_version+"...")
 
     #Do some setup.
-    likely_grub_install_disks = (DiskInfo[os_partition]["HostDevice"], os_partition)
+    likely_grub_install_disks = (DISK_INFO[os_partition]["HostDevice"], os_partition)
 
     logger.info("find_grub(): Looking in "+', '.join(likely_grub_install_disks)+"...")
 
@@ -60,13 +59,13 @@ def find_grub(os_partition, grub_version):
         look_for = ("ZRrI", "")
 
     for disk in likely_grub_install_disks:
-        logger.info("find_grub(): "+DiskInfo[disk]["Name"]+" "+', '.join(unicode(DiskInfo[disk]["BootRecordStrings"])))
+        logger.info("find_grub(): "+DISK_INFO[disk]["Name"]+" "+', '.join(unicode(DISK_INFO[disk]["BootRecordStrings"])))
 
-        for line in DiskInfo[disk]["BootRecordStrings"]:
+        for line in DISK_INFO[disk]["BootRecordStrings"]:
             line = unicode(line)
 
             #Check that we have the right version of GRUB, and double check that GRUB is present.
-            if line in look_for and "GRUB" in DiskInfo[disk]["BootRecordStrings"]:
+            if line in look_for and "GRUB" in DISK_INFO[disk]["BootRecordStrings"]:
                 logger.info("find_grub(): Found "+grub_version+" on "+disk+"...")
                 logger.info("find_grub(): Done!")
                 return disk
@@ -245,8 +244,8 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
         if uuid != "":
             #Convert to device name if possible.
             logger.info("assemble_grub2_menu_entry(): Matching UUID to disk...")
-            for disk in DiskInfo:
-                if DiskInfo[disk]["UUID"] == uuid:
+            for disk in DISK_INFO:
+                if DISK_INFO[disk]["UUID"] == uuid:
                     menu_entries[menu][menu_entry_name]["Partition"] = disk
 
     #If THAT fails, try to use the "set root=" line to find the device name.
@@ -491,8 +490,8 @@ def assemble_grublegacy_menu_entry(menu_entries, menu_entries_file_contents, lin
         if "UUID=" in partition:
             uuid = partition.split("=")[2]
 
-            for disk in DiskInfo:
-                if DiskInfo[disk]["UUID"] == uuid:
+            for disk in DISK_INFO:
+                if DISK_INFO[disk]["UUID"] == uuid:
                     menu_entries["MainMenu"][menu_entry]["Partition"] = disk
 
         else:
@@ -627,8 +626,8 @@ def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, ent
                 uuid = partition.split("=")[1].replace("\"", "")
                 logger.info("assemble_lilo_menu_entry(): Found UUID "+uuid+". Finding device node...")
 
-                for disk in DiskInfo:
-                    if DiskInfo[disk]["UUID"] == uuid:
+                for disk in DISK_INFO:
+                    if DISK_INFO[disk]["UUID"] == uuid:
                         menu_entries["MainMenu"][menu_entry]["Partition"] = disk
                         logger.info("assemble_lilo_menu_entry(): Found device node "+disk+". Continuing...")
 
@@ -682,8 +681,8 @@ def get_lilo_config(config_file_path, _os):
             if "by-id" in temp:
                 _id = temp.split("/")[-1].replace("\n", "").replace(" ", "")
 
-                for disk in DiskInfo:
-                    if DiskInfo[disk]["ID"] == _id:
+                for disk in DISK_INFO:
+                    if DISK_INFO[disk]["ID"] == _id:
                         temp = disk
                         break
 
@@ -704,8 +703,8 @@ def get_lilo_config(config_file_path, _os):
 
     #Find the 1st menu entry and use that if we couldn't find the default OS.
     if default_os == "Unknown":
-        for entry in BootloaderInfo[_os]["MenuEntries"]["MainMenu"]["Order"]:
-            if BootloaderInfo[_os]["MenuEntries"]["MainMenu"][entry]["ID"] == 0:
+        for entry in BOOTLOADER_INFO[_os]["MenuEntries"]["MainMenu"]["Order"]:
+            if BOOTLOADER_INFO[_os]["MenuEntries"]["MainMenu"][entry]["ID"] == 0:
                 default_os = entry
                 logger.info("get_lilo_config(): Set default OS to "+entry+" instead. Continuing...")
 

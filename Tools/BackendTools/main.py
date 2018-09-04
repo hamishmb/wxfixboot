@@ -40,6 +40,7 @@ BootloaderConfigSettingTools = BootloaderTools.setconfigtools
 
 from .. import coretools as CoreTools
 from .. import dialogtools as DialogTools
+from ..dictionaries import *
 
 sys.path.append('../..') #Need to be able to import the Tools module from here.
 import Tools.StartupTools.getbootloaderconfigtools as BootloaderConfigObtainingTools
@@ -52,12 +53,6 @@ if sys.version_info[0] == 3:
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-#Silence pylint errors about missing global dictionaries.
-OSInfo = {}
-SystemInfo = {}
-DiskInfo = {}
-BootloaderInfo = {}
 
 #Silence other errors.
 Operations = []
@@ -75,19 +70,19 @@ def manage_bootloader(_os):
     wx.CallAfter(parent_window.update_output_box, "\n###Finished checking the Internet Connection...###\n")
 
     #Don't do anything if bootloader operations have been disabled.
-    if SystemInfo["DisableBootloaderOperations"]:
+    if SYSTEM_INFO["DisableBootloaderOperations"]:
         logger.info("manage_bootloader(): Bootloader operations have been disabled, skipping this operation...")
         wx.CallAfter(parent_window.update_current_progress, 100)
         wx.CallAfter(parent_window.update_output_box, "\n###Skipped bootloader operations for "+_os+"...###\n")
         return True
 
-    if BootloaderInfo[_os]["Settings"]["Reinstall"] or BootloaderInfo[_os]["Settings"]["Update"]:
-        BootloaderInfo[_os]["Settings"]["NewBootloader"] = BootloaderInfo[_os]["Bootloader"]
+    if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] or BOOTLOADER_INFO[_os]["Settings"]["Update"]:
+        BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] = BOOTLOADER_INFO[_os]["Bootloader"]
 
     #Create a list of functions to call.
     function_list = [set_new_bootloader_config]
 
-    if BootloaderInfo[_os]["Settings"]["Reinstall"] or BootloaderInfo[_os]["Settings"]["InstallNewBootloader"]:
+    if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] or BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"]:
         #Add more stuff to the list.
         function_list = [remove_old_bootloader, install_new_bootloader, set_new_bootloader_config]
 
@@ -126,7 +121,7 @@ def manage_bootloader(_os):
                     EssentialBackendTools.check_internet_connection()
 
                     #Don't do anything if bootloader operations have been disabled.
-                    if SystemInfo["DisableBootloaderOperations"]:
+                    if SYSTEM_INFO["DisableBootloaderOperations"]:
                         logger.info("manage_bootloader(): Bootloader operations have been disabled, skipping this operation...")
                         wx.CallAfter(parent_window.update_current_progress, 100)
                         wx.CallAfter(parent_window.update_output_box, "\n###Skipped bootloader operations for "+_os+"...###\n")
@@ -141,28 +136,28 @@ def manage_bootloader(_os):
 
 def remove_old_bootloader(_os):
     """Remove the currently installed bootloader."""
-    logger.info("remove_old_bootloader(): Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...")
+    logger.info("remove_old_bootloader(): Removing "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"...")
     wx.CallAfter(parent_window.update_current_progress, 27)
-    wx.CallAfter(parent_window.update_current_operation_text, message="Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"......")
-    wx.CallAfter(parent_window.update_output_box, "\n###Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Removing "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"......")
+    wx.CallAfter(parent_window.update_output_box, "\n###Removing "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"...###\n")
 
     #If this is the current OS, let the remover function know that we aren't using chroot.
-    if OSInfo[_os]["IsCurrentOS"]:
+    if OS_INFO[_os]["IsCurrentOS"]:
         logger.debug("remove_old_bootloader(): Modifying current OS so not using chroot...")
         use_chroot, unmount_after, mount_point = (False, False, "")
 
     else:
         logger.debug("remove_old_bootloader(): Using chroot to modify another OS...")
         use_chroot = True
-        mount_point = "/tmp/wxfixboot/mountpoints"+OSInfo[_os]["Partition"]
+        mount_point = "/tmp/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
 
         #Check if the partition is mounted.
-        unmount_after = not CoreTools.is_mounted(OSInfo[_os]["Partition"], mount_point)
+        unmount_after = not CoreTools.is_mounted(OS_INFO[_os]["Partition"], mount_point)
 
         if unmount_after:
             #Mount the partition using the global mount function.
-            if CoreTools.mount_partition(partition=OSInfo[_os]["Partition"], mount_point=mount_point) != 0:
-                logger.error("remove_old_bootloader(): Failed to mount "+OSInfo[_os]["Partition"]+"! Warning the user and giving up...")
+            if CoreTools.mount_partition(partition=OS_INFO[_os]["Partition"], mount_point=mount_point) != 0:
+                logger.error("remove_old_bootloader(): Failed to mount "+OS_INFO[_os]["Partition"]+"! Warning the user and giving up...")
                 DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount the partition containing "+_os+"! Giving up. You will be prompted to try again if you wish.")
                 return False
 
@@ -173,21 +168,21 @@ def remove_old_bootloader(_os):
             return False
 
     #Mount a /boot partition if it exists.
-    if OSInfo[_os]["BootPartition"] != "Unknown":
-        if CoreTools.mount_partition(OSInfo[_os]["BootPartition"], mount_point+"/boot") != 0:
+    if OS_INFO[_os]["BootPartition"] != "Unknown":
+        if CoreTools.mount_partition(OS_INFO[_os]["BootPartition"], mount_point+"/boot") != 0:
             logger.error("remove_old_bootloader(): Failed to mount "+_os+"'s /boot partition! Skipping bootloader removal for this OS.")
             DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount the partition containing "+_os+"'s /boot partition! Giving up. You will be prompted to try again if you wish.")
 
-            if not OSInfo[_os]["IsCurrentOS"]:
+            if not OS_INFO[_os]["IsCurrentOS"]:
                 CoreTools.teardown_chroot(mount_point)
                 CoreTools.unmount(mount_point)
 
             return False
 
     #Mount the UEFI partition at mount_point/boot/efi, if it exists.
-    if OSInfo[_os]["EFIPartition"] != "Unknown":
-        if CoreTools.mount_partition(partition=OSInfo[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
-            logger.error("remove_old_bootloader(): Failed to mount "+OSInfo[_os]["EFIPartition"]+"! to "+mount_point+"/boot/efi! Aborting bootloader installation and warning user...")
+    if OS_INFO[_os]["EFIPartition"] != "Unknown":
+        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
+            logger.error("remove_old_bootloader(): Failed to mount "+OS_INFO[_os]["EFIPartition"]+"! to "+mount_point+"/boot/efi! Aborting bootloader installation and warning user...")
             DialogTools.show_msg_dlg(kind="error", message="WxfixBoot failed to mount the partition containing "+_os+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
             return False
 
@@ -198,47 +193,47 @@ def remove_old_bootloader(_os):
     wx.CallAfter(parent_window.update_output_box, "\n###Waiting until "+_os+"'s package manager is free...###\n")
 
     logger.debug("remove_old_bootloader(): Waiting until "+_os+"'s package manager is free...")
-    HelperBackendTools.wait_until_packagemanager_free(mount_point=mount_point, package_manager=OSInfo[_os]["PackageManager"])
+    HelperBackendTools.wait_until_packagemanager_free(mount_point=mount_point, package_manager=OS_INFO[_os]["PackageManager"])
 
     wx.CallAfter(parent_window.update_current_progress, 27)
-    wx.CallAfter(parent_window.update_current_operation_text, message="Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...")
-    wx.CallAfter(parent_window.update_output_box, "\n###Removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Removing "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"...")
+    wx.CallAfter(parent_window.update_output_box, "\n###Removing "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"...###\n")
 
     #Remove the bootloader.
-    if BootloaderInfo[_os]["Bootloader"] == "GRUB2":
+    if BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB2":
         logger.info("remove_old_bootloader(): Removing GRUB2...")
 
-        if OSInfo[_os]["PackageManager"] == "apt-get":
+        if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub-pc grub-pc-bin grub-common'"
 
-        elif OSInfo[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "yum":
             cmd = "yum -y remove grub2"
 
-    elif BootloaderInfo[_os]["Bootloader"] == "LILO":
+    elif BOOTLOADER_INFO[_os]["Bootloader"] == "LILO":
         logger.info("remove_old_bootloader(): Removing LILO...")
 
-        if OSInfo[_os]["PackageManager"] == "apt-get":
+        if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y lilo'"
 
-        elif OSInfo[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "yum":
             cmd = "echo 'ERROR: LILO not available on Fedora or derivatives. Continuing anyway...'"
 
-    elif BootloaderInfo[_os]["Bootloader"] == "GRUB-UEFI":
+    elif BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB-UEFI":
         logger.info("remove_old_bootloader(): Removing GRUB-UEFI...")
 
-        if OSInfo[_os]["PackageManager"] == "apt-get":
+        if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common'"
 
-        elif OSInfo[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "yum":
             cmd = "yum -y remove grub2-efi shim-x64"
 
-    elif BootloaderInfo[_os]["Bootloader"] == "ELILO":
+    elif BOOTLOADER_INFO[_os]["Bootloader"] == "ELILO":
         logger.info("remove_old_bootloader(): Removing ELILO...")
 
-        if OSInfo[_os]["PackageManager"] == "apt-get":
+        if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y elilo'"
 
-        elif OSInfo[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "yum":
             cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. Continuing anyway...'"
 
     else:
@@ -253,17 +248,17 @@ def remove_old_bootloader(_os):
     retval = CoreTools.start_process(cmd)
 
     if retval != 0:
-        logger.error("remove_old_bootloader(): Failed to remove "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"! Warning user...")
-        DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to remove "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"!")
+        logger.error("remove_old_bootloader(): Failed to remove "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"! Warning user...")
+        DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to remove "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"!")
         return False
 
     #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
-    if OSInfo[_os]["EFIPartition"] != "Unknown":
+    if OS_INFO[_os]["EFIPartition"] != "Unknown":
         if CoreTools.unmount(mount_point+"/boot/efi") != 0:
             logger.error("remove_old_bootloader(): Failed to unmount "+mount_point+"/boot/efi! This probably doesn't matter...")
 
     #unmount a /boot partition if it exists.
-    if OSInfo[_os]["BootPartition"] != "Unknown":
+    if OS_INFO[_os]["BootPartition"] != "Unknown":
         if CoreTools.unmount(mount_point+"/boot") != 0:
             logger.error("remove_old_bootloader(): Failed to unmount "+_os+"'s /boot partition! Continuing anyway...")
 
@@ -277,29 +272,29 @@ def remove_old_bootloader(_os):
         if CoreTools.unmount(mount_point) != 0:
             logger.error("remove_old_bootloader(): Couldn't unmount "+mount_point+"! Continuing anyway...")
 
-    wx.CallAfter(parent_window.update_output_box, "\n###Finished removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_output_box, "\n###Finished removing "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"...###\n")
 
     if retval != 0:
         #Something went wrong! Log it and notify the user.
-        logger.error("remove_old_bootloader(): Failed to remove "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"! We'll continue anyway. Warn the user.")
-        DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to remove "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that "+_os+" boots correctly after WxFixBoot finishes its operations. Reinstalling the bootloader again afterwards is recommended.")
+        logger.error("remove_old_bootloader(): Failed to remove "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"! We'll continue anyway. Warn the user.")
+        DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to remove "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"! This probably doesn't matter; when we install the new bootloader, it should take precedence over the old one anyway. Make sure you check that "+_os+" boots correctly after WxFixBoot finishes its operations. Reinstalling the bootloader again afterwards is recommended.")
 
     #Log and notify the user that we're finished removing bootloaders.
-    logger.info("remove_old_bootloader(): Finished removing "+BootloaderInfo[_os]["Bootloader"]+"...")
-    wx.CallAfter(parent_window.update_current_operation_text, message="Finished removing "+BootloaderInfo[_os]["Bootloader"]+" from "+_os+"......")
+    logger.info("remove_old_bootloader(): Finished removing "+BOOTLOADER_INFO[_os]["Bootloader"]+"...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Finished removing "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"......")
     wx.CallAfter(parent_window.update_current_progress, 50)
-    DialogTools.show_msg_dlg(kind="info", message="Finished removing "+BootloaderInfo[_os]["Bootloader"]+"! WxFixBoot will now install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" to "+_os+".")
+    DialogTools.show_msg_dlg(kind="info", message="Finished removing "+BOOTLOADER_INFO[_os]["Bootloader"]+"! WxFixBoot will now install "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" to "+_os+".")
     return True
 
 def install_new_bootloader(_os):
     """Install a new bootloader."""
-    logger.info("install_new_bootloader(): Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
+    logger.info("install_new_bootloader(): Preparing to install "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
     wx.CallAfter(parent_window.update_current_progress, 52)
-    wx.CallAfter(parent_window.update_output_box, "\n###Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
-    wx.CallAfter(parent_window.update_current_operation_text, message="Preparing to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
+    wx.CallAfter(parent_window.update_output_box, "\n###Preparing to install "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Preparing to install "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
 
     #If this is the current OS, let the installer functions know that we aren't using chroot.
-    if OSInfo[_os]["IsCurrentOS"]:
+    if OS_INFO[_os]["IsCurrentOS"]:
         logger.debug("install_new_bootloader(): Modifying current OS so not using chroot...")
         use_chroot, unmount_after, mount_point = (False, False, "")
 
@@ -307,14 +302,14 @@ def install_new_bootloader(_os):
     else:
         logger.debug("install_new_bootloader(): Using chroot to modify another OS...")
         use_chroot = True
-        mount_point = "/tmp/wxfixboot/mountpoints"+OSInfo[_os]["Partition"]
+        mount_point = "/tmp/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
 
         #Check if the partition is mounted.
-        unmount_after = not CoreTools.is_mounted(OSInfo[_os]["Partition"], mount_point)
+        unmount_after = not CoreTools.is_mounted(OS_INFO[_os]["Partition"], mount_point)
 
         if unmount_after:
-            if CoreTools.mount_partition(partition=OSInfo[_os]["Partition"], mount_point=mount_point) != 0:
-                logger.error("install_new_bootloader(): Failed to mount "+OSInfo[_os]["Partition"]+"! Warn the user and skip this OS.")
+            if CoreTools.mount_partition(partition=OS_INFO[_os]["Partition"], mount_point=mount_point) != 0:
+                logger.error("install_new_bootloader(): Failed to mount "+OS_INFO[_os]["Partition"]+"! Warn the user and skip this OS.")
                 DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount the partition containing "+_os+"! Bootloader installation cannot continue! This may leave your system, or this OS, in an unbootable state. Please close any open programs, then try again when prompted.")
                 return False
 
@@ -325,17 +320,17 @@ def install_new_bootloader(_os):
             return False
 
         #If there's a seperate /boot partition for this OS, make sure it's mounted.
-        if OSInfo[_os]["BootPartition"] != "Unknown":
-            if CoreTools.mount_partition(partition=OSInfo[_os]["BootPartition"], mount_point=mount_point+"/boot") != 0:
-                logger.error("remove_old_bootloader(): Failed to mount "+OSInfo[_os]["BootPartition"]+"! Warn the user and skip this OS.")
+        if OS_INFO[_os]["BootPartition"] != "Unknown":
+            if CoreTools.mount_partition(partition=OS_INFO[_os]["BootPartition"], mount_point=mount_point+"/boot") != 0:
+                logger.error("remove_old_bootloader(): Failed to mount "+OS_INFO[_os]["BootPartition"]+"! Warn the user and skip this OS.")
                 DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount the partition containing "+_os+"'s /boot partition! Giving up. You will be prompted to try again if you wish.")
                 return False
 
     #Update the package lists.
-    if OSInfo[_os]["PackageManager"] == "apt-get":
+    if OS_INFO[_os]["PackageManager"] == "apt-get":
         cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'"
 
-    elif OSInfo[_os]["PackageManager"] == "yum":
+    elif OS_INFO[_os]["PackageManager"] == "yum":
         cmd = "yum check-update"
 
     if use_chroot:
@@ -346,49 +341,49 @@ def install_new_bootloader(_os):
         DialogTools.show_msg_dlg(kind="error", message="WxfixBoot failed to update "+_os+"'s package information! Giving up. You will be prompted to try again if you wish.")
         return False
 
-    wx.CallAfter(parent_window.update_current_operation_text, message="Installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Installing "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
     wx.CallAfter(parent_window.update_current_progress, 55)
-    wx.CallAfter(parent_window.update_output_box, "\n###Installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_output_box, "\n###Installing "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
 
     #Install the bootloader.
-    if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB2":
+    if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB2":
         logger.info("install_new_bootloader(): Installing GRUB2...")
 
-        if OSInfo[_os]["PackageManager"] == "apt-get":
+        if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'"
 
-        elif OSInfo[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "yum":
             cmd = "yum -y install grub2"
 
-    elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "LILO":
+    elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "LILO":
         logger.info("install_new_bootloader(): Installing LILO...")
 
-        if OSInfo[_os]["PackageManager"] == "apt-get":
+        if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y lilo'"
 
-        elif OSInfo[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "yum":
             cmd = "echo 'ERROR: LILO not available on Fedora or derivatives. Continuing anyway...'"
 
-    elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+    elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
         logger.info("install_new_bootloader(): Installing GRUB-UEFI...")
 
         #Mount the UEFI partition at mount_point/boot/efi.
-        if CoreTools.mount_partition(partition=OSInfo[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
-            logger.error("install_new_bootloader(): Failed to mount "+OSInfo[_os]["EFIPartition"]+" to "+mount_point+"/boot/efi! Aborting bootloader installation and warning user...")
+        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
+            logger.error("install_new_bootloader(): Failed to mount "+OS_INFO[_os]["EFIPartition"]+" to "+mount_point+"/boot/efi! Aborting bootloader installation and warning user...")
             DialogTools.show_msg_dlg(kind="error", message="WxfixBoot failed to mount the partition containing "+_os+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
             return False
 
-        if OSInfo[_os]["PackageManager"] == "apt-get":
+        if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
 
-        elif OSInfo[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "yum":
             cmd = "yum -y install grub2-efi-ia32 grub2-efi-x64 grub2-efi shim-x64 fwupd fwupdate-efi fwupdate-libs gnome-software PackageKit appstream-data comps-extras epiphany-runtime flatpak-libs fwupd-labels libsmbios ostree rpm-ostree-libs"
 
-    elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "ELILO":
+    elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO":
         logger.info("install_new_bootloader(): Installing ELILO...")
 
         #unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
-        if CoreTools.unmount(OSInfo[_os]["EFIPartition"]) != 0:
+        if CoreTools.unmount(OS_INFO[_os]["EFIPartition"]) != 0:
             logger.error("install_new_bootloader(): Failed to unmount the EFI partition! Giving up and warning user...")
             DialogTools.show_msg_dlg(message="Couldn't unmount "+_os+"'s EFI partition! Giving up. You will be prompted to try again if you wish.", kind="error")
             return False
@@ -396,10 +391,10 @@ def install_new_bootloader(_os):
         if use_chroot:
             CoreTools.update_chroot_mtab(mount_point=mount_point)
 
-        if OSInfo[_os]["PackageManager"] == "apt-get":
+        if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'"
 
-        elif OSInfo[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "yum":
             cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. Continuing anyway...'"
 
     if use_chroot:
@@ -412,12 +407,12 @@ def install_new_bootloader(_os):
         DialogTools.show_msg_dlg(kind="error", message="WxfixBoot failed to install "+_os+"'s new bootloader! Continuing anyway...")
 
     #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
-    if OSInfo[_os]["EFIPartition"] != "Unknown":
+    if OS_INFO[_os]["EFIPartition"] != "Unknown":
         if CoreTools.unmount(mount_point+"/boot/efi") != 0:
             logger.error("install_new_bootloader(): Failed to unmount "+mount_point+"/boot/efi! This probably doesn't matter...")
 
     #If there's a seperate /boot partition for this OS, make sure it's unmounted before removing the chroot.
-    if OSInfo[_os]["BootPartition"] != "Unknown":
+    if OS_INFO[_os]["BootPartition"] != "Unknown":
         if CoreTools.unmount(mount_point+"/boot") != 0:
             logger.error("install_new_bootloader(): Failed to unmount "+mount_point+"/boot! This probably doesn't matter...")
 
@@ -434,27 +429,27 @@ def install_new_bootloader(_os):
 
     if retval != 0:
         #Something went wrong! Log it and notify the user.
-        logger.error("install_new_bootloader(): Failed to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"! This may mean the system (or this OS) is now unbootable! Warning the user and asking to try again.")
-        DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to install "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"! This may leave this OS, or your system, in an unbootable state. You will now be prompted to try again.")
+        logger.error("install_new_bootloader(): Failed to install "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" in "+_os+"! This may mean the system (or this OS) is now unbootable! Warning the user and asking to try again.")
+        DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to install "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" in "+_os+"! This may leave this OS, or your system, in an unbootable state. You will now be prompted to try again.")
         return False
 
-    wx.CallAfter(parent_window.update_output_box, "\n###Finished installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_output_box, "\n###Finished installing "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
 
     #Log and notify the user that we're finished installing the bootloader.
-    logger.info("install_new_bootloader(): Finished installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"...")
-    wx.CallAfter(parent_window.update_current_operation_text, message="Finish installing "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
+    logger.info("install_new_bootloader(): Finished installing "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Finish installing "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" in "+_os+"...")
     wx.CallAfter(parent_window.update_current_progress, 75)
     return True
 
 def set_new_bootloader_config(_os):
     """Manage setting new bootloader config."""
-    logger.info("set_new_bootloader_config(): Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...")
-    wx.CallAfter(parent_window.update_current_operation_text, message="Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+" config for "+_os+"...")
+    logger.info("set_new_bootloader_config(): Setting "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Setting "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" config for "+_os+"...")
     wx.CallAfter(parent_window.update_current_progress, 79)
-    wx.CallAfter(parent_window.update_output_box, "\n###Setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_output_box, "\n###Setting "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...###\n")
 
     #If this is the current OS, let the config functions know that we aren't using chroot.
-    if OSInfo[_os]["IsCurrentOS"]:
+    if OS_INFO[_os]["IsCurrentOS"]:
         logger.debug("set_new_bootloader_config(): We're modifying the current OS...")
         #If so, make sure this will work for this OS too, and avoid setting mountpoint, so the config instructions below look in the right place for the config files.
         use_chroot, unmount_after, mount_point = (False, False, "")
@@ -462,16 +457,16 @@ def set_new_bootloader_config(_os):
     else:
         logger.debug("set_new_bootloader_config(): We're modifying another OS...")
         use_chroot = True
-        mount_point = "/tmp/wxfixboot/mountpoints"+OSInfo[_os]["Partition"]
+        mount_point = "/tmp/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
 
         #Check if the partition is mounted.
-        unmount_after = not CoreTools.is_mounted(OSInfo[_os]["Partition"], mount_point)
+        unmount_after = not CoreTools.is_mounted(OS_INFO[_os]["Partition"], mount_point)
 
         if unmount_after:
             #Mount the partition.
-            if CoreTools.mount_partition(partition=OSInfo[_os]["Partition"], mount_point=mount_point) != 0:
+            if CoreTools.mount_partition(partition=OS_INFO[_os]["Partition"], mount_point=mount_point) != 0:
                 #Ignore this partition.
-                logger.warning("set_new_bootloader_config(): Failed to mount "+OSInfo[_os]["Partition"]+"! Giving up...")
+                logger.warning("set_new_bootloader_config(): Failed to mount "+OS_INFO[_os]["Partition"]+"! Giving up...")
                 return False
 
         #Set up chroot.
@@ -483,62 +478,62 @@ def set_new_bootloader_config(_os):
         wx.CallAfter(parent_window.update_current_progress, 81)
 
     #Mount a /boot partition if it exists.
-    if OSInfo[_os]["BootPartition"] != "Unknown":
-        if CoreTools.mount_partition(OSInfo[_os]["BootPartition"], mount_point+"/boot") != 0:
+    if OS_INFO[_os]["BootPartition"] != "Unknown":
+        if CoreTools.mount_partition(OS_INFO[_os]["BootPartition"], mount_point+"/boot") != 0:
             logger.error("set_new_bootloader_config(): Failed to mount "+_os+"'s /boot partition! Skipping bootloader config setting for this OS.")
 
-            if not OSInfo[_os]["IsCurrentOS"]:
+            if not OS_INFO[_os]["IsCurrentOS"]:
                 CoreTools.teardown_chroot(mount_point)
                 CoreTools.unmount(mount_point)
 
             return False
 
     #If there's a seperate EFI partition for this OS, make sure it's mounted.
-    if OSInfo[_os]["EFIPartition"] != "Unknown":
-        if CoreTools.mount_partition(partition=OSInfo[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
-            logger.error("remove_old_bootloader(): Failed to mount "+OSInfo[_os]["EFIPartition"]+"! Warn the user and skip this OS.")
+    if OS_INFO[_os]["EFIPartition"] != "Unknown":
+        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
+            logger.error("remove_old_bootloader(): Failed to mount "+OS_INFO[_os]["EFIPartition"]+"! Warn the user and skip this OS.")
             DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount the partition containing "+_os+"'s EFI partition! Giving up. You will be prompted to try again if you wish.")
             return False
 
     #On GRUB2, get the new menuentries so we can set the default OS.
     logger.info("set_new_bootloader_config(): Reading GRUB2's menu entries to set default OS...")
 
-    if BootloaderInfo[_os]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
+    if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
         #Update GRUB.
         logger.info("set_new_bootloader_config(): Updating GRUB2 Configuration...")
-        BootloaderConfigSettingTools.update_grub2(_os=_os, package_manager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
+        BootloaderConfigSettingTools.update_grub2(_os=_os, package_manager=OS_INFO[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
 
-        BootloaderInfo[_os]["NewMenuEntries"] = BootloaderConfigObtainingTools.parse_grub2_menu_data(menu_data="", mount_point=mount_point)[1]
+        BOOTLOADER_INFO[_os]["NewMenuEntries"] = BootloaderConfigObtainingTools.parse_grub2_menu_data(menu_data="", mount_point=mount_point)[1]
 
     #Look for the configuration file, based on which SetConfig() function we're about to run.
-    if BootloaderInfo[_os]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
+    if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
         #Check mount_point/etc/default/grub exists.
         if os.path.isfile(mount_point+"/etc/default/grub"):
             #It does, we'll run the function to set the config now.
             logger.info("set_new_bootloader_config(): Setting GRUB2 Configuration...")
-            BootloaderConfigSettingTools.set_grub2_config(_os=_os, filetoopen=mount_point+"/etc/default/grub", bootloader_timeout=BootloaderInfo[_os]["Settings"]["NewTimeout"], kernel_options=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
+            BootloaderConfigSettingTools.set_grub2_config(_os=_os, filetoopen=mount_point+"/etc/default/grub", bootloader_timeout=BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"], kernel_options=BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"])
 
-        if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+        if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #Mount the UEFI partition at mount_point/boot/efi.
-            if CoreTools.mount_partition(partition=OSInfo[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
-                logger.error("set_new_bootloader_config(): Couldn't mount EFI partition "+OSInfo[_os]["EFIPartition"]+" to install bootloader! Giving up and warning user...")
+            if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
+                logger.error("set_new_bootloader_config(): Couldn't mount EFI partition "+OS_INFO[_os]["EFIPartition"]+" to install bootloader! Giving up and warning user...")
                 DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to mount "+_os+"'s EFI partition! You will now be promtped to give up or try again.")
                 return False
 
             #Now Install GRUB-UEFI to the UEFI Partition.
-            logger.info("set_new_bootloader_config(): Installing GRUB-UEFI to "+OSInfo[_os]["EFIPartition"]+"...")
-            BootloaderConfigSettingTools.install_grub2_to_efi_partition(package_manager=OSInfo[_os]["PackageManager"], mount_point=mount_point, use_chroot=use_chroot, uefi_system_partition_mount_point="/boot/efi", arch=OSInfo[_os]["Arch"])
+            logger.info("set_new_bootloader_config(): Installing GRUB-UEFI to "+OS_INFO[_os]["EFIPartition"]+"...")
+            BootloaderConfigSettingTools.install_grub2_to_efi_partition(package_manager=OS_INFO[_os]["PackageManager"], mount_point=mount_point, use_chroot=use_chroot, uefi_system_partition_mount_point="/boot/efi", arch=OS_INFO[_os]["Arch"])
 
         else:
             #Now Install GRUB2 to the MBR.
-            logger.info("set_new_bootloader_config(): Installing GRUB2 to "+DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"]+"...")
-            BootloaderConfigSettingTools.install_grub2_to_mbr(package_manager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point, device=DiskInfo[OSInfo[_os]["Partition"]]["HostDevice"])
+            logger.info("set_new_bootloader_config(): Installing GRUB2 to "+DISK_INFO[OS_INFO[_os]["Partition"]]["HostDevice"]+"...")
+            BootloaderConfigSettingTools.install_grub2_to_mbr(package_manager=OS_INFO[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point, device=DISK_INFO[OS_INFO[_os]["Partition"]]["HostDevice"])
 
         #Update GRUB.
         logger.info("set_new_bootloader_config(): Updating GRUB2 Configuration...")
-        BootloaderConfigSettingTools.update_grub2(_os=_os, package_manager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
+        BootloaderConfigSettingTools.update_grub2(_os=_os, package_manager=OS_INFO[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
 
-        if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+        if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #Make an entry in fstab for the UEFI Partition, if needed.
             HelperBackendTools.write_fstab_entry_for_uefi_partition(_os=_os, mount_point=mount_point)
 
@@ -546,7 +541,7 @@ def set_new_bootloader_config(_os):
             HelperBackendTools.backup_uefi_files(mount_point=mount_point)
             HelperBackendTools.manage_uefi_files(_os=_os, mount_point=mount_point)
 
-        if BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI" and OSInfo[_os]["PackageManager"] == "yum":
+        if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI" and OS_INFO[_os]["PackageManager"] == "yum":
             #If we're switching to GRUB-UEFI from BIOS it can mess up GRUB2 and change the boot commands to linux and initrd instead of linuxefi and initrdefi, preventing boot.
             #Fix this. The next time GRUB is updated from within the OS it will fix itself.
             logger.info("set_new_bootloader_config(): Fixing Fedora's GRUB2-UEFI config (when booted with BIOS, it can go wrong)...")
@@ -589,12 +584,12 @@ def set_new_bootloader_config(_os):
             config_file.close()
 
             #unmount the EFI partition.
-            if CoreTools.unmount(OSInfo[_os]["EFIPartition"]) != 0:
+            if CoreTools.unmount(OS_INFO[_os]["EFIPartition"]) != 0:
                 logger.error("set_new_bootloader_config(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
 
             logger.info("set_new_bootloader_config(): Done!")
 
-        elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "GRUB2" and OSInfo[_os]["PackageManager"] == "yum":
+        elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB2" and OS_INFO[_os]["PackageManager"] == "yum":
             #If we're switching to GRUB2 from UEFI it can mess up GRUB2 and change the boot commands to linuxefi and initrdefi instead of linux and initrd, preventing boot.
             #Fix this. The next time GRUB is updated from within the OS it will fix itself.
             logger.info("set_new_bootloader_config(): Fixing Fedora's GRUB2-BIOS config (when booted with EFI, it can go wrong)...")
@@ -625,7 +620,7 @@ def set_new_bootloader_config(_os):
 
             logger.info("set_new_bootloader_config(): Done!")
 
-    elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "LILO":
+    elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "LILO":
         #Make LILO's config file.
         logger.info("set_new_bootloader_config(): Making LILO's configuration file...")
         cmd = "liloconfig -f"
@@ -644,18 +639,18 @@ def set_new_bootloader_config(_os):
 
             #Also, set the OS entries.
             logger.info("set_new_bootloader_config(): Creating LILO OS Entries...")
-            BootloaderConfigSettingTools.make_lilo_os_entries(_os=_os, filetoopen=mount_point+"/etc/lilo.conf", mount_point=mount_point, kernel_options=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
+            BootloaderConfigSettingTools.make_lilo_os_entries(_os=_os, filetoopen=mount_point+"/etc/lilo.conf", mount_point=mount_point, kernel_options=BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"])
 
         #Now Install LILO to the MBR.
         logger.info("set_new_bootloader_config(): Installing LILO to the MBR...")
         BootloaderConfigSettingTools.install_lilo_to_mbr(use_chroot=use_chroot, mount_point=mount_point)
 
-    elif BootloaderInfo[_os]["Settings"]["NewBootloader"] == "ELILO":
+    elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO":
         #unmount the UEFI Partition now, and update mtab in the chroot.
         #Pause for 0.5 secs.
         time.sleep(0.5)
 
-        if CoreTools.unmount(OSInfo[_os]["EFIPartition"]) != 0:
+        if CoreTools.unmount(OS_INFO[_os]["EFIPartition"]) != 0:
             logger.error("set_new_bootloader_config(): Failed to unmount "+_os+"'s EFI partition! Waning user and prompting to try again...")
             DialogTools.show_msg_dlg(message="Couldn't unmount "+_os+"'s EFI partition! Giving up. You will be prompted to try again if you wish.", kind="error")
             return False
@@ -667,7 +662,7 @@ def set_new_bootloader_config(_os):
         #Make ELILO's config file.
         logger.info("set_new_bootloader_config(): Making ELILO's configuration file...")
 
-        cmd = "elilo -b "+OSInfo[_os]["EFIPartition"]+" --autoconf"
+        cmd = "elilo -b "+OS_INFO[_os]["EFIPartition"]+" --autoconf"
 
         if use_chroot:
             cmd = "chroot "+mount_point+" "+cmd
@@ -683,31 +678,31 @@ def set_new_bootloader_config(_os):
 
             #Also, set the OS entries.
             logger.info("set_new_bootloader_config(): Creating ELILO OS Entries...")
-            BootloaderConfigSettingTools.make_lilo_os_entries(_os=_os, filetoopen=mount_point+"/etc/elilo.conf", mount_point=mount_point, kernel_options=BootloaderInfo[_os]["Settings"]["NewKernelOptions"])
+            BootloaderConfigSettingTools.make_lilo_os_entries(_os=_os, filetoopen=mount_point+"/etc/elilo.conf", mount_point=mount_point, kernel_options=BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"])
 
         #Now Install ELILO to the UEFI Partition.
-        logger.info("set_new_bootloader_config(): Installing ELILO to "+OSInfo[_os]["EFIPartition"]+"...")
-        BootloaderConfigSettingTools.install_elilo_to_partition(_os=_os, package_manager=OSInfo[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
+        logger.info("set_new_bootloader_config(): Installing ELILO to "+OS_INFO[_os]["EFIPartition"]+"...")
+        BootloaderConfigSettingTools.install_elilo_to_partition(_os=_os, package_manager=OS_INFO[_os]["PackageManager"], use_chroot=use_chroot, mount_point=mount_point)
 
         #Mount the UEFI partition at mount_point/boot/efi.
-        if CoreTools.mount_partition(partition=OSInfo[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
-            logger.error("set_new_bootloader_config(): Failed to mount EFI partition "+OSInfo[_os]["EFIPartition"]+"! Continuing anyway...")
+        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
+            logger.error("set_new_bootloader_config(): Failed to mount EFI partition "+OS_INFO[_os]["EFIPartition"]+"! Continuing anyway...")
 
         #Copy and backup UEFI files where needed.
         HelperBackendTools.backup_uefi_files(mount_point=mount_point)
         HelperBackendTools.manage_uefi_files(_os=_os, mount_point=mount_point)
 
         #unmount the EFI partition.
-        if CoreTools.unmount(OSInfo[_os]["EFIPartition"]) != 0:
+        if CoreTools.unmount(OS_INFO[_os]["EFIPartition"]) != 0:
             logger.error("set_new_bootloader_config(): Couldn't unmount EFI partition! This probably won't matter, so we'll continue anyway...")
 
     #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
-    if OSInfo[_os]["EFIPartition"] != "Unknown":
+    if OS_INFO[_os]["EFIPartition"] != "Unknown":
         if CoreTools.unmount(mount_point+"/boot/efi") != 0:
             logger.error("set_new_bootloader_config(): Failed to unmount "+mount_point+"/boot/efi! This probably doesn't matter...")
 
     #unmount a /boot partition if it exists.
-    if OSInfo[_os]["BootPartition"] != "Unknown":
+    if OS_INFO[_os]["BootPartition"] != "Unknown":
         if CoreTools.unmount(mount_point+"/boot") != 0:
             logger.error("set_new_bootloader_config(): Failed to unmount "+_os+"'s /boot partition! Continuing anyway...")
 
@@ -721,8 +716,8 @@ def set_new_bootloader_config(_os):
         if CoreTools.unmount(mount_point) != 0:
             logger.error("set_new_bootloader_config(): Failed to unmount "+mount_point+"! Continuing anyway...")
 
-    logger.debug("set_new_bootloader_config(): Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...")
-    wx.CallAfter(parent_window.update_output_box, "\n###Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...###\n")
-    wx.CallAfter(parent_window.update_current_operation_text, message="Finished setting "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"!")
+    logger.debug("set_new_bootloader_config(): Finished setting "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...")
+    wx.CallAfter(parent_window.update_output_box, "\n###Finished setting "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"...###\n")
+    wx.CallAfter(parent_window.update_current_operation_text, message="Finished setting "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"'s config for "+_os+"!")
     wx.CallAfter(parent_window.update_current_progress, 100)
     return True

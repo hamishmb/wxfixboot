@@ -35,6 +35,7 @@ from . import helpers as HelperBackendTools
 
 from .. import coretools as CoreTools
 from .. import dialogtools as DialogTools
+from ..dictionaries import *
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -45,10 +46,6 @@ if sys.version_info[0] == 3:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-#Silence pylint errors about missing global dictionaries.
-SystemInfo = {}
-DiskInfo = {}
-
 #Silence other errors.
 Operations = []
 parent_window = None
@@ -58,7 +55,7 @@ def check_internet_connection():
     DialogTools.show_msg_dlg(kind="info", message="Your internet connection will now be tested to ensure it's safe to do bootloader operations. This will be done by pinging the OpenDNS DNS servers.")
 
     logger.info("check_internet_connection(): Checking the Internet Connection...")
-    SystemInfo["DisableBootloaderOperations"] = False
+    SYSTEM_INFO["DisableBootloaderOperations"] = False
 
     while True:
         #Test the internet connection by pinging an OpenDNS DNS server.
@@ -90,8 +87,8 @@ def check_internet_connection():
 
             if result is False:
                 logger.warning("check_internet_connection(): Disabling bootloader operations due to bad internet connection...")
-                SystemInfo["DisableBootloaderOperations"] = True
-                SystemInfo["DisableBootloaderOperationsBecause"].append("Internet Connection test failed.")
+                SYSTEM_INFO["DisableBootloaderOperations"] = True
+                SYSTEM_INFO["DisableBootloaderOperationsBecause"].append("Internet Connection test failed.")
                 break
 
             else:
@@ -128,23 +125,23 @@ def filesystem_check(_type, manage_bootloader_function):
 
         #Create a command list that will work based on the fstype of this Disk and the type of check we're performing. If there aren't any use cases for the fstype, display a message to the user and skip it.
         if _type == "Quick":
-            if DiskInfo[disk]["FileSystem"] == "jfs":
+            if DISK_INFO[disk]["FileSystem"] == "jfs":
                 exec_cmds = "fsck.jfs -vf "+disk
 
-            elif DiskInfo[disk]["FileSystem"] == "minix":
+            elif DISK_INFO[disk]["FileSystem"] == "minix":
                 exec_cmds = "fsck.minix -avf "+disk
 
-            elif DiskInfo[disk]["FileSystem"] == "reiserfs":
+            elif DISK_INFO[disk]["FileSystem"] == "reiserfs":
                 exec_cmds = "fsck.reiserfs -apf "+disk
 
-            elif DiskInfo[disk]["FileSystem"] == "xfs":
+            elif DISK_INFO[disk]["FileSystem"] == "xfs":
                 exec_cmds = "xfs_repair -Pvd "+disk
 
-            elif DiskInfo[disk]["FileSystem"] == "vfat":
+            elif DISK_INFO[disk]["FileSystem"] == "vfat":
                 exec_cmds = "fsck.vfat -yv "+disk
 
-            elif DiskInfo[disk]["FileSystem"] in ('ext2', 'ext3', 'ext4', 'ext4dev'):
-                exec_cmds = "fsck."+DiskInfo[disk]["FileSystem"]+" -yvf "+disk
+            elif DISK_INFO[disk]["FileSystem"] in ('ext2', 'ext3', 'ext4', 'ext4dev'):
+                exec_cmds = "fsck."+DISK_INFO[disk]["FileSystem"]+" -yvf "+disk
 
             else:
                 exec_cmds = ""
@@ -153,27 +150,27 @@ def filesystem_check(_type, manage_bootloader_function):
 
         else:
             #For disks that doesn't do bad sector checks with the normal FS checker, run badblocks manually on them.
-            if DiskInfo[disk]["FileSystem"] == "jfs":
+            if DISK_INFO[disk]["FileSystem"] == "jfs":
                 exec_cmds = "fsck.jfs -vf "+disk
                 run_badblocks = True
 
-            elif DiskInfo[disk]["FileSystem"] == "minix":
+            elif DISK_INFO[disk]["FileSystem"] == "minix":
                 exec_cmds = "fsck.minix -avf "+disk
                 run_badblocks = True
 
-            elif DiskInfo[disk]["FileSystem"] == "reiserfs":
+            elif DISK_INFO[disk]["FileSystem"] == "reiserfs":
                 exec_cmds = "fsck.reiserfs -apf "+disk
                 run_badblocks = True
 
-            elif DiskInfo[disk]["FileSystem"] == "xfs":
+            elif DISK_INFO[disk]["FileSystem"] == "xfs":
                 exec_cmds = "xfs_repair -Pvd "+disk
                 run_badblocks = True
 
-            elif DiskInfo[disk]["FileSystem"] == "vfat":
+            elif DISK_INFO[disk]["FileSystem"] == "vfat":
                 exec_cmds = "fsck.vfat -yvt "+disk
 
-            elif DiskInfo[disk]["FileSystem"] in ('ext2', 'ext3', 'ext4', 'ext4dev'):
-                exec_cmds = "fsck."+DiskInfo[disk]["FileSystem"]+" -yvcf "+disk
+            elif DISK_INFO[disk]["FileSystem"] in ('ext2', 'ext3', 'ext4', 'ext4dev'):
+                exec_cmds = "fsck."+DISK_INFO[disk]["FileSystem"]+" -yvcf "+disk
 
             else:
                 exec_cmds = ""
@@ -254,8 +251,8 @@ def handle_filesystem_check_return_values(exec_cmds, retval, partition, manage_b
             if result:
                 #A good choice. WxFixBoot will now disable any bootloader operations.
                 logger.warning("handle_filesystem_check_return_values(): User disabled bootloader operations as recommended, due to bad sectors/HDD problems/FS Checker problems...")
-                SystemInfo["DisableBootloaderOperations"] = True
-                SystemInfo["DisableBootloaderOperationsBecause"].append("Filesystem corruption was detected on "+partition)
+                SYSTEM_INFO["DisableBootloaderOperations"] = True
+                SYSTEM_INFO["DisableBootloaderOperationsBecause"].append("Filesystem corruption was detected on "+partition)
 
             else:
                 #Seriously? Well, okay, we'll do it anyway... This is probably a very bad idea...

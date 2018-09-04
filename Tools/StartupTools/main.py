@@ -36,6 +36,7 @@ from . import getbootloaderconfigtools as BootloaderConfigObtainingTools
 
 from .. import coretools as CoreTools
 from .. import dialogtools as DialogTools
+from ..dictionaries import *
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -45,12 +46,6 @@ if sys.version_info[0] == 3:
 #Set up logging. FIXME Set logger level as specified on cmdline.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-#Silence pylint errors about missing global dictionaries.
-DiskInfo = {}
-SystemInfo = {}
-BootloaderInfo = {}
-OSInfo = {}
 
 def check_depends():
     """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
@@ -83,43 +78,43 @@ def check_for_live_disk():
     #Detect Parted Magic automatically.
     if "pmagic" in CoreTools.start_process("uname -r", return_output=True)[1]:
         logger.info("MainStartupTools(): check_for_live_disk(): Running on Parted Magic...")
-        SystemInfo["IsLiveDisk"] = True
-        SystemInfo["OnPartedMagic"] = True
+        SYSTEM_INFO["IsLiveDisk"] = True
+        SYSTEM_INFO["OnPartedMagic"] = True
 
     #Try to detect ubuntu-based livecds.
     elif CoreTools.is_mounted("/cow", "/") and os.path.isfile("/cdrom/casper/filesystem.squashfs"):
         logger.info("MainStartupTools(): check_for_live_disk(): Running on Ubuntu-based live disk...")
-        SystemInfo["IsLiveDisk"] = True
-        SystemInfo["OnPartedMagic"] = False
+        SYSTEM_INFO["IsLiveDisk"] = True
+        SYSTEM_INFO["OnPartedMagic"] = False
 
     #Try to detect fedora-based livecds.
     elif CoreTools.is_mounted("/dev/mapper/live-rw", "/") and os.path.isfile("/run/initramfs/live/LiveOS/squashfs.img"):
         logger.info("MainStartupTools(): check_for_live_disk(): Running on Fedora-based live disk...")
-        SystemInfo["IsLiveDisk"] = True
-        SystemInfo["OnPartedMagic"] = False
+        SYSTEM_INFO["IsLiveDisk"] = True
+        SYSTEM_INFO["OnPartedMagic"] = False
 
     #Try to detect if we're not running on a live disk (on a HDD).
     elif "/dev/sd" in CoreTools.get_partition_mounted_at("/"):
         logger.info("MainStartupTools(): check_for_live_disk(): Not running on live disk...")
-        SystemInfo["IsLiveDisk"] = False
-        SystemInfo["OnPartedMagic"] = False
+        SYSTEM_INFO["IsLiveDisk"] = False
+        SYSTEM_INFO["OnPartedMagic"] = False
 
     #Try to detect if we're not running on a live disk (on LVM).
     elif "/dev/mapper/" in CoreTools.get_partition_mounted_at("/"):
         logger.info("MainStartupTools(): check_for_live_disk(): Not running on live disk...")
-        SystemInfo["IsLiveDisk"] = False
-        SystemInfo["OnPartedMagic"] = False
+        SYSTEM_INFO["IsLiveDisk"] = False
+        SYSTEM_INFO["OnPartedMagic"] = False
 
     #Ask the user if we're running on a live disk.
     else:
         logger.info("MainStartupTools(): check_for_live_disk(): Asking the user if we're running on live media...")
-        SystemInfo["IsLiveDisk"] = DialogTools.show_yes_no_dlg(message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", title="WxFixBoot - Live Media?")
-        SystemInfo["OnPartedMagic"] = False
-        logger.info("MainStartupTools(): check_for_live_disk(): Result: "+unicode(SystemInfo["IsLiveDisk"]))
+        SYSTEM_INFO["IsLiveDisk"] = DialogTools.show_yes_no_dlg(message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", title="WxFixBoot - Live Media?")
+        SYSTEM_INFO["OnPartedMagic"] = False
+        logger.info("MainStartupTools(): check_for_live_disk(): Result: "+unicode(SYSTEM_INFO["IsLiveDisk"]))
 
     #Get current OS architecture.
     logger.info("MainStartupTools(): check_for_live_disk(): Getting architecture of current OS...")
-    SystemInfo["CurrentOSArch"] = CoreStartupTools.determine_os_architecture(mount_point="")
+    SYSTEM_INFO["CurrentOSArch"] = CoreStartupTools.determine_os_architecture(mount_point="")
 
 def unmount_all_filesystems():
     """unmount any unnecessary filesystems, to prevent data corruption."""
@@ -132,7 +127,7 @@ def unmount_all_filesystems():
     #CoreTools.start_process("umount -ad")
 
     #Make sure that we still have rw access on live disks.
-    if SystemInfo["IsLiveDisk"]:
+    if SYSTEM_INFO["IsLiveDisk"]:
         logger.info("unmount_all_filesystems(): Attempting to remount '/' to make sure it's still rw...")
 
         if CoreTools.remount_partition("/") != 0:
@@ -151,7 +146,7 @@ def mount_core_filesystems():
     logger.info("mount_core_filesystems(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
 
     #Don't worry about this error when running on Parted Magic.
-    if CoreTools.start_process("mount -avw") != 0 and SystemInfo["OnPartedMagic"] is False:
+    if CoreTools.start_process("mount -avw") != 0 and SYSTEM_INFO["OnPartedMagic"] is False:
         logger.critical("mount_core_filesystems(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
         CoreTools.emergency_exit("Failed to re-mount your filesystems after checking them!")
 
@@ -159,17 +154,19 @@ def get_oss():
     """Get the names of all OSs on the HDDs."""
     logger.info("get_oss(): Finding operating systems...")
     root_filesystem = CoreTools.get_partition_mounted_at("/")
-    OSInfo = {}
+    OS_INFO = {}
 
     #Get Linux OSs.
-    keys = list(DiskInfo.keys())
+    keys = list(DISK_INFO.keys())
     keys.sort()
 
+    print(DISK_INFO)
+
     for partition in keys:
-        if DiskInfo[partition]["Type"] == "Device":
+        if DISK_INFO[partition]["Type"] == "Device":
             continue
 
-        elif DiskInfo[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
+        elif DISK_INFO[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
             #Look for macOS.
             os_name = "macOS ("+partition+")"
             logger.debug("get_oss(): Looking for macOS on "+partition+"...")
@@ -193,15 +190,15 @@ def get_oss():
                 was_mounted = True
 
             if os.path.exists(mount_point+"/mach_kernel") or os.path.exists(mount_point+"/System/Library/Kernels/kernel"):
-                #Create OSInfo entry for it.
+                #Create OS_INFO entry for it.
                 logger.debug("get_oss(): Found "+os_name+"...")
-                OSInfo[os_name] = {}
-                OSInfo[os_name]["Name"] = os_name
-                OSInfo[os_name]["IsCurrentOS"] = False
-                OSInfo[os_name]["Arch"] = "Unknown"
-                OSInfo[os_name]["Partition"] = partition
-                OSInfo[os_name]["PackageManager"] = "Mac App Store"
-                OSInfo[os_name]["RawFSTabInfo"], OSInfo[os_name]["EFIPartition"], OSInfo[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+                OS_INFO[os_name] = {}
+                OS_INFO[os_name]["Name"] = os_name
+                OS_INFO[os_name]["IsCurrentOS"] = False
+                OS_INFO[os_name]["Arch"] = "Unknown"
+                OS_INFO[os_name]["Partition"] = partition
+                OS_INFO[os_name]["PackageManager"] = "Mac App Store"
+                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
 
             #unmount the filesystem if needed.
             if was_mounted:
@@ -209,7 +206,7 @@ def get_oss():
                     logger.error("get_oss(): Couldn't unmount "+partition+"! Doing emergency exit...")
                     CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for operating systems on it! Please reboot your computer and try again.")
 
-        elif DiskInfo[partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
+        elif DISK_INFO[partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
             #Look for Windows. NOTE: It seems NTFS volumes can't be mounted twice, which is why we're being more careful here.
             logger.debug("get_oss(): Looking for Windows on "+partition+"...")
 
@@ -260,16 +257,16 @@ def get_oss():
                     #Unknown Windows.
                     os_name = "Windows"
 
-                #Create OSInfo entry for it.
+                #Create OS_INFO entry for it.
                 os_name = os_name+" ("+partition+")"
                 logger.debug("get_oss(): Found "+os_name+"...")
-                OSInfo[os_name] = {}
-                OSInfo[os_name]["Name"] = os_name
-                OSInfo[os_name]["IsCurrentOS"] = False
-                OSInfo[os_name]["Arch"] = "Unknown"
-                OSInfo[os_name]["Partition"] = partition
-                OSInfo[os_name]["PackageManager"] = "Windows Installer"
-                OSInfo[os_name]["RawFSTabInfo"], OSInfo[os_name]["EFIPartition"], OSInfo[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+                OS_INFO[os_name] = {}
+                OS_INFO[os_name]["Name"] = os_name
+                OS_INFO[os_name]["IsCurrentOS"] = False
+                OS_INFO[os_name]["Arch"] = "Unknown"
+                OS_INFO[os_name]["Partition"] = partition
+                OS_INFO[os_name]["PackageManager"] = "Windows Installer"
+                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
 
             #unmount the filesystem if needed.
             if was_mounted:
@@ -285,10 +282,10 @@ def get_oss():
             #If there are aliases for partition, check if the root FS is one of those too.
             root_filesystem_is_alias = False
 
-            if "Aliases" in DiskInfo[partition]:
+            if "Aliases" in DISK_INFO[partition]:
                 logger.debug("get_oss(): Checking if RootFS is an alias for "+partition+"...")
 
-                if root_filesystem in DiskInfo[partition]["Aliases"]:
+                if root_filesystem in DISK_INFO[partition]["Aliases"]:
                     logger.debug("get_oss(): RootFS is an alias...")
                     root_filesystem_is_alias = True
 
@@ -339,17 +336,17 @@ def get_oss():
 
             #Also check if CoreStartupTools.ask_for_os_name was used to determine the name. If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
             if os_name != None and os_architecture != None and package_manager != "Unknown":
-                #Add this information to OSInfo.
-                OSInfo[os_name] = {}
-                OSInfo[os_name]["Name"] = os_name
-                OSInfo[os_name]["IsCurrentOS"] = is_current_os
-                OSInfo[os_name]["Arch"] = os_architecture
-                OSInfo[os_name]["Partition"] = partition
-                OSInfo[os_name]["PackageManager"] = package_manager
-                OSInfo[os_name]["RawFSTabInfo"], OSInfo[os_name]["EFIPartition"], OSInfo[os_name]["BootPartition"] = CoreStartupTools.get_fstab_info(mount_point, os_name)
+                #Add this information to OS_INFO.
+                OS_INFO[os_name] = {}
+                OS_INFO[os_name]["Name"] = os_name
+                OS_INFO[os_name]["IsCurrentOS"] = is_current_os
+                OS_INFO[os_name]["Arch"] = os_architecture
+                OS_INFO[os_name]["Partition"] = partition
+                OS_INFO[os_name]["PackageManager"] = package_manager
+                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = CoreStartupTools.get_fstab_info(mount_point, os_name)
 
                 if chroot is False:
-                    SystemInfo["CurrentOS"] = OSInfo[os_name].copy()
+                    SYSTEM_INFO["CurrentOS"] = OS_INFO[os_name].copy()
 
             if chroot:
                 #unmount the filesystem.
@@ -364,7 +361,7 @@ def get_oss():
     linux_oss = []
 
     #Get list of Linux OSs.
-    for _os in OSInfo:
+    for _os in OS_INFO:
         if _os[0] not in ("Windows", "macOS"):
             linux_oss.append(os_name)
 
@@ -375,8 +372,8 @@ def get_oss():
         CoreTools.emergency_exit("You don't appear to have any Linux installations on your hard disks. If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or macOS, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
 
     #Otherwise...
-    logger.debug("get_oss(): Done, OSInfo Populated okay. Contents: "+unicode(OSInfo))
-    return OSInfo, SystemInfo
+    logger.debug("get_oss(): Done, OS_INFO Populated okay. Contents: "+unicode(OS_INFO))
+    return OS_INFO, SYSTEM_INFO
 
 def get_firmware_type():
     """Get the firmware type"""
@@ -405,7 +402,7 @@ def get_firmware_type():
     if uefi_variables:
         #It's UEFI.
         logger.info("get_firmware_type(): Detected Firmware Type as UEFI.")
-        SystemInfo["FirmwareType"] = "UEFI"
+        SYSTEM_INFO["FirmwareType"] = "UEFI"
 
     else:
         #Look a second way.
@@ -414,19 +411,19 @@ def get_firmware_type():
         if "UEFI" not in output:
             #It's BIOS.
             logger.info("get_firmware_type(): Detected Firmware Type as BIOS...")
-            SystemInfo["FirmwareType"] = "BIOS"
+            SYSTEM_INFO["FirmwareType"] = "BIOS"
 
         else:
             #It's UEFI.
             logger.warning("get_firmware_type(): Detected Firmware Type as UEFI, but couldn't find UEFI variables!")
-            SystemInfo["FirmwareType"] = "UEFI"
+            SYSTEM_INFO["FirmwareType"] = "UEFI"
             DialogTools.show_msg_dlg(kind="warning", message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
 
 def get_bootloaders():
     """Find all bootloaders (for each OS), and gather some information about them"""
-    SystemInfo["ModifyableOSs"] = []
+    SYSTEM_INFO["ModifyableOSs"] = []
 
-    keys = list(OSInfo.keys())
+    keys = list(OS_INFO.keys())
     keys.sort()
 
     for _os in keys:
@@ -441,11 +438,11 @@ def get_bootloaders():
             continue
 
         #If this isn't the current OS, do some preparation.
-        if not OSInfo[_os]["IsCurrentOS"]:
+        if not OS_INFO[_os]["IsCurrentOS"]:
             #Mount the OS's partition.
-            mount_point = "/tmp/wxfixboot/mountpoints"+OSInfo[_os]["Partition"]
+            mount_point = "/tmp/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
 
-            if CoreTools.mount_partition(OSInfo[_os]["Partition"], mount_point) != 0:
+            if CoreTools.mount_partition(OS_INFO[_os]["Partition"], mount_point) != 0:
                 logger.error("get_bootloaders(): Failed to mount "+_os+"'s partition! Skipping bootloader detection for this OS.")
                 continue
 
@@ -459,131 +456,131 @@ def get_bootloaders():
             mount_point = ""
 
         #Mount a /boot partition if it exists.
-        if OSInfo[_os]["BootPartition"] != "Unknown":
-            if CoreTools.mount_partition(OSInfo[_os]["BootPartition"], mount_point+"/boot") != 0:
+        if OS_INFO[_os]["BootPartition"] != "Unknown":
+            if CoreTools.mount_partition(OS_INFO[_os]["BootPartition"], mount_point+"/boot") != 0:
                 logger.error("get_bootloaders(): Failed to mount "+_os+"'s /boot partition! Skipping bootloader detection for this OS.")
 
-                if not OSInfo[_os]["IsCurrentOS"]:
+                if not OS_INFO[_os]["IsCurrentOS"]:
                     CoreTools.teardown_chroot(mount_point)
                     CoreTools.unmount(mount_point)
 
                 continue
 
         #Mount a /boot/efi partition if it exists.
-        if OSInfo[_os]["EFIPartition"] != "Unknown":
-            if CoreTools.mount_partition(OSInfo[_os]["EFIPartition"], mount_point+"/boot/efi") != 0:
+        if OS_INFO[_os]["EFIPartition"] != "Unknown":
+            if CoreTools.mount_partition(OS_INFO[_os]["EFIPartition"], mount_point+"/boot/efi") != 0:
                 logger.error("get_bootloaders(): Failed to mount "+_os+"'s /boot/efi partition! Skipping bootloader detection for this OS.")
 
-                if not OSInfo[_os]["IsCurrentOS"]:
+                if not OS_INFO[_os]["IsCurrentOS"]:
                     CoreTools.teardown_chroot(mount_point)
                     CoreTools.unmount(mount_point)
 
                 continue
 
         #Look for bootloaders.
-        BootloaderInfo[_os] = {}
-        BootloaderInfo[_os]["OSName"] = _os
-        BootloaderInfo[_os]["Bootloader"], BootloaderInfo[_os]["AvailableBootloaders"] = CoreStartupTools.look_for_bootloaders_on_partition(_os, OSInfo[_os]["PackageManager"], mount_point, not OSInfo[_os]["IsCurrentOS"])
+        BOOTLOADER_INFO[_os] = {}
+        BOOTLOADER_INFO[_os]["OSName"] = _os
+        BOOTLOADER_INFO[_os]["Bootloader"], BOOTLOADER_INFO[_os]["AvailableBootloaders"] = CoreStartupTools.look_for_bootloaders_on_partition(_os, OS_INFO[_os]["PackageManager"], mount_point, not OS_INFO[_os]["IsCurrentOS"])
 
-        BootloaderInfo[_os]["Timeout"], BootloaderInfo[_os]["GlobalKernelOptions"], BootloaderInfo[_os]["BootDisk"], BootloaderInfo[_os]["BLSpecificDefaultOS"], BootloaderInfo[_os]["DefaultOS"] = (10, "Unknown", "Unknown", "Unknown", "Unknown")
-        BootloaderInfo[_os]["MenuEntries"] = {_os: {}}
+        BOOTLOADER_INFO[_os]["Timeout"], BOOTLOADER_INFO[_os]["GlobalKernelOptions"], BOOTLOADER_INFO[_os]["BootDisk"], BOOTLOADER_INFO[_os]["BLSpecificDefaultOS"], BOOTLOADER_INFO[_os]["DefaultOS"] = (10, "Unknown", "Unknown", "Unknown", "Unknown")
+        BOOTLOADER_INFO[_os]["MenuEntries"] = {_os: {}}
 
         #For EFI bootloaders, set the boot disk to the OS's EFI Partition.
-        if BootloaderInfo[_os]["Bootloader"] in ("GRUB-UEFI", "ELILO"):
-            BootloaderInfo[_os]["BootDisk"] = OSInfo[_os]["EFIPartition"]
+        if BOOTLOADER_INFO[_os]["Bootloader"] in ("GRUB-UEFI", "ELILO"):
+            BOOTLOADER_INFO[_os]["BootDisk"] = OS_INFO[_os]["EFIPartition"]
 
-        if BootloaderInfo[_os]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(mount_point+"/etc/default/grub"):
-            grub_dir, BootloaderInfo[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_grub2_menu_data(menu_data="", mount_point=mount_point)[0:2]
+        if BOOTLOADER_INFO[_os]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(mount_point+"/etc/default/grub"):
+            grub_dir, BOOTLOADER_INFO[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_grub2_menu_data(menu_data="", mount_point=mount_point)[0:2]
 
             #Get GRUB2's config.
             #If we're using fedora, always look for grubenv in the EFI partition (the grubenv symlink is in /boot/grub2 but it doesn't work when we're chrooting).
-            if OSInfo[_os]["PackageManager"] == "yum":
+            if OS_INFO[_os]["PackageManager"] == "yum":
                 grub_dir = mount_point+"/boot/efi/EFI/fedora"
 
-            BootloaderInfo[_os]["Timeout"], BootloaderInfo[_os]["GlobalKernelOptions"], BootloaderInfo[_os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_grub2_config(mount_point+"/etc/default/grub", grub_dir+"/grubenv", BootloaderInfo[_os]["MenuEntries"])
+            BOOTLOADER_INFO[_os]["Timeout"], BOOTLOADER_INFO[_os]["GlobalKernelOptions"], BOOTLOADER_INFO[_os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_grub2_config(mount_point+"/etc/default/grub", grub_dir+"/grubenv", BOOTLOADER_INFO[_os]["MenuEntries"])
 
             #Try to find GRUB's location if this is GRUB2.
-            if BootloaderInfo[_os]["Bootloader"] == "GRUB2":
-                BootloaderInfo[_os]["BootDisk"] = BootloaderConfigObtainingTools.find_grub(OSInfo[_os]["Partition"], "GRUB2")
+            if BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB2":
+                BOOTLOADER_INFO[_os]["BootDisk"] = BootloaderConfigObtainingTools.find_grub(OS_INFO[_os]["Partition"], "GRUB2")
 
-        elif BootloaderInfo[_os]["Bootloader"] == "ELILO" and os.path.isfile(mount_point+"/etc/elilo.conf"):
-            BootloaderInfo[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_lilo_menu_entries(mount_point+"/etc/elilo.conf")
-            BootloaderInfo[_os]["Timeout"], BootloaderInfo[_os]["GlobalKernelOptions"], BootloaderInfo[_os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_lilo_config(mount_point+"/etc/elilo.conf", _os=_os)
+        elif BOOTLOADER_INFO[_os]["Bootloader"] == "ELILO" and os.path.isfile(mount_point+"/etc/elilo.conf"):
+            BOOTLOADER_INFO[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_lilo_menu_entries(mount_point+"/etc/elilo.conf")
+            BOOTLOADER_INFO[_os]["Timeout"], BOOTLOADER_INFO[_os]["GlobalKernelOptions"], BOOTLOADER_INFO[_os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_lilo_config(mount_point+"/etc/elilo.conf", _os=_os)
 
-        elif BootloaderInfo[_os]["Bootloader"] == "LILO" and os.path.isfile(mount_point+"/etc/lilo.conf"):
-            BootloaderInfo[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_lilo_menu_entries(mount_point+"/etc/lilo.conf")
-            BootloaderInfo[_os]["Timeout"], BootloaderInfo[_os]["GlobalKernelOptions"], BootloaderInfo[_os]["BootDisk"], BootloaderInfo[_os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_lilo_config(mount_point+"/etc/lilo.conf", _os=_os)
+        elif BOOTLOADER_INFO[_os]["Bootloader"] == "LILO" and os.path.isfile(mount_point+"/etc/lilo.conf"):
+            BOOTLOADER_INFO[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_lilo_menu_entries(mount_point+"/etc/lilo.conf")
+            BOOTLOADER_INFO[_os]["Timeout"], BOOTLOADER_INFO[_os]["GlobalKernelOptions"], BOOTLOADER_INFO[_os]["BootDisk"], BOOTLOADER_INFO[_os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_lilo_config(mount_point+"/etc/lilo.conf", _os=_os)
 
-        elif BootloaderInfo[_os]["Bootloader"] == "GRUB-LEGACY" and os.path.isfile(mount_point+"/boot/grub/menu.lst"):
-            BootloaderInfo[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_grublegacy_menu_entries(mount_point+"/boot/grub/menu.lst")
-            BootloaderInfo[_os]["Timeout"], BootloaderInfo[_os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_grublegacy_config(mount_point+"/boot/grub/menu.lst", BootloaderInfo[_os]["MenuEntries"])
-            BootloaderInfo[_os]["BootDisk"] = BootloaderConfigObtainingTools.find_grub(OSInfo[_os]["Partition"], "GRUB-LEGACY")
+        elif BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB-LEGACY" and os.path.isfile(mount_point+"/boot/grub/menu.lst"):
+            BOOTLOADER_INFO[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_grublegacy_menu_entries(mount_point+"/boot/grub/menu.lst")
+            BOOTLOADER_INFO[_os]["Timeout"], BOOTLOADER_INFO[_os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_grublegacy_config(mount_point+"/boot/grub/menu.lst", BOOTLOADER_INFO[_os]["MenuEntries"])
+            BOOTLOADER_INFO[_os]["BootDisk"] = BootloaderConfigObtainingTools.find_grub(OS_INFO[_os]["Partition"], "GRUB-LEGACY")
 
             #Use safe default kernel options.
             logger.info("get_bootloaders(): "+_os+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\"...")
-            BootloaderInfo[_os]["GlobalKernelOptions"] = "quiet splash nomodeset"
+            BOOTLOADER_INFO[_os]["GlobalKernelOptions"] = "quiet splash nomodeset"
 
         #If we didn't find the kernel options, set some defaults here, and warn the user.
-        if BootloaderInfo[_os]["GlobalKernelOptions"] == "Unknown":
-            BootloaderInfo[_os]["GlobalKernelOptions"] = "quiet splash nomodeset"
+        if BOOTLOADER_INFO[_os]["GlobalKernelOptions"] == "Unknown":
+            BOOTLOADER_INFO[_os]["GlobalKernelOptions"] = "quiet splash nomodeset"
             logger.warning("get_bootloaders(): Couldn't find "+_os+"'s global kernel options! Assuming 'quiet splash nomodeset'...")
             DialogTools.show_msg_dlg(message="Couldn't find "+_os+"'s default kernel options! Loading safe defaults instead. Click okay to continue.", kind="warning")
 
         #Determine if we can modify this OS from our current one.
-        if OSInfo[_os]["Arch"] == SystemInfo["CurrentOSArch"] or (OSInfo[_os]["Arch"] == "i386" and SystemInfo["CurrentOSArch"] == "x86_64"):
-            BootloaderInfo[_os]["IsModifyable"] = True
-            BootloaderInfo[_os]["Comments"] = "Architecture is "+OSInfo[_os]["Arch"]+"."
-            SystemInfo["ModifyableOSs"].append(_os)
+        if OS_INFO[_os]["Arch"] == SYSTEM_INFO["CurrentOSArch"] or (OS_INFO[_os]["Arch"] == "i386" and SYSTEM_INFO["CurrentOSArch"] == "x86_64"):
+            BOOTLOADER_INFO[_os]["IsModifyable"] = True
+            BOOTLOADER_INFO[_os]["Comments"] = "Architecture is "+OS_INFO[_os]["Arch"]+"."
+            SYSTEM_INFO["ModifyableOSs"].append(_os)
 
         else:
-            BootloaderInfo[_os]["IsModifyable"] = False
-            BootloaderInfo[_os]["Comments"] = "Architecture is "+OSInfo[_os]["Arch"]+". Not modifyable because current OS is "+SystemInfo["CurrentOSArch"]+"."
+            BOOTLOADER_INFO[_os]["IsModifyable"] = False
+            BOOTLOADER_INFO[_os]["Comments"] = "Architecture is "+OS_INFO[_os]["Arch"]+". Not modifyable because current OS is "+SYSTEM_INFO["CurrentOSArch"]+"."
 
         #Initialise some default no-action settings.
-        BootloaderInfo[_os]["Settings"] = {}
-        BootloaderInfo[_os]["Settings"]["Reinstall"] = False
-        BootloaderInfo[_os]["Settings"]["Update"] = False
-        BootloaderInfo[_os]["Settings"]["KeepExistingTimeout"] = False
-        BootloaderInfo[_os]["Settings"]["KeepExistingKernelOptions"] = False
-        BootloaderInfo[_os]["Settings"]["NewKernelOptions"] = BootloaderInfo[_os]["GlobalKernelOptions"]
-        BootloaderInfo[_os]["Settings"]["NewTimeout"] = BootloaderInfo[_os]["Timeout"]
-        BootloaderInfo[_os]["Settings"]["DefaultOS"] = BootloaderInfo[_os]["DefaultOS"]
-        BootloaderInfo[_os]["Settings"]["InstallNewBootloader"] = False
-        BootloaderInfo[_os]["Settings"]["NewBootloader"] = "-- Please Select --"
-        BootloaderInfo[_os]["Settings"]["BackupBootloader"] = False
-        BootloaderInfo[_os]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
-        BootloaderInfo[_os]["Settings"]["RestoreBootloader"] = False
-        BootloaderInfo[_os]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
-        BootloaderInfo[_os]["Settings"]["ChangeThisOS"] = False
+        BOOTLOADER_INFO[_os]["Settings"] = {}
+        BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] = False
+        BOOTLOADER_INFO[_os]["Settings"]["Update"] = False
+        BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"] = False
+        BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"] = False
+        BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"] = BOOTLOADER_INFO[_os]["GlobalKernelOptions"]
+        BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"] = BOOTLOADER_INFO[_os]["Timeout"]
+        BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"] = BOOTLOADER_INFO[_os]["DefaultOS"]
+        BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"] = False
+        BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] = "-- Please Select --"
+        BOOTLOADER_INFO[_os]["Settings"]["BackupBootloader"] = False
+        BOOTLOADER_INFO[_os]["Settings"]["BootloaderBackupTarget"] = "-- Please Select --"
+        BOOTLOADER_INFO[_os]["Settings"]["RestoreBootloader"] = False
+        BOOTLOADER_INFO[_os]["Settings"]["BootloaderRestoreSource"] = "-- Please Select --"
+        BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"] = False
 
         #Initialise GUI state for this OS (True = Enabled, False = Disabled).
-        BootloaderInfo[_os]["GUIState"] = {}
-        BootloaderInfo[_os]["GUIState"]["ReinstallCheckBoxState"] = True
-        BootloaderInfo[_os]["GUIState"]["UpdateCheckBoxState"] = True
-        BootloaderInfo[_os]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
-        BootloaderInfo[_os]["GUIState"]["NewTimeoutSpinnerState"] = False
-        BootloaderInfo[_os]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
-        BootloaderInfo[_os]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
-        BootloaderInfo[_os]["GUIState"]["DefaultOSChoiceState"] = False
-        BootloaderInfo[_os]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
-        BootloaderInfo[_os]["GUIState"]["NewBootloaderChoiceState"] = False
-        BootloaderInfo[_os]["GUIState"]["BackupBootloaderCheckBoxState"] = True
-        BootloaderInfo[_os]["GUIState"]["BackupBootloaderChoiceState"] = False
-        BootloaderInfo[_os]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
-        BootloaderInfo[_os]["GUIState"]["RestoreBootloaderChoiceState"] = False
+        BOOTLOADER_INFO[_os]["GUIState"] = {}
+        BOOTLOADER_INFO[_os]["GUIState"]["ReinstallCheckBoxState"] = True
+        BOOTLOADER_INFO[_os]["GUIState"]["UpdateCheckBoxState"] = True
+        BOOTLOADER_INFO[_os]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = False
+        BOOTLOADER_INFO[_os]["GUIState"]["NewTimeoutSpinnerState"] = False
+        BOOTLOADER_INFO[_os]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = False
+        BOOTLOADER_INFO[_os]["GUIState"]["NewKernelOptionsTextCtrlState"] = False
+        BOOTLOADER_INFO[_os]["GUIState"]["DefaultOSChoiceState"] = False
+        BOOTLOADER_INFO[_os]["GUIState"]["InstallNewBootloaderCheckBoxState"] = True
+        BOOTLOADER_INFO[_os]["GUIState"]["NewBootloaderChoiceState"] = False
+        BOOTLOADER_INFO[_os]["GUIState"]["BackupBootloaderCheckBoxState"] = True
+        BOOTLOADER_INFO[_os]["GUIState"]["BackupBootloaderChoiceState"] = False
+        BOOTLOADER_INFO[_os]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
+        BOOTLOADER_INFO[_os]["GUIState"]["RestoreBootloaderChoiceState"] = False
 
         #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
-        if OSInfo[_os]["EFIPartition"] != "Unknown":
+        if OS_INFO[_os]["EFIPartition"] != "Unknown":
             if CoreTools.unmount(mount_point+"/boot/efi") != 0:
                 logger.error("MainBackendTools: get_bootloaders(): Failed to unmount "+mount_point+"/boot/efi! This probably doesn't matter...")
 
         #unmount a /boot partition if it exists.
-        if OSInfo[_os]["BootPartition"] != "Unknown":
+        if OS_INFO[_os]["BootPartition"] != "Unknown":
             if CoreTools.unmount(mount_point+"/boot") != 0:
                 logger.error("get_bootloaders(): Failed to unmount "+_os+"'s /boot partition! Continuing anyway...")
 
         #Clean up if needed.
-        if not OSInfo[_os]["IsCurrentOS"]:
+        if not OS_INFO[_os]["IsCurrentOS"]:
             #Remove chroot.
             if CoreTools.teardown_chroot(mount_point) != 0:
                 logger.error("get_bootloaders(): Failed to remove chroot from "+mount_point+"! Attempting to continue anyway...")
@@ -593,25 +590,25 @@ def get_bootloaders():
                 logger.error("get_bootloaders(): Failed to unmount "+_os+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
 
     #Get default OSs.
-    for _os in OSInfo:
+    for _os in OS_INFO:
         #Set sensible defaults for Windows.
         if "Windows" in _os:
-            BootloaderInfo[_os]["DefaultBootDevice"] = OSInfo[_os]["Partition"]
-            BootloaderInfo[_os]["DefaultOS"] = _os
+            BOOTLOADER_INFO[_os]["DefaultBootDevice"] = OS_INFO[_os]["Partition"]
+            BOOTLOADER_INFO[_os]["DefaultOS"] = _os
             continue
 
         #Same for macOS.
         elif "macOS" in _os:
-            BootloaderInfo[_os]["DefaultBootDevice"] = OSInfo[_os]["Partition"]
-            BootloaderInfo[_os]["DefaultOS"] = _os
+            BOOTLOADER_INFO[_os]["DefaultBootDevice"] = OS_INFO[_os]["Partition"]
+            BOOTLOADER_INFO[_os]["DefaultOS"] = _os
             continue
 
         #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
         logger.info("get_bootloaders(): Attempting to match "+_os+"'s default OS to any OS that WxFixBoot detected...")
 
-        BootloaderInfo[_os]["DefaultBootDevice"] = "Unknown"
+        BOOTLOADER_INFO[_os]["DefaultBootDevice"] = "Unknown"
 
-        if "MenuEntries" in BootloaderInfo[_os].keys():
+        if "MenuEntries" in BOOTLOADER_INFO[_os].keys():
             CoreStartupTools.get_defaultoss_partition(_os)
 
         else:
@@ -622,12 +619,12 @@ def get_bootloaders():
         CoreStartupTools.match_partition_to_os(_os)
 
         #Log if we couldn't match them.
-        if BootloaderInfo[_os]["DefaultOS"] == "Unknown":
-            logger.warning("get_bootloaders(): Couldn't match! We will instead use the first OS in the list as the default OS, which is "+SystemInfo["ModifyableOSs"][0]+"...")
-            BootloaderInfo[_os]["DefaultOS"] = SystemInfo["ModifyableOSs"][0]
+        if BOOTLOADER_INFO[_os]["DefaultOS"] == "Unknown":
+            logger.warning("get_bootloaders(): Couldn't match! We will instead use the first OS in the list as the default OS, which is "+SYSTEM_INFO["ModifyableOSs"][0]+"...")
+            BOOTLOADER_INFO[_os]["DefaultOS"] = SYSTEM_INFO["ModifyableOSs"][0]
 
         #Set this.
-        BootloaderInfo[_os]["Settings"]["DefaultOS"] = BootloaderInfo[_os]["DefaultOS"]
+        BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"] = BOOTLOADER_INFO[_os]["DefaultOS"]
 
 def final_check():
     """Check for any conflicting options, and warn the user of any potential pitfalls."""
@@ -635,9 +632,9 @@ def final_check():
     #Warn if any OSs aren't modifyable.
     unmodifyable_oss = []
 
-    for _os in BootloaderInfo:
-        if BootloaderInfo[_os]["IsModifyable"] is False:
-            unmodifyable_oss.append(_os+", because "+BootloaderInfo[_os]["Comments"])
+    for _os in BOOTLOADER_INFO:
+        if BOOTLOADER_INFO[_os]["IsModifyable"] is False:
+            unmodifyable_oss.append(_os+", because "+BOOTLOADER_INFO[_os]["Comments"])
 
     if unmodifyable_oss != []:
         DialogTools.show_msg_dlg(message="Some of the OSs found on your system cannot be modified! These are:\n\n"+'\n'.join(unmodifyable_oss)+"\n\nClick okay to continue.")
@@ -645,8 +642,8 @@ def final_check():
     #Warn if any bootloaders need reinstalling.
     need_reinstalling = []
 
-    for _os in BootloaderInfo:
-        if "MenuEntries" not in BootloaderInfo[_os].keys():
+    for _os in BOOTLOADER_INFO:
+        if "MenuEntries" not in BOOTLOADER_INFO[_os].keys():
             need_reinstalling.append(_os)
 
     if need_reinstalling != []:
