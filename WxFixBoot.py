@@ -51,8 +51,6 @@ else:
     from wx import AboutDialogInfo as wxAboutDialogInfo
     from wx import AboutBox as wxAboutBox
 
-from bs4 import BeautifulSoup
-
 import getdevinfo
 import getdevinfo.linux
 
@@ -63,6 +61,7 @@ if sys.version_info[0] == 3:
 
     #Plist hack for Python 3.
     plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
+    plistlib.writePlist = plistlib.dump #pylint: disable=no-member
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
@@ -1747,7 +1746,7 @@ class BootloaderOptionsWindow(wx.Frame):
                 _file = dlg.GetPath()
                 logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): File is "+_file+"...")
                 logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): Saving config to "+_file+"...")
-                plistlib.writePlist(BOOTLOADER_INFO[self.os_choice.GetStringSelection()], _file)
+                plistlib.writePlist(BOOTLOADER_INFO[self.os_choice.GetStringSelection()], _file) #pylint: disable=deprecated-method
                 logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): Finished saving config to "+_file+"...")
 
                 #Let the user know we were successful.
@@ -1781,7 +1780,7 @@ class BootloaderOptionsWindow(wx.Frame):
                 logger.debug("BootloaderOptionsWindow().on_restore_bootloader_choice(): Loading config from "+_file+"...")
 
                 try:
-                    self.setup_for_restoring_bootloader(plistlib.readPlist(_file))
+                    self.setup_for_restoring_bootloader(plistlib.readPlistFromString(_file))
 
                 except Exception:
                     #Error!
