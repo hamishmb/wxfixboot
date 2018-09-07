@@ -31,9 +31,12 @@ import sys
 import logging
 
 #Import other modules.
-from .. import coretools as CoreTools
-from .. import dialogtools as DialogTools
-from ..dictionaries import *
+sys.path.append('../..') #Need to be able to import the Tools module from here.
+
+import Tools
+import Tools.coretools as CoreTools
+import Tools.dialogtools as DialogTools
+from Tools.dictionaries import *
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -45,7 +48,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 def make_bootloaderinfo_entry_for_macos(the_os):
-    """Makes an entry in BootloaderInfo for macOS"""
+    """Makes an entry in BOOTLOADER_INFO for macOS"""
     BOOTLOADER_INFO[the_os] = {}
     BOOTLOADER_INFO[the_os]["OSName"] = the_os
     BOOTLOADER_INFO[the_os]["Bootloader"] = "iBoot/BootX"
@@ -89,7 +92,7 @@ def make_bootloaderinfo_entry_for_macos(the_os):
     BOOTLOADER_INFO[the_os]["GUIState"]["RestoreBootloaderChoiceState"] = False
 
 def make_bootloaderinfo_entry_for_windows(the_os):
-    """Makes an entry in BootloaderInfo for Windows"""
+    """Makes an entry in BOOTLOADER_INFO for Windows"""
     BOOTLOADER_INFO[the_os] = {}
     BOOTLOADER_INFO[the_os]["OSName"] = the_os
 

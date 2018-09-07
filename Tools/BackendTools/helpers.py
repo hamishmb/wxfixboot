@@ -32,9 +32,11 @@ import time
 import logging
 
 #Import other modules.
-from .. import coretools as CoreTools
-from .. import dialogtools as DialogTools
-from ..dictionaries import *
+sys.path.append('../..') #Need to be able to import the Tools module from here.
+import Tools
+import Tools.coretools as CoreTools
+import Tools.dialogtools as DialogTools
+from Tools.dictionaries import *
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:

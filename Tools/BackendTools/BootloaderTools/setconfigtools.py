@@ -27,11 +27,11 @@ import sys
 import logging
 
 #Import other modules.
-from .. import helpers as HelperBackendTools
-
 sys.path.append('../../..') #Need to be able to import the Tools module from here.
 import Tools.coretools as CoreTools
 import Tools.dialogtools as DialogTools
+from .. import helpers as HelperBackendTools
+
 from Tools.dictionaries import *
 
 #Make unicode an alias for str in Python 3.

@@ -66,7 +66,7 @@ if sys.version_info[0] == 3:
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "4/9/2018"
+RELEASEDATE = "7/9/2018"
 
 #Define other global variables.
 SESSION_ENDING = False
@@ -132,7 +132,7 @@ for OPTION, ARGUMENT in OPTIONS:
 
 #Import custom-made modules
 import Tools
-import Tools.dictionaries as dictionaries
+from Tools.dictionaries import *
 import Tools.coretools as CoreTools
 import Tools.dialogtools as DialogTools
 import Tools.StartupTools.main as MainStartupTools
@@ -407,7 +407,7 @@ class InitThread(threading.Thread):
         wx.CallAfter(self.parent_window.update_progress_bar, "4")
         logger.info("InitThread(): Done Checking For Live Disk!")
 
-        #unmount all filesystems, to avoid any data corruption.
+        #Unmount all filesystems, to avoid any data corruption.
         logger.info("InitThread(): Unmounting Filesystems...")
         wx.CallAfter(self.parent_window.update_progress_text, "Unmounting Filesystems...")
         MainStartupTools.unmount_all_filesystems()
@@ -424,7 +424,9 @@ class InitThread(threading.Thread):
         #Get device info.
         logger.info("InitThread(): Getting Device Information...")
         wx.CallAfter(self.parent_window.update_progress_text, "Getting Device Information...")
-        DISK_INFO = getdevinfo.getdevinfo.get_info()
+
+        DISK_INFO.update(getdevinfo.getdevinfo.get_info())
+
         wx.CallAfter(self.parent_window.update_progress_bar, "60")
         logger.info("InitThread(): Finished Getting Device Information...")
 
@@ -438,7 +440,11 @@ class InitThread(threading.Thread):
         #Get a list of OSs.
         logger.info("InitThread(): Finding OSs...")
         wx.CallAfter(self.parent_window.update_progress_text, "Finding Operating Systems...")
-        OS_INFO, SYSTEM_INFO = MainStartupTools.get_oss()
+
+        TEMP_OS_INFO, TEMP_SYSTEM_INFO = MainStartupTools.get_oss()
+        OS_INFO.update(TEMP_OS_INFO)
+        SYSTEM_INFO.update(TEMP_SYSTEM_INFO)
+
         wx.CallAfter(self.parent_window.update_progress_bar, "65")
         logger.info("InitThread(): Done Finding OSs...")
 
@@ -781,7 +787,7 @@ class MainWindow(wx.Frame):
             OPERATIONS.append((EssentialBackendTools.filesystem_check, "Quick", Tools.BackendTools.main.manage_bootloader))
             logger.info("MainWindow().count_operations(): Added EssentialBackendTools.filesystem_check to OPERATIONS...")
 
-        if Settings["BadSectorCheck"]:
+        if SETTINGS["BadSectorCheck"]:
             OPERATIONS.append((EssentialBackendTools.filesystem_check, "Thorough", Tools.BackendTools.main.manage_bootloader))
             logger.info("MainWindow().count_operations(): Added EssentialBackendTools.filesystem_check to OPERATIONS...")
 
@@ -2544,7 +2550,7 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tPartitions: "+', '.join(DISK_INFO[disk]["Partitions"])+"\n")
             report_list.write("\t\tVendor: "+DISK_INFO[disk]["Vendor"]+"\n")
             report_list.write("\t\tProduct: "+DISK_INFO[disk]["Product"]+"\n")
-            #report_list.write("\t\tRaw Capacity: "+DISK_INFO[disk]["RawCapacity"]+"\n") #XXX Temporary before the case is fixed in GetDevInfo.
+            #report_list.write("\t\tRaw Capacity: "+DISK_INFO[disk]["RawCapacity"]+"\n") FIXME Temporarily disabled before GetDevInfo 1.0.3 is released.
             report_list.write("\t\tHuman-readable Capacity: "+DISK_INFO[disk]["Capacity"]+"\n")
             report_list.write("\t\tDescription: "+DISK_INFO[disk]["Description"]+"\n")
             report_list.write("\t\tFlags: "+', '.join(DISK_INFO[disk]["Flags"])+"\n")
@@ -2552,7 +2558,7 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tFilesystem: "+DISK_INFO[disk]["FileSystem"]+"\n")
             report_list.write("\t\tUUID: "+DISK_INFO[disk]["UUID"]+"\n")
             report_list.write("\t\tID: "+DISK_INFO[disk]["ID"]+"\n")
-            report_list.write("\t\tBoot Record Strings: "+', '.join(unicode(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n")
+            #report_list.write("\t\tBoot Record Strings: "+unicode(b', '.join(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n") FIXME Disabled until getdevinfo 1.0.3 is released.
 
         #Do OS Information.
         report_list.write("\n##########OS Information##########\n")
@@ -2589,40 +2595,40 @@ class BackendThread(threading.Thread):
             report_list.write("but they weren't actually done.\n")
             report_list.write("Bootloader Operations were disabled because: "+SYSTEM_INFO["DisableBootloaderOperationsBecause"]+"\n\n")
 
-        bootloader_oss = list(BootloaderInfo.keys())
+        bootloader_oss = list(BOOTLOADER_INFO.keys())
         bootloader_oss.sort()
 
         for _os in bootloader_oss:
             report_list.write("\tControlling OS: "+_os+"\n")
-            report_list.write("\tBootloader (at time of startup): "+BootloaderInfo[_os]["Bootloader"]+"\n")
-            report_list.write("\tBootloaders that can be installed: "+', '.join(BootloaderInfo[_os]["AvailableBootloaders"])+"\n")
-            report_list.write("\t\tBootloader Timeout: "+unicode(BootloaderInfo[_os]["Timeout"])+"\n")
-            report_list.write("\t\tGlobal Kernel Options: "+BootloaderInfo[_os]["GlobalKernelOptions"]+"\n")
-            report_list.write("\t\tBootloader-Specific Default _os: "+BootloaderInfo[_os]["BLSpecificDefaultOS"]+"\n")
-            report_list.write("\t\tDefault OS: "+BootloaderInfo[_os]["DefaultOS"]+"\n")
-            report_list.write("\t\tInstalled on: "+BootloaderInfo[_os]["BootDisk"]+"\n")
-            report_list.write("\t\tCan be modified: "+unicode(BootloaderInfo[_os]["IsModifyable"])+"\n")
-            report_list.write("\t\tReason for modifyability: "+BootloaderInfo[_os]["Comments"]+"\n") 
-            report_list.write("\t\tBootloader was modified: "+unicode(BootloaderInfo[_os]["Settings"]["ChangeThisOS"])+"\n\n")
+            report_list.write("\tBootloader (at time of startup): "+BOOTLOADER_INFO[_os]["Bootloader"]+"\n")
+            report_list.write("\tBootloaders that can be installed: "+', '.join(BOOTLOADER_INFO[_os]["AvailableBootloaders"])+"\n")
+            report_list.write("\t\tBootloader Timeout: "+unicode(BOOTLOADER_INFO[_os]["Timeout"])+"\n")
+            report_list.write("\t\tGlobal Kernel Options: "+BOOTLOADER_INFO[_os]["GlobalKernelOptions"]+"\n")
+            report_list.write("\t\tBootloader-Specific Default _os: "+BOOTLOADER_INFO[_os]["BLSpecificDefaultOS"]+"\n")
+            report_list.write("\t\tDefault OS: "+BOOTLOADER_INFO[_os]["DefaultOS"]+"\n")
+            report_list.write("\t\tInstalled on: "+BOOTLOADER_INFO[_os]["BootDisk"]+"\n")
+            report_list.write("\t\tCan be modified: "+unicode(BOOTLOADER_INFO[_os]["IsModifyable"])+"\n")
+            report_list.write("\t\tReason for modifyability: "+BOOTLOADER_INFO[_os]["Comments"]+"\n") 
+            report_list.write("\t\tBootloader was modified: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"])+"\n\n")
 
-            if BootloaderInfo[_os]["Settings"]["ChangeThisOS"]:
-                report_list.write("\t\t\tBootloader was reinstalled: "+unicode(BootloaderInfo[_os]["Settings"]["Reinstall"])+"\n")
-                report_list.write("\t\t\tBootloader was updated: "+unicode(BootloaderInfo[_os]["Settings"]["Update"])+"\n")
-                report_list.write("\t\t\tBootloader was replaced with another bootloader: "+unicode(BootloaderInfo[_os]["Settings"]["InstallNewBootloader"])+"\n\n")
+            if BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"]:
+                report_list.write("\t\t\tBootloader was reinstalled: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["Reinstall"])+"\n")
+                report_list.write("\t\t\tBootloader was updated: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["Update"])+"\n")
+                report_list.write("\t\t\tBootloader was replaced with another bootloader: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"])+"\n\n")
 
-                if BootloaderInfo[_os]["Settings"]["Reinstall"] or BootloaderInfo[_os]["Settings"]["Update"] or BootloaderInfo[_os]["Settings"]["InstallNewBootloader"]:
-                    report_list.write("\t\t\tNew Bootloader: "+BootloaderInfo[_os]["Settings"]["NewBootloader"]+"\n")
-                    report_list.write("\t\t\tKept Existing Bootloader Timeout: "+unicode(BootloaderInfo[_os]["Settings"]["KeepExistingTimeout"])+"\n")
+                if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] or BOOTLOADER_INFO[_os]["Settings"]["Update"] or BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"]:
+                    report_list.write("\t\t\tNew Bootloader: "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"\n")
+                    report_list.write("\t\t\tKept Existing Bootloader Timeout: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"])+"\n")
 
-                    if BootloaderInfo[_os]["Settings"]["KeepExistingTimeout"] is False:
-                        report_list.write("\t\t\tNew Bootloader Timeout: "+unicode(BootloaderInfo[_os]["Settings"]["NewTimeout"])+"\n")
+                    if BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"] is False:
+                        report_list.write("\t\t\tNew Bootloader Timeout: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])+"\n")
 
-                    report_list.write("\t\t\tKept Existing Kernel Options: "+unicode(BootloaderInfo[_os]["Settings"]["KeepExistingKernelOptions"])+"\n")
+                    report_list.write("\t\t\tKept Existing Kernel Options: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"])+"\n")
 
-                    if BootloaderInfo[_os]["Settings"]["KeepExistingKernelOptions"] is False:
-                        report_list.write("\t\t\tNew Kernel Options: "+BootloaderInfo[_os]["Settings"]["NewKernelOptions"]+"\n")
+                    if BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"] is False:
+                        report_list.write("\t\t\tNew Kernel Options: "+BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"]+"\n")
 
-                    report_list.write("\t\t\tNew Default OS: "+BootloaderInfo[_os]["Settings"]["DefaultOS"]+"\n\n")
+                    report_list.write("\t\t\tNew Default OS: "+BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"]+"\n\n")
 
 
         #Do WxFixBoot's settings.

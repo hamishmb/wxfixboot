@@ -38,11 +38,12 @@ from . import helpers as HelperBackendTools
 from . import BootloaderTools
 BootloaderConfigSettingTools = BootloaderTools.setconfigtools
 
-from .. import coretools as CoreTools
-from .. import dialogtools as DialogTools
-from ..dictionaries import *
-
 sys.path.append('../..') #Need to be able to import the Tools module from here.
+import Tools
+import Tools.coretools as CoreTools
+import Tools.dialogtools as DialogTools
+from Tools.dictionaries import *
+
 import Tools.StartupTools.getbootloaderconfigtools as BootloaderConfigObtainingTools
 
 #Make unicode an alias for str in Python 3.

@@ -34,9 +34,11 @@ import logging
 from . import core as CoreStartupTools
 from . import getbootloaderconfigtools as BootloaderConfigObtainingTools
 
-from .. import coretools as CoreTools
-from .. import dialogtools as DialogTools
-from ..dictionaries import *
+sys.path.append('../..') #Need to be able to import the Tools module from here.
+import Tools
+import Tools.coretools as CoreTools
+import Tools.dialogtools as DialogTools
+from Tools.dictionaries import *
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -159,8 +161,6 @@ def get_oss():
     #Get Linux OSs.
     keys = list(DISK_INFO.keys())
     keys.sort()
-
-    print(DISK_INFO)
 
     for partition in keys:
         if DISK_INFO[partition]["Type"] == "Device":
