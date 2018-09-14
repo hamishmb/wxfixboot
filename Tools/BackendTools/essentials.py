@@ -19,7 +19,8 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -32,7 +33,6 @@ import wx
 
 #Import other modules.
 sys.path.append('../..') #Need to be able to import the Tools module from here.
-import Tools
 from . import helpers as HelperBackendTools
 
 import Tools.coretools as CoreTools
@@ -54,7 +54,9 @@ parent_window = None
 
 def check_internet_connection():
     """Check the internet connection."""
-    DialogTools.show_msg_dlg(kind="info", message="Your internet connection will now be tested to ensure it's safe to do bootloader operations. This will be done by pinging the OpenDNS DNS servers.")
+    DialogTools.show_msg_dlg(kind="info", message="Your internet connection will now be tested "
+                             + "to ensure it's safe to do bootloader operations. This will be "
+                             + "done by pinging the OpenDNS DNS servers.")
 
     logger.info("check_internet_connection(): Checking the Internet Connection...")
     SYSTEM_INFO["DisableBootloaderOperations"] = False
@@ -64,7 +66,8 @@ def check_internet_connection():
         packet_loss = "100%"
 
         logger.debug("check_internet_connection(): Running 'ping -c 5 -i 0.5 208.67.222.222'...")
-        retval, output = CoreTools.start_process("ping -c 5 -i 0.5 208.67.222.222", show_output=False, return_output=True)
+        retval, output = CoreTools.start_process("ping -c 5 -i 0.5 208.67.222.222",
+                                                 show_output=False, return_output=True)
 
         if retval != 0:
             #This errored for some reason. Probably no internet connection.
@@ -83,28 +86,44 @@ def check_internet_connection():
             break
 
         else:
-            #Uh oh! We DON'T have a reliable internet connection! Ask the user to either try again, or skip Bootloader operations.
-            logger.error("check_internet_connection(): Internet Connection test failed! Asking user to try again or disable bootloader operations...")
-            result = DialogTools.show_yes_no_dlg(message="Your Internet Connection failed the test! Without a working internet connection, you cannot perform bootloader operations. Click yes to try again, and click no to give up and skip bootloader operations.", title="WxFixBoot - Disable Bootloader Operations?", buttons=("Try again", "Cancel Bootloader Operations"))
+            #Uh oh! We DON'T have a reliable internet connection! Ask the user to either try again,
+            #or skip Bootloader operations.
+            logger.error("check_internet_connection(): Internet Connection test failed! Asking "
+                         + "user to try again or disable bootloader operations...")
+
+            result = DialogTools.show_yes_no_dlg(message="Your Internet Connection failed the "
+                                                 + "test! Without a working internet connection, "
+                                                 + "you cannot perform bootloader operations. "
+                                                 + "Click yes to try again, and click no to give "
+                                                 + "up and skip bootloader operations.",
+                                                 title="WxFixBoot - Disable Bootloader "
+                                                 + "Operations?",
+                                                 buttons=("Try again", "Cancel Bootloader Operations"))
 
             if result is False:
-                logger.warning("check_internet_connection(): Disabling bootloader operations due to bad internet connection...")
+                logger.warning("check_internet_connection(): Disabling bootloader operations "
+                               + "due to bad internet connection...")
+
                 SYSTEM_INFO["DisableBootloaderOperations"] = True
                 SYSTEM_INFO["DisableBootloaderOperationsBecause"].append("Internet Connection test failed.")
                 break
 
             else:
                 #We'll just run the loop again
-                logger.info("check_internet_connection(): Testing the internet connection again...")
+                logger.info("check_internet_connection(): Testing the internet connection "
+                            + "again...")
 
 def filesystem_check(_type, manage_bootloader_function):
     """Quickly check all filesystems."""
     logger.debug("filesystem_check(): Starting...")
 
     #Update Current Operation Text.
-    wx.CallAfter(parent_window.update_current_operation_text, message="Preparing for Filesystem Check...")
+    wx.CallAfter(parent_window.update_current_operation_text,
+                 message="Preparing for Filesystem Check...")
+
     wx.CallAfter(parent_window.update_current_progress, 10)
-    wx.CallAfter(parent_window.update_output_box, "\n###Preparing to do the Filesystem Check...###\n")
+    wx.CallAfter(parent_window.update_output_box,
+                 "\n###Preparing to do the Filesystem Check...###\n")
 
     #Determine which Disks are to be checked.
     filesystems_to_check = HelperBackendTools.find_checkable_file_systems()
@@ -114,7 +133,9 @@ def filesystem_check(_type, manage_bootloader_function):
     filesystems_to_check_length = len(filesystems_to_check)
     checked = 0
 
-    DialogTools.show_msg_dlg(kind="info", message="WxFixBoot will now perform the disk check. You may wish to open the terminal output box to view the progress of the disk checks.")
+    DialogTools.show_msg_dlg(kind="info", message="WxFixBoot will now perform the disk check. "
+                             + "You may wish to open the terminal output box to view the "
+                             + "progress of the disk checks.")
 
     #Run the check on the checkable Disks
     for disk in filesystems_to_check:
@@ -122,10 +143,14 @@ def filesystem_check(_type, manage_bootloader_function):
         logger.info("filesystem_check():: Checking "+disk+"...")
         wx.CallAfter(parent_window.update_output_box, "\n###Checking Disk: "+disk+"###\n")
         wx.CallAfter(parent_window.update_current_operation_text, message="Checking Disk: "+disk)
-        wx.CallAfter(parent_window.update_current_progress, 30+((50//filesystems_to_check_length)*(checked+1)))
+        wx.CallAfter(parent_window.update_current_progress,
+                     30+((50//filesystems_to_check_length)*(checked+1)))
+
         run_badblocks = False
 
-        #Create a command list that will work based on the fstype of this Disk and the type of check we're performing. If there aren't any use cases for the fstype, display a message to the user and skip it.
+        #Create a command list that will work based on the fstype of this Disk and the type of
+        #check we're performing. If there aren't any use cases for the fstype, display a message
+        #to the user and skip it.
         if _type == "Quick":
             if DISK_INFO[disk]["FileSystem"] == "jfs":
                 exec_cmds = "fsck.jfs -vf "+disk
@@ -147,11 +172,16 @@ def filesystem_check(_type, manage_bootloader_function):
 
             else:
                 exec_cmds = ""
-                logger.warning("filesystem_check(): Skipping Disk: "+disk+", as WxFixBoot doesn't support checking it yet...")
-                DialogTools.show_msg_dlg(kind="error", message="The filesystem on Disk: "+disk+" could not be checked, as WxFixBoot doesn't support checking it yet. "+disk+" will now be skipped.")
+                logger.warning("filesystem_check(): Skipping Disk: "+disk
+                               + ", as WxFixBoot doesn't support checking it yet...")
+
+                DialogTools.show_msg_dlg(kind="error", message="The filesystem on Disk: "+disk
+                                         + " could not be checked, as WxFixBoot doesn't support "
+                                         + "checking it yet. "+disk+" will now be skipped.")
 
         else:
-            #For disks that doesn't do bad sector checks with the normal FS checker, run badblocks manually on them.
+            #For disks that doesn't do bad sector checks with the normal FS checker,
+            #run badblocks manually on them.
             if DISK_INFO[disk]["FileSystem"] == "jfs":
                 exec_cmds = "fsck.jfs -vf "+disk
                 run_badblocks = True
@@ -176,7 +206,9 @@ def filesystem_check(_type, manage_bootloader_function):
 
             else:
                 exec_cmds = ""
-                DialogTools.show_msg_dlg(kind="info", message="The filesystem on Disk: "+disk+" could not be checked, as WxFixBoot doesn't support checking it yet. "+disk+" will now be skipped.")
+                DialogTools.show_msg_dlg(kind="info", message="The filesystem on Disk: "+disk
+                                         + " could not be checked, as WxFixBoot doesn't support "
+                                         + "checking it yet. "+disk+" will now be skipped.")
 
         #Run the command, and remount the Disk if needed.
         if exec_cmds != "":
@@ -188,7 +220,9 @@ def filesystem_check(_type, manage_bootloader_function):
                 logger.info("filesystem_check(): Checked Disk: "+disk+". No Errors Found!")
 
             else:
-                handle_filesystem_check_return_values(exec_cmds=exec_cmds, retval=retval, partition=disk, manage_bootloader_function=manage_bootloader_function)
+                handle_filesystem_check_return_values(exec_cmds=exec_cmds, retval=retval,
+                                                      partition=disk,
+                                                      manage_bootloader_function=manage_bootloader_function)
 
         #Run bad blocks if requested.
         if run_badblocks:
@@ -197,17 +231,22 @@ def filesystem_check(_type, manage_bootloader_function):
             #Check the return values, and run the handler if needed.
             if retval == 0:
                 #Success.
-                logger.info("filesystem_check(): Checked Disk: "+disk+" for bad sectors. No Errors Found!")
+                logger.info("filesystem_check(): Checked Disk: "+disk+" for bad sectors. "
+                            + "No Errors Found!")
 
             else:
-                handle_filesystem_check_return_values(exec_cmds="badblocks -sv "+disk, retval=retval, partition=disk, manage_bootloader_function=manage_bootloader_function)
+                handle_filesystem_check_return_values(exec_cmds="badblocks -sv "+disk,
+                                                      retval=retval, partition=disk,
+                                                      manage_bootloader_function=manage_bootloader_function)
 
         if filesystems_to_check[disk]["Remount"]:
             logger.debug("filesystem_check(): Remounting Disk: "+disk+" Read-Write...")
-            retval = CoreTools.mount_partition(partition=disk, mount_point=filesystems_to_check[disk]["MountPoint"])
+            retval = CoreTools.mount_partition(partition=disk,
+                                               mount_point=filesystems_to_check[disk]["MountPoint"])
 
             if retval != 0:
-                logger.warning("filesystem_check(): Failed to remount "+disk+" after check. We probably need to reboot first. Never mind...")
+                logger.warning("filesystem_check(): Failed to remount "+disk
+                               + " after check. We probably need to reboot first. Never mind...")
 
         checked += 1
 
@@ -224,13 +263,25 @@ def handle_filesystem_check_return_values(exec_cmds, retval, partition, manage_b
     if retval in (1, 2, 3) and exec_list[0] != "badblocks":
         if exec_list[0] == "xfs_repair":
             #Fs Corruption Detected.
-            logger.warning("handle_filesystem_check_return_values(): xfs_repair detected filesystem corruption on FileSystem: "+partition+". It's probably (and hopefully) been fixed, but we're logging this anyway.")
-            DialogTools.show_msg_dlg(kind="warning", message="Corruption was found on the filesystem: "+partition+"! Fortunately, it looks like the checker utility has fixed the corruption. Click okay to continue.")
+            logger.warning("handle_filesystem_check_return_values(): xfs_repair detected "
+                           + "filesystem corruption on FileSystem: "+partition
+                           + ". It's probably (and hopefully) been fixed, but we're logging "
+                           + "this anyway.")
+
+            DialogTools.show_msg_dlg(kind="warning",
+                                     message="Corruption was found on the filesystem: "+partition
+                                     + "! Fortunately, it looks like the checker utility has "
+                                     + "fixed the corruption. Click okay to continue.")
 
         elif exec_list[0] in ('fsck.jfs', 'fsck.minix', 'fsck.reiserfs', 'fsck.vfat', 'fsck.ext2', 'fsck.ex3', 'fsck.ext4', 'fsck.ext4dev'):
             #Fixed Errors.
-            logger.info("handle_filesystem_check_return_values(): "+exec_list[0]+" successfully fixed errors on the partition: "+partition+". Continuing...")
-            DialogTools.show_msg_dlg(kind="warning", message="The filesystem checker found and successfully fixed errors on partition: "+partition+". Click okay to continue.")
+            logger.info("handle_filesystem_check_return_values(): "+exec_list[0]
+                        + " successfully fixed errors on the partition: "+partition
+                        + ". Continuing...")
+
+            DialogTools.show_msg_dlg(kind="warning", message="The filesystem checker found and "
+                                     + "successfully fixed errors on partition: "+partition
+                                     + ". Click okay to continue.")
 
     else:
         #Something bad happened!
@@ -243,19 +294,40 @@ def handle_filesystem_check_return_values(exec_cmds, retval, partition, manage_b
                     doing_bootloader_operations = True
                     break
 
-        logger.error("handle_filesystem_check_return_values(): "+exec_list[0]+" Errored with exit value "+unicode(retval)+"! This could indicate filesystem corruption or bad sectors!")
+        logger.error("handle_filesystem_check_return_values(): "+exec_list[0]
+                     +" Errored with exit value "+unicode(retval)
+                     +"! This could indicate filesystem corruption or bad sectors!")
 
         if doing_bootloader_operations:
-            logger.error("handle_filesystem_check_return_values(): Asking the user whether to skip bootloader operations...")
+            logger.error("handle_filesystem_check_return_values(): Asking the user whether to "
+                         + "skip bootloader operations...")
 
-            result = DialogTools.show_yes_no_dlg(message="Error! The filesystem checker gave exit value: "+unicode(retval)+"! This could indicate filesystem corruption, a problem with the filesystem checker, or bad sectors on partition: "+partition+". If you perform bootloader operations on this partition, your system could become unstable or unbootable. Do you want to disable bootloader operations, as is strongly recommended?", title="WxFixBoot - Disable Bootloader Operations?", buttons=("Disable Bootloader Operations", "Ignore and Continue Anyway"))
+            result = DialogTools.show_yes_no_dlg(message="Error! The filesystem checker gave "
+                                                 + "exit value: "+unicode(retval)+"! This could "
+                                                 + "indicate filesystem corruption, a problem "
+                                                 + "with the filesystem checker, or bad sectors "
+                                                 + "on partition: "+partition+". If you perform "
+                                                 + "bootloader operations on this partition, your "
+                                                 + "system could become unstable or unbootable. "
+                                                 + "Do you want to disable bootloader operations, "
+                                                 + "as is strongly recommended?",
+                                                 title="WxFixBoot - Disable Bootloader "
+                                                 + "Operations?",
+                                                 buttons=("Disable Bootloader Operations",
+                                                          "Ignore and Continue Anyway"))
 
             if result:
                 #A good choice. WxFixBoot will now disable any bootloader operations.
-                logger.warning("handle_filesystem_check_return_values(): User disabled bootloader operations as recommended, due to bad sectors/HDD problems/FS Checker problems...")
+                logger.warning("handle_filesystem_check_return_values(): User disabled bootloader "
+                               + "operations as recommended, due to bad sectors/HDD problems/FS "
+                               + "Checker problems...")
+
                 SYSTEM_INFO["DisableBootloaderOperations"] = True
                 SYSTEM_INFO["DisableBootloaderOperationsBecause"].append("Filesystem corruption was detected on "+partition)
 
             else:
                 #Seriously? Well, okay, we'll do it anyway... This is probably a very bad idea...
-                logger.warning("handle_filesystem_check_return_values(): User ignored the warning and went ahead with bootloader modifications (if any) anyway, even with possible HDD problems/Bad sectors! This is a REALLY bad idea, but we'll do it anyway, as requested...")
+                logger.warning("handle_filesystem_check_return_values(): User ignored the warning "
+                               + "and went ahead with bootloader modifications (if any) anyway, "
+                               + "even with possible HDD problems/Bad sectors! This is a REALLY "
+                               + "bad idea, but we'll do it anyway, as requested...")
