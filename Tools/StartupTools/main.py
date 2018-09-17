@@ -19,7 +19,8 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -35,7 +36,6 @@ from . import core as CoreStartupTools
 from . import getbootloaderconfigtools as BootloaderConfigObtainingTools
 
 sys.path.append('../..') #Need to be able to import the Tools module from here.
-import Tools
 import Tools.coretools as CoreTools
 import Tools.dialogtools as DialogTools
 from Tools.dictionaries import *
@@ -50,10 +50,16 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 def check_depends():
-    """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
+    """
+    Check dependencies, and show an error message and kill the app if the dependencies are not met.
+    """
+
     logger.info("MainStartupTools(): check_depends(): Checking dependencies...")
-    #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies.
-    cmd_list = ("cp", "mv", "which", "uname", "fsck", "ls", "modprobe", "mount", "umount", "rm", "ping", "badblocks", "arch", "python", "file", "sh", "echo", "lshw", "lvdisplay", "dmidecode", "chroot", "strings", "dd", "blkid")
+    #Create a temporary list to allow WxFixBoot to notify the user of particular unmet
+    #dependencies. TODO This will need to be updated.
+    cmd_list = ("cp", "mv", "which", "uname", "fsck", "ls", "modprobe", "mount", "umount",
+                "rm", "ping", "badblocks", "arch", "python", "file", "sh", "echo", "lshw",
+                "lvdisplay", "dmidecode", "chroot", "strings", "dd", "blkid")
 
     #Create a list to contain names of failed commands.
     failed_list = []
@@ -63,19 +69,26 @@ def check_depends():
         retval, output = CoreTools.start_process("which "+cmd, return_output=True)
 
         if retval != 0:
-            logger.error("check_depends(): Dependency problems! Command: "+cmd+" failed to execute or wasn't found.")
+            logger.error("check_depends(): Dependency problems! Command: "+cmd
+                         + " failed to execute or wasn't found.")
+
             logger.error("check_depends(): The error was: "+output)
             failed_list.append(cmd)
 
     #Check if any commands failed.
     if failed_list != []:
         #Missing dependencies!
-        logger.critical("check_depends(): Dependencies missing! WxFixBoot will exit. The missing dependencies are: "+', '.join(failed_list)+". Exiting.")
-        CoreTools.emergency_exit("The following dependencies could not be found on your system: "+', '.join(failed_list)+".\n\nPlease install the missing dependencies.")
+        logger.critical("check_depends(): Dependencies missing! WxFixBoot will exit. The missing "
+                        + "dependencies are: "+', '.join(failed_list)+". Exiting.")
+
+        CoreTools.emergency_exit("The following dependencies could not be found on your system: "
+                                 + ', '.join(failed_list)+".\n\nPlease install the missing "
+                                 + "dependencies.")
 
 def check_for_live_disk():
     """Try to determine if we're running on a live disk."""
-    logger.info("MainStartupTools(): check_for_live_disk(): Attempting to check if we're on a live disk...")
+    logger.info("MainStartupTools(): check_for_live_disk(): Attempting to check if we're on a "
+                + "live disk...")
 
     #Detect Parted Magic automatically.
     if "pmagic" in CoreTools.start_process("uname -r", return_output=True)[1]:
@@ -85,13 +98,17 @@ def check_for_live_disk():
 
     #Try to detect ubuntu-based livecds.
     elif CoreTools.is_mounted("/cow", "/") and os.path.isfile("/cdrom/casper/filesystem.squashfs"):
-        logger.info("MainStartupTools(): check_for_live_disk(): Running on Ubuntu-based live disk...")
+        logger.info("MainStartupTools(): check_for_live_disk(): "
+                    + "Running on Ubuntu-based live disk...")
+
         SYSTEM_INFO["IsLiveDisk"] = True
         SYSTEM_INFO["OnPartedMagic"] = False
 
     #Try to detect fedora-based livecds.
     elif CoreTools.is_mounted("/dev/mapper/live-rw", "/") and os.path.isfile("/run/initramfs/live/LiveOS/squashfs.img"):
-        logger.info("MainStartupTools(): check_for_live_disk(): Running on Fedora-based live disk...")
+        logger.info("MainStartupTools(): check_for_live_disk(): "
+                    + "Running on Fedora-based live disk...")
+
         SYSTEM_INFO["IsLiveDisk"] = True
         SYSTEM_INFO["OnPartedMagic"] = False
 
@@ -109,47 +126,70 @@ def check_for_live_disk():
 
     #Ask the user if we're running on a live disk.
     else:
-        logger.info("MainStartupTools(): check_for_live_disk(): Asking the user if we're running on live media...")
-        SYSTEM_INFO["IsLiveDisk"] = DialogTools.show_yes_no_dlg(message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", title="WxFixBoot - Live Media?")
+        logger.info("MainStartupTools(): check_for_live_disk(): Asking the user if we're running "
+                    + "on live media...")
+
+        SYSTEM_INFO["IsLiveDisk"] = DialogTools.show_yes_no_dlg(message="Is WxFixBoot being run "
+                                                                + "on live media, such as an "
+                                                                + "Ubuntu Installer Disk?",
+                                                                title="WxFixBoot - Live Media?")
+
         SYSTEM_INFO["OnPartedMagic"] = False
-        logger.info("MainStartupTools(): check_for_live_disk(): Result: "+unicode(SYSTEM_INFO["IsLiveDisk"]))
+        logger.info("MainStartupTools(): check_for_live_disk(): Result: "
+                    + unicode(SYSTEM_INFO["IsLiveDisk"]))
 
     #Get current OS architecture.
     logger.info("MainStartupTools(): check_for_live_disk(): Getting architecture of current OS...")
     SYSTEM_INFO["CurrentOSArch"] = CoreStartupTools.determine_os_architecture(mount_point="")
 
 def unmount_all_filesystems():
-    """unmount any unnecessary filesystems, to prevent data corruption."""
-    #Warn about removing devices.
-    logger.info("unmount_all_filesystems(): unmounting all Filesystems...")
-    DialogTools.show_msg_dlg(kind="info", message="WxFixBoot is about to gather device information. After this point, you must not remove/add any devices from/to your computer, so do that now if you wish to.")
+    """
+    Unmount any unnecessary filesystems, to prevent data corruption.
+    """
 
-    #Attempt unmount of all filesystems.
+    #Warn about removing devices.
+    logger.info("unmount_all_filesystems(): Unmounting all Filesystems...")
+    DialogTools.show_msg_dlg(kind="info", message="WxFixBoot is about to gather device "
+                             + "information. After this point, you must not remove/add any "
+                             + "devices from/to your computer, so do that now if you wish to.")
+
+    #Attempt unmount of all filesystems. TODO Why is this disabled again?
     #logger.debug("unmount_all_filesystems(): Running 'unmount -ad'...")
     #CoreTools.start_process("umount -ad")
 
     #Make sure that we still have rw access on live disks.
     if SYSTEM_INFO["IsLiveDisk"]:
-        logger.info("unmount_all_filesystems(): Attempting to remount '/' to make sure it's still rw...")
+        logger.info("unmount_all_filesystems(): Attempting to remount '/' to make sure it's "
+                    + "still rw...")
 
         if CoreTools.remount_partition("/") != 0:
-            logger.error("unmount_all_filesystems(): Failed to remount / as rw! This probably doesn't matter...")
+            logger.error("unmount_all_filesystems(): Failed to remount / as rw! This probably "
+                         + "doesn't matter...")
 
 def check_filesystems():
     """Check all unmounted filesystems."""
     logger.info("check_filesystems(): Checking filesystems if possible. Running 'fsck -ARMp'...")
 
     if CoreTools.start_process("fsck -ARMp") not in (0, 8):
-        logger.critical("check_filesystems(): Failed to check filesystems! Doing emergency exit...")
-        CoreTools.emergency_exit("Failed to check filesystems! Please fix your filesystems and then run WxFixBoot again.")
+        logger.critical("check_filesystems(): Failed to check filesystems! Doing emergency "
+                        + "exit...")
+
+        CoreTools.emergency_exit("Failed to check filesystems! Please fix your filesystems "
+                                 + "and then run WxFixBoot again.")
 
 def mount_core_filesystems():
-    """Mount all core filsystems defined in the /etc/fstab of the current operating system."""
-    logger.info("mount_core_filesystems(): Mounting core filesystems in /etc/fstab. Calling 'mount -avw'...")
+    """
+    Mount all core filsystems defined in the /etc/fstab of the current operating system.
+    """
+
+    logger.info("mount_core_filesystems(): Mounting core filesystems in /etc/fstab. Calling "
+                + "'mount -avw'...")
 
     #Don't worry about this error when running on Parted Magic.
     if CoreTools.start_process("mount -avw") != 0 and SYSTEM_INFO["OnPartedMagic"] is False:
-        logger.critical("mount_core_filesystems(): Failed to re-mount your filesystems after checking them! Doing emergency exit...")
+        logger.critical("mount_core_filesystems(): Failed to re-mount your filesystems after "
+                        + "checking them! Doing emergency exit...")
+
         CoreTools.emergency_exit("Failed to re-mount your filesystems after checking them!")
 
 def get_oss():
@@ -166,7 +206,7 @@ def get_oss():
         if DISK_INFO[partition]["Type"] == "Device":
             continue
 
-        elif DISK_INFO[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
+        elif DISK_INFO[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"): #TODO Check if this is what APFS shows up as.
             #Look for macOS.
             os_name = "macOS ("+partition+")"
             logger.debug("get_oss(): Looking for macOS on "+partition+"...")
@@ -184,7 +224,9 @@ def get_oss():
 
                 if CoreTools.mount_partition(partition=partition, mount_point=mount_point) != 0:
                     #Ignore the partition.
-                    logger.warning("get_oss(): Couldn't mount "+partition+"! Skipping this partition...")
+                    logger.warning("get_oss(): Couldn't mount "+partition
+                                   + "! Skipping this partition...")
+
                     continue
 
                 was_mounted = True
@@ -203,11 +245,17 @@ def get_oss():
             #unmount the filesystem if needed.
             if was_mounted:
                 if CoreTools.unmount(mount_point) != 0:
-                    logger.error("get_oss(): Couldn't unmount "+partition+"! Doing emergency exit...")
-                    CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+                    logger.error("get_oss(): Couldn't unmount "+partition
+                                 + "! Doing emergency exit...")
+
+                    CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for "
+                                             + "operating systems on it! Please reboot your "
+                                             + "computer and try again.")
 
         elif DISK_INFO[partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
-            #Look for Windows. NOTE: It seems NTFS volumes can't be mounted twice, which is why we're being more careful here.
+            #Look for Windows. NOTE: It seems NTFS volumes can't be mounted twice, which is why
+            #we're being more careful here.
+            #TODO ^ Check, I think it worked before. Good to be cautious either way.
             logger.debug("get_oss(): Looking for Windows on "+partition+"...")
 
             #Check if we need to mount the partition.
@@ -223,7 +271,9 @@ def get_oss():
 
                 if CoreTools.mount_partition(partition=partition, mount_point=mount_point) != 0:
                     #Ignore the partition.
-                    logger.warning("get_oss(): Couldn't mount "+partition+"! Skipping this partition...")
+                    logger.warning("get_oss(): Couldn't mount "+partition
+                                   + "! Skipping this partition...")
+
                     continue
 
                 was_mounted = True
@@ -271,12 +321,17 @@ def get_oss():
             #unmount the filesystem if needed.
             if was_mounted:
                 if CoreTools.unmount(mount_point) != 0:
-                    logger.error("get_oss(): Couldn't unmount "+partition+"! Doing emergency exit...")
-                    CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+                    logger.error("get_oss(): Couldn't unmount "+partition
+                                 +"! Doing emergency exit...")
+
+                    CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for "
+                                             + "operating systems on it! Please reboot your "
+                                             + "computer and try again.")
 
         else:
             #Look for Linux.
             #The python command runs on python 2 and python 3.
+            #TODO Check if Fedora is deprecating "python" as a command in favour of "python3" only.
             logger.debug("get_oss(): Looking for Linux on "+partition+"...")
 
             #If there are aliases for partition, check if the root FS is one of those too.
@@ -312,7 +367,9 @@ def get_oss():
                 #Mount the partition and check if anything went wrong.
                 if CoreTools.mount_partition(partition=partition, mount_point=mount_point) != 0:
                     #Ignore the partition.
-                    logger.warning("get_oss(): Couldn't mount "+partition+"! Skipping this partition...")
+                    logger.warning("get_oss(): Couldn't mount "+partition
+                                   + "! Skipping this partition...")
+
                     continue
 
             #Look for Linux on this partition.
@@ -322,19 +379,26 @@ def get_oss():
             #Run the function to get the architechure.
             os_architecture = CoreStartupTools.determine_os_architecture(mount_point=mount_point)
 
-            #If the OS's name wasn't found, but its architecture was, there must be an OS here, so try to use lsb_release if possible before asking the user. Catch if the name is just whitespace too.
+            #If the OS's name wasn't found, but its architecture was, there must be an OS here, so
+            #try to use lsb_release if possible before asking the user. Catch if the name is just
+            #whitespace too.
             if (retval != 0 or os_name == "" or os_name.isspace()) and os_architecture != None:
-                os_name = CoreStartupTools.get_os_name_with_lsb(partition=partition, mount_point=mount_point, is_current_os=is_current_os)
+                os_name = CoreStartupTools.get_os_name_with_lsb(partition=partition,
+                                                                mount_point=mount_point,
+                                                                is_current_os=is_current_os)
 
                 #If we really have to, ask the user.
                 if os_name is None:
                     logger.warning("get_oss(): Asking user for OS name instead...")
-                    os_name = CoreStartupTools.ask_for_os_name(partition=partition, is_current_os=is_current_os)
+                    os_name = CoreStartupTools.ask_for_os_name(partition=partition,
+                                                               is_current_os=is_current_os)
 
             #Look for APT.
-            package_manager = CoreStartupTools.determine_package_manager(apt_cmd=apt_cmd, yum_cmd=yum_cmd)
+            package_manager = CoreStartupTools.determine_package_manager(apt_cmd=apt_cmd,
+                                                                         yum_cmd=yum_cmd)
 
-            #Also check if CoreStartupTools.ask_for_os_name was used to determine the name. If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
+            #Also check if CoreStartupTools.ask_for_os_name was used to determine the name.
+            #If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
             if os_name != None and os_architecture != None and package_manager != "Unknown":
                 #Add this information to OS_INFO.
                 OS_INFO[os_name] = {}
@@ -351,8 +415,11 @@ def get_oss():
             if chroot:
                 #unmount the filesystem.
                 if CoreTools.unmount(mount_point) != 0:
-                    logger.error("get_oss(): Couldn't unmount "+partition+"! Doing emergency exit...")
-                    CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+                    logger.error("get_oss(): Couldn't unmount "+partition
+                                 + "! Doing emergency exit...")
+                    CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for "
+                                             + "operating systems on it! Please reboot your "
+                                             + "computer and try again.")
 
                 #Remove the temporary mountpoint
                 os.rmdir(mount_point)
@@ -366,10 +433,21 @@ def get_oss():
             linux_oss.append(os_name)
 
     if len(linux_oss) < 1:
-        logger.critical("get_oss(): No Linux installations found! If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or macOS, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer. Exiting...")
+        logger.critical("get_oss(): No Linux installations found! If you do have Linux "
+                        + "installations but WxFixBoot hasn't found them, please file a bug or "
+                        + "ask a question on WxFixBoot's launchpad page. If you're using Windows "
+                        + "or macOS, then sorry as WxFixBoot has no support for these operating "
+                        + "systems. You could instead use the tools provided by Microsoft and "
+                        + "Apple to fix any issues with your computer. Exiting...")
 
         #Exit.
-        CoreTools.emergency_exit("You don't appear to have any Linux installations on your hard disks. If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or macOS, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
+        CoreTools.emergency_exit("You don't appear to have any Linux installations on your hard "
+                                 + "disks. If you do have Linux installations but WxFixBoot "
+                                 + "hasn't found them, please file a bug or ask a question on "
+                                 + "WxFixBoot's launchpad page. If you're using Windows or macOS, "
+                                 + "then sorry as WxFixBoot has no support for these operating "
+                                 + "systems. You could instead use the tools provided by Microsoft "
+                                 + "and Apple to fix any issues with your computer.")
 
     #Otherwise...
     logger.debug("get_oss(): Done, OS_INFO Populated okay. Contents: "+unicode(OS_INFO))
@@ -396,7 +474,10 @@ def get_firmware_type():
         logger.info("get_firmware_type(): Found UEFI Variables at /sys/firmware/efi/efivars...")
 
     else:
-        logger.info("get_firmware_type(): UEFI vars not found in /sys/firmware/efi/vars, /sys/firmware/efi/efivars, or /proc/efi/vars. This is normal if running on a BIOS system. Determining firmware type a different way...")
+        logger.info("get_firmware_type(): UEFI vars not found in /sys/firmware/efi/vars, "
+                    + "/sys/firmware/efi/efivars, or /proc/efi/vars. This is normal if running "
+                    + "on a BIOS system. Determining firmware type a different way...")
+
         uefi_variables = False
 
     if uefi_variables:
@@ -415,12 +496,22 @@ def get_firmware_type():
 
         else:
             #It's UEFI.
-            logger.warning("get_firmware_type(): Detected Firmware Type as UEFI, but couldn't find UEFI variables!")
+            logger.warning("get_firmware_type(): Detected Firmware Type as UEFI, but couldn't "
+                           + "find UEFI variables!")
+
             SYSTEM_INFO["FirmwareType"] = "UEFI"
-            DialogTools.show_msg_dlg(kind="warning", message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
+            DialogTools.show_msg_dlg(kind="warning", message="Your computer uses UEFI firmware, "
+                                     + "but the UEFI variables couldn't be mounted or weren't "
+                                     + "found. Please ensure you've booted in UEFI mode rather "
+                                     + "than legacy mode to enable access to the UEFI variables. "
+                                     + "You can attempt installing a UEFI bootloader without "
+                                     + "them, but it might not work, and it isn't recommended.")
 
 def get_bootloaders():
-    """Find all bootloaders (for each OS), and gather some information about them"""
+    """
+    Find all bootloaders (for each OS), and gather some information about them
+    """
+
     SYSTEM_INFO["ModifyableOSs"] = []
 
     keys = list(OS_INFO.keys())
@@ -443,12 +534,17 @@ def get_bootloaders():
             mount_point = "/tmp/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
 
             if CoreTools.mount_partition(OS_INFO[_os]["Partition"], mount_point) != 0:
-                logger.error("get_bootloaders(): Failed to mount "+_os+"'s partition! Skipping bootloader detection for this OS.")
+                logger.error("get_bootloaders(): Failed to mount "+_os+"'s partition! Skipping "
+                             + "bootloader detection for this OS.")
+
                 continue
 
             #Set up chroot.
             if CoreTools.setup_chroot(mount_point) != 0:
-                logger.error("get_bootloaders(): Couldn't set up chroot on "+mount_point+"! Attempting to remove it in case it's partially set up, and then skipping this OS...")
+                logger.error("get_bootloaders(): Couldn't set up chroot on "+mount_point
+                             + "! Attempting to remove it in case it's partially set up, "
+                             + "and then skipping this OS...")
+
                 CoreTools.teardown_chroot(mount_point)
                 continue
 
@@ -458,7 +554,8 @@ def get_bootloaders():
         #Mount a /boot partition if it exists.
         if OS_INFO[_os]["BootPartition"] != "Unknown":
             if CoreTools.mount_partition(OS_INFO[_os]["BootPartition"], mount_point+"/boot") != 0:
-                logger.error("get_bootloaders(): Failed to mount "+_os+"'s /boot partition! Skipping bootloader detection for this OS.")
+                logger.error("get_bootloaders(): Failed to mount "+_os+"'s /boot partition! "
+                             + "Skipping bootloader detection for this OS.")
 
                 if not OS_INFO[_os]["IsCurrentOS"]:
                     CoreTools.teardown_chroot(mount_point)
@@ -469,7 +566,8 @@ def get_bootloaders():
         #Mount a /boot/efi partition if it exists.
         if OS_INFO[_os]["EFIPartition"] != "Unknown":
             if CoreTools.mount_partition(OS_INFO[_os]["EFIPartition"], mount_point+"/boot/efi") != 0:
-                logger.error("get_bootloaders(): Failed to mount "+_os+"'s /boot/efi partition! Skipping bootloader detection for this OS.")
+                logger.error("get_bootloaders(): Failed to mount "+_os+"'s /boot/efi partition! "
+                             + "Skipping bootloader detection for this OS.")
 
                 if not OS_INFO[_os]["IsCurrentOS"]:
                     CoreTools.teardown_chroot(mount_point)
@@ -493,7 +591,8 @@ def get_bootloaders():
             grub_dir, BOOTLOADER_INFO[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_grub2_menu_data(menu_data="", mount_point=mount_point)[0:2]
 
             #Get GRUB2's config.
-            #If we're using fedora, always look for grubenv in the EFI partition (the grubenv symlink is in /boot/grub2 but it doesn't work when we're chrooting).
+            #If we're using fedora, always look for grubenv in the EFI partition (the grubenv
+            #symlink is in /boot/grub2 but it doesn't work when we're chrooting).
             if OS_INFO[_os]["PackageManager"] == "yum":
                 grub_dir = mount_point+"/boot/efi/EFI/fedora"
 
@@ -517,14 +616,21 @@ def get_bootloaders():
             BOOTLOADER_INFO[_os]["BootDisk"] = BootloaderConfigObtainingTools.find_grub(OS_INFO[_os]["Partition"], "GRUB-LEGACY")
 
             #Use safe default kernel options.
-            logger.info("get_bootloaders(): "+_os+" is using GRUB-LEGACY and therefore doesn't have global kernel options. For compatibility's sake, we're setting them to \"quiet splash nomodeset\"...")
+            logger.info("get_bootloaders(): "+_os+" is using GRUB-LEGACY and therefore doesn't "
+                        + "have global kernel options. For compatibility's sake, we're setting "
+                        + "them to \"quiet splash nomodeset\"...")
+
             BOOTLOADER_INFO[_os]["GlobalKernelOptions"] = "quiet splash nomodeset"
 
         #If we didn't find the kernel options, set some defaults here, and warn the user.
         if BOOTLOADER_INFO[_os]["GlobalKernelOptions"] == "Unknown":
             BOOTLOADER_INFO[_os]["GlobalKernelOptions"] = "quiet splash nomodeset"
-            logger.warning("get_bootloaders(): Couldn't find "+_os+"'s global kernel options! Assuming 'quiet splash nomodeset'...")
-            DialogTools.show_msg_dlg(message="Couldn't find "+_os+"'s default kernel options! Loading safe defaults instead. Click okay to continue.", kind="warning")
+            logger.warning("get_bootloaders(): Couldn't find "+_os+"'s global kernel options! "
+                           + "Assuming 'quiet splash nomodeset'...")
+
+            DialogTools.show_msg_dlg(message="Couldn't find "+_os+"'s default kernel options! "
+                                     + "Loading safe defaults instead. Click okay to continue.",
+                                     kind="warning")
 
         #Determine if we can modify this OS from our current one.
         if OS_INFO[_os]["Arch"] == SYSTEM_INFO["CurrentOSArch"] or (OS_INFO[_os]["Arch"] == "i386" and SYSTEM_INFO["CurrentOSArch"] == "x86_64"):
@@ -572,22 +678,27 @@ def get_bootloaders():
         #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
         if OS_INFO[_os]["EFIPartition"] != "Unknown":
             if CoreTools.unmount(mount_point+"/boot/efi") != 0:
-                logger.error("MainBackendTools: get_bootloaders(): Failed to unmount "+mount_point+"/boot/efi! This probably doesn't matter...")
+                logger.error("MainBackendTools: get_bootloaders(): Failed to unmount "+mount_point
+                             + "/boot/efi! This probably doesn't matter...")
 
         #unmount a /boot partition if it exists.
         if OS_INFO[_os]["BootPartition"] != "Unknown":
             if CoreTools.unmount(mount_point+"/boot") != 0:
-                logger.error("get_bootloaders(): Failed to unmount "+_os+"'s /boot partition! Continuing anyway...")
+                logger.error("get_bootloaders(): Failed to unmount "+_os+"'s /boot partition! "
+                             + "Continuing anyway...")
 
         #Clean up if needed.
         if not OS_INFO[_os]["IsCurrentOS"]:
             #Remove chroot.
             if CoreTools.teardown_chroot(mount_point) != 0:
-                logger.error("get_bootloaders(): Failed to remove chroot from "+mount_point+"! Attempting to continue anyway...")
+                logger.error("get_bootloaders(): Failed to remove chroot from "+mount_point
+                             + "! Attempting to continue anyway...")
 
             #unmount the OS's partition.
             if CoreTools.unmount(mount_point) != 0:
-                logger.error("get_bootloaders(): Failed to unmount "+_os+"'s partition! This could indicate that chroot wasn't removed correctly. Continuing anyway...")
+                logger.error("get_bootloaders(): Failed to unmount "+_os+"'s partition! This "
+                             + "could indicate that chroot wasn't removed correctly. Continuing "
+                             + "anyway...")
 
     #Get default OSs.
     for _os in OS_INFO:
@@ -604,7 +715,8 @@ def get_bootloaders():
             continue
 
         #Match the bootloader-specific default OS to WxFixBoot's OSs by partition.
-        logger.info("get_bootloaders(): Attempting to match "+_os+"'s default OS to any OS that WxFixBoot detected...")
+        logger.info("get_bootloaders(): Attempting to match "+_os+"'s default OS to any OS that "
+                    + "WxFixBoot detected...")
 
         BOOTLOADER_INFO[_os]["DefaultBootDevice"] = "Unknown"
 
@@ -613,21 +725,28 @@ def get_bootloaders():
 
         else:
             #Bootloader's configuration is missing.
-            logger.error("get_bootloaders(): "+_os+"'s bootloader configuration is missing. A reinstall will be required for that bootloader...")
+            logger.error("get_bootloaders(): "+_os+"'s bootloader configuration is missing. A "
+                         + "reinstall will be required for that bootloader...")
 
         #We have the partition, so now find the OS that resides on that partition.
         CoreStartupTools.match_partition_to_os(_os)
 
         #Log if we couldn't match them.
         if BOOTLOADER_INFO[_os]["DefaultOS"] == "Unknown":
-            logger.warning("get_bootloaders(): Couldn't match! We will instead use the first OS in the list as the default OS, which is "+SYSTEM_INFO["ModifyableOSs"][0]+"...")
+            logger.warning("get_bootloaders(): Couldn't match! We will instead use the first OS "
+                           + "in the list as the default OS, which is "
+                           + SYSTEM_INFO["ModifyableOSs"][0]+"...")
+
             BOOTLOADER_INFO[_os]["DefaultOS"] = SYSTEM_INFO["ModifyableOSs"][0]
 
         #Set this.
         BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"] = BOOTLOADER_INFO[_os]["DefaultOS"]
 
 def final_check():
-    """Check for any conflicting options, and warn the user of any potential pitfalls."""
+    """
+    Check for any conflicting options, and warn the user of any potential pitfalls.
+    """
+
     #Check and warn about conflicting settings.
     #Warn if any OSs aren't modifyable.
     unmodifyable_oss = []
@@ -637,9 +756,11 @@ def final_check():
             unmodifyable_oss.append(_os+", because "+BOOTLOADER_INFO[_os]["Comments"])
 
     if unmodifyable_oss != []:
-        DialogTools.show_msg_dlg(message="Some of the OSs found on your system cannot be modified! These are:\n\n"+'\n'.join(unmodifyable_oss)+"\n\nClick okay to continue.")
+        DialogTools.show_msg_dlg(message="Some of the OSs found on your system cannot be "
+                                 + "modified! These are:\n\n"+'\n'.join(unmodifyable_oss)
+                                 + "\n\nClick okay to continue.")
 
-    #Warn if any bootloaders need reinstalling.
+    #Warn if any bootloaders need reinstalling. TODO Does this work? Can it be improved?
     need_reinstalling = []
 
     for _os in BOOTLOADER_INFO:
@@ -647,4 +768,8 @@ def final_check():
             need_reinstalling.append(_os)
 
     if need_reinstalling != []:
-        DialogTools.show_msg_dlg(message="Some of the OSs found on your system have damaged bootloaders! These are:\n\n"+'\n'.join(need_reinstalling)+"\n\nPlease reinstall the bootloaders for these operating systems using \"Bootloader Options\".\n\nClick okay to continue.")
+        DialogTools.show_msg_dlg(message="Some of the OSs found on your system have damaged "
+                                 + "bootloaders! These are:\n\n"+'\n'.join(need_reinstalling)
+                                 + "\n\nPlease reinstall the bootloaders for these operating "
+                                 + "systems using \"Bootloader Options\".\n\nClick okay to "
+                                 + "continue.")

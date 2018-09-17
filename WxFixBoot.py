@@ -18,7 +18,8 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+#Do future imports to continue python 2 support.
+#Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -90,7 +91,8 @@ def usage():
 #If this isn't running as root, relaunch.
 if not os.geteuid() == 0:
     subprocess.Popen(["/usr/share/wxfixboot/AuthenticationDialog.py"])
-    sys.exit("\nSorry, WxFixBoot must be run with root privileges.\nRestarting as Root...")
+    sys.exit("\nSorry, WxFixBoot must be run with root privileges. "
+             + "\nRestarting as Root...")
 
 #Set up according to cmdline options.
 try:
@@ -105,7 +107,10 @@ except getopt.GetoptError as err:
 
 #Set up logging.
 logger = logging.getLogger('WxFixBoot '+VERSION)
-logging.basicConfig(filename='/tmp/wxfixboot.log', format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+logging.basicConfig(filename='/tmp/wxfixboot.log',
+                    format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
+                    datefmt='%d/%m/%Y %I:%M:%S %p')
+
 logger.setLevel(logging.DEBUG)
 
 #Set restarting to false.
@@ -190,9 +195,11 @@ class InitialPanel(wx.Panel):
 class InitialWindow(wx.Frame):
     def __init__(self):
         """Initialises InitialWindow"""
-        wx.Frame.__init__(self, parent=None, title="WxFixBoot", size=(600,420), style=wx.SIMPLE_BORDER)
+        wx.Frame.__init__(self, parent=None, title="WxFixBoot",
+                          size=(600, 420), style=wx.SIMPLE_BORDER)
+
         self.panel = InitialPanel(self)
-        self.SetClientSize(wx.Size(600,420))
+        self.SetClientSize(wx.Size(600, 420))
 
         if RESTARTING is False:
             print("WxFixBoot Version "+VERSION+" Starting...")
@@ -217,7 +224,8 @@ class InitialWindow(wx.Frame):
         #Setup sizers.
         self.setup_sizers()
 
-        #Start the Initalization Thread, which performs all necessary startup scripts and checks, and let it know this is the first start.
+        #Start the Initalization Thread, which performs all necessary startup
+        #scripts and checks, and let it know this is the first start.
         logger.debug("Starting InitThread()...")
 
         ProgressTextHandlerThread(self)
@@ -237,7 +245,7 @@ class InitialWindow(wx.Frame):
     def setup_sizers(self):
         """Setup sizers for InitialWindow"""
         main_sizer = wx.BoxSizer(wx.VERTICAL)
-        main_sizer.Add((50,50), 10, wx.EXPAND)
+        main_sizer.Add((50, 50), 10, wx.EXPAND)
         main_sizer.Add(self.progress_text, 1, wx.CENTER|wx.BOTTOM|wx.LEFT|wx.RIGHT, 10)
         main_sizer.Add(self.progress_bar, 1, wx.BOTTOM|wx.LEFT|wx.RIGHT|wx.EXPAND, 10)
 
@@ -270,7 +278,13 @@ class InitialWindow(wx.Frame):
         logger.info("Closing Initial Window and Starting Main Window...")
 
         #Show the user some important information
-        dlg = wx.MessageDialog(self.panel, "Please make sure you have a working internet connection before performing any bootloader operations. Thank you.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+        dlg = wx.MessageDialog(self.panel, "Please make sure you have a working "
+                               + "internet connection before performing any "
+                               + "bootloader operations. Thank you.",
+                               "WxFixBoot - Information",
+                               style=wx.OK | wx.ICON_INFORMATION,
+                               pos=wx.DefaultPosition)
+
         dlg.ShowModal()
         dlg.Destroy()
 
@@ -279,7 +293,7 @@ class InitialWindow(wx.Frame):
         self.Destroy()
 
         #Start MainFrame.
-        main_gui.Show(True)    
+        main_gui.Show(True)
 
 #End Initialization Frame.
 #Begin Progress Text Handler Thread.
@@ -296,8 +310,9 @@ class ProgressTextHandlerThread(threading.Thread):
 
     def run(self):
         """Distract the user with some text effects on the Initial Window.
-        For 10 seconds of the same message, make dots build up to 3 dots and back in front of the text.
-        After 10 seconds of same message, state that WxFixBoot is still starting up, and to be patient."""
+        For 10 seconds of the same message, make dots build up to 3 dots and back after the text.
+        After 10 seconds of same message, state that WxFixBoot is still starting up,
+        and to be patient."""
 
         half_second_counter = 0
         message = ""
@@ -355,8 +370,14 @@ class InitThread(threading.Thread):
             self.main_code()
 
         except Exception:
-            logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while starting WxFixBoot. Warning user and exiting.")
-            CoreTools.emergency_exit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile starting up!")
+            logger.critical("Unexpected error \n\n"
+                            + unicode(traceback.format_exc())
+                            + "\n\n while starting WxFixBoot. "
+                            + "Warning user and exiting.")
+
+            CoreTools.emergency_exit("There was an unexpected error: \n\n"
+                                     + unicode(traceback.format_exc())
+                                     + "\n\nWhile starting up!")
 
     def main_code(self):
         """Create the temporary mount point folder and set some default settings."""
@@ -386,7 +407,10 @@ class InitThread(threading.Thread):
         if os.path.isdir("/tmp/wxfixboot/mountpoints"):
             #Check nothing is using it.
             if "/tmp/wxfixboot/mountpoints" in CoreTools.start_process("mount", return_output=True)[1]:
-                CoreTools.emergency_exit("There are mounted filesystems in /tmp/wxfixboot/mountpoints, WxFixBoot's temporary mountpoints directory! Please unmount any filesystems there and try again.")
+                CoreTools.emergency_exit("There are mounted filesystems in "
+                                         + "/tmp/wxfixboot/mountpoints, WxFixBoot's temporary "
+                                         + "mountpoints directory! Please unmount any filesystems "
+                                         + "there and try again.") #FIXME Handle this automatically if possible.
 
             shutil.rmtree("/tmp/wxfixboot/mountpoints")
 
@@ -463,10 +487,15 @@ class InitThread(threading.Thread):
 
         #Check if any modifyable Linux installations were found.
         if not SYSTEM_INFO["ModifyableOSs"]:
-            logger.critical("InitThread(): No modifyable Linux installations found! If you think this is incorrect, please file a bug or ask a question on WxFixBoot's launchpad page. Exiting...")
+            logger.critical("InitThread(): No modifyable Linux installations found! If you think "
+                            + "this is incorrect, please file a bug or ask a question on "
+                            + "WxFixBoot's launchpad page. Exiting...")
 
             #Exit.
-            CoreTools.emergency_exit("You don't appear to have any modifyable Linux installations on your hard disks. If you think this is incorrect, please file a bug or ask a question on WxFixBoot's launchpad page.")
+            CoreTools.emergency_exit("You don't appear to have any modifyable Linux installations "
+                                     + "on your hard disks. If you think this is incorrect, "
+                                     + "please file a bug or ask a question on WxFixBoot's "
+                                     + "launchpad page.") #FIXME Link.
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
@@ -486,9 +515,11 @@ class InitThread(threading.Thread):
 class MainWindow(wx.Frame):
     def __init__(self):
         """Initialise MainWindow"""
-        wx.Frame.__init__(self,None,title="WxFixBoot", size=(400,300),style=wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, None, title="WxFixBoot", size=(400, 300),
+                          style=wx.DEFAULT_FRAME_STYLE)
+
         self.panel = wx.Panel(self)
-        self.SetClientSize(wx.Size(400,300))
+        self.SetClientSize(wx.Size(400, 300))
 
         #Set the frame's icon.
         wx.Frame.SetIcon(self, APPICON)
@@ -529,7 +560,9 @@ class MainWindow(wx.Frame):
 
     def create_text(self):
         """Create the text"""
-        self.settings_text = wx.StaticText(self.panel, -1, "Please set the basic settings here first.")
+        self.settings_text = wx.StaticText(self.panel, -1,
+                                           "Please set the basic settings here first.")
+
         self.welcome_text = wx.StaticText(self.panel, -1, "Welcome to WxFixBoot!")
 
         #Add an image.
@@ -550,8 +583,12 @@ class MainWindow(wx.Frame):
 
     def create_checkboxes(self):
         """Create the checkboxes"""
-        self.bad_sector_check_check_box = wx.CheckBox(self.panel, -1, "Check All File Systems (thorough)")
-        self.check_filesystems_check_box = wx.CheckBox(self.panel, -1, "Check All File Systems (quick)")
+        self.bad_sector_check_check_box = wx.CheckBox(self.panel, -1,
+                                                      "Check All File Systems (thorough)")
+
+        self.check_filesystems_check_box = wx.CheckBox(self.panel, -1,
+                                                       "Check All File Systems (quick)")
+
         self.fullverbose_checkbox = wx.CheckBox(self.panel, -1, "Show diagnostic terminal output")
         self.make_summary_check_box = wx.CheckBox(self.panel, -1, "Save System Report To File")
         self.log_output_checkbox = wx.CheckBox(self.panel, -1, "Save terminal output in Report")
@@ -565,26 +602,34 @@ class MainWindow(wx.Frame):
    
         #Adding Menu Items.
         self.menu_about = helpmenu.Append(wx.ID_ABOUT, "&About", "Information about this program")
-        self.menu_exit = filemenu.Append(wx.ID_EXIT,"&Exit", "Terminate this program")
-        self.menu_systeminfo = viewmenu.Append(wx.ID_ANY,"&System Information", "Information about all detected disks, OSs, and Bootloaders")
-        self.menu_privacy_policy = viewmenu.Append(wx.ID_ANY,"&Privacy Policy", "View WxFixBoot's privacy policy")
+        self.menu_exit = filemenu.Append(wx.ID_EXIT, "&Exit", "Terminate this program")
+        self.menu_systeminfo = viewmenu.Append(wx.ID_ANY, "&System Information", "Information about all detected disks, OSs, and Bootloaders")
+        self.menu_privacy_policy = viewmenu.Append(wx.ID_ANY, "&Privacy Policy",
+                                                   "View WxFixBoot's privacy policy")
+
         self.menu_bootloader_options = editmenu.Append(wx.ID_PREFERENCES, "&Bootloader Options", "All Bootloader Options used to modify/fix your system")
 
         #Creating the menubar.
         menubar = wx.MenuBar()
 
         #Adding menus to the MenuBar
-        menubar.Append(filemenu,"&File")
-        menubar.Append(editmenu,"&Edit")
-        menubar.Append(viewmenu,"&View")
-        menubar.Append(helpmenu,"&Help")
+        menubar.Append(filemenu, "&File")
+        menubar.Append(editmenu, "&Edit")
+        menubar.Append(viewmenu, "&View")
+        menubar.Append(helpmenu, "&Help")
 
         #Adding the MenuBar to the Frame content.
         self.SetMenuBar(menubar)
 
     def on_checkbox(self, event=None): #pylint: disable=unused-argument
-        """Called when one of the checkboxes is checked/unchecked to make sure the options stay valid"""
-        logger.debug("MainWindow().on_checkbox(): Checkboxes have been changed. Making sure options are valid and don't conflict...")
+        """
+        Called when one of the checkboxes is checked/unchecked,
+        to make sure the options stay valid
+        """
+
+        logger.debug("MainWindow().on_checkbox(): Checkboxes have been changed. "
+                     + "Making sure options are valid and don't conflict...")
+
         #Bad Sector Check Choicebox
         if self.bad_sector_check_check_box.IsChecked():
             self.check_filesystems_check_box.Disable()
@@ -664,8 +709,8 @@ class MainWindow(wx.Frame):
         aboutbox.SetIcon(APPICON)
         aboutbox.Version = VERSION
         aboutbox.Copyright = "(C) 2013-2018 Hamish McIntyre-Bhatty"
-        aboutbox.Description = "Utility to fix the bootloader on a\ncomputer quickly\n\nPython version " \
-                               + sys.version.split()[0] \
+        aboutbox.Description = "Utility to fix the bootloader on a\ncomputer quickly " \
+                               + "\n\nPython version "+sys.version.split()[0] \
                                + "\nwxPython version " + wx.version()
 
         aboutbox.WebSite = ("https://www.hamishmb.com", "My Website")
@@ -717,7 +762,7 @@ class MainWindow(wx.Frame):
 
         #Get the sizer set up for the frame.
         self.panel.SetSizer(main_sizer)
-        main_sizer.SetMinSize(wx.Size(400,300))
+        main_sizer.SetMinSize(wx.Size(400, 300))
         main_sizer.SetSizeHints(self)
 
     def bind_events(self): 
@@ -769,7 +814,9 @@ class MainWindow(wx.Frame):
         #Save output checkbox.
         SETTINGS["SaveOutput"] = self.log_output_checkbox.IsChecked()
 
-        logger.debug("MainWindow().save_main_options(): MainWindow options saved! Counting operations to do...")
+        logger.debug("MainWindow().save_main_options(): MainWindow options saved! "
+                     + "Counting operations to do...")
+
         self.count_operations()
 
     def count_operations(self):
@@ -780,41 +827,52 @@ class MainWindow(wx.Frame):
         #List to contain operations (and their functions) to run.
         OPERATIONS = []
 
-        #Run a series of if statements to determine what operations to do, which order to do them in, and the total number to do.
+        #Run a series of if statements to determine what operations to do,
+        #which order to do them in, and the total number to do.
         #Do essential processes first.
         if SETTINGS["QuickFSCheck"]:
-            OPERATIONS.append((EssentialBackendTools.filesystem_check, "Quick", Tools.BackendTools.main.manage_bootloader))
+            OPERATIONS.append((EssentialBackendTools.filesystem_check, "Quick",
+                               Tools.BackendTools.main.manage_bootloader))
+
             logger.info("MainWindow().count_operations(): Added EssentialBackendTools.filesystem_check to OPERATIONS...")
 
         if SETTINGS["BadSectorCheck"]:
-            OPERATIONS.append((EssentialBackendTools.filesystem_check, "Thorough", Tools.BackendTools.main.manage_bootloader))
+            OPERATIONS.append((EssentialBackendTools.filesystem_check, "Thorough",
+                               Tools.BackendTools.main.manage_bootloader))
+
             logger.info("MainWindow().count_operations(): Added EssentialBackendTools.filesystem_check to OPERATIONS...")
 
         #Now do other processes.
         for _os in BOOTLOADER_INFO:
             if BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"]:
                 OPERATIONS.append((MainBackendTools.manage_bootloader, _os))
-                logger.info("MainWindow().count_operations(): Added (MainBackendTools.manage_bootloader, "+_os+") to OPERATIONS...")
+                logger.info("MainWindow().count_operations(): Added (MainBackendTools."
+                            +"manage_bootloader, "+_os+") to OPERATIONS...")
 
         NUMBER_OF_OPERATIONS = len(OPERATIONS)
 
         #Log gathered operations to do, and the number (verbose mode, default).
-        logger.info("MainWindow().count_operations(): Number of operations: "+unicode(NUMBER_OF_OPERATIONS))
+        logger.info("MainWindow().count_operations(): Number of operations: "
+                    + unicode(NUMBER_OF_OPERATIONS))
 
         if NUMBER_OF_OPERATIONS == 0:
-            logger.info("MainWindow().count_operations(): No operations to do. Disabling self.apply_operations_button...")
+            logger.info("MainWindow().count_operations(): No operations to do. "
+                        + "Disabling self.apply_operations_button...")
             self.apply_operations_button.SetLabel("No Operations Enabled")
             self.apply_operations_button.Disable()
 
         else:
-            logger.info("MainWindow().count_operations(): There are operations to do. Enabling self.apply_operations_button...")
+            logger.info("MainWindow().count_operations(): There are operations to do. "
+                        + "Enabling self.apply_operations_button...")
             self.apply_operations_button.SetLabel("Apply All Operations")
             self.apply_operations_button.Enable()
 
     def on_exit(self, event=None): #pylint: disable=unused-argument
         """Shut down."""
         logger.info("MainWindow().on_exit(): Double-checking the exit attempt with the user...")
-        dlg = wx.MessageDialog(self.panel, 'Are you sure you want to exit?', 'WxFixBoot - Question!', wx.YES_NO | wx.ICON_QUESTION)
+        dlg = wx.MessageDialog(self.panel, 'Are you sure you want to exit?',
+                               'WxFixBoot - Question!', wx.YES_NO | wx.ICON_QUESTION)
+
         answer = dlg.ShowModal()
         dlg.Destroy()
 
@@ -826,36 +884,53 @@ class MainWindow(wx.Frame):
             logging.shutdown()
 
             #Prompt user to save the log file.
-            dlg = wx.MessageDialog(self.panel, "Do you want to keep WxFixBoot's log file? For privacy reasons, WxFixBoot will delete its log file when closing. If you want to save it, which is helpful for debugging if something went wrong, click yes, and otherwise click no.", "WxFixBoot - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
+            dlg = wx.MessageDialog(self.panel, "Do you want to keep WxFixBoot's log file? "
+                                   + "For privacy reasons, WxFixBoot will delete its log file "
+                                   + "when closing. If you want to save it, which is helpful "
+                                   + "for debugging if something went wrong, click yes, and "
+                                   + "otherwise click no.", "WxFixBoot - Question",
+                                   style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
+
             answer = dlg.ShowModal()
             dlg.Destroy()
 
             if answer == wx.ID_YES:
                 #Ask the user where to save it.
-                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home", wildcard="Log Files (*.log)|*.log" , style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home",
+                                    wildcard="Log Files (*.log)|*.log",
+                                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+
                 answer = dlg.ShowModal()
                 _file = dlg.GetPath()
                 dlg.Destroy()
 
                 if answer == wx.ID_OK:
-                    #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
+                    #Copy it to the specified path, using a one-liner, and don't bother
+                    #handling any errors, because this is run as root.
                     CoreTools.start_process("cp /tmp/wxfixboot.log "+_file)
 
-                    dlg = wx.MessageDialog(self.panel, 'Done! WxFixBoot will now exit.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                    dlg = wx.MessageDialog(self.panel, 'Done! WxFixBoot will now exit.',
+                                           'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
                     dlg.ShowModal()
                     dlg.Destroy()
 
                 else:
-                    dlg = wx.MessageDialog(self.panel, 'Okay, WxFixBoot will now exit without saving the log file.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                    dlg = wx.MessageDialog(self.panel, "Okay, WxFixBoot will now exit without "
+                                           + "saving the log file.", 'WxFixBoot - Information',
+                                           wx.OK | wx.ICON_INFORMATION)
+
                     dlg.ShowModal()
                     dlg.Destroy()
 
             else:
-                dlg = wx.MessageDialog(self.panel, 'Okay, WxFixBoot will now exit without saving the log file.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                dlg = wx.MessageDialog(self.panel, "Okay, WxFixBoot will now exit without "
+                                       + "saving the log file.", 'WxFixBoot - Information',
+                                       wx.OK | wx.ICON_INFORMATION)
+
                 dlg.ShowModal()
                 dlg.Destroy()
 
-            #Delete the log file, and don't bother handling any errors, because this is run as root.
+            #Delete the log file, and don't bother handling any errors, because this is run as root. FIXME It won't be soon, and not smart anyway.
             os.remove('/tmp/wxfixboot.log')
 
             #If we're using wayland, remove the workaround we have to use to make this work.
@@ -888,7 +963,10 @@ class SystemInfoPage1(wx.Panel):
         NoteBookSharedFunctions.bind_events(self)
 
         logger.debug("SystemInfoPage1().__init__(): Updating list ctrl with Disk info...")
-        NoteBookSharedFunctions.update_list_ctrl(self, headings=["Name", "Type", "Vendor", "Product", "Capacity", "Description"], dictionary=DISK_INFO)
+        NoteBookSharedFunctions.update_list_ctrl(self, headings=["Name", "Type", "Vendor",
+                                                                 "Product", "Capacity",
+                                                                 "Description"],
+                                                 dictionary=DISK_INFO)
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
@@ -925,7 +1003,10 @@ class SystemInfoPage2(wx.Panel):
         NoteBookSharedFunctions.bind_events(self)
 
         logger.debug("SystemInfoPage2().__init__(): Updating list ctrl with Disk info...")
-        NoteBookSharedFunctions.update_list_ctrl(self, headings=["Name", "Type", "Partitions", "Flags", "Partitioning", "FileSystem"], dictionary=DISK_INFO)
+        NoteBookSharedFunctions.update_list_ctrl(self, headings=["Name", "Type", "Partitions",
+                                                                 "Flags", "Partitioning",
+                                                                 "FileSystem"],
+                                                 dictionary=DISK_INFO)
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
@@ -962,7 +1043,8 @@ class SystemInfoPage3(wx.Panel):
         NoteBookSharedFunctions.bind_events(self)
 
         logger.debug("SystemInfoPage3().__init__(): Updating list ctrl with Disk info...")
-        NoteBookSharedFunctions.update_list_ctrl(self, headings=["Name", "Type", "ID", "UUID"], dictionary=DISK_INFO)
+        NoteBookSharedFunctions.update_list_ctrl(self, headings=["Name", "Type", "ID", "UUID"],
+                                                 dictionary=DISK_INFO)
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
@@ -997,7 +1079,10 @@ class SystemInfoPage4(wx.Panel):
         NoteBookSharedFunctions.bind_events(self)
 
         logger.debug("SystemInfoPage4().__init__(): Updating list ctrl with OS Info...")
-        NoteBookSharedFunctions.update_list_ctrl(self, headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager"], dictionary=OS_INFO)
+        NoteBookSharedFunctions.update_list_ctrl(self, headings=["Name", "IsCurrentOS",
+                                                                 "Arch", "Partition",
+                                                                 "PackageManager"],
+                                                 dictionary=OS_INFO)
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
@@ -1033,7 +1118,9 @@ class SystemInfoPage5(wx.Panel):
         NoteBookSharedFunctions.bind_events(self)
 
         logger.debug("SystemInfoPage5().__init__(): Updating list ctrl with Bootloader Info...")
-        NoteBookSharedFunctions.update_list_ctrl(self, headings=["OSName", "Bootloader", "BootDisk", "DefaultOS"], dictionary=BOOTLOADER_INFO)
+        NoteBookSharedFunctions.update_list_ctrl(self, headings=["OSName", "Bootloader",
+                                                                 "BootDisk", "DefaultOS"],
+                                                 dictionary=BOOTLOADER_INFO)
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
@@ -1068,7 +1155,10 @@ class SystemInfoPage6(wx.Panel):
         NoteBookSharedFunctions.bind_events(self)
 
         logger.debug("SystemInfoPage6().__init__(): Updating list ctrl with Bootloader Info...")
-        NoteBookSharedFunctions.update_list_ctrl(self, headings=["OSName", "Timeout", "GlobalKernelOptions", "IsModifyable", "Comments"], dictionary=BOOTLOADER_INFO)
+        NoteBookSharedFunctions.update_list_ctrl(self, headings=["OSName", "Timeout",
+                                                                 "GlobalKernelOptions",
+                                                                 "IsModifyable", "Comments"],
+                                                 dictionary=BOOTLOADER_INFO)
 
     def on_size(self, event=None): #pylint: disable=unused-argument
         """Auto resize the ListCtrl columns"""
@@ -1088,9 +1178,11 @@ class SystemInfoPage6(wx.Panel):
 class SystemInfoWindow(wx.Frame):
     def __init__(self, parent_window):
         """Initialize SystemInfoWindow"""
-        wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - System Information", size=(780,310), style=wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - System Information",
+                          size=(780, 310), style=wx.DEFAULT_FRAME_STYLE)
+
         self.panel = wx.Panel(self)
-        self.SetClientSize(wx.Size(780,310))
+        self.SetClientSize(wx.Size(780, 310))
         self.parent_window = parent_window
         wx.Frame.SetIcon(self, APPICON)
 
@@ -1114,7 +1206,7 @@ class SystemInfoWindow(wx.Frame):
         main_sizer = wx.BoxSizer()
         main_sizer.Add(self.notebook, 1, wx.EXPAND)
         self.panel.SetSizer(main_sizer)
-        main_sizer.SetMinSize(wx.Size(780,310))
+        main_sizer.SetMinSize(wx.Size(780, 310))
         main_sizer.SetSizeHints(self)
 
         self.bind_events()
@@ -1138,9 +1230,11 @@ class SystemInfoWindow(wx.Frame):
 class PrivPolWindow(wx.Frame):
     def __init__(self, parent_window):
         """Initialize PrivPolWindow"""
-        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Privacy Policy", size=(750,400), style=wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Privacy Policy",
+                          size=(750, 400), style=wx.DEFAULT_FRAME_STYLE)
+
         self.panel = wx.Panel(self)
-        self.SetClientSize(wx.Size(750,400))
+        self.SetClientSize(wx.Size(750, 400))
         self.parent_window = parent_window
         wx.Frame.SetIcon(self, APPICON)
 
@@ -1185,7 +1279,7 @@ class PrivPolWindow(wx.Frame):
 
         #Get the sizer set up for the frame.
         self.panel.SetSizer(main_sizer)
-        main_sizer.SetMinSize(wx.Size(750,400))
+        main_sizer.SetMinSize(wx.Size(750, 400))
         main_sizer.SetSizeHints(self)
 
     def bind_events(self):
@@ -1202,9 +1296,12 @@ class PrivPolWindow(wx.Frame):
 class BootloaderOptionsWindow(wx.Frame):
     def __init__(self, parent_window):
         """Initialise bootloader options window"""
-        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Bootloader Options", size=(400,200), style=wx.DEFAULT_FRAME_STYLE)
+        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow,
+                          title="WxFixBoot - Bootloader Options", size=(400, 200),
+                          style=wx.DEFAULT_FRAME_STYLE)
+
         self.panel = wx.Panel(self)
-        self.SetClientSize(wx.Size(800,800))
+        self.SetClientSize(wx.Size(800, 800))
         self.parent_window = parent_window
         wx.Frame.SetIcon(self, APPICON)
 
@@ -1225,7 +1322,8 @@ class BootloaderOptionsWindow(wx.Frame):
 
         wx.CallLater(500, self.on_oschoice_change, startup=True)
 
-        #Let user know they can specify a timeout of 0 seconds to hide the boot menu, if they have only 1 (detected) OS.
+        #Let user know they can specify a timeout of 0 seconds to hide the boot menu,
+        #if they have only 1 (detected) OS.
         if len(OS_INFO) == 1:
             wx.CallLater(500, self.display_timeoutinfo_message)
 
@@ -1233,7 +1331,11 @@ class BootloaderOptionsWindow(wx.Frame):
 
     def display_timeoutinfo_message(self):
         """Displays an informational message to the user if they only have 1 detected OS."""
-        dlg = wx.MessageDialog(self.panel, "WxFixBoot only detected one Operating System on your computer. You can hide your boot menu entirely, if you wish, by selecting a bootloader timeout of 0 seconds.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION)
+        dlg = wx.MessageDialog(self.panel, "WxFixBoot only detected one Operating System on "
+                               + "your computer. You can hide your boot menu entirely, if you "
+                               + "wish, by selecting a bootloader timeout of 0 seconds.",
+                               "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION)
+
         dlg.ShowModal()
         dlg.Destroy()
 
@@ -1248,7 +1350,9 @@ class BootloaderOptionsWindow(wx.Frame):
         self.defaultos_text = wx.StaticText(self.panel, -1, "Default OS to boot:")
 
         #Advanced Options.
-        self.advanced_options_text = wx.lib.stattext.GenStaticText(self.panel, -1, "Advanced Options")
+        self.advanced_options_text = wx.lib.stattext.GenStaticText(self.panel, -1,
+                                                                   "Advanced Options")
+
         self.new_kerneloptions_text = wx.StaticText(self.panel, -1, "New kernel options:")
         self.backup_bootloader_text = wx.StaticText(self.panel, -1, "Backup to:")
         self.restore_bootloader_text = wx.StaticText(self.panel, -1, "Restore from:")
@@ -1263,8 +1367,12 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Advanced Options.
         self.new_bootloader_choice = wx.Choice(self.panel, -1, choices=[])
-        self.backup_bootloader_choice = wx.Choice(self.panel, -1, choices=["-- Please Select --", "Specify File Path..."])
-        self.restore_bootloader_choice = wx.Choice(self.panel, -1, choices=["-- Please Select --", "Specify File Path..."])
+        self.backup_bootloader_choice = wx.Choice(self.panel, -1, choices=["-- Please Select --",
+                                                                           "Specify File Path..."])
+
+        self.restore_bootloader_choice = wx.Choice(self.panel, -1,
+                                                   choices=["-- Please Select --",
+                                                            "Specify File Path..."])
 
     def create_checkboxes(self):
         """Create the check boxes"""
@@ -1275,9 +1383,14 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Advanced Options.
         self.keep_kerneloptions_checkbox = wx.CheckBox(self.panel, -1, "")
-        self.install_new_bootloader_checkbox = wx.CheckBox(self.panel, -1, "Install a New Bootloader")
-        self.backup_bootloader_checkbox = wx.CheckBox(self.panel, -1, "Backup this OS's bootloader config")
-        self.restore_bootloader_checkbox = wx.CheckBox(self.panel, -1, "Restore this OS's bootloader config")
+        self.install_new_bootloader_checkbox = wx.CheckBox(self.panel, -1,
+                                                           "Install a New Bootloader")
+
+        self.backup_bootloader_checkbox = wx.CheckBox(self.panel, -1,
+                                                      "Backup this OS's bootloader config")
+
+        self.restore_bootloader_checkbox = wx.CheckBox(self.panel, -1,
+                                                       "Restore this OS's bootloader config")
 
     def create_buttons(self):
         """Create the buttons"""
@@ -1289,7 +1402,7 @@ class BootloaderOptionsWindow(wx.Frame):
         """Create all other widgets"""
         #Bootloader timeout spinner.
         self.bootloader_timeout_spinner = wx.SpinCtrl(self.panel, -1, "")
-        self.bootloader_timeout_spinner.SetRange(0,100)
+        self.bootloader_timeout_spinner.SetRange(0, 100)
 
         #Arrows.
         img1 = wx.Image("/usr/share/wxfixboot/images/ArrowDown.png", wx.BITMAP_TYPE_PNG)
@@ -1308,8 +1421,12 @@ class BootloaderOptionsWindow(wx.Frame):
         self.arrow3 = wx.lib.statbmp.GenStaticBitmap(self.panel, -1, self.down_arrow_image)
 
         #List Ctrl.
-        self.list_ctrl = wx.ListCtrl(self.panel, -1, style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_VRULES)
-        NoteBookSharedFunctions.update_list_ctrl(self, headings=["Name", "IsCurrentOS", "Arch", "Partition", "PackageManager"], dictionary=OS_INFO)
+        self.list_ctrl = wx.ListCtrl(self.panel, -1,
+                                     style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_VRULES)
+
+        NoteBookSharedFunctions.update_list_ctrl(self, headings=["Name", "IsCurrentOS", "Arch",
+                                                                 "Partition", "PackageManager"],
+                                                 dictionary=OS_INFO)
 
         #Text ctrl.
         self.new_kerneloptions_textctrl = wx.TextCtrl(self.panel, -1, "")
@@ -1334,30 +1451,35 @@ class BootloaderOptionsWindow(wx.Frame):
         osinfo_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to osinfo_sizer.
-        osinfo_sizer.Add((5,5), 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        osinfo_sizer.Add((5, 5), 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
         osinfo_sizer.Add(self.os_info_text, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
         osinfo_sizer.Add(self.arrow1, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        osinfo_sizer.Add((5,5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        osinfo_sizer.Add((5, 5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         basic_options_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to basic_options_sizer.
-        basic_options_sizer.Add((5,5), 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        basic_options_sizer.Add((5, 5), 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
         basic_options_sizer.Add(self.basic_options_text, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
         basic_options_sizer.Add(self.arrow2, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        basic_options_sizer.Add((5,5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        basic_options_sizer.Add((5, 5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         self.fix_and_update_bootloader_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to fix_and_update_bootloader_sizer.
-        self.fix_and_update_bootloader_sizer.Add(self.reinstall_bootloader_checkbox, 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        self.fix_and_update_bootloader_sizer.Add(self.update_bootloader_checkbox, 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.fix_and_update_bootloader_sizer.Add(self.reinstall_bootloader_checkbox, 1,
+                                                 wx.RIGHT|wx.ALIGN_CENTER, 5)
+
+        self.fix_and_update_bootloader_sizer.Add(self.update_bootloader_checkbox, 1,
+                                                 wx.LEFT|wx.ALIGN_CENTER, 5)
 
         self.timeout_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to timeout_sizer.
-        self.timeout_sizer.Add(self.keep_bootloader_timeout_checkbox, 3, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        self.timeout_sizer.Add((5,5), 1, wx.RIGHT|wx.LEFT, 5)
+        self.timeout_sizer.Add(self.keep_bootloader_timeout_checkbox, 3,
+                               wx.RIGHT|wx.ALIGN_CENTER, 5)
+
+        self.timeout_sizer.Add((5, 5), 1, wx.RIGHT|wx.LEFT, 5)
         self.timeout_sizer.Add(self.new_timeout_text, 2, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
         self.timeout_sizer.Add(self.bootloader_timeout_spinner, 3, wx.LEFT|wx.ALIGN_CENTER, 5)
 
@@ -1370,38 +1492,58 @@ class BootloaderOptionsWindow(wx.Frame):
         advanced_options_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to advanced_options_sizer.
-        advanced_options_sizer.Add((5,5), 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        advanced_options_sizer.Add(self.advanced_options_text, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        advanced_options_sizer.Add((5, 5), 1, wx.RIGHT|wx.ALIGN_CENTER, 5)
+        advanced_options_sizer.Add(self.advanced_options_text, 0,
+                                   wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+
         advanced_options_sizer.Add(self.arrow3, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        advanced_options_sizer.Add((5,5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
+        advanced_options_sizer.Add((5, 5), 1, wx.LEFT|wx.ALIGN_CENTER, 5)
 
         self.kernel_options_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to kernel_options_sizer.
-        self.kernel_options_sizer.Add(self.keep_kerneloptions_checkbox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        self.kernel_options_sizer.Add(self.new_kerneloptions_text, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        self.kernel_options_sizer.Add(self.new_kerneloptions_textctrl, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.kernel_options_sizer.Add(self.keep_kerneloptions_checkbox, 2,
+                                      wx.RIGHT|wx.ALIGN_CENTER, 5)
+
+        self.kernel_options_sizer.Add(self.new_kerneloptions_text, 1,
+                                      wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        self.kernel_options_sizer.Add(self.new_kerneloptions_textctrl, 2,
+                                      wx.LEFT|wx.ALIGN_CENTER, 5)
 
         self.install_new_bootloader_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to install_new_bootloader_sizer.
-        self.install_new_bootloader_sizer.Add(self.install_new_bootloader_checkbox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        self.install_new_bootloader_sizer.Add((5,5), 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        self.install_new_bootloader_sizer.Add(self.new_bootloader_choice, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.install_new_bootloader_sizer.Add(self.install_new_bootloader_checkbox, 2,
+                                              wx.RIGHT|wx.ALIGN_CENTER, 5)
+
+        self.install_new_bootloader_sizer.Add((5, 5), 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.install_new_bootloader_sizer.Add(self.new_bootloader_choice, 2,
+                                              wx.LEFT|wx.ALIGN_CENTER, 5)
 
         self.backup_bootloader_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to backup_bootloader_sizer.
-        self.backup_bootloader_sizer.Add(self.backup_bootloader_checkbox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        self.backup_bootloader_sizer.Add(self.backup_bootloader_text, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        self.backup_bootloader_sizer.Add(self.backup_bootloader_choice, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.backup_bootloader_sizer.Add(self.backup_bootloader_checkbox, 2,
+                                         wx.RIGHT|wx.ALIGN_CENTER, 5)
+
+        self.backup_bootloader_sizer.Add(self.backup_bootloader_text, 1,
+                                         wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        self.backup_bootloader_sizer.Add(self.backup_bootloader_choice, 2,
+                                         wx.LEFT|wx.ALIGN_CENTER, 5)
 
         self.restore_bootloader_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to restore_bootloader_sizer.
-        self.restore_bootloader_sizer.Add(self.restore_bootloader_checkbox, 2, wx.RIGHT|wx.ALIGN_CENTER, 5)
-        self.restore_bootloader_sizer.Add(self.restore_bootloader_text, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
-        self.restore_bootloader_sizer.Add(self.restore_bootloader_choice, 2, wx.LEFT|wx.ALIGN_CENTER, 5)
+        self.restore_bootloader_sizer.Add(self.restore_bootloader_checkbox, 2,
+                                          wx.RIGHT|wx.ALIGN_CENTER, 5)
+
+        self.restore_bootloader_sizer.Add(self.restore_bootloader_text, 1,
+                                          wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER, 5)
+
+        self.restore_bootloader_sizer.Add(self.restore_bootloader_choice, 2,
+                                          wx.LEFT|wx.ALIGN_CENTER, 5)
 
         bottom_button_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -1418,21 +1560,29 @@ class BootloaderOptionsWindow(wx.Frame):
         self.main_sizer.Add(self.system_info_button, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.main_sizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 10)
         self.main_sizer.Add(basic_options_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        self.main_sizer.Add(self.fix_and_update_bootloader_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.main_sizer.Add(self.fix_and_update_bootloader_sizer, 1,
+                            wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
         self.main_sizer.Add(self.timeout_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.main_sizer.Add(self.defaultos_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.main_sizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 10)
         self.main_sizer.Add(advanced_options_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.main_sizer.Add(self.kernel_options_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        self.main_sizer.Add(self.install_new_bootloader_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        self.main_sizer.Add(self.backup_bootloader_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        self.main_sizer.Add(self.restore_bootloader_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+        self.main_sizer.Add(self.install_new_bootloader_sizer, 1,
+                            wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+        self.main_sizer.Add(self.backup_bootloader_sizer, 1,
+                            wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+        self.main_sizer.Add(self.restore_bootloader_sizer, 1,
+                            wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
         self.main_sizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 10)
         self.main_sizer.Add(bottom_button_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
 
         #Get the sizer set up for the frame.
         self.panel.SetSizer(self.main_sizer)
-        self.main_sizer.SetMinSize(wx.Size(749,673))
+        self.main_sizer.SetMinSize(wx.Size(749, 673)) #TODO Why this weird size?
 
     def bind_events(self):
         """Bind all events for BootloaderOptionsWindow"""
@@ -1451,12 +1601,23 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Checkboxes.
         self.Bind(wx.EVT_CHECKBOX, self.on_timeout_checkbox, self.keep_bootloader_timeout_checkbox)
-        self.Bind(wx.EVT_CHECKBOX, self.on_update_or_reinstall_checkbox, self.reinstall_bootloader_checkbox)
-        self.Bind(wx.EVT_CHECKBOX, self.on_update_or_reinstall_checkbox, self.update_bootloader_checkbox)
-        self.Bind(wx.EVT_CHECKBOX, self.on_install_new_bootloader_checkbox, self.install_new_bootloader_checkbox)
-        self.Bind(wx.EVT_CHECKBOX, self.on_backup_bootloader_checkbox, self.backup_bootloader_checkbox)
-        self.Bind(wx.EVT_CHECKBOX, self.on_restore_bootloader_checkbox, self.restore_bootloader_checkbox)
-        self.Bind(wx.EVT_CHECKBOX, self.on_kerneloptions_checkbox, self.keep_kerneloptions_checkbox)
+        self.Bind(wx.EVT_CHECKBOX, self.on_update_or_reinstall_checkbox,
+                  self.reinstall_bootloader_checkbox)
+
+        self.Bind(wx.EVT_CHECKBOX, self.on_update_or_reinstall_checkbox,
+                  self.update_bootloader_checkbox)
+
+        self.Bind(wx.EVT_CHECKBOX, self.on_install_new_bootloader_checkbox,
+                  self.install_new_bootloader_checkbox)
+
+        self.Bind(wx.EVT_CHECKBOX, self.on_backup_bootloader_checkbox,
+                  self.backup_bootloader_checkbox)
+
+        self.Bind(wx.EVT_CHECKBOX, self.on_restore_bootloader_checkbox,
+                  self.restore_bootloader_checkbox)
+
+        self.Bind(wx.EVT_CHECKBOX, self.on_kerneloptions_checkbox,
+                  self.keep_kerneloptions_checkbox)
 
         #Buttons.
         self.Bind(wx.EVT_BUTTON, self.on_close, self.save_button)
@@ -1504,7 +1665,6 @@ class BootloaderOptionsWindow(wx.Frame):
         if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
             self.install_new_bootloader_checkbox.Disable()
 
-
     def set_gui_state(self, event=None): #pylint: disable=unused-argument
         """Set all the GUI element's states (enabled/disabled) for this OS"""
         _os = self.os_choice.GetStringSelection()
@@ -1528,19 +1688,33 @@ class BootloaderOptionsWindow(wx.Frame):
         """Set text labels for GUI elements"""
         _os = self.os_choice.GetStringSelection()
 
-        logger.debug("BootloaderOptionsWindow().set_text_labels(): Setting text labels for "+_os+"...")
-        self.keep_kerneloptions_checkbox.SetLabel("Keep "+BOOTLOADER_INFO[_os]["Bootloader"]+"'s existing kernel options")
-        self.install_new_bootloader_checkbox.SetLabel("Replace "+BOOTLOADER_INFO[_os]["Bootloader"]+" with:")
-        self.reinstall_bootloader_checkbox.SetLabel("Fix/Reinstall "+BOOTLOADER_INFO[_os]["Bootloader"])
-        self.update_bootloader_checkbox.SetLabel("Update "+BOOTLOADER_INFO[_os]["Bootloader"]+"'s Config")
-        self.keep_bootloader_timeout_checkbox.SetLabel("Keep "+BOOTLOADER_INFO[_os]["Bootloader"]+"'s existing menu timeout")
+        logger.debug("BootloaderOptionsWindow().set_text_labels(): "
+                     + "Setting text labels for "+_os+"...")
+
+        self.keep_kerneloptions_checkbox.SetLabel("Keep "+BOOTLOADER_INFO[_os]["Bootloader"]
+                                                  + "'s existing kernel options")
+
+        self.install_new_bootloader_checkbox.SetLabel("Replace "+BOOTLOADER_INFO[_os]["Bootloader"]
+                                                      + " with:")
+
+        self.reinstall_bootloader_checkbox.SetLabel("Fix/Reinstall "
+                                                    + BOOTLOADER_INFO[_os]["Bootloader"])
+
+        self.update_bootloader_checkbox.SetLabel("Update "+BOOTLOADER_INFO[_os]["Bootloader"]
+                                                 + "'s Config")
+
+        self.keep_bootloader_timeout_checkbox.SetLabel("Keep "+BOOTLOADER_INFO[_os]["Bootloader"]
+                                                       + "'s existing menu timeout")
+
         self.revert_os_changes_button.SetLabel("Revert Changes for "+_os)
 
     def on_oschoice_change(self, event=None, startup=False): #pylint: disable=unused-argument
         """Save and load new GUI settings and states in accordance with the OS choice change"""
-        logger.debug("BootloaderOptionsWindow().on_oschoice_change(): OS choice has changed. Saving and then loading settings...")
+        logger.debug("BootloaderOptionsWindow().on_oschoice_change(): OS choice has changed. "
+                     + "Saving and then loading settings...")
 
-        #Save settings when selecting a new choice, but not when this is called when the window is first opened.
+        #Save settings when selecting a new choice, but not when this is called
+        #when the window is first opened.
         if startup is False:
             self.save_settings(_os=SYSTEM_INFO["PreviousOSChoice"])
             self.save_gui_state(_os=SYSTEM_INFO["PreviousOSChoice"])
@@ -1557,7 +1731,11 @@ class BootloaderOptionsWindow(wx.Frame):
             if "ELILO" in choices:
                 choices.remove("ELILO")
 
-            dlg = wx.MessageDialog(self.panel, "This OS has no UEFI partition, so you will be unable to select a UEFI bootloader to install.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+            dlg = wx.MessageDialog(self.panel, "This OS has no UEFI partition, so you will be "
+                                   + "unable to select a UEFI bootloader to install.",
+                                   "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION,
+                                   pos=wx.DefaultPosition)
+
             dlg.ShowModal()
             dlg.Destroy()
 
@@ -1581,16 +1759,24 @@ class BootloaderOptionsWindow(wx.Frame):
         if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
             self.install_new_bootloader_checkbox.Disable()
 
-        #Warn the user not to do bootloader operations if the current bootloader is an EFI bootloader,
-        #but we couldn't find the OS's EFI partition.
+        #Warn the user not to do bootloader operations if the current bootloader is an
+        #EFI bootloader, but we couldn't find the OS's EFI partition.
         if (BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] in ("GRUB-UEFI", "ELILO")) and (OS_INFO[self.os_choice.GetStringSelection()]["EFIPartition"] == "Unknown"):
-            dlg = wx.MessageDialog(self.panel, "This OS has no UEFI partition, but you have a UEFI bootloader installed! Please don't do any bootloader operations on this operating system, or you may encounter errors.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
+            dlg = wx.MessageDialog(self.panel, "This OS has no UEFI partition, but you have a "
+                                   + "UEFI bootloader installed! Please don't do any bootloader "
+                                   + "operations on this operating system, or you may encounter "
+                                   + "errors.", "WxFixBoot - Warning",
+                                   style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
+
             dlg.ShowModal()
             dlg.Destroy()
 
         #Warn the user if we don't know what the bootloader is.
         if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "Unknown":
-            dlg = wx.MessageDialog(self.panel, "Couldn't determine the bootloader for this OS! It may be not fully installed or removed. If you want to fix this, please open the advanced options pulldown and replace the bootloader with one of the selections there.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
+            dlg = wx.MessageDialog(self.panel, "Couldn't determine the bootloader for this OS! "
+                                   + "It may be not fully installed or removed. If you want to "
+                                   + "fix this, please open the advanced options pulldown and "
+                                   + "replace the bootloader with one of the selections there.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
             dlg.ShowModal()
             dlg.Destroy()
 
@@ -1613,7 +1799,9 @@ class BootloaderOptionsWindow(wx.Frame):
             self.arrow1.SetBitmap(self.down_arrow_image)
 
             self.main_sizer.Insert(4, self.list_ctrl, 5, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.main_sizer.Insert(5, self.system_info_button, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.main_sizer.Insert(5, self.system_info_button, 1,
+                                   wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
             self.list_ctrl.Show()
             self.system_info_button.Show()
 
@@ -1656,9 +1844,14 @@ class BootloaderOptionsWindow(wx.Frame):
             else:
                 first_number = 6
 
-            self.main_sizer.Insert(first_number, self.fix_and_update_bootloader_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.main_sizer.Insert(first_number+1, self.timeout_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.main_sizer.Insert(first_number+2, self.defaultos_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.main_sizer.Insert(first_number, self.fix_and_update_bootloader_sizer,
+                                   1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+            self.main_sizer.Insert(first_number+1, self.timeout_sizer, 1,
+                                   wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+            self.main_sizer.Insert(first_number+2, self.defaultos_sizer, 1,
+                                   wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
 
             self.reinstall_bootloader_checkbox.Show()
             self.update_bootloader_checkbox.Show()
@@ -1711,10 +1904,16 @@ class BootloaderOptionsWindow(wx.Frame):
             else:
                 first_number = 11
 
-            self.main_sizer.Insert(first_number, self.kernel_options_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.main_sizer.Insert(first_number+1, self.install_new_bootloader_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.main_sizer.Insert(first_number+2, self.backup_bootloader_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-            self.main_sizer.Insert(first_number+3, self.restore_bootloader_sizer, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.main_sizer.Insert(first_number, self.kernel_options_sizer, 1,
+                                   wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+            self.main_sizer.Insert(first_number+1, self.install_new_bootloader_sizer,
+                                  1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+            self.main_sizer.Insert(first_number+2, self.backup_bootloader_sizer,
+                                   1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+            self.main_sizer.Insert(first_number+3, self.restore_bootloader_sizer,
+                                   1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
 
             self.keep_kerneloptions_checkbox.Show()
             self.new_kerneloptions_text.Show()
@@ -1740,7 +1939,10 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Determine what to do here.
         if _file == "Specify File Path...":
-            dlg = wx.FileDialog(self.panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.FD_SAVE)
+            dlg = wx.FileDialog(self.panel, "Select Backup File...",
+                                defaultDir="/home",
+                                wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc",
+                                style=wx.FD_SAVE)
 
             if dlg.ShowModal() == wx.ID_OK:
                 _file = dlg.GetPath()
@@ -1750,7 +1952,10 @@ class BootloaderOptionsWindow(wx.Frame):
                 logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): Finished saving config to "+_file+"...")
 
                 #Let the user know we were successful.
-                msg_dlg = wx.MessageDialog(self.panel, "Finished backing up config to "+_file+"!", "Config Backup Successful", wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+                msg_dlg = wx.MessageDialog(self.panel, "Finished backing up config to "+_file+"!",
+                                           "Config Backup Successful", wx.OK | wx.ICON_INFORMATION,
+                                           pos=wx.DefaultPosition)
+
                 msg_dlg.ShowModal()
                 msg_dlg.Destroy()
 
@@ -1773,7 +1978,10 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Determine what to do here.
         if _file == "Specify File Path...":
-            dlg = wx.FileDialog(self.panel, "Select Backup File...", defaultDir="/home", wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc", style=wx.FD_OPEN)
+            dlg = wx.FileDialog(self.panel, "Select Backup File...",
+                                defaultDir="/home",
+                                wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc",
+                                style=wx.FD_OPEN)
 
             if dlg.ShowModal() == wx.ID_OK:
                 _file = dlg.GetPath()
@@ -1787,7 +1995,11 @@ class BootloaderOptionsWindow(wx.Frame):
                     logger.error("BootloaderOptionsWindow().on_restore_bootloader_choice(): Error when loading config! Warning user and reloading previous settings...")
 
                     #Let the user know about the error.
-                    msg_dlg = wx.MessageDialog(self.panel, "Couldn't load config from "+_file+"! Are you sure you selected the right file? WxFixBoot will revert back to the previous settings now.", "Config Load Failed!", wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+                    msg_dlg = wx.MessageDialog(self.panel,
+                                               "Couldn't load config from "+_file+"! Are you sure you selected the right file? WxFixBoot will revert back to the previous settings now.",
+                                               "Config Load Failed!", wx.OK | wx.ICON_ERROR,
+                                               pos=wx.DefaultPosition)
+
                     msg_dlg.ShowModal()
                     msg_dlg.Destroy()
 
@@ -1798,7 +2010,12 @@ class BootloaderOptionsWindow(wx.Frame):
                     logger.debug("BootloaderOptionsWindow().on_restore_bootloader_choice(): Successfully loaded config from "+_file+"...")
 
                     #Let the user know we were successful.
-                    msg_dlg = wx.MessageDialog(self.panel, "The bootloader configuration was successfully loaded. Please review the changes in this window, and then continue if you are satisfied.", "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION, pos=wx.DefaultPosition)
+                    msg_dlg = wx.MessageDialog(self.panel,
+                                               "The bootloader configuration was successfully loaded. Please review the changes in this window, and then continue if you are satisfied.",
+                                               "WxFixBoot - Information",
+                                               style=wx.OK | wx.ICON_INFORMATION,
+                                               pos=wx.DefaultPosition)
+
                     msg_dlg.ShowModal()
                     msg_dlg.Destroy()
 
@@ -1818,14 +2035,24 @@ class BootloaderOptionsWindow(wx.Frame):
 
         #Check this is the right config for this OS.
         if config["OSName"] != _os:
-            dlg = wx.MessageDialog(self.panel, "This config file is config for "+config["OSName"]+", not "+_os+", the current OS. Please change the selected OS, or select the correct config file for this OS.", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+            dlg = wx.MessageDialog(self.panel, "This config file is config for "+config["OSName"]
+                                   + ", not "+_os+", the current OS. Please change the selected "
+                                   + "OS, or select the correct config file for this OS.",
+                                   "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR,
+                                   pos=wx.DefaultPosition)
+
             dlg.ShowModal()
             dlg.Destroy()
             return True
 
         #Check the bootloader in the config file can be installed in this OS.
         if self.new_bootloader_choice.FindString(config["Bootloader"]) == -1 and config["Bootloader"] != BOOTLOADER_INFO[_os]["Bootloader"]:
-            dlg = wx.MessageDialog(self.panel, "The bootloader installed at the time the config was backed up cannot be installed in this OS. Most likely, the config file has been tampered with or has corrupted.", "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR, pos=wx.DefaultPosition)
+            dlg = wx.MessageDialog(self.panel, "The bootloader installed at the time the config "
+                                   + "was backed up cannot be installed in this OS. Most likely, "
+                                   + "the config file has been tampered with or has corrupted.",
+                                   "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR,
+                                   pos=wx.DefaultPosition)
+
             dlg.ShowModal()
             dlg.Destroy()
             return True
@@ -1850,7 +2077,7 @@ class BootloaderOptionsWindow(wx.Frame):
             self.on_install_new_bootloader_checkbox()
 
         else:
-            #Don't allow the user to attempt to switch back to GRUB-LEGACY, or replace it.
+            #Don't allow the user to attempt to switch back to GRUB-LEGACY, or replace it. TODO Can this be done a better way?
             raise RuntimeError
 
         #Use kernel options used when the backup was taken.
@@ -1868,7 +2095,11 @@ class BootloaderOptionsWindow(wx.Frame):
             self.defaultos_choice.SetStringSelection(config["DefaultOS"])
 
         else:
-            dlg = wx.MessageDialog(self.panel, "This default OS used when this config was backed up was not detected by WxFixBoot. Instead, "+_os+" will be used, or you can make a custom selection.", "WxFixBoot - Information", wx.OK | wx.ICON_INFORMATION)
+            dlg = wx.MessageDialog(self.panel, "This default OS used when this config was backed "
+                                   + "up was not detected by WxFixBoot. Instead, "+_os+" will be "
+                                   + "used, or you can make a custom selection.",
+                                   "WxFixBoot - Information", wx.OK | wx.ICON_INFORMATION)
+
             dlg.ShowModal()
             dlg.Destroy()
             self.defaultos_choice.SetStringSelection(_os)
@@ -2020,9 +2251,15 @@ class BootloaderOptionsWindow(wx.Frame):
             self.install_new_bootloader_checkbox.Disable()
 
     def on_new_bootloader_choice(self, event=None): #pylint: disable=unused-argument
-        """Warn user about LILO's/ELILO's rubbish multi OS support if needed"""
+        """Warn user about LILO's/ELILO's rubbish multi OS support if needed""" #TODO Offer to disable?
         if len(SYSTEM_INFO["ModifyableOSs"]) > 1 and self.new_bootloader_choice.GetStringSelection() in ("LILO", "ELILO"):
-            dlg = wx.MessageDialog(self.panel, "Installing "+self.new_bootloader_choice.GetStringSelection() +" is discouraged because you have more than one Linux OS installed, and this bootloader has poor support for booting multiple Linux OSs. Click okay to continue.", "WxFixBoot - Warning", wx.OK | wx.ICON_WARNING)
+            dlg = wx.MessageDialog(self.panel, "Installing "
+                                   + self.new_bootloader_choice.GetStringSelection()
+                                   + " is discouraged because you have more than one Linux OS "
+                                   + "installed, and this bootloader has poor support for booting "
+                                   + "multiple Linux OSs. Click okay to continue.",
+                                   "WxFixBoot - Warning", wx.OK | wx.ICON_WARNING)
+
             dlg.ShowModal()
             dlg.Destroy()
 
@@ -2033,7 +2270,11 @@ class BootloaderOptionsWindow(wx.Frame):
         #Check that the settings are valid.
         if self.install_new_bootloader_checkbox.IsChecked() and self.new_bootloader_choice.GetStringSelection() == "-- Please Select --":
             logger.warning("BootloaderOptionsWindow().save_settings(): Aborting saving settings because bootloader is being replaced, but its replacement is unspecified...")
-            dlg = wx.MessageDialog(self.panel, "If you're going to replace "+BOOTLOADER_INFO[_os]["Bootloader"]+", you must select a new bootloader to replace it with!", "WxFixBoot - Warning", wx.OK | wx.ICON_WARNING)
+            dlg = wx.MessageDialog(self.panel, "If you're going to replace "
+                                   + BOOTLOADER_INFO[_os]["Bootloader"]+", you must select a new "
+                                   + "bootloader to replace it with!", "WxFixBoot - Warning",
+                                   wx.OK | wx.ICON_WARNING)
+
             dlg.ShowModal()
             dlg.Destroy()
             raise RuntimeError
@@ -2094,9 +2335,11 @@ class BootloaderOptionsWindow(wx.Frame):
 class ProgressWindow(wx.Frame):
     def __init__(self):
         """Initialse Progress Window"""
-        wx.Frame.__init__(self, parent=None, title="WxFixBoot - Operations Progress", size=(500,300), style=wx.CAPTION|wx.MINIMIZE|wx.RESIZE_BORDER)
+        wx.Frame.__init__(self, parent=None, title="WxFixBoot - Operations Progress",
+                          size=(500, 300), style=wx.CAPTION|wx.MINIMIZE|wx.RESIZE_BORDER)
+
         self.panel = wx.Panel(self)
-        self.SetClientSize(wx.Size(500,300))
+        self.SetClientSize(wx.Size(500, 300))
         wx.Frame.SetIcon(self, APPICON)
         Tools.coretools.parent_window = self
 
@@ -2105,8 +2348,10 @@ class ProgressWindow(wx.Frame):
         self.create_progressbars()
 
         #Create the output box and log.
-        self.output_box = wx.TextCtrl(self.panel, -1, "", size=(480,240), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_WORDWRAP)
-        self.output_box.SetBackgroundColour((0,0,0))
+        self.output_box = wx.TextCtrl(self.panel, -1, "", size=(480, 240),
+                                      style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_WORDWRAP)
+
+        self.output_box.SetBackgroundColour((0, 0, 0))
         self.output_box.SetDefaultStyle(wx.TextAttr(wx.WHITE))
 
         global OUTPUT_LOG
@@ -2181,11 +2426,21 @@ class ProgressWindow(wx.Frame):
 
         #Add items to the main sizer.
         self.main_sizer.Add(self.performing_operations_text, 0, wx.ALL|wx.ALIGN_CENTER, 10)
-        self.main_sizer.Add(self.current_operating_heading_text, 0, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_CENTER, 10)
-        self.main_sizer.Add(self.current_operating_text, 0, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_CENTER, 10)
-        self.main_sizer.Add(self.current_operation_progress_text, 0, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_CENTER, 10)
-        self.main_sizer.Add(self.current_operation_progress_bar, 0, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
-        self.main_sizer.Add(self.overall_progress_text, 0, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_CENTER, 10)
+        self.main_sizer.Add(self.current_operating_heading_text, 0,
+                            wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_CENTER, 10)
+
+        self.main_sizer.Add(self.current_operating_text, 0,
+                            wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_CENTER, 10)
+
+        self.main_sizer.Add(self.current_operation_progress_text, 0,
+                            wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_CENTER, 10)
+
+        self.main_sizer.Add(self.current_operation_progress_bar, 0,
+                            wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
+        self.main_sizer.Add(self.overall_progress_text, 0,
+                            wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_CENTER, 10)
+
         self.main_sizer.Add(self.overall_progress_bar, 0, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.main_sizer.Add(button_sizer_1, 0, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
         self.main_sizer.Add(self.output_box, 1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
@@ -2195,7 +2450,7 @@ class ProgressWindow(wx.Frame):
 
         #Get the sizer set up for the frame.
         self.panel.SetSizer(self.main_sizer)
-        self.main_sizer.SetMinSize(wx.Size(500,300))
+        self.main_sizer.SetMinSize(wx.Size(500, 300))
         self.main_sizer.SetSizeHints(self)
 
     def bind_events(self):
@@ -2211,7 +2466,9 @@ class ProgressWindow(wx.Frame):
 
     def focus_on_output_button(self, event=None): #pylint: disable=unused-argument
         """Focus on the show output button instead of the TextCtrl, and reset the insertion point back after 30 milliseconds, preventing the user from changing the insertion point and messing the formatting up."""
-        #Just a slightly hacky way of trying to make sure the user can't change the insertion point! Works unless you start doing silly stuff like tapping on the output box constantly :)
+        #Just a slightly hacky way of trying to make sure the user can't change the insertion
+        #point! Works unless you start doing silly stuff like tapping on the output box
+        #constantly :)
         self.show_output_button.SetFocus()
         insertion_point = self.output_box.GetInsertionPoint()
         wx.CallLater(30, self.output_box.SetInsertionPoint, insertion_point)
@@ -2241,8 +2498,8 @@ class ProgressWindow(wx.Frame):
 
     def carriagereturn(self):
         """Handles carriage returns in output"""
-        #Go back until the last newline character, and overwrite anything in the way on the next write.
-        #Get the current insertion point.
+        #Go back until the last newline character, and overwrite anything in the way on the next
+        #write. Get the current insertion point.
         current_insertion_point = self.output_box.GetInsertionPoint()
 
         #Get the text up to the current insertion point.
@@ -2264,7 +2521,8 @@ class ProgressWindow(wx.Frame):
             #Hacky bit to make the new insertion point 0 :)
             last_newline = -1
 
-        #Set the insertion point to just after that newline, unless we're already there, and in that case set the insertion point just after the previous newline.
+        #Set the insertion point to just after that newline, unless we're already there, and in
+        #that case set the insertion point just after the previous newline.
         new_insertion_point = last_newline + 1
 
         self.output_box.SetInsertionPoint(new_insertion_point)
@@ -2328,7 +2586,8 @@ class ProgressWindow(wx.Frame):
         """Update the progress of the overall progress progress bar"""
         #This is called when self.current_operation_progress_bar reaches 100 (aka full).
         if self.overall_progress_bar.GetValue() < 100:
-            self.overall_progress_bar.SetValue(self.overall_progress_bar.GetValue()+(100//NUMBER_OF_OPERATIONS))
+            self.overall_progress_bar.SetValue(self.overall_progress_bar.GetValue()
+                                               +(100//NUMBER_OF_OPERATIONS))
 
     def update_current_operation_text(self, message):
         """Keep the current operations status text up to date."""
@@ -2348,7 +2607,8 @@ class ProgressWindow(wx.Frame):
 
         if os.path.exists("/tmp/wxfixboot/mountpoints/dev"):
             for _dir in os.listdir("/tmp/wxfixboot/mountpoints/dev"):
-                #Call CoreTools.unmount() on each directory to make sure that nothing is mounted there after this point.
+                #Call CoreTools.unmount() on each directory to make sure that nothing is mounted
+                #there after this point.
                 if CoreTools.unmount("/tmp/wxfixboot/mountpoints/dev/"+_dir) != 0:
                     #If we errored try removing chroot and trying again.
                     logger.warning("ProgressWindow().restart_wxfixboot(): Failed to unmount /tmp/wxfixboot/mountpoints/dev/"+_dir+"! Trying to remove chroot first then trying again...")
@@ -2356,7 +2616,12 @@ class ProgressWindow(wx.Frame):
 
                     if CoreTools.unmount("/tmp/wxfixboot/mountpoints/dev/"+_dir) != 0:
                         logger.error("ProgressWindow().restart_wxfixboot(): Couldn't unmount /tmp/wxfixboot/mountpoints/dev/"+_dir+"! Giving up, warning user, and aborting restart...")
-                        dlg = wx.MessageDialog(self.panel, "Couldn't restart WxFixBoot because there are mounted filesystems in the temporary directory! Please try restarting your system and then try again.", "WxFixBoot - Error!", wx.OK | wx.ICON_ERROR)
+                        dlg = wx.MessageDialog(self.panel, "Couldn't restart WxFixBoot because "
+                                               + "there are mounted filesystems in the temporary "
+                                               + "directory! Please try restarting your system "
+                                               + "and then try again.", "WxFixBoot - Error!",
+                                               wx.OK | wx.ICON_ERROR)
+
                         dlg.ShowModal()
                         dlg.Destroy()
                         return False
@@ -2383,7 +2648,9 @@ class ProgressWindow(wx.Frame):
             #Veto the shutdown and warn the user.
             event.Veto(True)
             logger.info("ProgressWindow().session_ending(): Vetoed system shutdown / logoff...")
-            dlg = wx.MessageDialog(self.panel, "You can't shutdown or logoff while recovering data!", "WxFixBoot - Error!", wx.OK | wx.ICON_ERROR)
+            dlg = wx.MessageDialog(self.panel, "You can't shutdown or logoff while recovering "
+                                   + "data!", "WxFixBoot - Error!", wx.OK | wx.ICON_ERROR)
+
             dlg.ShowModal()
             dlg.Destroy()
 
@@ -2403,7 +2670,9 @@ class ProgressWindow(wx.Frame):
             os.remove("/tmp/wxfixboot.log")
             self.Destroy()
 
-        dlg = wx.MessageDialog(self.panel, 'Are you sure you want to exit?', 'WxFixBoot - Question!', wx.YES_NO | wx.ICON_QUESTION)
+        dlg = wx.MessageDialog(self.panel, 'Are you sure you want to exit?',
+                               'WxFixBoot - Question!', wx.YES_NO | wx.ICON_QUESTION)
+
         answer = dlg.ShowModal()
         dlg.Destroy()
 
@@ -2415,32 +2684,49 @@ class ProgressWindow(wx.Frame):
             logging.shutdown()
 
             #Prompt user to save the log file.
-            dlg = wx.MessageDialog(self.panel, "Do you want to keep WxFixBoot's log file? For privacy reasons, WxFixBoot will delete its log file when closing. If you want to save it, which is helpful for debugging if something went wrong, click yes, and otherwise click no.", "WxFixBoot - Question", style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
+            dlg = wx.MessageDialog(self.panel, "Do you want to keep WxFixBoot's log file? For "
+                                   + "privacy reasons, WxFixBoot will delete its log file when "
+                                   + "closing. If you want to save it, which is helpful for "
+                                   + "debugging if something went wrong, click yes, and otherwise "
+                                   + "click no.", "WxFixBoot - Question",
+                                   style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
+
             answer = dlg.ShowModal()
             dlg.Destroy()
 
             if answer == wx.ID_YES:
                 #Ask the user where to save it.
-                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home", wildcard="Log Files (*.log)|*.log" , style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home",
+                                    wildcard="Log Files (*.log)|*.log",
+                                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+
                 answer = dlg.ShowModal()
                 _file = dlg.GetPath()
                 dlg.Destroy()
 
                 if answer == wx.ID_OK:
-                    #Copy it to the specified path, using a one-liner, and don't bother handling any errors, because this is run as root.
+                    #Copy it to the specified path, using a one-liner, and don't bother handling
+                    #any errors, because this is run as root. FIXME Bad idea.
                     CoreTools.start_process("cp /tmp/wxfixboot.log "+_file)
 
-                    dlg = wx.MessageDialog(self.panel, 'Done! WxFixBoot will now exit.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                    dlg = wx.MessageDialog(self.panel, 'Done! WxFixBoot will now exit.',
+                                           'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
                     dlg.ShowModal()
                     dlg.Destroy()
 
                 else:
-                    dlg = wx.MessageDialog(self.panel, 'Okay, WxFixBoot will now exit without saving the log file.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                    dlg = wx.MessageDialog(self.panel, "Okay, WxFixBoot will now exit without "
+                                           + "saving the log file.", 'WxFixBoot - Information',
+                                           wx.OK | wx.ICON_INFORMATION)
+
                     dlg.ShowModal()
                     dlg.Destroy()
 
             else:
-                dlg = wx.MessageDialog(self.panel, 'Okay, WxFixBoot will now exit without saving the log file.', 'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                dlg = wx.MessageDialog(self.panel, "Okay, WxFixBoot will now exit without saving "
+                                       + "the log file.", 'WxFixBoot - Information',
+                                       wx.OK | wx.ICON_INFORMATION)
+
                 dlg.ShowModal()
                 dlg.Destroy()
 
@@ -2482,9 +2768,14 @@ class BackendThread(threading.Thread):
         """Start doing operations."""
         logger.debug("BackendThread().start_operations(): Running operations...")
 
-        DialogTools.show_msg_dlg(kind="info", message="Please stay within sight of the system, as operations are not fully automated and you may be asked the occasional queston, or be shown warnings. You may see the occasional file manager dialog pop up as well, so feel free to either close them or ignore them.")
+        DialogTools.show_msg_dlg(kind="info", message="Please stay within sight of the system, "
+                                 + "as operations are not fully automated and you may be asked "
+                                 + "the occasional queston, or be shown warnings. You may see "
+                                 + "the occasional file manager dialog pop up as well, so feel "
+                                 + "free to either close them or ignore them.")
 
-        #Make the list of operations avalable so bootloader operations can be disabled if necessary.
+        #Make the list of operations avalable so bootloader operations can be disabled if
+        #necessary.
         Tools.BackendTools.helpers.OPERATIONS = OPERATIONS
 
         #Run functions to do operations.
@@ -2500,7 +2791,10 @@ class BackendThread(threading.Thread):
             self.generate_system_report()
 
         if SYSTEM_INFO["DisableBootloaderOperations"]:
-            DialogTools.show_msg_dlg(kind="warning", message="Bootloader Operations were disabled. This is because "+SYSTEM_INFO["DisableBootloaderOperationsBecause"]+". Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="warning", message="Bootloader Operations were "
+                                     + "disabled. This is because "
+                                     + SYSTEM_INFO["DisableBootloaderOperationsBecause"]
+                                     + ". Click okay to continue.")
 
         logger.info("BackendThread().start_operations(): Finished Operation Running Code.")
 
@@ -2512,7 +2806,8 @@ class BackendThread(threading.Thread):
         for function in OPERATIONS:
             if isinstance(function, tuple):
                 if MainBackendTools.manage_bootloader in function:
-                    dialog_message += " You performed bootloader operations on at least one OS, so please now reboot your system."
+                    dialog_message += " You performed bootloader operations on at least one OS, "
+                    dialog_messahe += "so please now reboot your system."
                     break
 
         DialogTools.show_msg_dlg(kind="info", message=dialog_message)
@@ -2521,14 +2816,18 @@ class BackendThread(threading.Thread):
 
     def generate_system_report(self):
         """Create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary."""
-        DialogTools.show_msg_dlg(kind="info", message="WxFixBoot will now create your system report. Click okay to continue.")
+        DialogTools.show_msg_dlg(kind="info", message="WxFixBoot will now create your system "
+                                 + "report. Click okay to continue.")
 
         #Ask the user where to save the file.
-        report_file = DialogTools.show_save_file_dlg(title="WxFixBoot - Select System Report File", wildcard="Text Files|*.txt|Log Files|*.log|All Files/Devices (*)|*")
+        report_file = DialogTools.show_save_file_dlg(title="WxFixBoot - Select System Report File",
+                                                     wildcard="Text Files|*.txt|Log Files|*.log|All Files/Devices (*)|*")
 
         #Write everything directly to the file.
         report_list = open(report_file, 'w')
-        report_list.write("This system report was created with WxFixBoot version "+VERSION+". It can be used to diagnose problems with your system, and can help if you wish to make a support request.\n\n")
+        report_list.write("This system report was created with WxFixBoot version "+VERSION
+                          + ". It can be used to diagnose problems with your system, and can help "
+                          + "if you wish to make a support request.\n\n")
 
         #Do Firmware Information.
         report_list.write("\n##########Firmware Information##########\n")
@@ -2565,12 +2864,16 @@ class BackendThread(threading.Thread):
         os_list.sort()
 
         report_list.write("Detected Operating Systems: "+', '.join(OS_INFO.keys())+"\n")
-        report_list.write("Modifyable Operating Systems: "+', '.join(SYSTEM_INFO["ModifyableOSs"])+"\n")
+        report_list.write("Modifyable Operating Systems: "+', '.join(SYSTEM_INFO["ModifyableOSs"])
+                          + "\n")
+
         report_list.write("Currently running OS architecture: "+SYSTEM_INFO["CurrentOSArch"]+"\n")
-        report_list.write("Currently running OS is on Live Disk: "+unicode(SYSTEM_INFO["IsLiveDisk"])+"\n")
+        report_list.write("Currently running OS is on Live Disk: "
+                          + unicode(SYSTEM_INFO["IsLiveDisk"])+"\n")
 
         if SYSTEM_INFO["IsLiveDisk"]:
-            report_list.write("Currently running OS is Parted Magic: "+unicode(SYSTEM_INFO["OnPartedMagic"])+"\n")
+            report_list.write("Currently running OS is Parted Magic: "
+                              + unicode(SYSTEM_INFO["OnPartedMagic"])+"\n")
 
         report_list.write("Per OS Info:\n")
 
@@ -2582,63 +2885,103 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tPackage Manager: "+OS_INFO[_os]["PackageManager"]+"\n")
             report_list.write("\t\tBoot Partition: "+OS_INFO[_os]["BootPartition"]+"\n")
             report_list.write("\t\tEFI Partition: "+OS_INFO[_os]["EFIPartition"]+"\n")
-            report_list.write("\t\tContents of /etc/fstab:\n\t\t\t"+'\n\t\t\t'.join(OS_INFO[_os]["RawFSTabInfo"])+"\n\n")
+            report_list.write("\t\tContents of /etc/fstab:\n\t\t\t"
+                              + '\n\t\t\t'.join(OS_INFO[_os]["RawFSTabInfo"])+"\n\n")
 
         #Do Bootloader information
         report_list.write("\n##########Bootloader Information##########\n")
 
-        report_list.write("Disabled Bootloader Operations: "+unicode(SYSTEM_INFO["DisableBootloaderOperations"])+"\n")
+        report_list.write("Disabled Bootloader Operations: "
+                          + unicode(SYSTEM_INFO["DisableBootloaderOperations"])+"\n")
 
         if SYSTEM_INFO["DisableBootloaderOperations"]:
-            report_list.write("Bootloader operations have been disabled. The operations that were going to be done are still detailed below,\n")
+            report_list.write("Bootloader operations have been disabled. The operations that were "
+                              + "going to be done are still detailed below,\n")
+
             report_list.write("but they weren't actually done.\n")
-            report_list.write("Bootloader Operations were disabled because: "+SYSTEM_INFO["DisableBootloaderOperationsBecause"]+"\n\n")
+            report_list.write("Bootloader Operations were disabled because: "
+                              + SYSTEM_INFO["DisableBootloaderOperationsBecause"]+"\n\n")
 
         bootloader_oss = list(BOOTLOADER_INFO.keys())
         bootloader_oss.sort()
 
         for _os in bootloader_oss:
             report_list.write("\tControlling OS: "+_os+"\n")
-            report_list.write("\tBootloader (at time of startup): "+BOOTLOADER_INFO[_os]["Bootloader"]+"\n")
-            report_list.write("\tBootloaders that can be installed: "+', '.join(BOOTLOADER_INFO[_os]["AvailableBootloaders"])+"\n")
-            report_list.write("\t\tBootloader Timeout: "+unicode(BOOTLOADER_INFO[_os]["Timeout"])+"\n")
-            report_list.write("\t\tGlobal Kernel Options: "+BOOTLOADER_INFO[_os]["GlobalKernelOptions"]+"\n")
-            report_list.write("\t\tBootloader-Specific Default _os: "+BOOTLOADER_INFO[_os]["BLSpecificDefaultOS"]+"\n")
-            report_list.write("\t\tDefault OS: "+BOOTLOADER_INFO[_os]["DefaultOS"]+"\n")
-            report_list.write("\t\tInstalled on: "+BOOTLOADER_INFO[_os]["BootDisk"]+"\n")
-            report_list.write("\t\tCan be modified: "+unicode(BOOTLOADER_INFO[_os]["IsModifyable"])+"\n")
-            report_list.write("\t\tReason for modifyability: "+BOOTLOADER_INFO[_os]["Comments"]+"\n") 
-            report_list.write("\t\tBootloader was modified: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"])+"\n\n")
+            report_list.write("\tBootloader (at time of startup): "
+                              + BOOTLOADER_INFO[_os]["Bootloader"]+"\n")
+
+            report_list.write("\tBootloaders that can be installed: "
+                              + ', '.join(BOOTLOADER_INFO[_os]["AvailableBootloaders"])+"\n")
+
+            report_list.write("\t\tBootloader Timeout: "
+                              + unicode(BOOTLOADER_INFO[_os]["Timeout"])+"\n")
+
+            report_list.write("\t\tGlobal Kernel Options: "
+                              + BOOTLOADER_INFO[_os]["GlobalKernelOptions"]+"\n")
+
+            report_list.write("\t\tBootloader-Specific Default _os: "
+                              + BOOTLOADER_INFO[_os]["BLSpecificDefaultOS"]+"\n")
+
+            report_list.write("\t\tDefault OS: "
+                              + BOOTLOADER_INFO[_os]["DefaultOS"]+"\n")
+
+            report_list.write("\t\tInstalled on: "
+                              + BOOTLOADER_INFO[_os]["BootDisk"]+"\n")
+
+            report_list.write("\t\tCan be modified: "
+                              + unicode(BOOTLOADER_INFO[_os]["IsModifyable"])+"\n")
+
+            report_list.write("\t\tReason for modifyability: "
+                              + BOOTLOADER_INFO[_os]["Comments"]+"\n")
+
+            report_list.write("\t\tBootloader was modified: "
+                              + unicode(BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"])+"\n\n")
 
             if BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"]:
-                report_list.write("\t\t\tBootloader was reinstalled: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["Reinstall"])+"\n")
-                report_list.write("\t\t\tBootloader was updated: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["Update"])+"\n")
-                report_list.write("\t\t\tBootloader was replaced with another bootloader: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"])+"\n\n")
+                report_list.write("\t\t\tBootloader was reinstalled: "
+                                  + unicode(BOOTLOADER_INFO[_os]["Settings"]["Reinstall"])+"\n")
+
+                report_list.write("\t\t\tBootloader was updated: "
+                                  + unicode(BOOTLOADER_INFO[_os]["Settings"]["Update"])+"\n")
+
+                report_list.write("\t\t\tBootloader was replaced with another bootloader: "
+                                  + unicode(BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"])+"\n\n")
 
                 if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] or BOOTLOADER_INFO[_os]["Settings"]["Update"] or BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"]:
-                    report_list.write("\t\t\tNew Bootloader: "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"\n")
-                    report_list.write("\t\t\tKept Existing Bootloader Timeout: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"])+"\n")
+                    report_list.write("\t\t\tNew Bootloader: "
+                                      + BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"\n")
+
+                    report_list.write("\t\t\tKept Existing Bootloader Timeout: "
+                                      + unicode(BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"])+"\n")
 
                     if BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"] is False:
-                        report_list.write("\t\t\tNew Bootloader Timeout: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])+"\n")
+                        report_list.write("\t\t\tNew Bootloader Timeout: "
+                                          + unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])+"\n")
 
-                    report_list.write("\t\t\tKept Existing Kernel Options: "+unicode(BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"])+"\n")
+                    report_list.write("\t\t\tKept Existing Kernel Options: "
+                                      + unicode(BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"])+"\n")
 
                     if BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"] is False:
-                        report_list.write("\t\t\tNew Kernel Options: "+BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"]+"\n")
+                        report_list.write("\t\t\tNew Kernel Options: "
+                                          + BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"]+"\n")
 
-                    report_list.write("\t\t\tNew Default OS: "+BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"]+"\n\n")
+                    report_list.write("\t\t\tNew Default OS: "
+                                      +BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"]+"\n\n")
 
 
         #Do WxFixBoot's settings.
         report_list.write("\n##########Other WxFixBoot Settings##########\n")
         report_list.write("Do Quick Filesystem Check: "+unicode(SETTINGS["QuickFSCheck"])+"\n")
         report_list.write("Do Bad Sector Check: "+unicode(SETTINGS["BadSectorCheck"])+"\n")
-        report_list.write("Show Diagnostic Terminal Output: "+unicode(SETTINGS["FullVerbosity"])+"\n")
+        report_list.write("Show Diagnostic Terminal Output: "
+                          + unicode(SETTINGS["FullVerbosity"])+"\n")
+
         report_list.write("Save System Report To File: "+unicode(SETTINGS["MakeSystemSummary"])+"\n")
 
         if SETTINGS["MakeSystemSummary"]:
-            report_list.write("\n\tSave Terminal Output in Report: "+unicode(SETTINGS["SaveOutput"])+"\n")
+            report_list.write("\n\tSave Terminal Output in Report: "
+                              + unicode(SETTINGS["SaveOutput"])+"\n")
+
             report_list.write("\tSystem Report Target File: "+report_file+"\n\n")
 
         report_list.write("Number of operations to do: "+unicode(NUMBER_OF_OPERATIONS)+"\n")

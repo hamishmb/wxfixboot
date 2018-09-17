@@ -19,7 +19,8 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -50,7 +51,9 @@ startup = None
 
 def start_process(exec_cmds, show_output=True, return_output=False, testing=False):
     """Start a process given a string of commands to execute.
-    show_output is boolean and specifies whether to show output in the outputbox (if exists) or not.
+    show_output is boolean and specifies whether to show output in the outputbox (if exists) or
+    not.
+
     return_output is boolean and specifies whether to return the output back to the caller or not.
     """
     #Make sure output is always in English.
@@ -71,10 +74,12 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
     ret_val = int(cmd.returncode)
 
     #Log this info in a debug message.
-    logger.debug("start_process(): Process: "+exec_cmds+": Return Value: "+unicode(ret_val)+", Output: \"\n\n"+'\n'.join(line_list)+"\"\n")
+    logger.debug("start_process(): Process: "+exec_cmds+": Return Value: "+unicode(ret_val)
+                 + ", Output: \"\n\n"+'\n'.join(line_list)+"\"\n")
 
     if return_output is False:
-        #Return the return code back to whichever function ran this process, so it can handle any errors.
+        #Return the return code back to whichever function ran this process, so it can handle
+        #any errors.
         return ret_val
 
     elif testing:
@@ -85,8 +90,13 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
     return (ret_val, '\n'.join(line_list))
 
 def read(cmd, testing=False):
-    """Read the cmd's output char by char, but do as little processing as possible to improve startup performance"""
-    #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
+    """
+    Read the cmd's output char by char, but do as little processing as possible to improve
+    startup performance
+    """
+
+    #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes
+    #to make sure we get all the output.
     counter = 0
     line = str(b"")
     line_list = []
@@ -128,7 +138,8 @@ def read(cmd, testing=False):
 
 def read_and_send_output(cmd, show_output):
     """Read the cmd's output char by char, and send the output to the output box"""
-    #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes to make sure we get all the output.
+    #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes
+    #to make sure we get all the output.
     counter = 0
     line = str(b"")
     line_list = []
@@ -182,11 +193,15 @@ def read_and_send_output(cmd, show_output):
     return line_list
 
 def is_mounted(partition, mount_point=None):
-    """Checks if the given partition is mounted.
+    """
+    Checks if the given partition is mounted.
     partition is the given partition to check.
-    If mount_point is specified, check if the partition is mounted there, rather than just if it's mounted.
+    If mount_point is specified, check if the partition is mounted there, rather than just if
+    it's mounted.
+
     Return boolean True/False.
     """
+
     if mount_point is None:
         logger.debug("is_mounted(): Checking if "+partition+" is mounted...")
         mount_info = start_process("mount -l", show_output=False, return_output=True)[1]
@@ -217,7 +232,8 @@ def is_mounted(partition, mount_point=None):
 def get_partition_mounted_at(mount_point):
     """Returns the partition mounted at the given mountpoint, if any.
     Otherwise, return None"""
-    logger.info("get_partition_mounted_at(): Trying to get partition mounted at "+mount_point+"...")
+    logger.info("get_partition_mounted_at(): Trying to get partition mounted at "+mount_point
+                + "...")
 
     mount_info = start_process("mount -l", show_output=False, return_output=True)[1]
     partition = None
@@ -265,27 +281,36 @@ def mount_partition(partition, mount_point, options=""):
     options is non-mandatory and contains whatever options you want to pass to the mount command.
     The default value for options is an empty string.
     """
+
+
     if options != "":
-        logger.info("mount_partition(): Preparing to mount "+partition+" at "+mount_point+" with extra options "+options+"...")
+        logger.info("mount_partition(): Preparing to mount "+partition+" at "+mount_point
+                    + " with extra options "+options+"...")
 
     else:
-        logger.info("mount_partition(): Preparing to mount "+partition+" at "+mount_point+" with no extra options...")
+        logger.info("mount_partition(): Preparing to mount "+partition+" at "+mount_point
+                    + " with no extra options...")
 
     mount_info = start_process("mount -l", show_output=False, return_output=True)[1]
 
-    #There is a partition mounted here. Check if our partition is already mounted in the right place.
+    #There is a partition mounted here. Check if our partition is already mounted in the right
+    #place.
     if mount_point == get_mount_point_of(partition):
         #The correct partition is already mounted here.
-        logger.debug("mount_partition(): partition: "+partition+" was already mounted at: "+mount_point+". Continuing...")
+        logger.debug("mount_partition(): partition: "+partition+" was already mounted at: "
+                     + mount_point+". Continuing...")
         return 0
 
     elif mount_point in mount_info:
         #Something else is in the way. unmount that partition, and continue.
-        logger.warning("mount_partition(): unmounting filesystem in the way at "+mount_point+"...")
+        logger.warning("mount_partition(): unmounting filesystem in the way at "+mount_point
+                       + "...")
+
         ret_val = unmount(mount_point)
 
         if ret_val != 0:
-            logger.error("mount_partition(): Couldn't unmount "+mount_point+", preventing the mounting of "+partition+"! Skipping mount attempt.")
+            logger.error("mount_partition(): Couldn't unmount "+mount_point
+                         +", preventing the mounting of "+partition+"! Skipping mount attempt.")
             return False
 
     #Create the dir if needed.
@@ -322,7 +347,8 @@ def remount_partition(partition, mode="rw"):
     return ret_val
 
 def unmount(mount_point):
-    """unmounts the given mountpoint.
+    """
+    Unmounts the given mountpoint.
     mount_point is the mountpoint to unmount.
     mount_point can also be a partition name (for example /dev/sda1).
     """
@@ -352,31 +378,44 @@ def update_chroot_mtab(mount_point):
     retval = start_process("cp -vf /proc/self/mounts "+mount_point+"/etc/mtab", show_output=False)
 
     if retval != 0:
-        logger.warning("update_chroot_mtab(): Failed to run command: cp -vf /proc/self/mounts "+mount_point+"/etc/mtab! Chroot may not set up properly! This *probably* doesn't matter, but in rare situations it could cause problems. If the chrooted OS is Fedora-based, this is normal because /etc/mtab is a symlink to /proc/self/mounts.")
+        logger.warning("update_chroot_mtab(): Failed to run command: cp -vf /proc/self/mounts "
+                       + mount_point+"/etc/mtab! Chroot may not set up properly! This *probably* "
+                       + "doesn't matter, but in rare situations it could cause problems. If the "
+                       + "chrooted OS is Fedora-based, this is normal because /etc/mtab is a "
+                       + "symlink to /proc/self/mounts.")
 
-    logger.debug("update_chroot_mtab(): Finished updating /etc/mtab for chroot at: "+mount_point+".")
+    logger.debug("update_chroot_mtab(): Finished updating /etc/mtab for chroot at: "
+                 + mount_point+".")
 
 def setup_chroot(mount_point):
     """Set up a chroot for the given mountpoint."""
     logger.debug("setup_chroot(): Setting up chroot for mount_point: "+mount_point+"...")
 
     #Mount /dev, /dev/pts, /proc and /sys for the chroot.
-    #We might also need internet access in chroot, so to do this first backup mount_point/etc/resolv.conf to mount_point/etc/resolv.conf.bak (if it's a link, this will also preserve it),
-    #then copy current system's /etc/resolv.conf (the contents, not the link) to mount_point/etc/resolv.conf, enabling internet access.
+    #We might also need internet access in chroot, so to do this first backup
+    #mount_point/etc/resolv.conf to mount_point/etc/resolv.conf.bak (if it's a link, this
+    #will also preserve it), then copy current system's /etc/resolv.conf (the contents, not
+    #the link) to mount_point/etc/resolv.conf, enabling internet access.
 
     mount_list = ("/dev", "/dev/pts", "/proc", "/sys")
 
     for file_system in mount_list:
         if mount_partition(partition=file_system, mount_point=mount_point+file_system, options="--bind") != 0:
-            logger.error("setup_chroot(): Failed to bind "+file_system+" to "+mount_point+file_system+"! Chroot isn't set up properly! Attempting to continue anyway...")
+            logger.error("setup_chroot(): Failed to bind "+file_system+" to "+mount_point
+                         + file_system+"! Chroot isn't set up properly! Attempting to continue "
+                         + "anyway...")
 
-    exec_list = ("mv -vf "+mount_point+"/etc/resolv.conf "+mount_point+"/etc/resolv.conf.bak", "cp -fv /etc/resolv.conf "+mount_point+"/etc/resolv.conf")
+    exec_list = ("mv -vf "+mount_point+"/etc/resolv.conf "+mount_point+"/etc/resolv.conf.bak",
+                 "cp -fv /etc/resolv.conf "+mount_point+"/etc/resolv.conf")
 
     for exec_cmd in exec_list:
         ret_val = start_process(exec_cmd, show_output=False, return_output=True)[0]
 
         if ret_val != 0:
-            logger.error("setup_chroot(): Error: Failed to run command: '"+exec_cmd+"'! Chroot may not be set up properly! On Fedora systems this probably doesn't matter. Continuing anyway...")
+            logger.error("setup_chroot(): Error: Failed to run command: '"+exec_cmd
+                         + "'! Chroot may not be set up properly! On Fedora systems this probably "
+                         + "doesn't matter. Continuing anyway...")
+
             #Ignore these errors, the only happen on Fedora and they don't really matter.
             ret_val = 0
 
@@ -390,28 +429,39 @@ def teardown_chroot(mount_point):
     logger.debug("teardown_chroot(): Removing chroot at mount_point: "+mount_point+"...")
 
     #unmount /dev/pts, /dev, /proc and /sys in the chroot.
-    unmount_list = (mount_point+"/dev/pts", mount_point+"/dev", mount_point+"/proc", mount_point+"/sys")
+    unmount_list = (mount_point+"/dev/pts", mount_point+"/dev", mount_point+"/proc",
+                    mount_point+"/sys")
 
     for file_system in unmount_list:
         if unmount(file_system) != 0:
-            logger.error("teardown_chroot(): Faied to unmount "+file_system+"! Chroot isn't removed properly! Attempting to continue anyway...")
+            logger.error("teardown_chroot(): Faied to unmount "+file_system
+                         + "! Chroot isn't removed properly! Attempting to continue anyway...")
 
-    #We'll also need to replace the mount_point/etc/resolv.conf with the backup file, mount_point/etc/resolv.conf.bak.
-    ret_val = start_process("mv -vf "+mount_point+"/etc/resolv.conf.bak "+mount_point+"/etc/resolv.conf", show_output=False)
+    #We'll also need to replace the mount_point/etc/resolv.conf with the backup file,
+    #mount_point/etc/resolv.conf.bak.
+    ret_val = start_process("mv -vf "+mount_point+"/etc/resolv.conf.bak "+mount_point
+                            + "/etc/resolv.conf", show_output=False)
 
     if ret_val != 0:
-        logger.error("teardown_chroot(): Failed to run command: 'mv -vf "+mount_point+"/etc/resolv.conf.bak "+mount_point+"/etc/resolv.conf'! Return value was: "+unicode(ret_val)+". Chroot may not be removed properly!")
+        logger.error("teardown_chroot(): Failed to run command: 'mv -vf "+mount_point
+                     + "/etc/resolv.conf.bak "+mount_point+"/etc/resolv.conf'! Return value was: "
+                     + unicode(ret_val)+". Chroot may not be removed properly!")
 
     logger.debug("teardown_chroot(): Finished removing chroot at mount_point: "+mount_point+"...")
     return ret_val
 
 def emergency_exit(message):
     """Handle emergency exits. Warn the user, log, and exit to terminal with the given message"""
-    logger.critical("emergency_exit(): Emergency exit has been triggered! Giving user message dialog and saving the logfile...")
+    logger.critical("emergency_exit(): Emergency exit has been triggered! Giving user message "
+                    + "dialog and saving the logfile...")
+
     logger.critical("emergency_exit(): The error is: "+message)
 
     #Warn the user.
-    DialogTools.show_msg_dlg(message="Emergency exit triggered.\n\n"+message+"\n\nYou'll now be asked for a location to save the log file.\nIf you email me at hamishmb@live.co.uk with the contents of that file I'll be happy to help you fix this problem.", kind="error")
+    DialogTools.show_msg_dlg(message="Emergency exit triggered.\n\n"+message
+                             + "\n\nYou'll now be asked for a location to save the log file.\n"
+                             + "If you email me at hamishmb@live.co.uk with the contents of that "
+                             + "file I'll be happy to help you fix this problem.", kind="error")
 
     #Shut down the logger.
     logging.shutdown()

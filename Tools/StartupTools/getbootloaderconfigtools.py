@@ -19,7 +19,8 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -32,7 +33,6 @@ import logging
 
 #Import other modules.
 sys.path.append('../..') #Need to be able to import the Tools module from here.
-import Tools
 from Tools.dictionaries import *
 
 #Make unicode an alias for str in Python 3.
@@ -61,7 +61,8 @@ def find_grub(os_partition, grub_version):
         look_for = ("ZRrI", "")
 
     for disk in likely_grub_install_disks:
-        logger.info("find_grub(): "+DISK_INFO[disk]["Name"]+" "+', '.join(unicode(DISK_INFO[disk]["BootRecordStrings"])))
+        logger.info("find_grub(): "+DISK_INFO[disk]["Name"]+" "
+                    + ', '.join(unicode(DISK_INFO[disk]["BootRecordStrings"])))
 
         for line in DISK_INFO[disk]["BootRecordStrings"]:
             line = unicode(line)
@@ -84,7 +85,9 @@ def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_
         menu_ids = {}
 
     if menu_data != "":
-        logger.info("parse_grub2_menu_data(): Finding and parsing menu entries in given menu data...")
+        logger.info("parse_grub2_menu_data(): Finding and parsing menu entries in given "
+                    + "menu data...")
+
         grub_dir = ""
 
     else:
@@ -107,7 +110,8 @@ def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_
         menu_data = menu_entries_file.readlines()
         menu_entries_file.close()
 
-        logger.info("parse_grub2_menu_data(): Finding and parsing menu entries in "+grub_dir+"/grub.cfg...")
+        logger.info("parse_grub2_menu_data(): Finding and parsing menu entries in "
+                    + grub_dir+"/grub.cfg...")
 
     logger.debug("parse_grub2_menu_data(): Parsing menu data for menu: "+menu_name+"...")
 
@@ -130,8 +134,12 @@ def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_
 
         #Parse any menu entries we find.
         if "menuentry " in line:
-            logger.info("parse_grub2_menu_data(): Found a menu entry. Assembling into a dictionary with assemble_grub2_menu_entry()...")
-            menu_entries = assemble_grub2_menu_entry(menu_entries, menu_ids, menu_data, menu_name, line, entry_counter)
+            logger.info("parse_grub2_menu_data(): Found a menu entry. Assembling into a "
+                        + "dictionary with assemble_grub2_menu_entry()...")
+
+            menu_entries = assemble_grub2_menu_entry(menu_entries, menu_ids, menu_data, menu_name,
+                                                     line, entry_counter)
+
             logger.info("parse_grub2_menu_data(): Done!")
 
             #Increment the entry counter.
@@ -140,7 +148,8 @@ def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_
         #Handle submenus correctly.
         elif "submenu " in line:
             logger.info("parse_grub2_menu_data(): Found submenu...")
-            #Get the submenu's name, create a sub-dictionary for it, save its ID, and change the Value of "menu_name" to the submenu's name.
+            #Get the submenu's name, create a sub-dictionary for it, save its ID, and change the
+            #Value of "menu_name" to the submenu's name.
             #Keep compatibility with older versions of GRUB2.
             try:
                 sub_menu_name = line.split("'")[1].replace("\"", "").replace("\'", "")
@@ -149,7 +158,9 @@ def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_
                 sub_menu_name = line.split("\"")[1].replace("\"", "").replace("\'", "")
 
             #Get the entire contents of the submenu.
-            logger.info("parse_grub2_menu_data(): Getting the entire text content of the submenu...")
+            logger.info("parse_grub2_menu_data(): Getting the entire text content of the "
+                        + "submenu...")
+
             bracket_count = 0
             sub_menu_data = []
 
@@ -167,24 +178,35 @@ def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_
                 if bracket_count == 0:
                     break
 
-            logger.info("parse_grub2_menu_data(): Done! Processing any menu entries in the submenu with recursive call...")
+            logger.info("parse_grub2_menu_data(): Done! Processing any menu entries in the "
+                        + "submenu with recursive call...")
 
-            #Call this function again with the contents of the submenu, and some arguments so everything works correctly.
-            menu_entries, menu_ids = parse_grub2_menu_data(sub_menu_data, mount_point=mount_point, menu_entries=menu_entries, menu_name=sub_menu_name, menu_ids=menu_ids, menu_id=unicode(entry_counter)+">")[1:]
+            #Call this function again with the contents of the submenu, and some arguments so
+            #everything works correctly.
+            menu_entries, menu_ids = parse_grub2_menu_data(sub_menu_data, mount_point=mount_point,
+                                                           menu_entries=menu_entries,
+                                                           menu_name=sub_menu_name,
+                                                           menu_ids=menu_ids,
+                                                           menu_id=unicode(entry_counter)+">")[1:]
 
-            logger.info("parse_grub2_menu_data(): Done! Jumping past the submenu data to avoid duplicating menu entries...")
+            logger.info("parse_grub2_menu_data(): Done! Jumping past the submenu data to avoid "
+                        + "duplicating menu entries...")
 
             #Increment the entry counter.
             entry_counter += 1
 
-            #Skip the submenu data, and set "menu" back to "MainMenu" again so entries are added correctly.
+            #Skip the submenu data, and set "menu" back to "MainMenu" again so entries are added
+            #correctly.
             skip_until = line_counter+len(sub_menu_data)
 
     logger.info("parse_grub2_menu_data(): Finished!")
     return grub_dir, menu_entries, menu_ids
 
 def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents, menu, line, entry_counter):
-    """Assemble a menu entry in the dictionary for GRUB2 (BIOS and UEFI)"""
+    """
+    Assemble a menu entry in the dictionary for GRUB2 (BIOS and UEFI)
+    """
+
     logger.info("assemble_grub2_menu_entry(): Preparing to get menu entry info...")
 
     #Get the menu entry name.
@@ -205,7 +227,8 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
     menu_entries[menu][menu_entry_name] = {}
     menu_entries[menu][menu_entry_name]["ID"] = menu_ids[menu]["ID"]+unicode(entry_counter)
 
-    logger.debug("assemble_grub2_menu_entry(): Menu Entry ID: "+menu_entries[menu][menu_entry_name]["ID"]+"...")
+    logger.debug("assemble_grub2_menu_entry(): Menu Entry ID: "
+                 + menu_entries[menu][menu_entry_name]["ID"]+"...")
 
     #Get the full contents of the menuentry (keep adding lines to the list until we find a "}").
     logger.info("assemble_grub2_menu_entry(): Getting menu entry data...")
@@ -219,22 +242,27 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
             break
 
     #Get boot partition.
-    logger.info("assemble_grub2_menu_entry(): Getting menu entry's boot partition with entry name...")
+    logger.info("assemble_grub2_menu_entry(): Getting menu entry's boot partition with "
+                + "entry name...")
 
     #Try multiple methods to get this info.
     menu_entries[menu][menu_entry_name]["Partition"] = "Unknown"
 
     #Try to get it from the menu entry name (older GRUB2 versions).
     try:
-        #Remove the brackets, split with " ", and grab the last element in the resulting list, which is hopefully the partition name e.g. /dev/sdc.
+        #Remove the brackets, split with " ", and grab the last element in the resulting list,
+        #which is hopefully the partition name e.g. /dev/sdc.
         menu_entries[menu][menu_entry_name]["Partition"] = menu_entry_name.replace(")", "").split(" (")[1].split(" ")[-1]
 
     except IndexError:
         pass
 
-    #If this fails, try finding the UUID in the menu-entry data and converting that to a device name.
+    #If this fails, try finding the UUID in the menu-entry data and converting that to a
+    #device name.
     if menu_entries[menu][menu_entry_name]["Partition"] == "Unknown" or "/dev/" not in menu_entries[menu][menu_entry_name]["Partition"]:
-        logger.info("assemble_grub2_menu_entry(): Getting menu entry's boot partition with UUID...")
+        logger.info("assemble_grub2_menu_entry(): Getting menu entry's boot partition "
+                    + "with UUID...")
+
         uuid = ""
 
         for each_line in menu_entries[menu][menu_entry_name]["RawMenuEntryData"]:
@@ -252,7 +280,9 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
 
     #If THAT fails, try to use the "set root=" line to find the device name.
     if menu_entries[menu][menu_entry_name]["Partition"] == "Unknown" or "/dev/" not in menu_entries[menu][menu_entry_name]["Partition"]:
-        logger.info("assemble_grub2_menu_entry(): Getting menu entry's boot partition with GRUB2's 'set root=' line...")
+        logger.info("assemble_grub2_menu_entry(): Getting menu entry's boot partition with "
+                    + "GRUB2's 'set root=' line...")
+
         root_line = ""
 
         for each_line in menu_entries[menu][menu_entry_name]["RawMenuEntryData"]:
@@ -270,20 +300,24 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
                 if char.isdigit():
                     numbers.append(int(char))
 
-            #chr(97) is 'a', so add 97 to first number to get the linux name (e.g. sda). The device number is 0-based.
+            #chr(97) is 'a', so add 97 to first number to get the linux name (e.g. sda).
+            #The device number is 0-based.
             letter = chr(numbers[0]+97)
 
             #Check it's a letter from a to z.
             if numbers[0] in range(0, 25):
-                menu_entries[menu][menu_entry_name]["Partition"] = "/dev/sd"+letter+unicode(numbers[1]) #The partition number is 1-based.
+                #The partition number is 1-based.
+                menu_entries[menu][menu_entry_name]["Partition"] = "/dev/sd"+letter+unicode(numbers[1])
 
     #Log if we STILL haven't found the disk.
     if menu_entries[menu][menu_entry_name]["Partition"] == "Unknown" or "/dev/" not in menu_entries[menu][menu_entry_name]["Partition"]:
         menu_entries[menu][menu_entry_name]["Partition"] = "Unknown"
-        logger.error("assemble_grub2_menu_entry(): Couldn't find boot partition for menu entry! Continuing anyway...")
+        logger.error("assemble_grub2_menu_entry(): Couldn't find boot partition for menu entry! "
+                     + "Continuing anyway...")
 
     else:
-        logger.debug("assemble_grub2_menu_entry(): Menu Entry Boot Partition: "+menu_entries[menu][menu_entry_name]["Partition"]+"...")
+        logger.debug("assemble_grub2_menu_entry(): Menu Entry Boot Partition: "
+                     + menu_entries[menu][menu_entry_name]["Partition"]+"...")
 
     #Get the kernel options for this menuentry.
     logger.info("assemble_grub2_menu_entry(): Getting kernel options...")
@@ -296,10 +330,12 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
 
     #Check we got them.
     if menu_entries[menu][menu_entry_name]["KernelOptions"] == ["Unknown"]:
-        logger.error("assemble_grub2_menu_entry(): Couldn't find kernel options for menu entry! Continuing anyway...")
+        logger.error("assemble_grub2_menu_entry(): Couldn't find kernel options for menu entry! "
+                     + "Continuing anyway...")
 
     else:
-        logger.debug("assemble_grub2_menu_entry(): Menu Entry Kernel Options: "+', '.join(menu_entries[menu][menu_entry_name]["KernelOptions"])+"...")
+        logger.debug("assemble_grub2_menu_entry(): Menu Entry Kernel Options: "
+                     + ', '.join(menu_entries[menu][menu_entry_name]["KernelOptions"])+"...")
 
     return menu_entries
 
@@ -331,7 +367,8 @@ def get_grub2_config(config_file_path, grubenv_file_path, menu_entries):
 
         #Look for kernel options used globally in all the boot options.
         elif 'GRUB_CMDLINE_LINUX' in line and '=' in line:
-            #Split by ' or ", and check the result isn't an empty string in case there was nothing there.
+            #Split by ' or ", and check the result isn't an empty string in case there was
+            #nothing there.
             if "\'" in line:
                 temp = line.split("\'")[1]
 
@@ -348,7 +385,8 @@ def get_grub2_config(config_file_path, grubenv_file_path, menu_entries):
             match_by_name = False
             match_by_id = False
 
-            #If this is an integer or string that == "saved", we need to match it to GRUB's grub.cfg menu_entries.
+            #If this is an integer or string that == "saved", we need to match it to GRUB's
+            #grub.cfg menu_entries.
             logger.info("get_grub2_config(): Found default OS line....")
             grub_default = line.split("=")[1].replace("\"", "").replace("\'", "").replace("\n", "")
 
@@ -358,7 +396,9 @@ def get_grub2_config(config_file_path, grubenv_file_path, menu_entries):
 
             elif grub_default == "saved":
                 #Find the corresponding GRUB menuentry, matching by name or ID.
-                logger.info("get_grub2_config(): Looking for default OS in GRUB environment file...")
+                logger.info("get_grub2_config(): Looking for default OS in GRUB environment "
+                            + "file...")
+
                 grubenv_file = open(grubenv_file_path, "r")
 
                 for variable in grubenv_file:
@@ -399,13 +439,15 @@ def get_grub2_config(config_file_path, grubenv_file_path, menu_entries):
                     logger.info("get_grub2_config(): Found default OS by name...")
 
                 else:
-                    logger.warning("get_grub2_config(): Didn't find default OS by name, setting it to the 1st menu entry instead...")
+                    logger.warning("get_grub2_config(): Didn't find default OS by name, setting "
+                                   + "it to the 1st menu entry instead...")
 
                     #Find the 1st menu entry.
                     for entry in menu_entries["MainMenu"]["Order"]:
                         if menu_entries["MainMenu"][entry]["ID"] == 0:
                             default_os = entry
-                            logger.info("get_grub2_config(): Set default OS to "+entry+" instead. Continuing...")
+                            logger.info("get_grub2_config(): Set default OS to "+entry+" instead. "
+                                        + "Continuing...")
 
             logger.info("get_grub2_config(): Done!")
 
@@ -434,7 +476,9 @@ def parse_grublegacy_menu_entries(menu_entries_file_path):
     for line in menu_entries_file_contents:
         #Process all menu entries.
         if "title" in line and "#" not in line:
-            logger.info("parse_grublegacy_menu_entries(): Found a menu entry. Assembling into a dictionary with assemble_grublegacy_menu_entry()...")
+            logger.info("parse_grublegacy_menu_entries(): Found a menu entry. Assembling into a "
+                        + "dictionary with assemble_grublegacy_menu_entry()...")
+
             menu_entries = assemble_grublegacy_menu_entry(menu_entries, menu_entries_file_contents, line, entry_counter)
             entry_counter += 1
             logger.info("parse_grublegacy_menu_entries(): Done!")
@@ -471,7 +515,8 @@ def assemble_grublegacy_menu_entry(menu_entries, menu_entries_file_contents, lin
     menu_entries["MainMenu"][menu_entry]["Partition"] = "Unknown"
     menu_entries["MainMenu"][menu_entry]["KernelOptions"] = ["Unknown"]
 
-    logger.info("assemble_grublegacy_menu_entry(): Getting menu entry boot partition and kernel options...")
+    logger.info("assemble_grublegacy_menu_entry(): Getting menu entry boot partition and "
+                + "kernel options...")
 
     for line in menu_entries["MainMenu"][menu_entry]["RawMenuEntryData"]:
         if "kernel" not in line:
@@ -531,7 +576,9 @@ def get_grublegacy_config(config_file_path, menu_entries):
 
             if grub_default.isdigit() is False:
                 #Ignore it.
-                logger.info("get_grublegacy_config(): Default OS is not a digit (probably set to \"saved\"), ignoring it...")
+                logger.info("get_grublegacy_config(): Default OS is not a digit (probably set to "
+                            + "\"saved\"), ignoring it...")
+
                 continue
 
             #Find the corresponding GRUB menuentry, matching by ID.
@@ -581,7 +628,9 @@ def parse_lilo_menu_entries(menu_entries_file_path):
     for line in menu_entries_file_contents:
         #Process all menu entries.
         if "image" in line and "#" not in line:
-            logger.info("parse_lilo_menu_entries(): Found a menu entry. Assembling into a dictionary with assemble_lilo_menu_entry()...")
+            logger.info("parse_lilo_menu_entries(): Found a menu entry. Assembling into a "
+                        + "dictionary with assemble_lilo_menu_entry()...")
+
             menu_entries = assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, entry_counter)
             entry_counter += 1
             logger.info("parse_lilo_menu_entries(): Done!")
@@ -597,7 +646,8 @@ def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, ent
 
     raw_menu_entry_data = []
 
-    #Get the full contents of the menuentry (keep adding lines to the list until we find another menu entry).
+    #Get the full contents of the menuentry (keep adding lines to the list until we find another
+    #menu entry).
     logger.info("assemble_lilo_menu_entry(): Getting menu entry data...")
 
     for menu_entry_data in menu_entries_file_contents[menu_entries_file_contents.index(line):]:
@@ -626,12 +676,14 @@ def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, ent
             #If we get a UUID, convert it to a device node.
             if "UUID=" in partition:
                 uuid = partition.split("=")[1].replace("\"", "")
-                logger.info("assemble_lilo_menu_entry(): Found UUID "+uuid+". Finding device node...")
+                logger.info("assemble_lilo_menu_entry(): Found UUID "+uuid
+                            + ". Finding device node...")
 
                 for disk in DISK_INFO:
                     if DISK_INFO[disk]["UUID"] == uuid:
                         menu_entries["MainMenu"][menu_entry]["Partition"] = disk
-                        logger.info("assemble_lilo_menu_entry(): Found device node "+disk+". Continuing...")
+                        logger.info("assemble_lilo_menu_entry(): Found device node "
+                                    + disk+". Continuing...")
 
             else:
                 menu_entries["MainMenu"][menu_entry]["Partition"] = partition
@@ -664,7 +716,8 @@ def get_lilo_config(config_file_path, _os):
 
             if timeout.isdigit():
                 #Great! We got it.
-                #However, because lilo and elilo save this in 10ths of a second, divide it by ten first.
+                #However, because lilo and elilo save this in 10ths of a second, divide it by
+                #ten first.
                 timeout = int(timeout)//10
                 logger.info("get_lilo_config(): Found bootloader timeout...")
 
@@ -708,12 +761,15 @@ def get_lilo_config(config_file_path, _os):
         for entry in BOOTLOADER_INFO[_os]["MenuEntries"]["MainMenu"]["Order"]:
             if BOOTLOADER_INFO[_os]["MenuEntries"]["MainMenu"][entry]["ID"] == 0:
                 default_os = entry
-                logger.info("get_lilo_config(): Set default OS to "+entry+" instead. Continuing...")
+                logger.info("get_lilo_config(): Set default OS to "+entry+" instead. "
+                            + "Continuing...")
 
     #Ignore ELILO's boot disk setting.
     if "/etc/lilo.conf" in config_file_path:
         return (timeout, kernel_options, boot_disk, default_os)
 
     #Otherwise...
-    logger.info("get_lilo_config(): Ignoring ELILO's book disk setting, instead preferring the detected EFI partition for this OS...")
+    logger.info("get_lilo_config(): Ignoring ELILO's book disk setting, instead preferring "
+                + "the detected EFI partition for this OS...")
+
     return (timeout, kernel_options, default_os)
