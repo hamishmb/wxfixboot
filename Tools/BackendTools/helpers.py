@@ -174,26 +174,33 @@ def find_checkable_file_systems():
                 remount_fs_after = False
                 continue
 
-            #Check if the partition is mounted.
-            if CoreTools.is_mounted(disk) is False:
+            #If filesystem is unknown, don't check it.
+            if DISK_INFO[disk]["FileSystem"] == "Unknown":
                 mount_point = "None"
-                check_this_fs = True
+                check_this_fs = False
                 remount_fs_after = False
 
             else:
-                #unmount the FS temporarily, to avoid data corruption.
-                mount_point = CoreTools.get_mount_point_of(disk)
-
-                if CoreTools.unmount(disk) != 0:
-                    logger.warning("find_checkable_file_systems(): Failed to unmount "+disk
-                                   +", which is necessary for safe disk checking! Ignoring it...")
-
-                    check_this_fs = False
+                #Check if the partition is mounted.
+                if CoreTools.is_mounted(disk) is False:
+                    mount_point = "None"
+                    check_this_fs = True
                     remount_fs_after = False
 
                 else:
-                    check_this_fs = True
-                    remount_fs_after = True
+                    #Unmount the FS temporarily, to avoid data corruption.
+                    mount_point = CoreTools.get_mount_point_of(disk)
+
+                    if CoreTools.unmount(disk) != 0:
+                        logger.warning("find_checkable_file_systems(): Failed to unmount "+disk
+                                       +", which is necessary for safe disk checking! Ignoring it.")
+
+                        check_this_fs = False
+                        remount_fs_after = False
+
+                    else:
+                        check_this_fs = True
+                        remount_fs_after = True
 
         if check_this_fs:
             #Add it to the dictionary for checking.
