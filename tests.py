@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # Unit tests for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -23,32 +24,15 @@ from __future__ import unicode_literals
 
 #Import modules.
 import unittest
-import subprocess
-import re
 import logging
-import plistlib
 import os
 import getopt
 import sys
-from bs4 import BeautifulSoup
 
 #Global vars.
 VERSION = "3.0.0"
 
-#Custom made modules.
-import Tools
-
-import Tools.coretools as CoreTools
-import Tools.dialogtools as DialogTools
-
-import Tools.BackendTools.helpers as HelperBackendTools
-import Tools.BackendTools.essentials as EssentialBackendTools
-
-import Tools.StartupTools.core as CoreStartupTools
-import Tools.StartupTools.main as MainStartupTools
-
 #Import test modules.
-from Tests import DialogFunctionsForTests
 from Tests.Tools import CoreToolsTests
 from Tests.Tools import DialogToolsTests
 
@@ -62,9 +46,6 @@ from Tests.Tools.StartupTools import MainStartupToolsTests
 if sys.version_info[0] == 3:
     #Disable cos necessary to keep supporting python 2.
     unicode = str #pylint: disable=redefined-builtin,invalid-name
-
-    #Plist hack for Python 3.
-    plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
 
 def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
@@ -87,7 +68,9 @@ if os.geteuid() != 0:
 
 #Check all cmdline options are valid.
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hDdsbcmat", ["help", "debug", "startuptools", "backendtools", "coretools", "main", "all", "tests"])
+    OPTS = getopt.getopt(sys.argv[1:], "hDdsbcmat", ["help", "debug", "startuptools",
+                                                     "backendtools", "coretools", "main",
+                                                     "all", "tests"])[0]
 
 except getopt.GetoptError as err:
     #Invalid option. Show the help message and then exit.
@@ -97,32 +80,36 @@ except getopt.GetoptError as err:
     sys.exit(2)
 
 #Set up which tests to run based on options given.
-TestSuites = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests, MainStartupToolsTests] #*** Set up full defaults when finished ***
+#TODO Set up full defaults when finished.
+TESTSUITES = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests,
+              EssentialBackendToolsTests, CoreStartupToolsTests,
+              MainStartupToolsTests]
 
 #Log only critical message by default.
-loggerLevel = logging.CRITICAL
+LOGGER_LEVEL = logging.CRITICAL
 
-for o, a in opts:
+for o, a in OPTS:
     if o in ["-c", "--coretools"]:
-        TestSuites = [CoreToolsTests]
+        TESTSUITES = [CoreToolsTests]
     elif o in ["-d", "--dialogtools"]:
-        TestSuites = [DialogToolsTests]
+        TESTSUITES = [DialogToolsTests]
     elif o in ["-s", "--startuptools"]:
-        TestSuites = [CoreStartupToolsTests, MainStartupToolsTests]
+        TESTSUITES = [CoreStartupToolsTests, MainStartupToolsTests]
         #Implementation isn't finished ***
     elif o in ["-b", "--backendtools"]:
-        TestSuites = [HelperBackendToolsTests, EssentialBackendToolsTests]
+        TESTSUITES = [HelperBackendToolsTests, EssentialBackendToolsTests]
         #Implementation isn't finished ***
     elif o in ["-m", "--main"]:
-        #TestSuites = [MainTests]
+        #TESTSUITES = [MainTests]
         assert False, "Not implemented yet"
     elif o in ["-a", "--all"]:
-        TestSuites = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests, EssentialBackendToolsTests, CoreStartupToolsTests, MainStartupToolsTests]
-        #TestSuites.append(MainTests)
+        TESTSUITES = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests,
+                      EssentialBackendToolsTests, CoreStartupToolsTests, MainStartupToolsTests]
+        #TESTSUITES.append(MainTests)
     elif o in ["-t", "--tests"]:
         pass
     elif o in ["-D", "--debug"]:
-        loggerLevel = logging.DEBUG
+        LOGGER_LEVEL = logging.DEBUG
     elif o in ["-h", "--help"]:
         usage()
         sys.exit()
@@ -130,10 +117,10 @@ for o, a in opts:
         assert False, "unhandled option"
 
 #Set up the logger (silence all except critical logging messages).
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', level=loggerLevel)
-logger = logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
+                    datefmt='%d/%m/%Y %I:%M:%S %p', level=LOGGER_LEVEL)
 
 if __name__ == "__main__":
-    for SuiteModule in TestSuites:
+    for SuiteModule in TESTSUITES:
         print("\n\nTests in "+unicode(SuiteModule)+"\n\n")
         unittest.TextTestRunner(verbosity=2).run(unittest.TestLoader().loadTestsFromModule(SuiteModule))

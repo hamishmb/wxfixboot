@@ -140,7 +140,8 @@ def show_thread_choice_dlg(msg, choices, title="WxFixBoot - Select an Option"):
     global DLGRESULT
 
     logger.debug("show_thread_choice_dlg(): Showing Thread Choice Dialog...")
-    dlg = wx.SingleChoiceDialog(wx.GetApp().TopWindow.panel, msg, title, choices, pos=wx.DefaultPosition)
+    dlg = wx.SingleChoiceDialog(wx.GetApp().TopWindow.panel, msg, title, choices,
+                                pos=wx.DefaultPosition)
 
     #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
@@ -238,10 +239,11 @@ def show_thread_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All F
     global DLGRESULT
 
     logger.debug("show_thread_save_file_dlg(): Showing Thread Save File Dialog...")
-    dlg = wx.FileDialog(wx.GetApp().TopWindow.panel, message=title, defaultDir="/home", wildcard=wildcard,
-                        style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+    dlg = wx.FileDialog(wx.GetApp().TopWindow.panel, message=title, defaultDir="/home",
+                        wildcard=wildcard, style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
-    #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions. #TODO Why is this helpful/not a bad idea?
+    #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
+    #TODO Why is this helpful/not a bad idea?
     if dlg.ShowModal() == wx.ID_OK:
         dlg.Destroy()
         DLGRESULT = dlg.GetPath()
@@ -258,7 +260,8 @@ def show_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All Files/De
     Handle showing thread file dialogs, reducing code duplication and compilications and errors.
     It can be used like this: ShowFileDlg(title=<title>, wildcard=<wildcard>)
     message is whatever you want the dialog to say.
-    wildcard is a | seperated list of file types to show, including their names as visible to the user.
+    wildcard is a | seperated list of file types to show, including their names as visible to
+    the user.
     """
 
     global DLGRESULT
