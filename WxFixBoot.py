@@ -65,7 +65,7 @@ if sys.version_info[0] == 3:
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "7/9/2018"
+RELEASEDATE = "17/9/2018"
 
 #Define other global variables.
 SESSION_ENDING = False
@@ -2549,7 +2549,7 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tPartitions: "+', '.join(DISK_INFO[disk]["Partitions"])+"\n")
             report_list.write("\t\tVendor: "+DISK_INFO[disk]["Vendor"]+"\n")
             report_list.write("\t\tProduct: "+DISK_INFO[disk]["Product"]+"\n")
-            #report_list.write("\t\tRaw Capacity: "+DISK_INFO[disk]["RawCapacity"]+"\n") FIXME Temporarily disabled before GetDevInfo 1.0.3 is released.
+            report_list.write("\t\tRaw Capacity: "+DISK_INFO[disk]["RawCapacity"]+"\n")
             report_list.write("\t\tHuman-readable Capacity: "+DISK_INFO[disk]["Capacity"]+"\n")
             report_list.write("\t\tDescription: "+DISK_INFO[disk]["Description"]+"\n")
             report_list.write("\t\tFlags: "+', '.join(DISK_INFO[disk]["Flags"])+"\n")
@@ -2557,7 +2557,7 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tFilesystem: "+DISK_INFO[disk]["FileSystem"]+"\n")
             report_list.write("\t\tUUID: "+DISK_INFO[disk]["UUID"]+"\n")
             report_list.write("\t\tID: "+DISK_INFO[disk]["ID"]+"\n")
-            #report_list.write("\t\tBoot Record Strings: "+unicode(b', '.join(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n") FIXME Disabled until getdevinfo 1.0.3 is released.
+            #report_list.write("\t\tBoot Record Strings: "+unicode(b', '.join(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n") FIXME disabled until GetDevInfo 1.0.4 is out w/ final fix for this. 
 
         #Do OS Information.
         report_list.write("\n##########OS Information##########\n")
