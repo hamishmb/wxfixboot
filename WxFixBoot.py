@@ -45,12 +45,12 @@ import wx.lib.stattext
 #Compatibility with wxPython 4.
 if int(wx.version()[0]) >= 4:
     import wx.adv
-    from wx.adv import AboutDialogInfo as wxAboutDialogInfo
-    from wx.adv import AboutBox as wxAboutBox
+    from wx.adv import AboutDialogInfo as wxAboutDialogInfo #pylint: disable=no-name-in-module
+    from wx.adv import AboutBox as wxAboutBox #pylint: disable=no-name-in-module
 
 else:
-    from wx import AboutDialogInfo as wxAboutDialogInfo
-    from wx import AboutBox as wxAboutBox
+    from wx import AboutDialogInfo as wxAboutDialogInfo #pylint: disable=no-name-in-module
+    from wx import AboutBox as wxAboutBox #pylint: disable=no-name-in-module
 
 import getdevinfo
 import getdevinfo.linux
@@ -353,10 +353,6 @@ class InitThread(threading.Thread):
         #Initialize the thread.
         threading.Thread.__init__(self)
         self.parent_window = wx.GetApp().TopWindow
-
-        #Set up dialog tools and core tools.
-        Tools.dialogtools.parent_window = self.parent_window
-        Tools.coretools.parent_window = self.parent_window
 
         #Start the thread.
         self.start()
@@ -2344,7 +2340,6 @@ class ProgressWindow(wx.Frame):
         self.panel = wx.Panel(self)
         self.SetClientSize(wx.Size(500, 300))
         wx.Frame.SetIcon(self, APPICON)
-        Tools.coretools.parent_window = self
 
         self.create_text()
         self.create_buttons()
@@ -2372,7 +2367,7 @@ class ProgressWindow(wx.Frame):
 
         self.running_operations = True
 
-        BackendThread()
+        BackendThread(self)
 
     def create_text(self):
         """Create the Text"""
@@ -2741,15 +2736,10 @@ class ProgressWindow(wx.Frame):
 #End Progress Window
 #Begin Backend Thread
 class BackendThread(threading.Thread):
-    def __init__(self):
+    def __init__(self, parent_window):
         """Initialize BackendThread"""
         #Set up the backend tools.
-        self.parent_window = wx.GetApp().TopWindow
-
-        Tools.dialogtools.parent_window = self.parent_window
-        Tools.BackendTools.helpers.parent_window = self.parent_window
-        Tools.BackendTools.essentials.parent_window = self.parent_window
-        Tools.BackendTools.main.parent_window = self.parent_window
+        self.parent_window = parent_window
 
         #Start the main part of this thread.
         threading.Thread.__init__(self)
@@ -2811,7 +2801,7 @@ class BackendThread(threading.Thread):
             if isinstance(function, tuple):
                 if MainBackendTools.manage_bootloader in function:
                     dialog_message += " You performed bootloader operations on at least one OS, "
-                    dialog_messahe += "so please now reboot your system."
+                    dialog_message += "so please now reboot your system."
                     break
 
         DialogTools.show_msg_dlg(kind="info", message=dialog_message)
