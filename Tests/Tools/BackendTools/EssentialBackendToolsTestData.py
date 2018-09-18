@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -26,7 +27,8 @@ def return_initial_system_info_dict():
     return {"DisableBootloaderOperationsBecause": []}
 
 def return_system_info_dict_with_disabled_bl_opts():
-    return {"DisableBootloaderOperations": True, "DisableBootloaderOperationsBecause": ["Internet Connection test failed."]}
+    return {"DisableBootloaderOperations": True,
+            "DisableBootloaderOperationsBecause": ["Internet Connection test failed."]}
 
 def return_system_info_dict_with_enabled_bl_opts():
     return {"DisableBootloaderOperations": False, "DisableBootloaderOperationsBecause": []}

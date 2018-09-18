@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # MainStartupTools test functions for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#If you're wondering why this is here, it's so that there are some known good/sane functions to aid testing the ones in DialogTools.
+#If you're wondering why this is here, it's so that there are some known good/sane functions
+#to aid testing the ones in DialogTools.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -43,7 +45,11 @@ WOULD_EMERGENCY_EXIT = False
 WOULD_EMERGENCY_EXIT_BECAUSE = []
 
 def emergency_exit(message):
-    """Test suite special: sets a variable so the tests know if an Emergency Exit would have been triggered."""
+    """
+    Test suite special: sets a variable so the tests know if an Emergency Exit
+    would have been triggered.
+    """
+
     global WOULD_EMERGENCY_EXIT
     global WOULD_EMERGENCY_EXIT_BECAUSE
 
@@ -51,9 +57,15 @@ def emergency_exit(message):
     WOULD_EMERGENCY_EXIT_BECAUSE.append(message)
 
 def check_depends():
-    """Check dependencies, and show an error message and kill the app if the dependencies are not met."""
-    #Create a temporary list to allow WxFixBoot to notify the user of particular unmet dependencies.
-    cmd_list = ("cp", "mv", "which", "uname", "fsck", "ls", "modprobe", "mount", "umount", "rm", "ping", "badblocks", "arch", "python", "file", "sh", "echo", "lshw", "lvdisplay", "dmidecode", "chroot", "strings", "dd", "blkid")
+    """
+    Check dependencies, and show an error message and kill the app if the dependencies are not met.
+    """
+
+    #Create a temporary list to allow WxFixBoot to notify the user of particular unmet
+    #dependencies.
+    cmd_list = ("cp", "mv", "which", "uname", "fsck", "ls", "modprobe", "mount", "umount",
+                "rm", "ping", "badblocks", "arch", "python", "file", "sh", "echo", "lshw",
+                "lvdisplay", "dmidecode", "chroot", "strings", "dd", "blkid")
 
     #Create a list to contain names of failed commands.
     failed_list = []
@@ -68,7 +80,8 @@ def check_depends():
     #Check if any commands failed.
     if failed_list != []:
         #Missing dependencies!
-        emergency_exit("The following dependencies could not be found on your system: "+', '.join(failed_list)+".\n\nPlease install the missing dependencies.")
+        emergency_exit("The following dependencies could not be found on your system: "
+                       + ', '.join(failed_list)+".\n\nPlease install the missing dependencies.")
 
 def check_for_live_disk():
     """Try to determine if we're running on a live disk."""
@@ -99,7 +112,10 @@ def check_for_live_disk():
 
     #Ask the user if we're running on a live disk.
     else:
-        SystemInfo["IsLiveDisk"] = DialogTools.show_yes_no_dlg(message="Is WxFixBoot being run on live media, such as an Ubuntu Installer Disk?", title="WxFixBoot - Live Media?")
+        SystemInfo["IsLiveDisk"] = DialogTools.show_yes_no_dlg(message="Is WxFixBoot being run on "
+                                                               + "live media, such as an Ubuntu "
+                                                               + "Installer Disk?",
+                                                               title="WxFixBoot - Live Media?")
         SystemInfo["OnPartedMagic"] = False
 
     #Get current OS architecture.
@@ -153,10 +169,13 @@ def get_oss():
             if was_mounted:
                 if CoreTools.unmount(mount_point) != 0:
                     break
-                    #CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+                    #CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for"
+                    #                         + "operating systems on it! Please reboot your "
+                    #                         + "computer and try again.")
 
         elif DiskInfo[partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
-            #Look for Windows. NOTE: It seems NTFS volumes can't be mounted twice, which is why we're being more careful here.
+            #Look for Windows. NOTE: It seems NTFS volumes can't be mounted twice, which is why
+            #we're being more careful here.
             #Check if we need to mount the partition.
             was_mounted = False
 
@@ -217,7 +236,9 @@ def get_oss():
             if was_mounted:
                 if CoreTools.unmount(mount_point) != 0:
                     break
-                    #CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+                    #CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for"
+                    #                         + "operating systems on it! Please reboot your "
+                    #                         + "computer and try again.")
 
         else:
             #Look for Linux.
@@ -229,7 +250,7 @@ def get_oss():
                 root_fs_is_alias = (root_fs in DiskInfo[partition]["Aliases"])
 
             if partition == root_fs or root_fs_is_alias:
-                cmd =  "python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
+                cmd = "python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
                 apt_cmd = "which apt-get"
                 yum_cmd = "which yum"
                 chroot = False
@@ -256,18 +277,25 @@ def get_oss():
             #Run the function to get the architechure.
             os_arch = CoreStartupTools.determine_os_architecture(mount_point=mount_point)
 
-            #If the OS's name wasn't found, but its architecture was, there must be an OS here, so try to use lsb_release if possible before asking the user. Catch if the name is just whitespace too.
+            #If the OS's name wasn't found, but its architecture was, there must be an OS here,
+            #so try to use lsb_release if possible before asking the user. Catch if the name is
+            #just whitespace too.
             if (retval != 0 or os_name == "" or os_name.isspace()) and os_arch != None:
-                os_name = CoreStartupTools.get_os_name_with_lsb(partition=partition, mount_point=mount_point, is_current_os=is_current_os)
+                os_name = CoreStartupTools.get_os_name_with_lsb(partition=partition,
+                                                                mount_point=mount_point,
+                                                                is_current_os=is_current_os)
 
                 #If we really have to, ask the user.
                 if os_name is None:
-                    os_name = CoreStartupTools.ask_for_os_name(partition=partition, is_current_os=is_current_os)
+                    os_name = CoreStartupTools.ask_for_os_name(partition=partition,
+                                                               is_current_os=is_current_os)
 
             #Look for APT.
-            package_manager = CoreStartupTools.determine_package_manager(apt_cmd=apt_cmd, yum_cmd=yum_cmd) 
+            package_manager = CoreStartupTools.determine_package_manager(apt_cmd=apt_cmd,
+                                                                         yum_cmd=yum_cmd) 
 
-            #Also check if CoreStartupTools.ask_for_os_name was used to determine the name. If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
+            #Also check if CoreStartupTools.ask_for_os_name was used to determine the name.
+            #If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
             if os_name != None and os_arch != None and package_manager != "Unknown":
                 #Add this information to OSInfo.
                 OSInfo[os_name] = {}
@@ -284,7 +312,9 @@ def get_oss():
             if chroot:
                 #Unmount the filesystem.
                 if CoreTools.unmount(mount_point) != 0: break
-                    #CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for operating systems on it! Please reboot your computer and try again.")
+                    #CoreTools.emergency_exit("Couldn't unmount "+partition+" after looking for"
+                    #                         + "operating systems on it! Please reboot your "
+                    #                         + "computer and try again.")
 
                 #Remove the temporary mountpoint
                 os.rmdir(mount_point)
@@ -334,4 +364,9 @@ def get_firmware_type():
         else:
             #It's UEFI.
             SystemInfo["FirmwareType"] = "UEFI"
-            DialogTools.show_msg_dlg(kind="warning", message="Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.")
+            DialogTools.show_msg_dlg(kind="warning", message="Your computer uses UEFI firmware, "
+                                     + "but the UEFI variables couldn't be mounted or weren't "
+                                     + "found. Please ensure you've booted in UEFI mode rather "
+                                     + "than legacy mode to enable access to the UEFI variables. "
+                                     + "You can attempt installing a UEFI bootloader without "
+                                     + "them, but it might not work, and it isn't recommended.")

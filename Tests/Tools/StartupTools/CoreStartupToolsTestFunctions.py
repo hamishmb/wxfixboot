@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # CoreStartupTools test functions for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#If you're wondering why this is here, it's so that there are some known good/sane functions to aid testing the ones in DialogTools.
+#If you're wondering why this is here, it's so that there are some known good/sane
+#functions to aid testing the ones in DialogTools.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -60,7 +62,11 @@ def determine_package_manager(apt_cmd, yum_cmd):
     return package_manager
 
 def get_fstab_info(mount_point, os_name):
-    """Get /etc/fstab info and related info (EFI partition, /boot partition) for the given OS at the given mountpoint."""
+    """
+    Get /etc/fstab info and related info (EFI partition, /boot partition) for the given OS
+    at the given mountpoint.
+    """
+
     #Do some setup.
     efi_partition = "Unknown"
     boot_partition = "Unknown"
@@ -89,7 +95,8 @@ def get_fstab_info(mount_point, os_name):
                         temp = disk
                         break
 
-            #In case we had a UUID with no match, check again before adding it to OSInfo, else ignore it.
+            #In case we had a UUID with no match, check again before adding it to OSInfo,
+            #else ignore it.
             if "/dev/" in temp:
                 disk = temp
 

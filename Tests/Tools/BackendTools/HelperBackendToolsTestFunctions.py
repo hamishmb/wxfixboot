@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#If you're wondering why this is here, it's so that there are some known good/sane functions to aid testing the ones in DialogTools.
+#If you're wondering why this is here, it's so that there are some known good/sane
+#functions to aid testing the ones in DialogTools.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -59,7 +61,11 @@ def find_missing_fsck_modules():
     return failed_list
 
 def find_checkable_file_systems():
-    """Find all checkable filesystems, and then return them to EssentialBackendTools().FileSystemCheck()"""
+    """
+    Find all checkable filesystems, and then return them to
+    EssentialBackendTools().FileSystemCheck()
+    """
+
     #Do setup.
     do_not_check_list = []
     filesystems_to_check = {}
@@ -84,7 +90,8 @@ def find_checkable_file_systems():
             remount_partition_after = False
 
         else:
-            #If we're not running on a live disk, skip the filesystem if it's the same as root_fs (in which case checking it may corrupt data).
+            #If we're not running on a live disk, skip the filesystem if it's the same as root_fs
+            #(in which case checking it may corrupt data).
             if SystemInfo["IsLiveDisk"] is False and disk == root_fs:
                 mount_point = "/"
                 check_the_fs = False
@@ -101,7 +108,9 @@ def find_checkable_file_systems():
                 #Unmount the FS temporarily, to avoid data corruption.
                 mount_point = CoreTools.get_mount_point_of(disk)
 
-                if mount_point in ("/", "/home"): #Don't actually unmount, would cause differences in output. Try to simulate if it was successful or not instead.
+                if mount_point in ("/", "/home"):
+                    #Don't actually unmount, would cause differences in output.
+                    #Try to simulate if it was successful or not instead.
                     check_the_fs = False
                     remount_partition_after = False
 
@@ -128,7 +137,8 @@ def find_checkable_file_systems():
     return filesystems_to_check
 
 #Checks if system can perform certain tests.
-def CanPerformFindMissingFSCKModulesTest1():
-    return (os.path.isfile("/sbin/fsck.jfs") and os.path.isfile("/sbin/fsck.ext4") and os.path.isfile("/sbin/fsck.ext3") and os.path.isfile("/sbin/fsck.vfat"))
+def can_perform_find_missing_fsck_modules_test_1():
+    return (os.path.isfile("/sbin/fsck.jfs") and os.path.isfile("/sbin/fsck.ext4")
+            and os.path.isfile("/sbin/fsck.ext3") and os.path.isfile("/sbin/fsck.vfat"))
 
 #End Main Class.
