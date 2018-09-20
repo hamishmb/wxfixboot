@@ -66,7 +66,7 @@ if sys.version_info[0] == 3:
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "18/9/2018"
+RELEASEDATE = "20/9/2018"
 
 #Define other global variables.
 SESSION_ENDING = False
@@ -143,22 +143,8 @@ import Tools.StartupTools.main as MainStartupTools
 import Tools.BackendTools.essentials as EssentialBackendTools
 import Tools.BackendTools.main as MainBackendTools
 
-import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
+import Tools.notebookfunctions as NoteBookSharedFunctions
 
-#Begin Disk Information Handler thread.
-class GetDiskInformation(threading.Thread): #TODO Is this needed?
-    def __init__(self):
-        """Initialize and start the thread."""
-        self.parent_window = wx.GetApp().TopWindow
-        threading.Thread.__init__(self)
-        self.start()
-
-    def run(self):
-        """Get Disk Information and return it as a list with embedded lists"""
-        #Use a module I've written to collect data about connected Disks, and return it.
-        wx.CallAfter(self.parent_window.ReceiveDiskInfo, getdevinfo.getdevinfo.get_info())
-
-#End Disk Information Handler thread.
 #Begin Starter Class
 class WxFixBoot(wx.App):
     def OnInit(self): #pylint: disable=invalid-name
@@ -491,7 +477,7 @@ class InitThread(threading.Thread):
             CoreTools.emergency_exit("You don't appear to have any modifyable Linux installations "
                                      + "on your hard disks. If you think this is incorrect, "
                                      + "please file a bug or ask a question on WxFixBoot's "
-                                     + "launchpad page.") #FIXME Link.
+                                     + "launchpad page at https://www.launchpad.net/wxfixboot")
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
