@@ -106,7 +106,7 @@ except getopt.GetoptError as err:
     sys.exit(2)
 
 #Set up logging.
-logger = logging.getLogger('WxFixBoot '+VERSION)
+logger = logging.getLogger('WxFixBoot')
 logging.basicConfig(filename='/tmp/wxfixboot.log',
                     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
                     datefmt='%d/%m/%Y %I:%M:%S %p')

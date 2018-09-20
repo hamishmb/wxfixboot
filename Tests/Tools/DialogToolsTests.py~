@@ -59,9 +59,6 @@ class TestShowThreadDlgs(unittest.TestCase):
         self.frame = TestWindow()
 
     def tearDown(self):
-        self.panel.Destroy()
-        del self.panel
-
         self.frame.Destroy()
         del self.frame
 

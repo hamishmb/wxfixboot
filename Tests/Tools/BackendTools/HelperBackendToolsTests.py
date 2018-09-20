@@ -159,9 +159,5 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         del self.app
 
     def test_find_checkable_file_systems_1(self):
-        print(Functions.find_checkable_file_systems())
-        print("\n\n")
-        print(HelperBackendTools.find_checkable_file_systems())
-
         self.assertEqual(Functions.find_checkable_file_systems(),
                          HelperBackendTools.find_checkable_file_systems())

@@ -32,6 +32,17 @@ import sys
 #Global vars.
 VERSION = "3.0.0"
 
+#Set up the logger (silence all except critical logging messages).
+logger = logging.getLogger('WxFixBoot')
+
+#Log only critical messages by default.
+LOGGER_LEVEL = logging.CRITICAL
+
+logger.setLevel(LOGGER_LEVEL)
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
+                    datefmt='%d/%m/%Y %I:%M:%S %p', level=LOGGER_LEVEL)
+
 #Import test modules.
 from Tests.Tools import CoreToolsTests
 from Tests.Tools import DialogToolsTests
@@ -85,9 +96,6 @@ TESTSUITES = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests,
               EssentialBackendToolsTests, CoreStartupToolsTests,
               MainStartupToolsTests]
 
-#Log only critical message by default.
-LOGGER_LEVEL = logging.CRITICAL
-
 for o, a in OPTS:
     if o in ["-c", "--coretools"]:
         TESTSUITES = [CoreToolsTests]
@@ -97,7 +105,7 @@ for o, a in OPTS:
         TESTSUITES = [CoreStartupToolsTests, MainStartupToolsTests]
         #Implementation isn't finished ***
     elif o in ["-b", "--backendtools"]:
-        TESTSUITES = [HelperBackendToolsTests]#, EssentialBackendToolsTests]
+        TESTSUITES = [HelperBackendToolsTests, EssentialBackendToolsTests]
         #Implementation isn't finished ***
     elif o in ["-m", "--main"]:
         #TESTSUITES = [MainTests]
@@ -115,10 +123,6 @@ for o, a in OPTS:
         sys.exit()
     else:
         assert False, "unhandled option"
-
-#Set up the logger (silence all except critical logging messages).
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
-                    datefmt='%d/%m/%Y %I:%M:%S %p', level=LOGGER_LEVEL)
 
 if __name__ == "__main__":
     for SuiteModule in TESTSUITES:

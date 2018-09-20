@@ -45,9 +45,9 @@ if sys.version_info[0] == 3:
     unicode = str #pylint: disable=redefined-builtin,invalid-name
     str = bytes #pylint: disable=redefined-builtin,invalid-name
 
-#Set up logging. FIXME Set logger level as specified on cmdline.
+#Set up logging.
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
 
 def check_depends():
     """
