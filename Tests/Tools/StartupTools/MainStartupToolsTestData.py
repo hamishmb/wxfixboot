@@ -47,4 +47,4 @@ def return_fake_bl_info2():
            }
 
 def return_final_check_results1():
-    return "Some of the OSs found on your system cannot be modified! These are:\n\nWindows Vistarg, because Windows cannot be modified with WxFixBoot\nmacOS Sierra, because macOS cannot be modifyed with WxFixBoot\n\nClick okay to continue."
+    return "Some of the OSs found on your system cannot be modified! These are:\n\nWindows Vistarg, because Windows cannot be modified with WxFixBoot\nmacOS Sierra, because macOS cannot be modified with WxFixBoot\n\nClick okay to continue."

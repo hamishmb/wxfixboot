@@ -50,17 +50,15 @@ class TestWindow(wx.Frame):
         wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1),
                           style=wx.SIMPLE_BORDER)
 
+        self.panel = TestPanel(self)
+
 #No need for assertions, we're just making sure the functions run without errors here.
 class TestShowThreadDlgs(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
 
     def tearDown(self):
-        self.panel.Destroy()
-        del self.panel
-
         self.frame.Destroy()
         del self.frame
 

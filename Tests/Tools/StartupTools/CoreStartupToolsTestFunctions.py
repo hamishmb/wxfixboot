@@ -31,6 +31,7 @@ import sys
 #Import other modules.
 sys.path.append('../../..') #Need to be able to import the Tools module from here.
 
+from Tools.dictionaries import *
 import Tools.coretools as CoreTools
 
 def determine_package_manager(apt_cmd, yum_cmd):
@@ -90,8 +91,8 @@ def get_fstab_info(mount_point, os_name):
             if "UUID=" in temp:
                 uuid = temp.split("=")[1]
 
-                for disk in DiskInfo.keys():
-                    if DiskInfo[disk]["UUID"] == uuid:
+                for disk in DISK_INFO:
+                    if DISK_INFO[disk]["UUID"] == uuid:
                         temp = disk
                         break
 

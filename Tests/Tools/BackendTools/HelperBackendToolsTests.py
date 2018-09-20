@@ -42,6 +42,7 @@ import getdevinfo.linux
 sys.path.append('../../..') #Need to be able to import the Tools module from here.
 
 import Tools
+from Tools.dictionaries import *
 import Tools.BackendTools.helpers as HelperBackendTools
 import Tests.DialogFunctionsForTests as DialogTools
 
@@ -65,22 +66,17 @@ class TestWindow(wx.Frame):
         wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1),
                           style=wx.SIMPLE_BORDER)
 
+        self.panel = TestPanel(self)
+
 class TestWaitUntilPackageManagerFree(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
 
         Tools.coretools.startup = True
 
-        DialogTools.parent_window = self.panel
-
     def tearDown(self):
         del Tools.coretools.startup
-        del DialogTools.parent_window
-
-        self.panel.Destroy()
-        del self.panel
 
         self.frame.Destroy()
         del self.frame
@@ -142,25 +138,19 @@ class TestFindCheckableFileSystems(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
-        DialogTools.parent_window = self.panel
 
         Tools.coretools.startup = True
-        self.DiskInfo = getdevinfo.getdevinfo.get_info() #We need real disk info for these ones.
-        Functions.DiskInfo = self.DiskInfo
-        Tools.BackendTools.helpers.DiskInfo = self.DiskInfo
         Tools.BackendTools.helpers.DialogTools = DialogTools
 
-    def tearDown(self):
-        del Tools.coretools.startup
-        del DialogTools.parent_window
-        del self.DiskInfo
-        del Functions.DiskInfo
-        del Tools.BackendTools.helpers.DiskInfo
-        del Tools.BackendTools.helpers.DialogTools
+        DISK_INFO.update(getdevinfo.getdevinfo.get_info()) #We need real disk info for these ones.
+        SYSTEM_INFO.update(Data.return_initial_system_info_dict())
 
-        self.panel.Destroy()
-        del self.panel
+    def tearDown(self):
+        DISK_INFO.clear()
+        SYSTEM_INFO.clear()
+
+        del Tools.coretools.startup
+        del Tools.BackendTools.helpers.DialogTools
 
         self.frame.Destroy()
         del self.frame
@@ -169,14 +159,9 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         del self.app
 
     def test_find_checkable_file_systems_1(self):
-        #More setup.
-        Tools.BackendTools.helpers.SystemInfo = Data.return_initial_system_info_dict()
-        Functions.SystemInfo = Data.return_initial_system_info_dict()
+        print(Functions.find_checkable_file_systems())
+        print("\n\n")
+        print(HelperBackendTools.find_checkable_file_systems())
 
-        #Test.
         self.assertEqual(Functions.find_checkable_file_systems(),
                          HelperBackendTools.find_checkable_file_systems())
-
-        #More teardown.
-        del Tools.BackendTools.helpers.SystemInfo
-        del Functions.SystemInfo

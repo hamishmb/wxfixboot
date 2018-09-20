@@ -41,6 +41,7 @@ from . import CoreStartupToolsTestData as Data
 sys.path.append('../..') #Need to be able to import the Tools module from here.
 
 import Tools
+from Tools.dictionaries import *
 import Tools.StartupTools.core as CoreStartupTools
 import Tests.DialogFunctionsForTests as DialogFunctionsForTests
 
@@ -55,6 +56,8 @@ class TestWindow(wx.Frame):
         """Initialises TestWindow"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1),
                           style=wx.SIMPLE_BORDER)
+
+        self.panel = TestPanel(self)
 
 class TestDeterminePackageManager(unittest.TestCase):
     def setUp(self):
@@ -71,12 +74,10 @@ class TestDeterminePackageManager(unittest.TestCase):
 
 class TestGetFSTabInfo(unittest.TestCase): #*** Do another test with a fake fstab file(s) ***
     def setUp(self):
-        Tools.StartupTools.core.DiskInfo = Data.return_empty_disk_info_dict()
-        Functions.DiskInfo = Data.return_empty_disk_info_dict()
+        DISK_INFO.update(Data.return_empty_disk_info_dict())
 
     def tearDown(self):
-        del Tools.StartupTools.core.DiskInfo
-        del Functions.DiskInfo
+        DISK_INFO.clear()
 
     def test_get_fstab_info_1(self):
         self.assertEqual(CoreStartupTools.get_fstab_info(mount_point="", os_name="ThisIsATest"),
@@ -110,9 +111,6 @@ class TestAskForOSName(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
-
-        DialogFunctionsForTests.parent_window = self.panel
 
         Tools.StartupTools.core.DialogTools = DialogFunctionsForTests
 
@@ -120,16 +118,13 @@ class TestAskForOSName(unittest.TestCase):
         del Tools.StartupTools.core.DialogTools
         del DialogFunctionsForTests.parent_window
 
-        self.panel.Destroy()
-        del self.panel
-
         self.frame.Destroy()
         del self.frame
 
         self.app.Destroy()
         del self.app
 
-    def testAskForOSName1(self):
+    def test_ask_for_os_name_1(self):
         DialogFunctionsForTests.show_real_msg_dlg(message="Enter \"Linux\" in the text entry "
                                                   + "dialog that you're about to be shown.")
 
@@ -144,7 +139,7 @@ class TestAskForOSName(unittest.TestCase):
         self.assertEqual(DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1], "Linux")
         self.assertEqual(result, "Linux")
 
-    def testAskForOSName2(self):
+    def test_ask_for_os_name_2(self):
         DialogFunctionsForTests.show_real_msg_dlg(message="Click \"No\" in the yes/no dialog that "
                                                   + "you're about to be shown.")
 
@@ -157,7 +152,7 @@ class TestAskForOSName(unittest.TestCase):
 
         self.assertIsNone(result)
 
-    def testAskForOSName3(self):
+    def test_ask_for_os_name_3(self):
         DialogFunctionsForTests.show_real_msg_dlg(message="Click \"Yes\" in the yes/no dialog "
                                                   + "that you're about to be shown, then enter "
                                                   + "\"Linux\" in the text entry dialog.")

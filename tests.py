@@ -97,7 +97,7 @@ for o, a in OPTS:
         TESTSUITES = [CoreStartupToolsTests, MainStartupToolsTests]
         #Implementation isn't finished ***
     elif o in ["-b", "--backendtools"]:
-        TESTSUITES = [HelperBackendToolsTests, EssentialBackendToolsTests]
+        TESTSUITES = [HelperBackendToolsTests]#, EssentialBackendToolsTests]
         #Implementation isn't finished ***
     elif o in ["-m", "--main"]:
         #TESTSUITES = [MainTests]

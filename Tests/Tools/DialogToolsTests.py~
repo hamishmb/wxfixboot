@@ -20,7 +20,7 @@
 # Reason (no-self-use): These are test methods, and must belong to classes.
 # Reason (too-many-ancestors): These are wxPython ancestors.
 # Reason (too-few-public-methods): Test classes.
- 
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
 #strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -50,12 +50,13 @@ class TestWindow(wx.Frame):
         wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1),
                           style=wx.SIMPLE_BORDER)
 
+        self.panel = TestPanel(self)
+
 #No need for assertions, we're just making sure the functions run without errors here.
 class TestShowThreadDlgs(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
 
     def tearDown(self):
         self.panel.Destroy()

@@ -31,6 +31,7 @@ from __future__ import unicode_literals
 #Import modules
 import unittest
 import sys
+import copy
 import wx
 import getdevinfo
 import getdevinfo.linux
@@ -43,6 +44,7 @@ from . import MainStartupToolsTestData as Data
 sys.path.append('../../..') #Need to be able to import the Tools module from here.
 
 import Tools
+from Tools.dictionaries import *
 import Tools.StartupTools.main as MainStartupTools
 import Tests.DialogFunctionsForTests as DialogTools
 
@@ -57,6 +59,8 @@ class TestWindow(wx.Frame):
         """Initialises TestWindow"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1),
                           style=wx.SIMPLE_BORDER)
+
+        self.panel = TestPanel(self)
 
 class TestCheckDepends(unittest.TestCase):
     def setUp(self):
@@ -84,18 +88,12 @@ class TestCheckForLiveDisk(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
-
-        DialogTools.parent_window = self.panel
 
         Tools.coretools.startup = True
+        SYSTEM_INFO.clear()
 
     def tearDown(self):
         del Tools.coretools.startup
-        del DialogTools.parent_window
-
-        self.panel.Destroy()
-        del self.panel
 
         self.frame.Destroy()
         del self.frame
@@ -105,33 +103,25 @@ class TestCheckForLiveDisk(unittest.TestCase):
 
     def test_check_for_live_disk_1(self):
         Functions.check_for_live_disk()
+
+        self.testinfo = copy.deepcopy(SYSTEM_INFO)
+
         MainStartupTools.check_for_live_disk()
 
-        self.assertEqual(Functions.SystemInfo, Tools.StartupTools.main.SystemInfo)
+        self.assertEqual(self.testinfo, SYSTEM_INFO)
 
 class TestGetOSs(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
 
-        DialogTools.parent_window = self.panel
         Tools.coretools.startup = True
-        self.DiskInfo = getdevinfo.getdevinfo.get_info() #We need real disk info for these ones.
-        Functions.DiskInfo = self.DiskInfo
-        Tools.StartupTools.main.DiskInfo = self.DiskInfo
-        Tools.StartupTools.core.DiskInfo = self.DiskInfo
+        DISK_INFO.update(getdevinfo.getdevinfo.get_info()) #We need real disk info for these ones.
 
     def tearDown(self):
-        del DialogTools.parent_window
         del Tools.coretools.startup
-        del Tools.StartupTools.main.DiskInfo
-        del Tools.StartupTools.core.DiskInfo
-        del Functions.DiskInfo
-        del self.DiskInfo
 
-        self.panel.Destroy()
-        del self.panel
+        DISK_INFO.clear()
 
         self.frame.Destroy()
         del self.frame
@@ -149,23 +139,24 @@ class TestGetFirmwareType(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
 
-        DialogTools.parent_window = self.panel
+        SYSTEM_INFO.clear()
 
         Tools.coretools.startup = True
 
     def tearDown(self):
         del Tools.coretools.startup
-        del DialogTools.parent_window
 
     def test_get_firmware_type_1(self):
         #Run them.
         MainStartupTools.get_firmware_type()
+
+        self.testinfo = copy.deepcopy(SYSTEM_INFO)
+
         Functions.get_firmware_type()
 
         #Test that the result is the same.
-        self.assertEqual(Tools.StartupTools.main.SystemInfo, Functions.SystemInfo)
+        self.assertEqual(self.testinfo, SYSTEM_INFO)
 
         #If a dialog was going to be displayed to the user, make sure it would be displayed
         #both times.
@@ -178,19 +169,20 @@ class TestFinalCheck(unittest.TestCase):
 
     def tearDown(self):
         del Tools.StartupTools.main.DialogTools
-        del Tools.StartupTools.main.BootloaderInfo #Will be present after test.
+
+        BOOTLOADER_INFO.clear()
 
         #Reset so we can check if there are any new messages from the 2nd test.
         DialogTools.MSG_DLG_MESSAGES = []
 
     def test_final_check_1(self):
         #Get the dict for this test.
-        Tools.StartupTools.main.BootloaderInfo = Data.return_fake_bl_info1()
+        BOOTLOADER_INFO.update(Data.return_fake_bl_info1())
         MainStartupTools.final_check()
         self.assertEqual(DialogTools.MSG_DLG_MESSAGES[-1], Data.return_final_check_results1())
 
     def test_final_check_2(self):
         #Get the dict for this test.
-        Tools.StartupTools.main.BootloaderInfo = Data.return_fake_bl_info2()
+        BOOTLOADER_INFO.update(Data.return_fake_bl_info2())
         MainStartupTools.final_check()
         self.assertFalse(DialogTools.MSG_DLG_MESSAGES)

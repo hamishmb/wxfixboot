@@ -33,13 +33,9 @@ import os
 sys.path.append('../../..') #Need to be able to import the Tools module from here.
 
 import Tools.coretools as CoreTools
+from Tools.dictionaries import *
 import Tools.StartupTools.core as CoreStartupTools
 import Tests.DialogFunctionsForTests as DialogTools
-
-#Declare global dictionaries to silence pylint warnings.
-SystemInfo = {}
-DiskInfo = {}
-OSInfo = {}
 
 WOULD_EMERGENCY_EXIT = False
 WOULD_EMERGENCY_EXIT_BECAUSE = []
@@ -87,54 +83,53 @@ def check_for_live_disk():
     """Try to determine if we're running on a live disk."""
     #Detect Parted Magic automatically.
     if "pmagic" in CoreTools.start_process("uname -r", return_output=True)[1]:
-        SystemInfo["IsLiveDisk"] = True
-        SystemInfo["OnPartedMagic"] = True
+        SYSTEM_INFO["IsLiveDisk"] = True
+        SYSTEM_INFO["OnPartedMagic"] = True
 
     #Try to detect ubuntu-based livecds.
     elif CoreTools.is_mounted("/cow", "/") and os.path.isfile("/cdrom/casper/filesystem.squashfs"):
-        SystemInfo["IsLiveDisk"] = True
-        SystemInfo["OnPartedMagic"] = False
+        SYSTEM_INFO["IsLiveDisk"] = True
+        SYSTEM_INFO["OnPartedMagic"] = False
 
     #Try to detect fedora-based livecds.
     elif CoreTools.is_mounted("/dev/mapper/live-rw", "/") and os.path.isfile("/run/initramfs/live/LiveOS/squashfs.img"):
-        SystemInfo["IsLiveDisk"] = True
-        SystemInfo["OnPartedMagic"] = False
+        SYSTEM_INFO["IsLiveDisk"] = True
+        SYSTEM_INFO["OnPartedMagic"] = False
 
     #Try to detect if we're not running on a live disk (on a HDD).
     elif "/dev/sd" in CoreTools.get_partition_mounted_at("/"):
-        SystemInfo["IsLiveDisk"] = False
-        SystemInfo["OnPartedMagic"] = False
+        SYSTEM_INFO["IsLiveDisk"] = False
+        SYSTEM_INFO["OnPartedMagic"] = False
 
     #Try to detect if we're not running on a live disk (on LVM).
     elif "/dev/mapper/" in CoreTools.get_partition_mounted_at("/"):
-        SystemInfo["IsLiveDisk"] = False
-        SystemInfo["OnPartedMagic"] = False
+        SYSTEM_INFO["IsLiveDisk"] = False
+        SYSTEM_INFO["OnPartedMagic"] = False
 
     #Ask the user if we're running on a live disk.
     else:
-        SystemInfo["IsLiveDisk"] = DialogTools.show_yes_no_dlg(message="Is WxFixBoot being run on "
+        SYSTEM_INFO["IsLiveDisk"] = DialogTools.show_yes_no_dlg(message="Is WxFixBoot being run on "
                                                                + "live media, such as an Ubuntu "
                                                                + "Installer Disk?",
                                                                title="WxFixBoot - Live Media?")
-        SystemInfo["OnPartedMagic"] = False
+        SYSTEM_INFO["OnPartedMagic"] = False
 
     #Get current OS architecture.
-    SystemInfo["CurrentOSArch"] = CoreStartupTools.determine_os_architecture(mount_point="")
+    SYSTEM_INFO["CurrentOSArch"] = CoreStartupTools.determine_os_architecture(mount_point="")
 
 def get_oss():
     """Get the names of all OSs on the HDDs."""
     root_fs = CoreTools.get_partition_mounted_at("/")
-    OSInfo = {}
 
     #Get Linux OSs.
-    keys = list(DiskInfo.keys())
+    keys = list(DISK_INFO.keys())
     keys.sort()
 
     for partition in keys:
-        if DiskInfo[partition]["Type"] == "Device":
+        if DISK_INFO[partition]["Type"] == "Device":
             continue
 
-        elif DiskInfo[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
+        elif DISK_INFO[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
             #Look for Mac OS X.
             os_name = "Mac OS X ("+partition+")"
 
@@ -156,14 +151,14 @@ def get_oss():
                 was_mounted = True
 
             if os.path.exists(mount_point+"/mach_kernel") or os.path.exists(mount_point+"/System/Library/Kernels/kernel"):
-                #Create OSInfo entry for it.
-                OSInfo[os_name] = {}
-                OSInfo[os_name]["Name"] = os_name
-                OSInfo[os_name]["IsCurrentOS"] = False
-                OSInfo[os_name]["Arch"] = "Unknown"
-                OSInfo[os_name]["Partition"] = partition
-                OSInfo[os_name]["PackageManager"] = "Mac App Store"
-                OSInfo[os_name]["RawFSTabInfo"], OSInfo[os_name]["EFIPartition"], OSInfo[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+                #Create OS_INFO entry for it.
+                OS_INFO[os_name] = {}
+                OS_INFO[os_name]["Name"] = os_name
+                OS_INFO[os_name]["IsCurrentOS"] = False
+                OS_INFO[os_name]["Arch"] = "Unknown"
+                OS_INFO[os_name]["Partition"] = partition
+                OS_INFO[os_name]["PackageManager"] = "Mac App Store"
+                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
 
             #Unmount the filesystem if needed.
             if was_mounted:
@@ -173,7 +168,7 @@ def get_oss():
                     #                         + "operating systems on it! Please reboot your "
                     #                         + "computer and try again.")
 
-        elif DiskInfo[partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
+        elif DISK_INFO[partition]["FileSystem"] in ("vfat", "ntfs", "exfat"):
             #Look for Windows. NOTE: It seems NTFS volumes can't be mounted twice, which is why
             #we're being more careful here.
             #Check if we need to mount the partition.
@@ -222,15 +217,15 @@ def get_oss():
                     #Unknown Windows.
                     os_name = "Windows"
 
-                #Create OSInfo entry for it.
+                #Create OS_INFO entry for it.
                 os_name = os_name+" ("+partition+")"
-                OSInfo[os_name] = {}
-                OSInfo[os_name]["Name"] = os_name
-                OSInfo[os_name]["IsCurrentOS"] = False
-                OSInfo[os_name]["Arch"] = "Unknown"
-                OSInfo[os_name]["Partition"] = partition
-                OSInfo[os_name]["PackageManager"] = "Windows Installer"
-                OSInfo[os_name]["RawFSTabInfo"], OSInfo[os_name]["EFIPartition"], OSInfo[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+                OS_INFO[os_name] = {}
+                OS_INFO[os_name]["Name"] = os_name
+                OS_INFO[os_name]["IsCurrentOS"] = False
+                OS_INFO[os_name]["Arch"] = "Unknown"
+                OS_INFO[os_name]["Partition"] = partition
+                OS_INFO[os_name]["PackageManager"] = "Windows Installer"
+                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
 
             #Unmount the filesystem if needed.
             if was_mounted:
@@ -246,8 +241,8 @@ def get_oss():
             #If there are aliases for partition, check if the root FS is one of those too.
             root_fs_is_alias = False
 
-            if "Aliases" in DiskInfo[partition]:
-                root_fs_is_alias = (root_fs in DiskInfo[partition]["Aliases"])
+            if "Aliases" in DISK_INFO[partition]:
+                root_fs_is_alias = (root_fs in DISK_INFO[partition]["Aliases"])
 
             if partition == root_fs or root_fs_is_alias:
                 cmd = "python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
@@ -297,17 +292,17 @@ def get_oss():
             #Also check if CoreStartupTools.ask_for_os_name was used to determine the name.
             #If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
             if os_name != None and os_arch != None and package_manager != "Unknown":
-                #Add this information to OSInfo.
-                OSInfo[os_name] = {}
-                OSInfo[os_name]["Name"] = os_name
-                OSInfo[os_name]["IsCurrentOS"] = is_current_os
-                OSInfo[os_name]["Arch"] = os_arch
-                OSInfo[os_name]["Partition"] = partition
-                OSInfo[os_name]["PackageManager"] = package_manager
-                OSInfo[os_name]["RawFSTabInfo"], OSInfo[os_name]["EFIPartition"], OSInfo[os_name]["BootPartition"] = CoreStartupTools.get_fstab_info(mount_point, os_name)
+                #Add this information to OS_INFO.
+                OS_INFO[os_name] = {}
+                OS_INFO[os_name]["Name"] = os_name
+                OS_INFO[os_name]["IsCurrentOS"] = is_current_os
+                OS_INFO[os_name]["Arch"] = os_arch
+                OS_INFO[os_name]["Partition"] = partition
+                OS_INFO[os_name]["PackageManager"] = package_manager
+                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = CoreStartupTools.get_fstab_info(mount_point, os_name)
 
                 if chroot is False:
-                    SystemInfo["CurrentOS"] = OSInfo[os_name].copy()
+                    SYSTEM_INFO["CurrentOS"] = OS_INFO[os_name].copy()
 
             if chroot:
                 #Unmount the filesystem.
@@ -320,8 +315,8 @@ def get_oss():
                 os.rmdir(mount_point)
 
     #Check that at least one OS was detected.
-    if len(OSInfo) >= 1:
-        return OSInfo, SystemInfo
+    if len(OS_INFO) >= 1:
+        return OS_INFO, SYSTEM_INFO
 
     #Otherwise...
     return (False, False)
@@ -351,7 +346,7 @@ def get_firmware_type():
 
     if uefi_variables:
         #It's UEFI.
-        SystemInfo["FirmwareType"] = "UEFI"
+        SYSTEM_INFO["FirmwareType"] = "UEFI"
 
     else:
         #Look a second way.
@@ -359,11 +354,11 @@ def get_firmware_type():
 
         if "UEFI" not in output:
             #It's BIOS.
-            SystemInfo["FirmwareType"] = "BIOS"
+            SYSTEM_INFO["FirmwareType"] = "BIOS"
 
         else:
             #It's UEFI.
-            SystemInfo["FirmwareType"] = "UEFI"
+            SYSTEM_INFO["FirmwareType"] = "UEFI"
             DialogTools.show_msg_dlg(kind="warning", message="Your computer uses UEFI firmware, "
                                      + "but the UEFI variables couldn't be mounted or weren't "
                                      + "found. Please ensure you've booted in UEFI mode rather "

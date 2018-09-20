@@ -37,6 +37,7 @@ import wx
 sys.path.append('../../..') #Need to be able to import the Tools module from here.
 
 import Tools
+from Tools.dictionaries import *
 import Tools.BackendTools.essentials as EssentialBackendTools
 import Tools.BackendTools.main as MainBackendTools
 import Tests.DialogFunctionsForTests as DialogTools
@@ -56,15 +57,15 @@ class TestWindow(wx.Frame):
         wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1),
                           style=wx.SIMPLE_BORDER)
 
+        self.panel = TestPanel(self)
+
 class TestCheckInternetConnection(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
-        DialogTools.parent_window = self.panel
 
         Tools.coretools.startup = True
-        Tools.BackendTools.essentials.SystemInfo = Data.return_initial_system_info_dict()
+        SYSTEM_INFO.update(Data.return_initial_system_info_dict())
 
         #Define here to avoid calling another thread that doesn't exist when trying to show
         #a dialog.
@@ -72,11 +73,9 @@ class TestCheckInternetConnection(unittest.TestCase):
 
     def tearDown(self):
         del Tools.coretools.startup
-        del Tools.BackendTools.essentials.SystemInfo
         del Tools.BackendTools.essentials.DialogTools
 
-        self.panel.Destroy()
-        del self.panel
+        SYSTEM_INFO.clear()
 
         self.frame.Destroy()
         del self.frame
@@ -90,34 +89,26 @@ class TestCheckInternetConnection(unittest.TestCase):
                                       + "\"Cancel/Skip Bootloader Operations\" when prompted.")
 
         EssentialBackendTools.check_internet_connection()
-        self.assertEqual(Tools.BackendTools.essentials.SystemInfo,
-                         Data.return_system_info_dict_with_disabled_bl_opts())
+        self.assertEqual(SYSTEM_INFO, Data.return_system_info_dict_with_disabled_bl_opts())
 
     def test_check_internet_connection_2(self):
         #Ask user to enable internet connection.
         DialogTools.show_real_msg_dlg("Please enable your internet connection.")
         EssentialBackendTools.check_internet_connection()
-        self.assertEqual(Tools.BackendTools.essentials.SystemInfo,
-                         Data.return_system_info_dict_with_enabled_bl_opts())
+        self.assertEqual(SYSTEM_INFO, Data.return_system_info_dict_with_enabled_bl_opts())
 
 class TestHandleFilesystemCheckReturnValues(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
-        DialogTools.parent_window = self.panel
 
-        self.SystemInfo = Data.return_initial_system_info_dict()
-        Tools.BackendTools.essentials.SystemInfo = self.SystemInfo
+        SYSTEM_INFO.update(Data.return_initial_system_info_dict())
         Tools.BackendTools.essentials.DialogTools = DialogTools
 
     def tearDown(self):
-        del self.SystemInfo
-        del Tools.BackendTools.essentials.SystemInfo
-        del Tools.BackendTools.essentials.DialogTools
+        SYSTEM_INFO.clear()
 
-        self.panel.Destroy()
-        del self.panel
+        del Tools.BackendTools.essentials.DialogTools
 
         self.frame.Destroy()
         del self.frame

@@ -41,6 +41,7 @@ from . import CoreStartupToolsTestData as Data
 sys.path.append('../..') #Need to be able to import the Tools module from here.
 
 import Tools
+from Tools.dictionaries import *
 import Tools.StartupTools.core as CoreStartupTools
 import Tests.DialogFunctionsForTests as DialogFunctionsForTests
 
@@ -55,6 +56,8 @@ class TestWindow(wx.Frame):
         """Initialises TestWindow"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1),
                           style=wx.SIMPLE_BORDER)
+
+        self.panel = TestPanel(self)
 
 class TestDeterminePackageManager(unittest.TestCase):
     def setUp(self):
@@ -71,12 +74,10 @@ class TestDeterminePackageManager(unittest.TestCase):
 
 class TestGetFSTabInfo(unittest.TestCase): #*** Do another test with a fake fstab file(s) ***
     def setUp(self):
-        Tools.StartupTools.core.DiskInfo = Data.return_empty_disk_info_dict()
-        Functions.DiskInfo = Data.return_empty_disk_info_dict()
+        DISK_INFO.update(Data.return_empty_disk_info_dict())
 
     def tearDown(self):
-        del Tools.StartupTools.core.DiskInfo
-        del Functions.DiskInfo
+        DISK_INFO.clear()
 
     def test_get_fstab_info_1(self):
         self.assertEqual(CoreStartupTools.get_fstab_info(mount_point="", os_name="ThisIsATest"),
@@ -110,18 +111,11 @@ class TestAskForOSName(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
-
-        DialogFunctionsForTests.parent_window = self.panel
 
         Tools.StartupTools.core.DialogTools = DialogFunctionsForTests
 
     def tearDown(self):
         del Tools.StartupTools.core.DialogTools
-        del DialogFunctionsForTests.parent_window
-
-        self.panel.Destroy()
-        del self.panel
 
         self.frame.Destroy()
         del self.frame
