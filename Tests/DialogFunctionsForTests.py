@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*- 
 # Test functions for Displaying Dialogs for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.

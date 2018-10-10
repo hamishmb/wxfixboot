@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # Startup Tools Package for WxFixBoot Version 2.0.3
 # This file is part of WxFixBoot.

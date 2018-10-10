@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # WxFixBoot Version 3.0.0
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -66,7 +66,7 @@ if sys.version_info[0] == 3:
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "7/9/2018"
+RELEASEDATE = "9/10/2018"
 
 #Define other global variables.
 SESSION_ENDING = False
