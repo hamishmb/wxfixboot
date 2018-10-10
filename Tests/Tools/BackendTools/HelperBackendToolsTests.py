@@ -15,7 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+# pylint: disable=too-many-ancestors, too-few-public-methods, wrong-import-order, no-self-use
+#
+# Reason (too-many-ancestors): These are wxPython ancestors.
+# Reason (too-few-public-methods): Test classes.
+# Reason (wrong-import-order): These are just unit tests.
+# Reason (no-self-use): Just test methods.
+
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -27,16 +35,16 @@ import sys
 import subprocess
 import wx
 
+import getdevinfo
+import getdevinfo.linux
+
 #Import other modules.
 sys.path.append('../../..') #Need to be able to import the Tools module from here.
 
 import Tools
-import Tools.coretools as CoreTools
-import Tests.DialogFunctionsForTests as DialogTools
+from Tools.dictionaries import *
 import Tools.BackendTools.helpers as HelperBackendTools
-
-import getdevinfo
-import getdevinfo.linux
+import Tests.DialogFunctionsForTests as DialogTools
 
 #Declare global dictionaries to silence pylint warnings.
 SystemInfo = {}
@@ -55,24 +63,20 @@ class TestPanel(wx.Panel):
 class TestWindow(wx.Frame):
     def __init__(self):
         """Initialises TestWindow"""
-        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1,1), style=wx.SIMPLE_BORDER)
+        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1),
+                          style=wx.SIMPLE_BORDER)
 
-class TestWaitUntilPackageManagerNotInUse(unittest.TestCase):
+        self.panel = TestPanel(self)
+
+class TestWaitUntilPackageManagerFree(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
 
         Tools.coretools.startup = True
 
-        DialogTools.parent_window = self.panel
-
     def tearDown(self):
         del Tools.coretools.startup
-        del DialogTools.parent_window
-
-        self.panel.Destroy()
-        del self.panel
 
         self.frame.Destroy()
         del self.frame
@@ -81,26 +85,34 @@ class TestWaitUntilPackageManagerNotInUse(unittest.TestCase):
         del self.app
 
     @unittest.skipUnless(subprocess.Popen("which apt-get", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't apt-get.")
-    def testWaitUntilPackageManagerNotInUse1(self):
+    def test_wait_until_packagemanager_free_1(self):
         DialogTools.show_real_msg_dlg("Please ensure the package manager is not in use.")
-        HelperBackendTools.wait_until_packagemanager_free(mount_point="", package_manager="apt-get")
+        HelperBackendTools.wait_until_packagemanager_free(mount_point="",
+                                                          package_manager="apt-get")
 
     @unittest.skipUnless(subprocess.Popen("which apt-get", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't apt-get.")
-    def testWaitUntilPackageManagerNotInUse2(self):
+    def test_wait_until_packagemanager_free_2(self):
         #Ask user to enable internet connection.
-        DialogTools.show_real_msg_dlg("Please open Synaptic or similar to lock the package manager, then click ok. After a few seconds, close it.")
-        HelperBackendTools.wait_until_packagemanager_free(mount_point="", package_manager="apt-get")
+        DialogTools.show_real_msg_dlg("Please open Synaptic or similar to lock the package "
+                                      + "manager, then click ok. After a few seconds, close it.")
+
+        HelperBackendTools.wait_until_packagemanager_free(mount_point="",
+                                                          package_manager="apt-get")
 
     @unittest.skipUnless(subprocess.Popen("which yum", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't yum.")
-    def testWaitUntilPackageManagerNotInUse3(self):
+    def test_wait_until_packagemanager_free_3(self):
         DialogTools.show_real_msg_dlg("Please ensure the package manager is not in use.")
-        HelperBackendTools.wait_until_packagemanager_free(mount_point="", package_manager="yum")
+        HelperBackendTools.wait_until_packagemanager_free(mount_point="",
+                                                          package_manager="yum")
 
     @unittest.skipUnless(subprocess.Popen("which yum", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't yum.")
-    def testWaitUntilPackageManagerNotInUse4(self):
+    def test_wait_until_packagemanager_free_4(self):
         #Ask user to enable internet connection.
-        DialogTools.show_real_msg_dlg("Please open YUM Extender or similar to lock the package manager, then click ok. After a few seconds, close it.")
-        HelperBackendTools.wait_until_packagemanager_free(mount_point="", package_manager="yum")
+        DialogTools.show_real_msg_dlg("Please open YUM Extender or similar to lock the package "
+                                      + "manager, then click ok. After a few seconds, close it.")
+
+        HelperBackendTools.wait_until_packagemanager_free(mount_point="",
+                                                          package_manager="yum")
 
 class TestFindMissingFSCKModules(unittest.TestCase):
     def setUp(self):
@@ -113,36 +125,32 @@ class TestFindMissingFSCKModules(unittest.TestCase):
         del Tools.BackendTools.helpers.DiskInfo
         del Functions.DiskInfo
 
-    @unittest.skipUnless(Functions.CanPerformFindMissingFSCKModulesTest1(), "FSCK modules not available on system.")
-    def testFindMissingFSCKModules1(self):
-        self.assertEqual(HelperBackendTools.find_missing_fsck_modules(), Data.return_expected_result_finding_missing_fsck_modules())
+    @unittest.skipUnless(Functions.can_perform_find_missing_fsck_modules_test_1(), "FSCK modules not available on system.")
+    def test_find_missing_fsck_modules_1(self):
+        self.assertEqual(HelperBackendTools.find_missing_fsck_modules(),
+                         Data.return_expected_result_finding_missing_fsck_modules())
 
-    def testFindMissingFSCKModules2(self):
-        self.assertEqual(HelperBackendTools.find_missing_fsck_modules(), Functions.find_missing_fsck_modules())
+    def test_find_missing_fsck_modules_2(self):
+        self.assertEqual(HelperBackendTools.find_missing_fsck_modules(),
+                         Functions.find_missing_fsck_modules())
 
 class TestFindCheckableFileSystems(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
-        DialogTools.parent_window = self.panel
 
         Tools.coretools.startup = True
-        self.DiskInfo = getdevinfo.getdevinfo.get_info() #We need real disk info for these ones.
-        Functions.DiskInfo = self.DiskInfo
-        Tools.BackendTools.helpers.DiskInfo = self.DiskInfo
         Tools.BackendTools.helpers.DialogTools = DialogTools
 
-    def tearDown(self):
-        del Tools.coretools.startup
-        del DialogTools.parent_window
-        del self.DiskInfo
-        del Functions.DiskInfo
-        del Tools.BackendTools.helpers.DiskInfo
-        del Tools.BackendTools.helpers.DialogTools
+        DISK_INFO.update(getdevinfo.getdevinfo.get_info()) #We need real disk info for these ones.
+        SYSTEM_INFO.update(Data.return_initial_system_info_dict())
 
-        self.panel.Destroy()
-        del self.panel
+    def tearDown(self):
+        DISK_INFO.clear()
+        SYSTEM_INFO.clear()
+
+        del Tools.coretools.startup
+        del Tools.BackendTools.helpers.DialogTools
 
         self.frame.Destroy()
         del self.frame
@@ -150,14 +158,6 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         self.app.Destroy()
         del self.app
 
-    def testFindCheckableFileSystems1(self):
-        #More setup.
-        Tools.BackendTools.helpers.SystemInfo = Data.return_initial_system_info_dict()
-        Functions.SystemInfo = Data.return_initial_system_info_dict()
-
-        #Test.
-        self.assertEqual(Functions.find_checkable_file_systems(), HelperBackendTools.find_checkable_file_systems())
-
-        #More teardown.
-        del Tools.BackendTools.helpers.SystemInfo
-        del Functions.SystemInfo
+    def test_find_checkable_file_systems_1(self):
+        self.assertEqual(Functions.find_checkable_file_systems(),
+                         HelperBackendTools.find_checkable_file_systems())

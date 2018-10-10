@@ -37,14 +37,13 @@ if sys.version_info[0] == 3:
     unicode = str #pylint: disable=redefined-builtin,invalid-name
     str = bytes #pylint: disable=redefined-builtin,invalid-name
 
-#Set up logging. FIXME Set logger level as specified on cmdline.
+#Set up logging.
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
 
 #Global declarations.
 DLGCLOSED = False
 DLGRESULT = False
-parent_window = None
 
 def show_thread_msg_dlg(msg, kind="info"):
     """Shows a message dialog from a thread upon instruction"""
@@ -61,7 +60,7 @@ def show_thread_msg_dlg(msg, kind="info"):
         title = "WxFixBoot - Error"
         style = wx.OK | wx.ICON_ERROR
 
-    dlg = wx.MessageDialog(parent_window.panel, msg, title, style, pos=wx.DefaultPosition)
+    dlg = wx.MessageDialog(wx.GetApp().TopWindow.panel, msg, title, style, pos=wx.DefaultPosition)
     dlg.ShowModal()
     dlg.Destroy()
 
@@ -89,7 +88,7 @@ def show_msg_dlg(message, kind="info"):
 def show_thread_yes_no_dlg(msg, title="WxFixBoot - Question", buttons=(None, None)):
     """Shows a yes/no dialog from a thread upon instruction"""
     logger.debug("show_thread_yes_no_dlg(): Showing Thread Yes/No Dialog...")
-    dlg = wx.MessageDialog(parent_window.panel, msg, title, wx.YES_NO | wx.ICON_QUESTION)
+    dlg = wx.MessageDialog(wx.GetApp().TopWindow.panel, msg, title, wx.YES_NO | wx.ICON_QUESTION)
 
     global DLGRESULT
 
@@ -141,7 +140,8 @@ def show_thread_choice_dlg(msg, choices, title="WxFixBoot - Select an Option"):
     global DLGRESULT
 
     logger.debug("show_thread_choice_dlg(): Showing Thread Choice Dialog...")
-    dlg = wx.SingleChoiceDialog(parent_window.panel, msg, title, choices, pos=wx.DefaultPosition)
+    dlg = wx.SingleChoiceDialog(wx.GetApp().TopWindow.panel, msg, title, choices,
+                                pos=wx.DefaultPosition)
 
     #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_OK:
@@ -193,7 +193,7 @@ def show_thread_text_entry_dlg(msg, title="WxFixBoot - Text Entry"):
     global DLGRESULT
 
     logger.debug("show_thread_text_entry_dlg(): Showing Thread Text Entry Dialog...")
-    dlg = wx.TextEntryDialog(parent_window.panel, msg, title, "",
+    dlg = wx.TextEntryDialog(wx.GetApp().TopWindow.panel, msg, title, "",
                              style=wx.OK|wx.CANCEL, pos=wx.DefaultPosition)
 
     #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
@@ -239,10 +239,11 @@ def show_thread_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All F
     global DLGRESULT
 
     logger.debug("show_thread_save_file_dlg(): Showing Thread Save File Dialog...")
-    dlg = wx.FileDialog(parent_window.panel, message=title, defaultDir="/home", wildcard=wildcard,
-                        style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+    dlg = wx.FileDialog(wx.GetApp().TopWindow.panel, message=title, defaultDir="/home",
+                        wildcard=wildcard, style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
-    #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions. #TODO Why is this helpful/not a bad idea?
+    #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
+    #TODO Why is this helpful/not a bad idea?
     if dlg.ShowModal() == wx.ID_OK:
         dlg.Destroy()
         DLGRESULT = dlg.GetPath()
@@ -259,7 +260,8 @@ def show_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All Files/De
     Handle showing thread file dialogs, reducing code duplication and compilications and errors.
     It can be used like this: ShowFileDlg(title=<title>, wildcard=<wildcard>)
     message is whatever you want the dialog to say.
-    wildcard is a | seperated list of file types to show, including their names as visible to the user.
+    wildcard is a | seperated list of file types to show, including their names as visible to
+    the user.
     """
 
     global DLGRESULT

@@ -45,12 +45,12 @@ import wx.lib.stattext
 #Compatibility with wxPython 4.
 if int(wx.version()[0]) >= 4:
     import wx.adv
-    from wx.adv import AboutDialogInfo as wxAboutDialogInfo
-    from wx.adv import AboutBox as wxAboutBox
+    from wx.adv import AboutDialogInfo as wxAboutDialogInfo #pylint: disable=no-name-in-module
+    from wx.adv import AboutBox as wxAboutBox #pylint: disable=no-name-in-module
 
 else:
-    from wx import AboutDialogInfo as wxAboutDialogInfo
-    from wx import AboutBox as wxAboutBox
+    from wx import AboutDialogInfo as wxAboutDialogInfo #pylint: disable=no-name-in-module
+    from wx import AboutBox as wxAboutBox #pylint: disable=no-name-in-module
 
 import getdevinfo
 import getdevinfo.linux
@@ -106,7 +106,7 @@ except getopt.GetoptError as err:
     sys.exit(2)
 
 #Set up logging.
-logger = logging.getLogger('WxFixBoot '+VERSION)
+logger = logging.getLogger('WxFixBoot')
 logging.basicConfig(filename='/tmp/wxfixboot.log',
                     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
                     datefmt='%d/%m/%Y %I:%M:%S %p')
@@ -143,22 +143,8 @@ import Tools.StartupTools.main as MainStartupTools
 import Tools.BackendTools.essentials as EssentialBackendTools
 import Tools.BackendTools.main as MainBackendTools
 
-import SystemInfoNoteBookSharedFunctions as NoteBookSharedFunctions
+import Tools.notebookfunctions as NoteBookSharedFunctions
 
-#Begin Disk Information Handler thread.
-class GetDiskInformation(threading.Thread):
-    def __init__(self, parent_window):
-        """Initialize and start the thread."""
-        self.parent_window = parent_window
-        threading.Thread.__init__(self)
-        self.start()
-
-    def run(self):
-        """Get Disk Information and return it as a list with embedded lists"""
-        #Use a module I've written to collect data about connected Disks, and return it.
-        wx.CallAfter(self.parent_window.ReceiveDiskInfo, getdevinfo.getdevinfo.get_info())
-
-#End Disk Information Handler thread.
 #Begin Starter Class
 class WxFixBoot(wx.App):
     def OnInit(self): #pylint: disable=invalid-name
@@ -228,8 +214,8 @@ class InitialWindow(wx.Frame):
         #scripts and checks, and let it know this is the first start.
         logger.debug("Starting InitThread()...")
 
-        ProgressTextHandlerThread(self)
-        InitThread(self)
+        ProgressTextHandlerThread()
+        InitThread()
 
     def create_progress_bar_and_text(self):
         """Create a progressbar and some progress text"""
@@ -298,10 +284,10 @@ class InitialWindow(wx.Frame):
 #End Initialization Frame.
 #Begin Progress Text Handler Thread.
 class ProgressTextHandlerThread(threading.Thread):
-    def __init__(self, parent_window):
+    def __init__(self):
         """Start the Thread"""
         threading.Thread.__init__(self)
-        self.parent_window = parent_window
+        self.parent_window = wx.GetApp().TopWindow
 
         global STOP_PROGRESSTEXT_HANDLER_THREAD
         STOP_PROGRESSTEXT_HANDLER_THREAD = False
@@ -348,15 +334,11 @@ class ProgressTextHandlerThread(threading.Thread):
 #End Progress Text Handler Thread.
 #Begin Initialization Thread.
 class InitThread(threading.Thread):
-    def __init__(self, parent_window):
+    def __init__(self):
         """Start the thread."""
         #Initialize the thread.
         threading.Thread.__init__(self)
-        self.parent_window = parent_window
-
-        #Set up dialog tools and core tools.
-        Tools.dialogtools.parent_window = parent_window
-        Tools.coretools.parent_window = parent_window
+        self.parent_window = wx.GetApp().TopWindow
 
         #Start the thread.
         self.start()
@@ -495,7 +477,7 @@ class InitThread(threading.Thread):
             CoreTools.emergency_exit("You don't appear to have any modifyable Linux installations "
                                      + "on your hard disks. If you think this is incorrect, "
                                      + "please file a bug or ask a question on WxFixBoot's "
-                                     + "launchpad page.") #FIXME Link.
+                                     + "launchpad page at https://www.launchpad.net/wxfixboot")
 
         #Perform final check.
         logger.info("InitThread(): Doing Final Check for error situations...")
@@ -665,16 +647,16 @@ class MainWindow(wx.Frame):
         #Open the Bootloader Options window
         logger.debug("MainWindow().bootloader_options(): Starting Bootloader Settings Window...")
         self.Hide()
-        BootloaderOptionsWindow(self).Show()
+        BootloaderOptionsWindow().Show()
 
     def system_info(self, event=None): #pylint: disable=unused-argument
         """Start SystemInfoWindow"""
         logger.debug("MainWindow().system_info(): Starting System Info Window...")
-        SystemInfoWindow(self).Show()
+        SystemInfoWindow().Show()
 
     def show_privacypolicy(self, event=None): #pylint: disable=unused-argument
         """Show PrivPolWindow"""
-        PrivPolWindow(self).Show()
+        PrivPolWindow().Show()
 
     def progress_window(self, event=None): #pylint: disable=unused-argument
         """Starts Progress Window"""
@@ -945,10 +927,12 @@ class MainWindow(wx.Frame):
 #End Main window
 #Begin System Info Page 1.
 class SystemInfoPage1(wx.Panel):
-    def __init__(self, parent_window, systeminfo_window):
+    def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage1"""
-        wx.Panel.__init__(self, parent_window)
-        self.parent_window = parent_window
+        self.parent_window = notebook
+
+        wx.Panel.__init__(self, self.parent_window)
+
         self.systeminfo_window = systeminfo_window
         self.list_ctrl = None
 
@@ -985,10 +969,11 @@ class SystemInfoPage1(wx.Panel):
 #End System Info Page 1
 #Begin System Info Page 2.
 class SystemInfoPage2(wx.Panel):
-    def __init__(self, parent_window, systeminfo_window):
+    def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage2"""
-        wx.Panel.__init__(self, parent_window)
-        self.parent_window = parent_window
+        self.parent_window = notebook
+
+        wx.Panel.__init__(self, self.parent_window)
         self.systeminfo_window = systeminfo_window
         self.list_ctrl = None
 
@@ -1025,10 +1010,10 @@ class SystemInfoPage2(wx.Panel):
 #End System Info Page 2
 #Begin System Info Page 3.
 class SystemInfoPage3(wx.Panel):
-    def __init__(self, parent_window, systeminfo_window):
+    def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage3"""
-        wx.Panel.__init__(self, parent_window)
-        self.parent_window = parent_window
+        self.parent_window = notebook
+        wx.Panel.__init__(self, self.parent_window)
         self.systeminfo_window = systeminfo_window
         self.list_ctrl = None
 
@@ -1061,10 +1046,10 @@ class SystemInfoPage3(wx.Panel):
 #End System Info Page 3
 #Begin System Info Page 4.
 class SystemInfoPage4(wx.Panel):
-    def __init__(self, parent_window, systeminfo_window):
+    def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage4"""
-        wx.Panel.__init__(self, parent_window)
-        self.parent_window = parent_window
+        self.parent_window = notebook
+        wx.Panel.__init__(self, self.parent_window)
         self.systeminfo_window = systeminfo_window
         self.list_ctrl = None
 
@@ -1100,10 +1085,10 @@ class SystemInfoPage4(wx.Panel):
 #End System Info Page 4
 #Begin System Info Page 5.
 class SystemInfoPage5(wx.Panel):
-    def __init__(self, parent_window, systeminfo_window):
+    def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage5"""
-        wx.Panel.__init__(self, parent_window)
-        self.parent_window = parent_window
+        self.parent_window = notebook
+        wx.Panel.__init__(self, self.parent_window)
         self.systeminfo_window = systeminfo_window
         self.list_ctrl = None
 
@@ -1137,10 +1122,10 @@ class SystemInfoPage5(wx.Panel):
 #End System Info Page 5
 #Begin System Info Page 6.
 class SystemInfoPage6(wx.Panel):
-    def __init__(self, parent_window, systeminfo_window):
+    def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage6"""
-        wx.Panel.__init__(self, parent_window)
-        self.parent_window = parent_window
+        self.parent_window = notebook
+        wx.Panel.__init__(self, self.parent_window)
         self.systeminfo_window = systeminfo_window
         self.list_ctrl = None
 
@@ -1176,14 +1161,14 @@ class SystemInfoPage6(wx.Panel):
 #End System Info Page 6
 #Begin System Info Window
 class SystemInfoWindow(wx.Frame):
-    def __init__(self, parent_window):
+    def __init__(self):
         """Initialize SystemInfoWindow"""
         wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - System Information",
                           size=(780, 310), style=wx.DEFAULT_FRAME_STYLE)
 
         self.panel = wx.Panel(self)
         self.SetClientSize(wx.Size(780, 310))
-        self.parent_window = parent_window
+        self.parent_window = wx.GetApp().TopWindow
         wx.Frame.SetIcon(self, APPICON)
 
         #Set up the notebook and the pages.
@@ -1228,14 +1213,14 @@ class SystemInfoWindow(wx.Frame):
 #End System Info Window
 #Begin Privacy Policy Window.
 class PrivPolWindow(wx.Frame):
-    def __init__(self, parent_window):
+    def __init__(self):
         """Initialize PrivPolWindow"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Privacy Policy",
                           size=(750, 400), style=wx.DEFAULT_FRAME_STYLE)
 
         self.panel = wx.Panel(self)
         self.SetClientSize(wx.Size(750, 400))
-        self.parent_window = parent_window
+        self.parent_window = wx.GetApp().TopWindow
         wx.Frame.SetIcon(self, APPICON)
 
         logger.debug("PrivPolWindow().__init__(): Creating button...")
@@ -1294,7 +1279,7 @@ class PrivPolWindow(wx.Frame):
 #End Privacy Policy Window.
 #Begin Bootloader Options Window.
 class BootloaderOptionsWindow(wx.Frame):
-    def __init__(self, parent_window):
+    def __init__(self):
         """Initialise bootloader options window"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow,
                           title="WxFixBoot - Bootloader Options", size=(400, 200),
@@ -1302,7 +1287,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
         self.panel = wx.Panel(self)
         self.SetClientSize(wx.Size(800, 800))
-        self.parent_window = parent_window
+        self.parent_window = wx.GetApp().TopWindow
         wx.Frame.SetIcon(self, APPICON)
 
         #Set up the previous OS choice.
@@ -1633,7 +1618,7 @@ class BootloaderOptionsWindow(wx.Frame):
     def system_info(self, event=None): #pylint: disable=unused-argument
         """Start SystemInfoWindow"""
         logger.debug("BootloaderOptionsWindow().system_info(): Starting System Info Window...")
-        SystemInfoWindow(self).Show()
+        SystemInfoWindow().Show()
 
     def load_settings(self, event=None): #pylint: disable=unused-argument
         """Load all settings for this OS into the checkboxes and choice boxes"""
@@ -2341,7 +2326,6 @@ class ProgressWindow(wx.Frame):
         self.panel = wx.Panel(self)
         self.SetClientSize(wx.Size(500, 300))
         wx.Frame.SetIcon(self, APPICON)
-        Tools.coretools.parent_window = self
 
         self.create_text()
         self.create_buttons()
@@ -2741,14 +2725,10 @@ class BackendThread(threading.Thread):
     def __init__(self, parent_window):
         """Initialize BackendThread"""
         #Set up the backend tools.
-        Tools.dialogtools.parent_window = parent_window
-        Tools.BackendTools.helpers.parent_window = parent_window
-        Tools.BackendTools.essentials.parent_window = parent_window
-        Tools.BackendTools.main.parent_window = parent_window
+        self.parent_window = parent_window
 
         #Start the main part of this thread.
         threading.Thread.__init__(self)
-        self.parent_window = parent_window
         self.start()
 
     def run(self):
@@ -2807,7 +2787,7 @@ class BackendThread(threading.Thread):
             if isinstance(function, tuple):
                 if MainBackendTools.manage_bootloader in function:
                     dialog_message += " You performed bootloader operations on at least one OS, "
-                    dialog_messahe += "so please now reboot your system."
+                    dialog_message += "so please now reboot your system."
                     break
 
         DialogTools.show_msg_dlg(kind="info", message=dialog_message)
@@ -2848,7 +2828,7 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tPartitions: "+', '.join(DISK_INFO[disk]["Partitions"])+"\n")
             report_list.write("\t\tVendor: "+DISK_INFO[disk]["Vendor"]+"\n")
             report_list.write("\t\tProduct: "+DISK_INFO[disk]["Product"]+"\n")
-            #report_list.write("\t\tRaw Capacity: "+DISK_INFO[disk]["RawCapacity"]+"\n") FIXME Temporarily disabled before GetDevInfo 1.0.3 is released.
+            report_list.write("\t\tRaw Capacity: "+DISK_INFO[disk]["RawCapacity"]+"\n")
             report_list.write("\t\tHuman-readable Capacity: "+DISK_INFO[disk]["Capacity"]+"\n")
             report_list.write("\t\tDescription: "+DISK_INFO[disk]["Description"]+"\n")
             report_list.write("\t\tFlags: "+', '.join(DISK_INFO[disk]["Flags"])+"\n")
@@ -2856,7 +2836,7 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tFilesystem: "+DISK_INFO[disk]["FileSystem"]+"\n")
             report_list.write("\t\tUUID: "+DISK_INFO[disk]["UUID"]+"\n")
             report_list.write("\t\tID: "+DISK_INFO[disk]["ID"]+"\n")
-            #report_list.write("\t\tBoot Record Strings: "+unicode(b', '.join(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n") FIXME Disabled until getdevinfo 1.0.3 is released.
+            #report_list.write("\t\tBoot Record Strings: "+unicode(b', '.join(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n") FIXME disabled until GetDevInfo 1.0.4 is out w/ final fix for this. 
 
         #Do OS Information.
         report_list.write("\n##########OS Information##########\n")

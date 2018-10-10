@@ -15,7 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+# pylint: disable=no-self-use, too-many-ancestors, too-few-public-methods
+#
+# Reason (no-self-use): These are test methods, and must belong to classes.
+# Reason (too-many-ancestors): These are wxPython ancestors.
+# Reason (too-few-public-methods): Test classes.
+
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -51,19 +58,22 @@ class TestPanel(wx.Panel):
 class TestWindow(wx.Frame):
     def __init__(self):
         """Initialises TestWindow"""
-        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1), style=wx.SIMPLE_BORDER)
+        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1),
+                          style=wx.SIMPLE_BORDER)
 
 class TestStartProcess(unittest.TestCase):
     def setUp(self):
         self.commands = Data.return_fake_commands()
-        Tools.coretools.startup = True #Stops startprocess from trying to send data to the output box.
+
+        #Stops startprocess from trying to send data to the output box.
+        Tools.coretools.startup = True
 
     def tearDown(self):
         del self.commands
         del Tools.coretools.startup
 
-    def testStartProcess(self):
-        for command in self.commands.keys():
+    def test_start_process(self):
+        for command in self.commands:
             retval, output = CoreTools.start_process(command, return_output=True, testing=True)
             self.assertEqual(retval, self.commands[command]["Retval"])
             self.assertEqual(output, self.commands[command]["Output"])
@@ -81,13 +91,21 @@ class TestIsMounted(unittest.TestCase):
 
         if POTENTIAL_PARTITION_PATH == "":
             #Get a device path from the user to test against.
-            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests")
+            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test "
+                                                        + "against.\nNo data on your device will "
+                                                        + "be modified. Suggested: insert a USB "
+                                                        + "disk and leave it mounted.\nNote: Do "
+                                                        + "not use your device while these test "
+                                                        + "are running, or it may interfere with "
+                                                        + "the tests.", "WxFixBoot - Tests")
+
             self.path = DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1]
 
             #Save it for autocomplete with other dialogs.
             POTENTIAL_PARTITION_PATH = self.path
 
-        Tools.coretools.startup = True #Stops startprocess from trying to send data to the output box.
+        #Stops startprocess from trying to send data to the output box.
+        Tools.coretools.startup = True
 
     def tearDown(self):
         #Check if anything is mounted at our temporary mount point.
@@ -114,14 +132,14 @@ class TestIsMounted(unittest.TestCase):
         del DialogFunctionsForTests.parent_window
         del Tools.coretools.startup
 
-    def testis_mounted1(self):
+    def test_is_mounted1(self):
         #If not mounted, mount it
         if not Functions.is_mounted(self.path):
             self.assertEqual(CoreTools.mount_partition(self.path, "/tmp/wxfixbootmtpt"), 0)
 
         self.assertTrue(CoreTools.is_mounted(self.path))
 
-    def testis_mounted2(self):
+    def test_is_mounted2(self):
         #Unmount it.
         Functions.unmount_disk(self.path)
 
@@ -141,13 +159,21 @@ class TestGetMountPointOf(unittest.TestCase):
 
         if POTENTIAL_PARTITION_PATH == "":
             #Get a device path from the user to test against.
-            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests")
+            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test "
+                                                        + "against.\nNo data on your device will "
+                                                        + "be modified. Suggested: insert a USB "
+                                                        + "disk and leave it mounted.\nNote: Do "
+                                                        + "not use your device while these test "
+                                                        + "are running, or it may interfere with "
+                                                        + "the tests.", "WxFixBoot - Tests")
+
             self.path = DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1]
 
             #Save it for autocomplete with other dialogs.
             POTENTIAL_PARTITION_PATH = self.path
 
-        Tools.coretools.startup = True #Stops startprocess from trying to send data to the output box.
+        #Stops startprocess from trying to send data to the output box.
+        Tools.coretools.startup = True
 
     def tearDown(self):
         self.panel.Destroy()
@@ -163,15 +189,16 @@ class TestGetMountPointOf(unittest.TestCase):
         del DialogFunctionsForTests.parent_window
         del Tools.coretools.startup
 
-    def testGetMountPointOf1(self):
+    def test_get_mount_point_of_1(self):
         #Mount disk if not mounted.
         if not Functions.is_mounted(self.path):
             Functions.mount_partition(self.path, "/tmp/wxfixbootmtpt")
 
         #Get mount point and verify.
-        self.assertEqual(CoreTools.get_mount_point_of(self.path), Functions.get_mount_point_of(self.path))
+        self.assertEqual(CoreTools.get_mount_point_of(self.path),
+                         Functions.get_mount_point_of(self.path))
 
-    def testGetMountPointOf2(self):
+    def test_get_mount_point_of_2(self):
         #Unmount disk.
         Functions.unmount_disk(self.path)
 
@@ -192,7 +219,14 @@ class TestGetPartitionMountedAt(unittest.TestCase):
 
         if POTENTIAL_PARTITION_PATH == "":
             #Get a device path from the user to test against.
-            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests")
+            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test "
+                                                        + "against.\nNo data on your device will "
+                                                        + "be modified. Suggested: insert a USB "
+                                                        + "disk and leave it mounted.\nNote: Do "
+                                                        + "not use your device while these test "
+                                                        + "are running, or it may interfere with "
+                                                        + "the tests.", "WxFixBoot - Tests")
+
             self.path = DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1]
 
             #Save it for autocomplete with other dialogs.
@@ -204,9 +238,10 @@ class TestGetPartitionMountedAt(unittest.TestCase):
 
         self.mount_point = Functions.get_mount_point_of(self.path)
 
-        Tools.coretools.startup = True #Stops startprocess from trying to send data to the output box.
+        #Stops startprocess from trying to send data to the output box.
+        Tools.coretools.startup = True
 
-    def TearDown(self):
+    def tearDown(self):
         self.panel.Destroy()
         del self.panel
 
@@ -221,7 +256,7 @@ class TestGetPartitionMountedAt(unittest.TestCase):
         del self.mount_point
         del Tools.coretools.startup
 
-    def testGetPartitionMountedAt1(self):
+    def test_get_partition_mounted_at_1(self):
         self.assertEqual(CoreTools.get_partition_mounted_at(self.mount_point), self.path)
 
 class TestMountPartition(unittest.TestCase):
@@ -239,7 +274,14 @@ class TestMountPartition(unittest.TestCase):
 
         if POTENTIAL_PARTITION_PATH == "":
             #Get a device path from the user to test against.
-            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests")
+            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test "
+                                                        + "against.\nNo data on your device will "
+                                                        + "be modified. Suggested: insert a USB "
+                                                        + "disk and leave it mounted.\nNote: Do "
+                                                        + "not use your device while these test "
+                                                        + "are running, or it may interfere with "
+                                                        + "the tests.", "WxFixBoot - Tests")
+
             self.path = DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1]
 
             #Save it for autocomplete with other dialogs.
@@ -253,7 +295,8 @@ class TestMountPartition(unittest.TestCase):
             if not os.path.isdir(self.mount_point):
                 os.mkdir(self.mount_point)
 
-        Tools.coretools.startup = True #Stops startprocess from trying to send data to the output box.
+        #Stops startprocess from trying to send data to the output box.
+        Tools.coretools.startup = True
 
     def tearDown(self):
         #Unmount.
@@ -278,7 +321,7 @@ class TestMountPartition(unittest.TestCase):
 
             os.rmdir("/tmp/wxfixbootmtpt")
 
-    def testmount_partition1(self):
+    def test_mount_partition1(self):
         Functions.mount_partition(self.path, self.mount_point)
 
         #partition should be mounted, so we should pass this without doing anything.
@@ -286,7 +329,7 @@ class TestMountPartition(unittest.TestCase):
 
         Functions.unmount_disk(self.path)
 
-    def testmount_partition2(self):
+    def test_mount_partition2(self):
         #Unmount disk.
         Functions.unmount_disk(self.path)
 
@@ -294,9 +337,17 @@ class TestMountPartition(unittest.TestCase):
 
         Functions.unmount_disk(self.path)
 
-    def testmount_partition3(self):
+    def test_mount_partition3(self):
         #Get another device path from the user to test against.
-        DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a second (different) partition name to test against.\nNo data on your device will be modified. Suggested: insert a USB disk and leave it mounted.\nNote: Do not use your device while these test are running, or it may interfere with the tests.", "WxFixBoot - Tests")
+        DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a second (different) "
+                                                    + "partition name to test against.\nNo "
+                                                    + "data on your device will be modified. "
+                                                    + "Suggested: insert a USB disk and leave "
+                                                    + "it mounted.\nNote: Do not use your device "
+                                                    + "while these test are running, or it may "
+                                                    + "interfere with the tests.",
+                                                    "WxFixBoot - Tests")
+
         self.path2 = DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1]
 
         #Unmount both partitions.
@@ -309,7 +360,8 @@ class TestMountPartition(unittest.TestCase):
         #Now try to mount the first one there.
         CoreTools.mount_partition(self.path, self.mount_point)
 
-        #Now the 2nd should have been unmounted to get it out of the way, and the 1st should be there.
+        #Now the 2nd should have been unmounted to get it out of the way, and the 1st
+        #should be there.
         self.assertFalse(Functions.is_mounted(self.path2, self.mount_point))
         self.assertTrue(Functions.is_mounted(self.path, self.mount_point))
 
@@ -318,7 +370,7 @@ class TestMountPartition(unittest.TestCase):
         #Clean up.
         del self.path2
 
-    def testmount_partition4(self):
+    def test_mount_partition4(self):
         #Unmount partition.
         Functions.unmount_disk(self.path)
 

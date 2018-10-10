@@ -43,9 +43,9 @@ if sys.version_info[0] == 3:
     unicode = str #pylint: disable=redefined-builtin,invalid-name
     str = bytes #pylint: disable=redefined-builtin,invalid-name
 
-#Set up logging. FIXME Set logger level as specified on cmdline.
+#Set up logging.
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
 
 def partition_matches_os(partition, _os):
     """
@@ -174,26 +174,33 @@ def find_checkable_file_systems():
                 remount_fs_after = False
                 continue
 
-            #Check if the partition is mounted.
-            if CoreTools.is_mounted(disk) is False:
+            #If filesystem is unknown, don't check it.
+            if DISK_INFO[disk]["FileSystem"] == "Unknown":
                 mount_point = "None"
-                check_this_fs = True
+                check_this_fs = False
                 remount_fs_after = False
 
             else:
-                #unmount the FS temporarily, to avoid data corruption.
-                mount_point = CoreTools.get_mount_point_of(disk)
-
-                if CoreTools.unmount(disk) != 0:
-                    logger.warning("find_checkable_file_systems(): Failed to unmount "+disk
-                                   +", which is necessary for safe disk checking! Ignoring it...")
-
-                    check_this_fs = False
+                #Check if the partition is mounted.
+                if CoreTools.is_mounted(disk) is False:
+                    mount_point = "None"
+                    check_this_fs = True
                     remount_fs_after = False
 
                 else:
-                    check_this_fs = True
-                    remount_fs_after = True
+                    #Unmount the FS temporarily, to avoid data corruption.
+                    mount_point = CoreTools.get_mount_point_of(disk)
+
+                    if CoreTools.unmount(disk) != 0:
+                        logger.warning("find_checkable_file_systems(): Failed to unmount "+disk
+                                       +", which is necessary for safe disk checking! Ignoring it.")
+
+                        check_this_fs = False
+                        remount_fs_after = False
+
+                    else:
+                        check_this_fs = True
+                        remount_fs_after = True
 
         if check_this_fs:
             #Add it to the dictionary for checking.

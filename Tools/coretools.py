@@ -41,12 +41,11 @@ if sys.version_info[0] == 3:
     unicode = str #pylint: disable=redefined-builtin,invalid-name
     str = bytes #pylint: disable=redefined-builtin,invalid-name
 
-#Set up logging. FIXME Set logger level as specified on cmdline.
+#Set up logging.
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
 
 #Define global variables
-parent_window = None
 startup = None
 
 def start_process(exec_cmds, show_output=True, return_output=False, testing=False):
@@ -171,7 +170,7 @@ def read_and_send_output(cmd, show_output):
             #Interpret as Unicode and remove "NULL" characters.
             line = line.decode("UTF-8", errors="replace").replace("\x00", "")
 
-            wx.CallAfter(parent_window.update_output_box, line, show_output)
+            wx.CallAfter(wx.GetApp().TopWindow.update_output_box, line, show_output)
             line_list.append(line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
             #Reset line.
@@ -187,7 +186,7 @@ def read_and_send_output(cmd, show_output):
         #Interpret as Unicode and remove "NULL" characters.
         line = line.decode("UTF-8", errors="ignore").replace("\x00", "")
 
-        wx.CallAfter(parent_window.update_output_box, line, show_output)
+        wx.CallAfter(wx.GetApp().TopWindow.update_output_box, line, show_output)
         line_list.append(line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
     return line_list

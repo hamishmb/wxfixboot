@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-# -*- coding: utf-8 -*- TODO: Move to Tools?
+# -*- coding: utf-8 -*-
 # NoteBook page functions for the system info window for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -34,9 +34,9 @@ if sys.version_info[0] == 3:
 
 CLASSIC_WXPYTHON = int(wx.version()[0]) < 4
 
-#Set up logging. FIXME Set logger level as specified on cmdline.
+#Set up logging.
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
 
 def bind_events(self):
     """Bind all events for the caller"""

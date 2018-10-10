@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # DialogTools tests for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
@@ -15,7 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII strings, as they fix potential problems.
+# pylint: disable=no-self-use, too-many-ancestors, too-few-public-methods
+#
+# Reason (no-self-use): These are test methods, and must belong to classes.
+# Reason (too-many-ancestors): These are wxPython ancestors.
+# Reason (too-few-public-methods): Test classes.
+
+#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
+#strings, as they fix potential problems.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -29,7 +36,6 @@ import wx
 #Import other modules.
 sys.path.append('../..') #Need to be able to import the Tools module from here.
 
-import Tools
 import Tools.dialogtools as DialogTools
 
 class TestPanel(wx.Panel):
@@ -41,42 +47,47 @@ class TestPanel(wx.Panel):
 class TestWindow(wx.Frame):
     def __init__(self):
         """Initialises TestWindow"""
-        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1), style=wx.SIMPLE_BORDER)
+        wx.Frame.__init__(self, parent=None, title="WxFixBoot Tests", size=(1, 1),
+                          style=wx.SIMPLE_BORDER)
+
+        self.panel = TestPanel(self)
 
 #No need for assertions, we're just making sure the functions run without errors here.
 class TestShowThreadDlgs(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
-        self.panel = TestPanel(self.frame)
-        Tools.dialogtools.parent_window = self.panel
 
     def tearDown(self):
-        del Tools.dialogtools.parent_window
-
-        self.panel.Destroy()
-        del self.panel
-
         self.frame.Destroy()
         del self.frame
 
         self.app.Destroy()
         del self.app
 
-    def testMsgDlg(self):
+    def test_msg_dlg(self):
         DialogTools.show_thread_msg_dlg("Test message from WxFixBoot")
 
-    def testYesNoDlg(self):
+    def test_yes_no_dlg(self):
         DialogTools.show_thread_yes_no_dlg("Test message from WxFixBoot. Click Yes")
         DialogTools.show_thread_yes_no_dlg("Test message from WxFixBoot. Click No")
-        DialogTools.show_thread_yes_no_dlg("Test message from WxFixBoot. Click either button. If you can see this part of the message, custom buttons aren't supported on your system", buttons=("Yay", "Nay"))
+        DialogTools.show_thread_yes_no_dlg("Test message from WxFixBoot. Click either button. "
+                                           + "If you can see this part of the message, custom "
+                                           + "buttons aren't supported on your system",
+                                           buttons=("Yay", "Nay"))
 
-    def testChoiceDlg(self):
-        DialogTools.show_thread_choice_dlg("Test message from WxFixBoot. What do programmers convert into software? Select \"Pizza & Caffeine\"", choices=["Cheese & Milk", "Pizza & Caffeine", "Dry Bread & Water"])
-        DialogTools.show_thread_choice_dlg("Test message from WxFixBoot. Select \"Turtles\"", choices=["Turtles", "Tortoises", "Terrapins"])
+    def test_choice_dlg(self):
+        DialogTools.show_thread_choice_dlg("Test message from WxFixBoot. What do programmers "
+                                           + "convert into software? Select \"Pizza & Caffeine\"",
+                                           choices=["Cheese & Milk", "Pizza & Caffeine",
+                                                    "Dry Bread & Water"])
 
-    def testTextEntryDlg(self):
+        DialogTools.show_thread_choice_dlg("Test message from WxFixBoot. Select \"Turtles\"",
+                                           choices=["Turtles", "Tortoises", "Terrapins"])
+
+    def test_text_entry_dlg(self):
         DialogTools.show_thread_text_entry_dlg("Test message from WxFixBoot. Type \"Linux\"")
 
-    def testSaveFileDlg(self):
-        DialogTools.show_thread_save_file_dlg("Test message from WxFixBoot. Enter a path and filename.")
+    def test_save_file_dlg(self):
+        DialogTools.show_thread_save_file_dlg("Test message from WxFixBoot. "
+                                              + "Enter a path and filename.")
