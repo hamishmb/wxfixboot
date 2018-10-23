@@ -108,7 +108,7 @@ def wait_until_packagemanager_free(mount_point, package_manager):
         retval = CoreTools.start_process(cmd, show_output=False)
 
         #Get the package cache if there is none. 200 - locking failure.
-        if package_manager == "yum" and retval != 200:
+        if package_manager == "yum" and retval not in (0, 200):
             CoreTools.start_process("sh -c 'echo No cache available, downloading package information...'")
             CoreTools.start_process("yum check-update", show_output=False)
 
