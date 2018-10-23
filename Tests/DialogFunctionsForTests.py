@@ -92,7 +92,7 @@ def show_real_msg_dlg(message, kind="info"):
     dlg = wx.MessageDialog(wx.GetApp().TopWindow, message, title, style, pos=wx.DefaultPosition)
     dlg.ShowModal()
     dlg.Destroy()
-    wx.Yield()
+    wx.GetApp().Yield()
 
 def show_yes_no_dlg(message, title="WxFixBoot - Question", buttons=(None, None)):
     """Shows a yes/no dialog from a thread upon instruction"""
@@ -117,7 +117,7 @@ def show_yes_no_dlg(message, title="WxFixBoot - Question", buttons=(None, None))
         dlg.Destroy()
         dlg_result = False
 
-    wx.Yield()
+    wx.GetApp().Yield()
 
     YESNO_DLG_RESULTS.append(dlg_result)
 
@@ -137,7 +137,7 @@ def show_choice_dlg(message, choices, title="WxFixBoot - Select an Option"):
         dlg.Destroy()
         dlg_result = False
 
-    wx.Yield()
+    wx.GetApp().Yield()
 
     CHOICE_DLG_RESULTS.append(dlg_result)
 
@@ -157,7 +157,7 @@ def show_text_entry_dlg(message, title="WxFixBoot - Text Entry"):
         dlg.Destroy()
         dlg_result = False
 
-    wx.Yield()
+    wx.GetApp().Yield()
 
     TEXT_ENTRY_DLG_RESULTS.append(dlg_result)
 
@@ -177,7 +177,7 @@ def show_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All Files/De
         dlg.Destroy()
         dlg_result = False
 
-    wx.Yield()
+    wx.GetApp().Yield()
 
     SAVE_FILE_DLG_RESULTS.append(dlg_result)
 

@@ -2616,7 +2616,7 @@ class ProgressWindow(wx.Frame):
         RESTARTING = True
 
         #Make sure any pending output box events are processed now, to avoid errors later.
-        wx.Yield()
+        wx.GetApp().Yield()
 
         #Destroy ProgressWindow.                
         self.Destroy()
@@ -2836,7 +2836,7 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tFilesystem: "+DISK_INFO[disk]["FileSystem"]+"\n")
             report_list.write("\t\tUUID: "+DISK_INFO[disk]["UUID"]+"\n")
             report_list.write("\t\tID: "+DISK_INFO[disk]["ID"]+"\n")
-            report_list.write("\t\tBoot Record Strings: "+unicode(b', '.join(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n")
+            report_list.write("\t\tBoot Record Strings: "+unicode(b', '.join(DISK_INFO[disk]["wx.YrdStrings"]))+"\n\n")
 
         #Do OS Information.
         report_list.write("\n##########OS Information##########\n")
