@@ -92,18 +92,26 @@ def wait_until_packagemanager_free(mount_point, package_manager):
 
     if package_manager == "apt-get":
         cmd = "apt-get check"
+        success_retvals = (0) #100 omitted - indicates apt is in use.
 
     elif package_manager == "yum":
         cmd = "yum -C check-update"
+        success_retvals = (0, 100) #100 - updates available.
 
     if mount_point != "":
         cmd = "chroot "+mount_point+" "+cmd
 
     retval = 1
 
-    #Trap in while loop until package manager is free. TODO Fix for if no package cache.
-    while retval not in (0, 100): #100 when there are updates available on Fedora. FIXME breaks ubuntu check - usual busy retval is 100!
+    #Trap in while loop until package manager is free. TODO Check this works.
+    while retval not in success_retvals:
         retval = CoreTools.start_process(cmd, show_output=False)
+
+            #Get the package cache if there is none.
+            if package_manager == "yum" and retval == 200:
+                CoreTools.start_process("sh -c 'echo No cache available, downloading package information...'")
+                CoreTools.start_process("yum check-update", show_output=False)
+
         time.sleep(5)
 
 def find_missing_fsck_modules():
