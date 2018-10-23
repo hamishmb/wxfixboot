@@ -107,10 +107,10 @@ def wait_until_packagemanager_free(mount_point, package_manager):
     while retval not in success_retvals:
         retval = CoreTools.start_process(cmd, show_output=False)
 
-            #Get the package cache if there is none.
-            if package_manager == "yum" and retval == 200:
-                CoreTools.start_process("sh -c 'echo No cache available, downloading package information...'")
-                CoreTools.start_process("yum check-update", show_output=False)
+        #Get the package cache if there is none.
+        if package_manager == "yum" and retval == 200:
+            CoreTools.start_process("sh -c 'echo No cache available, downloading package information...'")
+            CoreTools.start_process("yum check-update", show_output=False)
 
         time.sleep(5)
 
