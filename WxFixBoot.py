@@ -2618,10 +2618,12 @@ class ProgressWindow(wx.Frame):
         #Make sure any pending output box events are processed now, to avoid errors later.
         wx.GetApp().Yield()
 
+        initial_window = InitialWindow()
+        wx.GetApp().SetTopWindow(initial_window)
+        initial_window.Show()
+
         #Destroy ProgressWindow.                
         self.Destroy()
-
-        InitialWindow().Show()
 
     def session_ending(self, event): #pylint: disable=unused-argument
         """Attempt to veto e.g. a shutdown/logout event if recovering data."""
