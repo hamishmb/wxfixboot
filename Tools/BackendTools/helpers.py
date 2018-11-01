@@ -103,7 +103,7 @@ def wait_until_packagemanager_free(mount_point, package_manager):
 
     retval = 1
 
-    #Trap in while loop until package manager is free. TODO Check this works.
+    #Trap in while loop until package manager is free. TODO Check this works on APT.
     while retval not in success_retvals:
         retval = CoreTools.start_process(cmd, show_output=False)
 
