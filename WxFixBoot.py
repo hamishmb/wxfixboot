@@ -187,6 +187,9 @@ class InitialWindow(wx.Frame):
         self.panel = InitialPanel(self)
         self.SetClientSize(wx.Size(600, 420))
 
+        #Fix crashes when wxfixboot is restarted.
+        wx.GetApp().SetTopWindow(self)
+
         if RESTARTING is False:
             print("WxFixBoot Version "+VERSION+" Starting...")
             logger.info("WxFixBoot Version "+VERSION+" Starting...")
@@ -2619,7 +2622,6 @@ class ProgressWindow(wx.Frame):
         wx.GetApp().Yield()
 
         initial_window = InitialWindow()
-        wx.GetApp().SetTopWindow(initial_window)
         initial_window.Show()
 
         #Destroy ProgressWindow.                
