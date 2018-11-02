@@ -51,6 +51,7 @@ class TestWindow(wx.Frame):
                           style=wx.SIMPLE_BORDER)
 
         self.panel = TestPanel(self)
+        wx.GetApp().SetTopWindow(self)
 
 #No need for assertions, we're just making sure the functions run without errors here.
 class TestShowThreadDlgs(unittest.TestCase):
@@ -62,8 +63,10 @@ class TestShowThreadDlgs(unittest.TestCase):
         self.frame.Destroy()
         del self.frame
 
+        self.app.Yield()
         self.app.Destroy()
         del self.app
+
 
     def test_msg_dlg(self):
         DialogTools.show_thread_msg_dlg("Test message from WxFixBoot")

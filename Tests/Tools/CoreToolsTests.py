@@ -94,7 +94,7 @@ class TestIsMounted(unittest.TestCase):
                                                         + "against.\nNo data on your device will "
                                                         + "be modified. Suggested: insert a USB "
                                                         + "disk and leave it mounted.\nNote: Do "
-                                                        + "not use your device while these test "
+                                                        + "not use your device while these tests "
                                                         + "are running, or it may interfere with "
                                                         + "the tests.", "WxFixBoot - Tests")
 
@@ -162,7 +162,7 @@ class TestGetMountPointOf(unittest.TestCase):
                                                         + "against.\nNo data on your device will "
                                                         + "be modified. Suggested: insert a USB "
                                                         + "disk and leave it mounted.\nNote: Do "
-                                                        + "not use your device while these test "
+                                                        + "not use your device while these tests "
                                                         + "are running, or it may interfere with "
                                                         + "the tests.", "WxFixBoot - Tests")
 
@@ -222,7 +222,7 @@ class TestGetPartitionMountedAt(unittest.TestCase):
                                                         + "against.\nNo data on your device will "
                                                         + "be modified. Suggested: insert a USB "
                                                         + "disk and leave it mounted.\nNote: Do "
-                                                        + "not use your device while these test "
+                                                        + "not use your device while these tests "
                                                         + "are running, or it may interfere with "
                                                         + "the tests.", "WxFixBoot - Tests")
 
@@ -277,7 +277,7 @@ class TestMountPartition(unittest.TestCase):
                                                         + "against.\nNo data on your device will "
                                                         + "be modified. Suggested: insert a USB "
                                                         + "disk and leave it mounted.\nNote: Do "
-                                                        + "not use your device while these test "
+                                                        + "not use your device while these tests "
                                                         + "are running, or it may interfere with "
                                                         + "the tests.", "WxFixBoot - Tests")
 
@@ -343,7 +343,7 @@ class TestMountPartition(unittest.TestCase):
                                                     + "data on your device will be modified. "
                                                     + "Suggested: insert a USB disk and leave "
                                                     + "it mounted.\nNote: Do not use your device "
-                                                    + "while these test are running, or it may "
+                                                    + "while these tests are running, or it may "
                                                     + "interfere with the tests.",
                                                     "WxFixBoot - Tests")
 

@@ -92,7 +92,7 @@ def wait_until_packagemanager_free(mount_point, package_manager):
 
     if package_manager == "apt-get":
         cmd = "apt-get check"
-        success_retvals = (0) #100 omitted - indicates apt is in use.
+        success_retvals = (0, 0) #100 omitted - indicates apt is in use.
 
     elif package_manager == "yum":
         cmd = "yum -C check-update"
@@ -166,6 +166,8 @@ def find_checkable_file_systems():
         #Ignore all devices.
         if DISK_INFO[disk]["Type"] == "Device":
             continue
+
+        print(disk, " ", DISK_INFO[disk]["FileSystem"])
 
         #Check if the required fsck module is present, and that the partition isn't root_fs
         if "fsck."+DISK_INFO[disk]["FileSystem"] in missing_fsck_modules:
