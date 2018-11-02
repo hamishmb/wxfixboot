@@ -228,7 +228,7 @@ def find_checkable_file_systems():
         #Some filesystems will not be checked. Tell the user.
         DialogTools.show_msg_dlg(kind="info",
                                  message="The following filesystems will not be checked:\n\n"
-                                 + '\n'.join(do_not_check_list)+".\n\nThe most likely reason for "
+                                 + '\n'.join(do_not_check_list)+"\n\nThe most likely reason for "
                                  + "this is that some of the filesystems are in use, or that the "
                                  + "required filesystem checkers weren't found. WxFixBoot will "
                                  + "now continue to check the remaining filesystems.")
