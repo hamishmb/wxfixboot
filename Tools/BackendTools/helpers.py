@@ -167,28 +167,28 @@ def find_checkable_file_systems():
         if DISK_INFO[disk]["Type"] == "Device":
             continue
 
-        print(disk, " ", DISK_INFO[disk]["FileSystem"])
-
         #Check if the required fsck module is present, and that the partition isn't root_fs
         if "fsck."+DISK_INFO[disk]["FileSystem"] in missing_fsck_modules:
             mount_point = "None"
             check_this_fs = False
             remount_fs_after = False
+            reason = "filesystem checker not found."
 
-        else:
+        elif SYSTEM_INFO["IsLiveDisk"] is False and disk == root_fs:
             #If we're not running on a live disk, skip the filesystem if it's the same as root_fs
             #(in which case checking it may corrupt data).
-            if SYSTEM_INFO["IsLiveDisk"] is False and disk == root_fs:
-                mount_point = "/"
-                check_this_fs = False
-                remount_fs_after = False
-                continue
+            mount_point = "/"
+            check_this_fs = False
+            remount_fs_after = False
+            reason = "disk is busy."
 
+        else:
             #If filesystem is unknown, or not applicable (extended partitions), don't check it.
             if DISK_INFO[disk]["FileSystem"] in ("Unknown", "N/A"):
                 mount_point = "None"
                 check_this_fs = False
                 remount_fs_after = False
+                reason = "filesystem not recognised."
 
             else:
                 #Check if the partition is mounted.
@@ -207,6 +207,7 @@ def find_checkable_file_systems():
 
                         check_this_fs = False
                         remount_fs_after = False
+                        reason = "disk is busy."
 
                     else:
                         check_this_fs = True
@@ -220,7 +221,8 @@ def find_checkable_file_systems():
 
         else:
             #Add it to the non-checkable list
-            do_not_check_list.append(disk+" with Filesystem: "+DISK_INFO[disk]["FileSystem"])
+            do_not_check_list.append(disk+" with Filesystem: "+DISK_INFO[disk]["FileSystem"]
+                                     + " Reason: "+reason)
 
     #Report uncheckable partitions.
     if do_not_check_list != []:
