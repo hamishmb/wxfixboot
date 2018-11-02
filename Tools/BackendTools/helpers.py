@@ -222,7 +222,7 @@ def find_checkable_file_systems():
         else:
             #Add it to the non-checkable list
             do_not_check_list.append(disk+" with Filesystem: "+DISK_INFO[disk]["FileSystem"]
-                                     + " Reason: "+reason)
+                                     + ". ("+reason+")")
 
     #Report uncheckable partitions.
     if do_not_check_list != []:
