@@ -184,8 +184,8 @@ def find_checkable_file_systems():
                 remount_fs_after = False
                 continue
 
-            #If filesystem is unknown, don't check it.
-            if DISK_INFO[disk]["FileSystem"] == "Unknown":
+            #If filesystem is unknown, or not applicable (extended partitions), don't check it.
+            if DISK_INFO[disk]["FileSystem"] in ("Unknown", "N/A"):
                 mount_point = "None"
                 check_this_fs = False
                 remount_fs_after = False
