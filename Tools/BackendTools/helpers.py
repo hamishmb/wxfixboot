@@ -172,7 +172,7 @@ def find_checkable_file_systems():
             mount_point = "None"
             check_this_fs = False
             remount_fs_after = False
-            reason = "filesystem checker not found."
+            reason = "filesystem checker was not found."
 
         elif SYSTEM_INFO["IsLiveDisk"] is False and disk == root_fs:
             #If we're not running on a live disk, skip the filesystem if it's the same as root_fs
@@ -188,7 +188,7 @@ def find_checkable_file_systems():
                 mount_point = "None"
                 check_this_fs = False
                 remount_fs_after = False
-                reason = "filesystem not recognised."
+                reason = "filesystem was not recognised."
 
             else:
                 #Check if the partition is mounted.
@@ -221,8 +221,7 @@ def find_checkable_file_systems():
 
         else:
             #Add it to the non-checkable list
-            do_not_check_list.append(disk+" with Filesystem: "+DISK_INFO[disk]["FileSystem"]
-                                     + ". ("+reason+")")
+            do_not_check_list.append(disk+", because the "+reason)
 
     #Report uncheckable partitions.
     if do_not_check_list != []:
