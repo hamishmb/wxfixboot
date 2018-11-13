@@ -196,6 +196,9 @@ class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
         self.panel = InitialPanel(self)
         self.SetClientSize(wx.Size(600, 420))
 
+        #Fix crashes when wxfixboot is restarted.
+        wx.GetApp().SetTopWindow(self)
+
         if RESTARTING is False:
             print("WxFixBoot Version "+VERSION+" Starting...")
             logger.info("WxFixBoot Version "+VERSION+" Starting...")
@@ -2628,10 +2631,15 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
         #Make sure any pending output box events are processed now, to avoid errors later.
         wx.GetApp().Yield()
 
+<<<<<<< HEAD
         #Destroy ProgressWindow.
-        self.Destroy()
+=======
+        initial_window = InitialWindow()
+        initial_window.Show()
 
-        InitialWindow().Show()
+        #Destroy ProgressWindow.                
+>>>>>>> 6922256e643afa187f9c2a70195749370ec5ea51
+        self.Destroy()
 
     def session_ending(self, event): #pylint: disable=unused-argument
         """Attempt to veto e.g. a shutdown/logout event if recovering data."""
@@ -2846,7 +2854,7 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tFilesystem: "+DISK_INFO[disk]["FileSystem"]+"\n")
             report_list.write("\t\tUUID: "+DISK_INFO[disk]["UUID"]+"\n")
             report_list.write("\t\tID: "+DISK_INFO[disk]["ID"]+"\n")
-            report_list.write("\t\tBoot Record Strings: "+unicode(b', '.join(DISK_INFO[disk]["wx.YrdStrings"]))+"\n\n")
+            report_list.write("\t\tBoot Record Strings: "+unicode(b', '.join(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n")
 
         #Do OS Information.
         report_list.write("\n##########OS Information##########\n")

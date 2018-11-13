@@ -163,6 +163,9 @@ def filesystem_check(_type, manage_bootloader_function):
             elif DISK_INFO[disk]["FileSystem"] == "xfs":
                 exec_cmds = "xfs_repair -Pvd "+disk
 
+            elif DISK_INFO[disk]["FileSystem"] in ("hfs", "hfsplus"):
+                exec_cmds = "fsck.hfsplus -fy "+disk
+
             elif DISK_INFO[disk]["FileSystem"] == "vfat":
                 exec_cmds = "fsck.vfat -yv "+disk
 
@@ -195,6 +198,10 @@ def filesystem_check(_type, manage_bootloader_function):
 
             elif DISK_INFO[disk]["FileSystem"] == "xfs":
                 exec_cmds = "xfs_repair -Pvd "+disk
+                run_badblocks = True
+
+            elif DISK_INFO[disk]["FileSystem"] in ("hfs", "hfsplus"):
+                exec_cmds = "fsck.hfsplus -fy "+disk
                 run_badblocks = True
 
             elif DISK_INFO[disk]["FileSystem"] == "vfat":

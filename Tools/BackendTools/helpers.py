@@ -92,7 +92,7 @@ def wait_until_packagemanager_free(mount_point, package_manager):
 
     if package_manager == "apt-get":
         cmd = "apt-get check"
-        success_retvals = (0) #100 omitted - indicates apt is in use.
+        success_retvals = (0, 0) #100 omitted - indicates apt is in use.
 
     elif package_manager == "yum":
         cmd = "yum -C check-update"
@@ -103,7 +103,7 @@ def wait_until_packagemanager_free(mount_point, package_manager):
 
     retval = 1
 
-    #Trap in while loop until package manager is free. TODO Check this works.
+    #Trap in while loop until package manager is free. TODO Check this works on APT.
     while retval not in success_retvals:
         retval = CoreTools.start_process(cmd, show_output=False)
 
@@ -172,21 +172,23 @@ def find_checkable_file_systems():
             mount_point = "None"
             check_this_fs = False
             remount_fs_after = False
+            reason = "filesystem checker was not found."
 
-        else:
+        elif SYSTEM_INFO["IsLiveDisk"] is False and disk == root_fs:
             #If we're not running on a live disk, skip the filesystem if it's the same as root_fs
             #(in which case checking it may corrupt data).
-            if SYSTEM_INFO["IsLiveDisk"] is False and disk == root_fs:
-                mount_point = "/"
-                check_this_fs = False
-                remount_fs_after = False
-                continue
+            mount_point = "/"
+            check_this_fs = False
+            remount_fs_after = False
+            reason = "disk is busy."
 
-            #If filesystem is unknown, don't check it.
-            if DISK_INFO[disk]["FileSystem"] == "Unknown":
+        else:
+            #If filesystem is unknown, or not applicable (extended partitions), don't check it.
+            if DISK_INFO[disk]["FileSystem"] in ("Unknown", "N/A"):
                 mount_point = "None"
                 check_this_fs = False
                 remount_fs_after = False
+                reason = "filesystem was not recognised."
 
             else:
                 #Check if the partition is mounted.
@@ -205,6 +207,7 @@ def find_checkable_file_systems():
 
                         check_this_fs = False
                         remount_fs_after = False
+                        reason = "disk is busy."
 
                     else:
                         check_this_fs = True
@@ -218,14 +221,14 @@ def find_checkable_file_systems():
 
         else:
             #Add it to the non-checkable list
-            do_not_check_list.append(disk+" with Filesystem: "+DISK_INFO[disk]["FileSystem"])
+            do_not_check_list.append(disk+", because the "+reason)
 
     #Report uncheckable partitions.
     if do_not_check_list != []:
         #Some filesystems will not be checked. Tell the user.
         DialogTools.show_msg_dlg(kind="info",
                                  message="The following filesystems will not be checked:\n\n"
-                                 + '\n'.join(do_not_check_list)+".\n\nThe most likely reason for "
+                                 + '\n'.join(do_not_check_list)+"\n\nThe most likely reason for "
                                  + "this is that some of the filesystems are in use, or that the "
                                  + "required filesystem checkers weren't found. WxFixBoot will "
                                  + "now continue to check the remaining filesystems.")
