@@ -36,6 +36,7 @@ import os
 import shutil
 import time
 import plistlib
+import ast
 
 import getdevinfo
 import getdevinfo.linux
@@ -100,12 +101,6 @@ def usage():
     print("WxFixBoot "+VERSION+" is released under the GNU GPL Version 3")
     print("Copyright (C) Hamish McIntyre-Bhatty 2013-2018")
 
-#If this isn't running as root, relaunch.
-if not os.geteuid() == 0:
-    subprocess.Popen(["/usr/share/wxfixboot/AuthenticationDialog.py"])
-    sys.exit("\nSorry, WxFixBoot must be run with root privileges. "
-             + "\nRestarting as Root...")
-
 #Set up according to cmdline options.
 try:
     OPTIONS = getopt.getopt(sys.argv[1:], "hqvd", ("help", "quiet", "verbose", "debug"))[0]
@@ -146,6 +141,41 @@ for OPTION, ARGUMENT in OPTIONS:
     else:
         assert False, "unhandled option"
 
+#Begin Disk Information Handler thread.
+class GetDiskInformation(threading.Thread):
+    """
+    Used to get disk information without blocking the GUI thread.
+    Calls parent.receive_diskinfo when info has ben retrieved.
+    """
+
+    def __init__(self, parent):
+        """Initialize and start the thread."""
+        self.parent = parent
+        threading.Thread.__init__(self)
+        self.start()
+
+    def run(self):
+        """Get Disk Information and return it as a list with embedded lists"""
+        #Use a module I've written to collect data about connected Disks, and return it.
+        wx.CallAfter(self.parent.receive_diskinfo, self.get_info())
+
+    def get_info(self): #pylint: disable=no-self-use
+        """Get disk information as a privileged user"""
+        output = CoreTools.start_process(cmd=sys.executable+" "+"/usr/share/wxfixboot"+
+                                            +"/Tools/run_getdevinfo.py",
+                                            return_output=True,
+                                            privileged=True)[1]
+
+        #Success! Now use ast to convert the returned string to a dictionary.
+        try:
+            return ast.literal_eval(output)
+
+        except Exception as e:
+            #If this fails for some reason, just return an empty dictionary.
+            #TODO Try again to find specific exceptions in next release.
+            return {}
+
+#End Disk Information Handler thread.
 #Begin Starter Class
 class WxFixBoot(wx.App):
     """
@@ -351,6 +381,7 @@ class InitThread(threading.Thread):
         #Initialize the thread.
         threading.Thread.__init__(self)
         self.parent_window = wx.GetApp().TopWindow
+        self.disk_info_collected = False
 
         #Start the thread.
         self.start()
@@ -372,6 +403,12 @@ class InitThread(threading.Thread):
             CoreTools.emergency_exit("There was an unexpected error: \n\n"
                                      + unicode(traceback.format_exc())
                                      + "\n\nWhile starting up!")
+
+    def receive_disk_info(self, info):
+        """Receive disk info"""
+        DISK_INFO.update(info)
+
+        self.disk_info_collected = True
 
     def main_code(self):
         """Create the temporary mount point folder and set some default settings."""
@@ -442,7 +479,10 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Getting Device Information...")
         wx.CallAfter(self.parent_window.update_progress_text, "Getting Device Information...")
 
-        DISK_INFO.update(getdevinfo.getdevinfo.get_info())
+        GetDiskInformation(self)
+
+        while not self.disk_info_collected:
+            time.sleep(0.5)
 
         wx.CallAfter(self.parent_window.update_progress_bar, "60")
         logger.info("InitThread(): Finished Getting Device Information...")
