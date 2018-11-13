@@ -2631,14 +2631,10 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
         #Make sure any pending output box events are processed now, to avoid errors later.
         wx.GetApp().Yield()
 
-<<<<<<< HEAD
-        #Destroy ProgressWindow.
-=======
         initial_window = InitialWindow()
         initial_window.Show()
 
-        #Destroy ProgressWindow.                
->>>>>>> 6922256e643afa187f9c2a70195749370ec5ea51
+        #Destroy ProgressWindow.
         self.Destroy()
 
     def session_ending(self, event): #pylint: disable=unused-argument

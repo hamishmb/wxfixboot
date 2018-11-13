@@ -48,13 +48,44 @@ logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
 #Define global variables
 startup = None
 
-def start_process(exec_cmds, show_output=True, return_output=False, testing=False):
+def get_helper(cmd):
+    """Figure out which helper script to use."""
+    helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux.sh"
+
+    if "run_getdevinfo.py" in cmd:
+        helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux_getdevinfo.sh"
+
+    elif "umount" in cmd or "kpartx -d" in cmd:
+        helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux_umount.sh"
+
+    elif ("mount" in cmd or "kpartx -l" in cmd or "kpartx -a" in cmd or "lsblk" in cmd
+          or "partprobe" in cmd):
+        #Note: These are only used in the process of mounting files.
+        helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux_mount.sh"
+
+    else:
+        helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux.sh"
+
+    return "pkexec "+helper
+
+def start_process(exec_cmds, show_output=True, return_output=False, testing=False, privileged=False):
     """Start a process given a string of commands to execute.
     show_output is boolean and specifies whether to show output in the outputbox (if exists) or
     not.
 
     return_output is boolean and specifies whether to return the output back to the caller or not.
     """
+
+    #Save the command as it was passed, in case we need
+    #to call recursively (pkexec auth failure/dismissal).
+    origcmds = exec_cmds
+
+    #If this is to be a privileged process, add the helper script to the cmdline.
+    if privileged:
+        helper = get_helper(exec_cmds)
+
+        exec_cmds = helper+" "+exec_cmds
+
     #Make sure output is always in English.
     exec_cmds = "LC_ALL=C "+exec_cmds
 
@@ -75,6 +106,14 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
     #Log this info in a debug message.
     logger.debug("start_process(): Process: "+exec_cmds+": Return Value: "+unicode(ret_val)
                  + ", Output: \"\n\n"+'\n'.join(line_list)+"\"\n")
+
+    if privileged and (ret_val == 126 or ret_val == 127):
+        #Try again, auth dismissed / bad password 3 times.
+        #A lot of recursion is allowed (~1000 times), so this shouldn't be a problem.
+        logger.debug("start_process(): Bad auth or dismissed by user. Trying again...")
+        return start_process(exec_cmds=origcmds, show_output=show_output,
+                             return_output=return_output, testing=testing,
+                             privileged=privileged)
 
     if return_output is False:
         #Return the return code back to whichever function ran this process, so it can handle
