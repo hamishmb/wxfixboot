@@ -37,10 +37,24 @@ import shutil
 import time
 import plistlib
 
+import getdevinfo
+import getdevinfo.linux
+
 import wx
 import wx.html
 import wx.lib.statbmp
 import wx.lib.stattext
+
+#Import custom-made modules
+import Tools
+from Tools.dictionaries import *
+import Tools.coretools as CoreTools
+import Tools.dialogtools as DialogTools
+import Tools.StartupTools.main as MainStartupTools
+import Tools.BackendTools.essentials as EssentialBackendTools
+import Tools.BackendTools.main as MainBackendTools
+
+import Tools.notebookfunctions as NoteBookSharedFunctions
 
 #Compatibility with wxPython 4.
 if int(wx.version()[0]) >= 4:
@@ -51,9 +65,6 @@ if int(wx.version()[0]) >= 4:
 else:
     from wx import AboutDialogInfo as wxAboutDialogInfo #pylint: disable=no-name-in-module
     from wx import AboutBox as wxAboutBox #pylint: disable=no-name-in-module
-
-import getdevinfo
-import getdevinfo.linux
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -66,7 +77,7 @@ if sys.version_info[0] == 3:
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "23/10/2018"
+RELEASEDATE = "13/11/2018"
 
 #Define other global variables.
 SESSION_ENDING = False
@@ -78,6 +89,7 @@ NUMBER_OF_OPERATIONS = None
 STOP_PROGRESSTEXT_HANDLER_THREAD = None
 
 def usage():
+    """Prints usage information to the command line"""
     print("\nUsage: WxFixBoot.py [OPTION]\n")
     print("       -h, --help:                   Show this help message")
     print("       -q, --quiet:                  Show only warning, error and critical messages in the log file. Very unhelpful for debugging, and not recommended.")
@@ -134,20 +146,13 @@ for OPTION, ARGUMENT in OPTIONS:
     else:
         assert False, "unhandled option"
 
-#Import custom-made modules
-import Tools
-from Tools.dictionaries import *
-import Tools.coretools as CoreTools
-import Tools.dialogtools as DialogTools
-import Tools.StartupTools.main as MainStartupTools
-import Tools.BackendTools.essentials as EssentialBackendTools
-import Tools.BackendTools.main as MainBackendTools
-
-import Tools.notebookfunctions as NoteBookSharedFunctions
-
 #Begin Starter Class
 class WxFixBoot(wx.App):
-    def OnInit(self): #pylint: disable=invalid-name
+    """
+    This class is used to start the GUI.
+    """
+
+    def OnInit(self): #pylint: disable=invalid-name,no-self-use
         """Starts InitialWindow()"""
         InitialWindow().Show()
         return True
@@ -155,6 +160,10 @@ class WxFixBoot(wx.App):
 #End Starter Class
 #Begin Initialization Panel.
 class InitialPanel(wx.Panel):
+    """
+    This is the panel shown when the GUI is initialising and collecting data.
+    """
+
     def __init__(self, parent):
         """Initialises the panel"""
         wx.Panel.__init__(self, parent=parent)
@@ -178,7 +187,7 @@ class InitialPanel(wx.Panel):
 
 #End Initialization Panel.
 #Begin Initialization Frame.
-class InitialWindow(wx.Frame):
+class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def __init__(self):
         """Initialises InitialWindow"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot",
@@ -446,9 +455,9 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Finding OSs...")
         wx.CallAfter(self.parent_window.update_progress_text, "Finding Operating Systems...")
 
-        TEMP_OS_INFO, TEMP_SYSTEM_INFO = MainStartupTools.get_oss()
-        OS_INFO.update(TEMP_OS_INFO)
-        SYSTEM_INFO.update(TEMP_SYSTEM_INFO)
+        temp_os_info, temp_system_info = MainStartupTools.get_oss()
+        OS_INFO.update(temp_os_info)
+        SYSTEM_INFO.update(temp_system_info)
 
         wx.CallAfter(self.parent_window.update_progress_bar, "65")
         logger.info("InitThread(): Done Finding OSs...")
@@ -494,7 +503,7 @@ class InitThread(threading.Thread):
 
 #End Initalization Thread.
 #Begin Main Window
-class MainWindow(wx.Frame):
+class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def __init__(self):
         """Initialise MainWindow"""
         wx.Frame.__init__(self, None, title="WxFixBoot", size=(400, 300),
@@ -535,10 +544,10 @@ class MainWindow(wx.Frame):
     def make_status_bar(self):
         """Create the status bar"""
         self.statusbar = self.CreateStatusBar()
-        self.StatusBar.SetFieldsCount(2)
-        self.StatusBar.SetStatusWidths([-1, 150])
-        self.StatusBar.SetStatusText("Ready.", 0)
-        self.StatusBar.SetStatusText("v"+VERSION+" ("+RELEASEDATE+")", 1)
+        self.statusbar.SetFieldsCount(2)
+        self.statusbar.SetStatusWidths([-1, 150])
+        self.statusbar.SetStatusText("Ready.", 0)
+        self.statusbar.SetStatusText("v"+VERSION+" ("+RELEASEDATE+")", 1)
 
     def create_text(self):
         """Create the text"""
@@ -580,8 +589,8 @@ class MainWindow(wx.Frame):
         filemenu = wx.Menu()
         viewmenu = wx.Menu()
         editmenu = wx.Menu()
-        helpmenu = wx.Menu() 
-   
+        helpmenu = wx.Menu()
+
         #Adding Menu Items.
         self.menu_about = helpmenu.Append(wx.ID_ABOUT, "&About", "Information about this program")
         self.menu_exit = filemenu.Append(wx.ID_EXIT, "&Exit", "Terminate this program")
@@ -649,16 +658,16 @@ class MainWindow(wx.Frame):
         self.Hide()
         BootloaderOptionsWindow().Show()
 
-    def system_info(self, event=None): #pylint: disable=unused-argument
+    def system_info(self, event=None): #pylint: disable=unused-argument,no-self-use
         """Start SystemInfoWindow"""
         logger.debug("MainWindow().system_info(): Starting System Info Window...")
         SystemInfoWindow().Show()
 
-    def show_privacypolicy(self, event=None): #pylint: disable=unused-argument
+    def show_privacypolicy(self, event=None): #pylint: disable=unused-argument,no-self-use
         """Show PrivPolWindow"""
         PrivPolWindow().Show()
 
-    def progress_window(self, event=None): #pylint: disable=unused-argument
+    def progress_window(self, event=None): #pylint: disable=unused-argument,no-self-use
         """Starts Progress Window"""
         logger.debug("MainWindow().progress_window(): Starting Progress Window...")
         self.save_main_options()
@@ -747,7 +756,7 @@ class MainWindow(wx.Frame):
         main_sizer.SetMinSize(wx.Size(400, 300))
         main_sizer.SetSizeHints(self)
 
-    def bind_events(self): 
+    def bind_events(self):
         """Bind all mainwindow events"""
         self.Bind(wx.EVT_MENU, self.on_about, self.menu_about)
         self.Bind(wx.EVT_MENU, self.on_exit, self.menu_exit)
@@ -926,7 +935,7 @@ class MainWindow(wx.Frame):
 
 #End Main window
 #Begin System Info Page 1.
-class SystemInfoPage1(wx.Panel):
+class SystemInfoPage1(wx.Panel): #pylint: disable=too-few-public-methods
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage1"""
         self.parent_window = notebook
@@ -968,7 +977,7 @@ class SystemInfoPage1(wx.Panel):
 
 #End System Info Page 1
 #Begin System Info Page 2.
-class SystemInfoPage2(wx.Panel):
+class SystemInfoPage2(wx.Panel): #pylint: disable=too-few-public-methods
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage2"""
         self.parent_window = notebook
@@ -1009,7 +1018,7 @@ class SystemInfoPage2(wx.Panel):
 
 #End System Info Page 2
 #Begin System Info Page 3.
-class SystemInfoPage3(wx.Panel):
+class SystemInfoPage3(wx.Panel): #pylint: disable=too-few-public-methods
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage3"""
         self.parent_window = notebook
@@ -1045,7 +1054,7 @@ class SystemInfoPage3(wx.Panel):
 
 #End System Info Page 3
 #Begin System Info Page 4.
-class SystemInfoPage4(wx.Panel):
+class SystemInfoPage4(wx.Panel): #pylint: disable=too-few-public-methods
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage4"""
         self.parent_window = notebook
@@ -1084,7 +1093,7 @@ class SystemInfoPage4(wx.Panel):
 
 #End System Info Page 4
 #Begin System Info Page 5.
-class SystemInfoPage5(wx.Panel):
+class SystemInfoPage5(wx.Panel): #pylint: disable=too-few-public-methods
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage5"""
         self.parent_window = notebook
@@ -1121,7 +1130,7 @@ class SystemInfoPage5(wx.Panel):
 
 #End System Info Page 5
 #Begin System Info Page 6.
-class SystemInfoPage6(wx.Panel):
+class SystemInfoPage6(wx.Panel): #pylint: disable=too-few-public-methods
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage6"""
         self.parent_window = notebook
@@ -1212,7 +1221,7 @@ class SystemInfoWindow(wx.Frame):
 
 #End System Info Window
 #Begin Privacy Policy Window.
-class PrivPolWindow(wx.Frame):
+class PrivPolWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def __init__(self):
         """Initialize PrivPolWindow"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Privacy Policy",
@@ -1278,7 +1287,7 @@ class PrivPolWindow(wx.Frame):
 
 #End Privacy Policy Window.
 #Begin Bootloader Options Window.
-class BootloaderOptionsWindow(wx.Frame):
+class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def __init__(self):
         """Initialise bootloader options window"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow,
@@ -1615,7 +1624,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.Bind(wx.EVT_CHOICE, self.on_backup_bootloader_choice, self.backup_bootloader_choice)
         self.Bind(wx.EVT_CHOICE, self.on_new_bootloader_choice, self.new_bootloader_choice)
 
-    def system_info(self, event=None): #pylint: disable=unused-argument
+    def system_info(self, event=None): #pylint: disable=unused-argument,no-self-use
         """Start SystemInfoWindow"""
         logger.debug("BootloaderOptionsWindow().system_info(): Starting System Info Window...")
         SystemInfoWindow().Show()
@@ -1891,8 +1900,9 @@ class BootloaderOptionsWindow(wx.Frame):
 
             self.main_sizer.Insert(first_number, self.kernel_options_sizer, 1,
                                    wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+
             self.main_sizer.Insert(first_number+1, self.install_new_bootloader_sizer,
-                                  1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
+                                   1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
 
             self.main_sizer.Insert(first_number+2, self.backup_bootloader_sizer,
                                    1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 10)
@@ -2047,7 +2057,7 @@ class BootloaderOptionsWindow(wx.Frame):
         self.restore_bootloader_checkbox.SetValue(0)
         self.on_restore_bootloader_checkbox()
 
-        #Determine if the current bootloader is the same as the backed up one. 
+        #Determine if the current bootloader is the same as the backed up one.
         if config["Bootloader"] == BOOTLOADER_INFO[_os]["Bootloader"] and config["Bootloader"] not in ("GRUB-LEGACY", "Unknown"):
             #Set up to reinstall the current bootloader.
             self.reinstall_bootloader_checkbox.Enable()
@@ -2094,7 +2104,7 @@ class BootloaderOptionsWindow(wx.Frame):
     def on_update_or_reinstall_checkbox(self, event=None): #pylint: disable=unused-argument
         """Enable/Disable options, based on the value of the update/reinstall checkboxes."""
         logger.debug("BootloaderOptionsWindow().on_update_or_reinstall_checkbox(): Enabling and Disabling options as needed...")
- 
+
         if self.reinstall_bootloader_checkbox.IsChecked():
             self.update_bootloader_checkbox.Disable()
             self.keep_bootloader_timeout_checkbox.Enable()
@@ -2317,7 +2327,7 @@ class BootloaderOptionsWindow(wx.Frame):
 
 #End New Bootloader Options Window.
 #Begin Progress Window
-class ProgressWindow(wx.Frame):
+class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def __init__(self):
         """Initialse Progress Window"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot - Operations Progress",
@@ -2400,13 +2410,13 @@ class ProgressWindow(wx.Frame):
 
         #Add items to the first button sizer.
         button_sizer_1.Add(self.restart_button, 1, wx.RIGHT, 5)
-        button_sizer_1.Add((5,5), 1, wx.LEFT|wx.RIGHT, 5)
+        button_sizer_1.Add((5, 5), 1, wx.LEFT|wx.RIGHT, 5)
         button_sizer_1.Add(self.show_output_button, 1, wx.LEFT|wx.RIGHT, 5)
 
         #Add items to the second button sizer.
-        button_sizer_2.Add((5,5), 1, wx.RIGHT, 5)
+        button_sizer_2.Add((5, 5), 1, wx.RIGHT, 5)
         button_sizer_2.Add(self.exit_button, 1, wx.LEFT|wx.RIGHT, 5)
-        button_sizer_2.Add((5,5), 1, wx.LEFT|wx.RIGHT, 5)
+        button_sizer_2.Add((5, 5), 1, wx.LEFT|wx.RIGHT, 5)
 
         #Add items to the main sizer.
         self.main_sizer.Add(self.performing_operations_text, 0, wx.ALL|wx.ALIGN_CENTER, 10)
@@ -2474,7 +2484,7 @@ class ProgressWindow(wx.Frame):
             self.output_box.Hide()
 
             #Insert some empty space.
-            self.main_sizer.Insert(8, (1,1), 1, wx.EXPAND)
+            self.main_sizer.Insert(8, (1, 1), 1, wx.EXPAND)
 
         #Call Layout() on self.panel() to ensure it displays properly.
         self.panel.Layout()
@@ -2554,7 +2564,7 @@ class ProgressWindow(wx.Frame):
         elif _type == "BKSP":
             self.backspace()
 
-    def update_current_progress(self,msg):
+    def update_current_progress(self, msg):
         """Update the progress of the current progress progress bar"""
         #Called at various points during operation code.
         self.current_operation_progress_bar.SetValue(int(msg))
@@ -2618,7 +2628,7 @@ class ProgressWindow(wx.Frame):
         #Make sure any pending output box events are processed now, to avoid errors later.
         wx.GetApp().Yield()
 
-        #Destroy ProgressWindow.                
+        #Destroy ProgressWindow.
         self.Destroy()
 
         InitialWindow().Show()
@@ -2988,7 +2998,7 @@ class BackendThread(threading.Thread):
         report_list.write("\n\n")
         report_list.write("\n##########End Of System Report##########\n")
         report_list.close()
- 
+
 #End Backend Thread
 APP = WxFixBoot(False)
 APP.MainLoop()
