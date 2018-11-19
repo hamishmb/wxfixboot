@@ -19,6 +19,10 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
+"""
+This module contains the core functions used during WxFixBoot's startup procedure.
+"""
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
 #strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -34,9 +38,9 @@ import logging
 #Import other modules.
 sys.path.append('../..') #Need to be able to import the Tools module from here.
 
-import Tools.coretools as CoreTools
-import Tools.dialogtools as DialogTools
-from Tools.dictionaries import *
+import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
+import Tools.dialogtools as DialogTools #pylint: disable=wrong-import-position
+from Tools.dictionaries import * #pylint: disable=wrong-import-position
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -146,27 +150,27 @@ def make_bootloaderinfo_entry_for_windows(the_os):
 
 def has_windows_9x(mount_point):
     """Try to find a Windows 9X installation. Return True if found, False if not."""
-    return (os.path.isdir(mount_point+"/WINDOWS") and os.path.exists(mount_point+"/AUTOEXEC.BAT") and os.path.exists(mount_point+"/COMMAND.COM") and os.path.isdir(mount_point+"/My Documents"))
+    return os.path.isdir(mount_point+"/WINDOWS") and os.path.exists(mount_point+"/AUTOEXEC.BAT") and os.path.exists(mount_point+"/COMMAND.COM") and os.path.isdir(mount_point+"/My Documents")
 
 def has_windows_xp(mount_point):
     """Try to find a Windows XP installation. Return True if found, False if not."""
-    return (os.path.isfile(mount_point+"/boot.ini") and os.path.isfile(mount_point+"/ntldr") and os.path.isfile(mount_point+"/NTDETECT.COM") and os.path.isdir(mount_point+"/Documents and Settings"))
+    return os.path.isfile(mount_point+"/boot.ini") and os.path.isfile(mount_point+"/ntldr") and os.path.isfile(mount_point+"/NTDETECT.COM") and os.path.isdir(mount_point+"/Documents and Settings")
 
 def has_windows_vista(mount_point):
     """Try to find a Windows Vista installation. Return True if found, False if not."""
-    return (os.path.isfile(mount_point+"/bootmgr") and os.path.isdir(mount_point+"/Users") and os.path.isdir(mount_point+"/Boot"))
+    return os.path.isfile(mount_point+"/bootmgr") and os.path.isdir(mount_point+"/Users") and os.path.isdir(mount_point+"/Boot")
 
 def has_windows_7(mount_point):
     """Try to find a Windows 7 installation. Return True if found, False if not."""
-    return ((not os.path.isfile(mount_point+"/bootmgr")) and os.path.isdir(mount_point+"/Recovery") and os.path.isdir(mount_point+"/Windows/BitLockerDiscoveryVolumeContents"))
+    return (not os.path.isfile(mount_point+"/bootmgr")) and os.path.isdir(mount_point+"/Recovery") and os.path.isdir(mount_point+"/Windows/BitLockerDiscoveryVolumeContents")
 
 def has_windows_8(mount_point):
     """Try to find a Windows 8/8.1 installation. Return True if found, False if not."""
-    return (os.path.isfile(mount_point+"/BOOTNXT") and os.path.isdir(mount_point+"/Windows/DesktopTileResources"))
+    return os.path.isfile(mount_point+"/BOOTNXT") and os.path.isdir(mount_point+"/Windows/DesktopTileResources")
 
 def has_windows_10(mount_point):
     """Try to find a Windows 10 installation. Return True if found, False if not."""
-    return (os.path.isdir(mount_point+"/Windows/HoloShell") and os.path.isdir(mount_point+"/Apps"))
+    return os.path.isdir(mount_point+"/Windows/HoloShell") and os.path.isdir(mount_point+"/Apps")
 
 def get_defaultoss_partition(the_os):
     """Get the partition for the given OS's default OS to boot"""
@@ -488,7 +492,8 @@ def get_os_name_with_lsb(partition, mount_point, is_current_os):
         logger.info("get_os_name_with_lsb(): OS isn't the currently running OS...")
         cmd = "chroot "+mount_point+" lsb_release -sd"
 
-    retval, output = CoreTools.start_process(cmd, show_output=False, return_output=True, privileged=True)
+    retval, output = CoreTools.start_process(cmd, show_output=False,
+                                             return_output=True, privileged=True)
 
     if retval != 0 or output == "":
         logger.error("get_os_name_with_lsb(): Couldn't get OS name! Returning 'Unknown'...")

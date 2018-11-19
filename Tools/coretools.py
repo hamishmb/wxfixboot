@@ -88,15 +88,15 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
         exec_cmds = helper+" "+exec_cmds
 
     #Make sure output is always in English.
-    environ = dict(os.environ, LC_ALL="C") #pylint: disable=redefined-variable-type
+    environ = dict(os.environ, LC_ALL="C")
 
     exec_cmds = shlex.split(exec_cmds)
 
     #Run the command(s).
     logger.debug("start_process(): Starting process: "+' '.join(exec_cmds))
     cmd = subprocess.Popen(exec_cmds, stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT, env=environ,
-                              shell=False)
+                           stderr=subprocess.STDOUT, env=environ,
+                           shell=False)
 
     #Use a simpler output reader on startup to improve performance.
     if startup:
@@ -109,7 +109,8 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
     ret_val = int(cmd.returncode)
 
     #Log this info in a debug message.
-    logger.debug("start_process(): Process: "+' '.join(exec_cmds)+": Return Value: "+unicode(ret_val)
+    logger.debug("start_process(): Process: "+' '.join(exec_cmds)
+                 +": Return Value: "+unicode(ret_val)
                  + ", Output: \"\n\n"+'\n'.join(line_list)+"\"\n")
 
     if privileged and (ret_val == 126 or ret_val == 127):
@@ -361,7 +362,8 @@ def mount_partition(partition, mount_point, options=""):
         os.makedirs(mount_point)
 
     #Mount the device to the mount point.
-    ret_val = start_process("mount "+options+" "+partition+" "+mount_point, show_output=False, privileged=True)
+    ret_val = start_process("mount "+options+" "+partition+" "+mount_point,
+                            show_output=False, privileged=True)
 
     if ret_val == 0:
         logger.debug("mount_partition(): Successfully mounted partition!")
@@ -378,7 +380,8 @@ def remount_partition(partition, mode="rw"):
     The default value for mode is rw.
     """
     logger.debug("remount_partition(): Remounting "+partition+" as "+mode+"...")
-    ret_val = start_process("mount -o remount,"+mode+" "+partition, show_output=False, privileged=True)
+    ret_val = start_process("mount -o remount,"+mode+" "+partition,
+                            show_output=False, privileged=True)
 
     if ret_val == 0:
         logger.warning("remount_partition(): Successfully remounted partition!")
@@ -418,7 +421,8 @@ def update_chroot_mtab(mount_point):
     """Update /etc/mtab inside a chroot, so the list of mounted filesystems is always right."""
     logger.debug("update_chroot_mtab(): Updating /etc/mtab for chroot at: "+mount_point+"...")
 
-    retval = start_process("cp -vf /proc/self/mounts "+mount_point+"/etc/mtab", show_output=False, privileged=True)
+    retval = start_process("cp -vf /proc/self/mounts "+mount_point+"/etc/mtab",
+                           show_output=False, privileged=True)
 
     if retval != 0:
         logger.warning("update_chroot_mtab(): Failed to run command: cp -vf /proc/self/mounts "
@@ -452,7 +456,8 @@ def setup_chroot(mount_point):
                  "cp -fv /etc/resolv.conf "+mount_point+"/etc/resolv.conf")
 
     for exec_cmd in exec_list:
-        ret_val = start_process(exec_cmd, show_output=False, return_output=True, privileged=True)[0]
+        ret_val = start_process(exec_cmd, show_output=False, return_output=True,
+                                privileged=True)[0]
 
         if ret_val != 0:
             logger.error("setup_chroot(): Error: Failed to run command: '"+exec_cmd

@@ -20,6 +20,11 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
+"""
+This module contains the tools used to set the configuration of bootloaders
+when performing operations with WxFixBoot.
+"""
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
 #strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -34,11 +39,10 @@ import logging
 
 #Import other modules.
 sys.path.append('../../..') #Need to be able to import the Tools module from here.
-import Tools.coretools as CoreTools
-import Tools.dialogtools as DialogTools
-from .. import helpers as HelperBackendTools
-
-from Tools.dictionaries import *
+import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
+import Tools.dialogtools as DialogTools #pylint: disable=wrong-import-position
+from Tools.dictionaries import DISK_INFO, OS_INFO, BOOTLOADER_INFO #pylint: disable=wrong-import-position
+from .. import helpers as HelperBackendTools #pylint: disable=wrong-import-position
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -183,7 +187,8 @@ def install_grub2_to_efi_partition(package_manager, use_chroot, mount_point, uef
     #Okay, we've modified the kernel options and the timeout. Now we need to install grub
     #to the UEFI partition.
     if package_manager == "apt-get":
-        cmd = "grub-install --efi-directory="+uefi_system_partition_mount_point+" --target="+arch+"-efi"
+        cmd = "grub-install --efi-directory="+uefi_system_partition_mount_point \
+              + " --target="+arch+"-efi"
 
     elif package_manager == "yum":
         #Don't install on fedora, it messes stuff up.
@@ -198,7 +203,11 @@ def install_grub2_to_efi_partition(package_manager, use_chroot, mount_point, uef
     return retval
 
 def update_grub2(_os, package_manager, use_chroot, mount_point):
-    """Run 'update-grub' to update GRUB2's (BIOS and EFI/UEFI) configuration and bootloader menu"""
+    """
+    Run 'update-grub' to update GRUB2's (BIOS and EFI/UEFI) configuration
+    and bootloader menu
+    """
+
     #We need to update grub.
     if package_manager == "apt-get":
         cmd = "update-grub2"
@@ -408,23 +417,23 @@ def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
     keys = list(OS_INFO.keys())
     keys.sort()
 
-    for _os in keys:
-        logger.info("make_lilo_os_entries(): Preparing to make an entry for: "+_os)
+    for __os in keys:
+        logger.info("make_lilo_os_entries(): Preparing to make an entry for: "+__os)
 
         if not os.path.isfile(mount_point+"/vmlinuz") or not os.path.isfile(mount_point+"/initrd.img"):
             #We can't make an entry for this OS. Warn the user.
-            logger.warning("make_lilo_os_entries(): Couldn't find /vmlinuz or /initrd.img for "+_os
+            logger.warning("make_lilo_os_entries(): Couldn't find /vmlinuz or /initrd.img for "+__os
                            + "! Telling the user we can't make an entry...")
 
             DialogTools.show_msg_dlg(message="Warning: The shortcut to the latest kernel or "
-                                     + "initrd weren't found for "+_os+"! Unfortunately, this "
+                                     + "initrd weren't found for "+__os+"! Unfortunately, this "
                                      + "means WxFixBoot can't make a bootloader entry for this "
                                      + "OS. Click okay to continue.", kind="Warning")
 
             continue
 
         #Names in LILO are not allowed to have spaces, so let's remove the spaces from them.
-        os_name = _os.replace(' ', '')
+        os_name = __os.replace(' ', '')
 
         #Check that the name is no longer than 15 characters.
         if len(os_name) > 15:
@@ -435,12 +444,12 @@ def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
             os_name = os_name[0:15]
 
         #Now let's make the entries (both standard and recovery).
-        assemble_lilo_menu_entry(os_name, _os, kernel_options, new_file_contents)
-        assemble_lilo_menu_entry(os_name[0:-4]+"recv", _os, kernel_options+" recovery",
+        assemble_lilo_menu_entry(os_name, __os, kernel_options, new_file_contents)
+        assemble_lilo_menu_entry(os_name[0:-4]+"recv", __os, kernel_options+" recovery",
                                  new_file_contents)
 
         #Add this OS to the Completed Entries List, because if we got this far it's done and added.
-        logger.debug("make_lilo_os_entries(): OS Entry for "+_os+" is done!")
+        logger.debug("make_lilo_os_entries(): OS Entry for "+__os+" is done!")
         completed_entries_list.append(os_name)
 
     #Now set the default OS.

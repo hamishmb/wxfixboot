@@ -34,17 +34,15 @@ import logging
 import wx
 
 #Import other modules.
-from . import essentials as EssentialBackendTools
-from . import helpers as HelperBackendTools
-from . import BootloaderTools
-BootloaderConfigSettingTools = BootloaderTools.setconfigtools
-
 sys.path.append('../..') #Need to be able to import the Tools module from here.
-import Tools.coretools as CoreTools
-import Tools.dialogtools as DialogTools
-from Tools.dictionaries import *
-
-import Tools.StartupTools.getbootloaderconfigtools as BootloaderConfigObtainingTools
+import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
+import Tools.dialogtools as DialogTools #pylint: disable=wrong-import-position
+from Tools.dictionaries import * #pylint: disable=wrong-import-position
+import Tools.StartupTools.getbootloaderconfigtools as BootloaderConfigObtainingTools #pylint: disable=wrong-import-position
+from . import essentials as EssentialBackendTools #pylint: disable=wrong-import-position
+from . import helpers as HelperBackendTools #pylint: disable=wrong-import-position
+from . import BootloaderTools #pylint: disable=wrong-import-position
+BootloaderConfigSettingTools = BootloaderTools.setconfigtools
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -135,7 +133,7 @@ def manage_bootloader(_os):
                                                      title="WxFixBoot - Error "+operation
                                                      + "ing Bootloader!",
                                                      buttons=("Try Again",
-                                                     "Skip Bootloader Operations For This OS"))
+                                                              "Skip Bootloader Operations For This OS"))
 
                 if result:
                     logger.info("manage_bootloader(): Trying again and checking internet "
@@ -232,7 +230,8 @@ def remove_old_bootloader(_os):
 
     #Mount the UEFI partition at mount_point/boot/efi, if it exists.
     if OS_INFO[_os]["EFIPartition"] != "Unknown":
-        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
+        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"],
+                                     mount_point=mount_point+"/boot/efi") != 0:
             logger.error("remove_old_bootloader(): Failed to mount "+OS_INFO[_os]["EFIPartition"]
                          + "! to "+mount_point+"/boot/efi! Aborting bootloader installation and "
                          + "warning user...")
@@ -270,7 +269,8 @@ def remove_old_bootloader(_os):
         logger.info("remove_old_bootloader(): Removing GRUB2...")
 
         if OS_INFO[_os]["PackageManager"] == "apt-get":
-            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub-pc grub-pc-bin grub-common'"
+            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y " \
+                  "grub-pc grub-pc-bin grub-common'"
 
         elif OS_INFO[_os]["PackageManager"] == "yum":
             cmd = "yum -y remove grub2"
@@ -288,7 +288,9 @@ def remove_old_bootloader(_os):
         logger.info("remove_old_bootloader(): Removing GRUB-UEFI...")
 
         if OS_INFO[_os]["PackageManager"] == "apt-get":
-            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common'"
+            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y " \
+                  "grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 " \
+                  "grub-efi-ia32-bin grub-common grub2-common'"
 
         elif OS_INFO[_os]["PackageManager"] == "yum":
             cmd = "yum -y remove grub2-efi shim-x64"
@@ -300,14 +302,16 @@ def remove_old_bootloader(_os):
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y elilo'"
 
         elif OS_INFO[_os]["PackageManager"] == "yum":
-            cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. Continuing anyway...'"
+            cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. " \
+                  "Continuing anyway...'"
 
     else:
         #Bootloader is unknown, or grub-legacy. Just output a warning message.
         logger.warning("remove_old_bootloader(): Cannot remove GRUB-LEGACY / unknown bootloader! "
                        + "Continuing anyway...")
 
-        cmd = "echo 'WARNING: Cannot remove GRUB-LEGACY, or bootloader is unknown. Continuing anyway...'"
+        cmd = "echo 'WARNING: Cannot remove GRUB-LEGACY, or bootloader is " \
+              "unknown. Continuing anyway...'"
 
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
@@ -411,7 +415,8 @@ def install_new_bootloader(_os):
         unmount_after = not CoreTools.is_mounted(OS_INFO[_os]["Partition"], mount_point)
 
         if unmount_after:
-            if CoreTools.mount_partition(partition=OS_INFO[_os]["Partition"], mount_point=mount_point) != 0:
+            if CoreTools.mount_partition(partition=OS_INFO[_os]["Partition"],
+                                         mount_point=mount_point) != 0:
                 logger.error("install_new_bootloader(): Failed to mount "+OS_INFO[_os]["Partition"]
                              + "! Warn the user and skip this OS.")
 
@@ -437,7 +442,8 @@ def install_new_bootloader(_os):
 
         #If there's a seperate /boot partition for this OS, make sure it's mounted.
         if OS_INFO[_os]["BootPartition"] != "Unknown":
-            if CoreTools.mount_partition(partition=OS_INFO[_os]["BootPartition"], mount_point=mount_point+"/boot") != 0:
+            if CoreTools.mount_partition(partition=OS_INFO[_os]["BootPartition"],
+                                         mount_point=mount_point+"/boot") != 0:
                 logger.error("remove_old_bootloader(): Failed to mount "
                              + OS_INFO[_os]["BootPartition"]+"! Warn the user and skip this OS.")
 
@@ -516,7 +522,10 @@ def install_new_bootloader(_os):
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
 
         elif OS_INFO[_os]["PackageManager"] == "yum":
-            cmd = "yum -y install grub2-efi-ia32 grub2-efi-x64 grub2-efi shim-x64 fwupd fwupdate-efi fwupdate-libs gnome-software PackageKit appstream-data comps-extras epiphany-runtime flatpak-libs fwupd-labels libsmbios ostree rpm-ostree-libs"
+            cmd = "yum -y install grub2-efi-ia32 grub2-efi-x64 grub2-efi " \
+                  "shim-x64 fwupd fwupdate-efi fwupdate-libs gnome-software " \
+                  "PackageKit appstream-data comps-extras epiphany-runtime " \
+                  "flatpak-libs fwupd-labels libsmbios ostree rpm-ostree-libs"
 
     elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO":
         logger.info("install_new_bootloader(): Installing ELILO...")
@@ -539,7 +548,8 @@ def install_new_bootloader(_os):
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'"
 
         elif OS_INFO[_os]["PackageManager"] == "yum":
-            cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. Continuing anyway...'"
+            cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. " \
+                  "Continuing anyway...'"
 
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
@@ -635,7 +645,8 @@ def set_new_bootloader_config(_os):
 
         if unmount_after:
             #Mount the partition.
-            if CoreTools.mount_partition(partition=OS_INFO[_os]["Partition"], mount_point=mount_point) != 0:
+            if CoreTools.mount_partition(partition=OS_INFO[_os]["Partition"],
+                                         mount_point=mount_point) != 0:
                 #Ignore this partition.
                 logger.warning("set_new_bootloader_config(): Failed to mount "
                                + OS_INFO[_os]["Partition"]+"! Giving up...")
@@ -670,7 +681,8 @@ def set_new_bootloader_config(_os):
 
     #If there's a seperate EFI partition for this OS, make sure it's mounted.
     if OS_INFO[_os]["EFIPartition"] != "Unknown":
-        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
+        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"],
+                                     mount_point=mount_point+"/boot/efi") != 0:
             logger.error("remove_old_bootloader(): Failed to mount "+OS_INFO[_os]["EFIPartition"]
                          + "! Warn the user and skip this OS.")
 
@@ -706,7 +718,8 @@ def set_new_bootloader_config(_os):
 
         if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #Mount the UEFI partition at mount_point/boot/efi.
-            if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
+            if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"],
+                                         mount_point=mount_point+"/boot/efi") != 0:
                 logger.error("set_new_bootloader_config(): Couldn't mount EFI partition "
                              + OS_INFO[_os]["EFIPartition"]+" to install bootloader! Giving up "
                              + "and warning user...")
@@ -924,7 +937,8 @@ def set_new_bootloader_config(_os):
                                                                 mount_point=mount_point)
 
         #Mount the UEFI partition at mount_point/boot/efi.
-        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
+        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"],
+                                     mount_point=mount_point+"/boot/efi") != 0:
             logger.error("set_new_bootloader_config(): Failed to mount EFI partition "
                          + OS_INFO[_os]["EFIPartition"]+"! Continuing anyway...")
 

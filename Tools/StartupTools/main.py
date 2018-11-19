@@ -19,6 +19,11 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
+"""
+This module contains the main functions that form most of the cohesive whole
+of WxFixBoot's startup procedures.
+"""
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
 #strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -31,14 +36,14 @@ import os
 import sys
 import logging
 
-#Import other modules.
-from . import core as CoreStartupTools
-from . import getbootloaderconfigtools as BootloaderConfigObtainingTools
-
 sys.path.append('../..') #Need to be able to import the Tools module from here.
-import Tools.coretools as CoreTools
-import Tools.dialogtools as DialogTools
-from Tools.dictionaries import *
+import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
+import Tools.dialogtools as DialogTools #pylint: disable=wrong-import-position
+from Tools.dictionaries import * #pylint: disable=wrong-import-position
+
+#Import other modules.
+from . import core as CoreStartupTools #pylint: disable=wrong-import-position
+from . import getbootloaderconfigtools as BootloaderConfigObtainingTools  #pylint: disable=wrong-import-position
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -196,7 +201,7 @@ def get_oss():
     """Get the names of all OSs on the HDDs."""
     logger.info("get_oss(): Finding operating systems...")
     root_filesystem = CoreTools.get_partition_mounted_at("/")
-    OS_INFO = {}
+    os_info = {}
 
     #Get Linux OSs.
     keys = list(DISK_INFO.keys())
@@ -206,7 +211,8 @@ def get_oss():
         if DISK_INFO[partition]["Type"] == "Device":
             continue
 
-        elif DISK_INFO[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"): #TODO Check if this is what APFS shows up as.
+        elif DISK_INFO[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"): 
+            #TODO Check if this is what APFS shows up as.
             #Look for macOS.
             os_name = "macOS ("+partition+")"
             logger.debug("get_oss(): Looking for macOS on "+partition+"...")
@@ -234,13 +240,13 @@ def get_oss():
             if os.path.exists(mount_point+"/mach_kernel") or os.path.exists(mount_point+"/System/Library/Kernels/kernel"):
                 #Create OS_INFO entry for it.
                 logger.debug("get_oss(): Found "+os_name+"...")
-                OS_INFO[os_name] = {}
-                OS_INFO[os_name]["Name"] = os_name
-                OS_INFO[os_name]["IsCurrentOS"] = False
-                OS_INFO[os_name]["Arch"] = "Unknown"
-                OS_INFO[os_name]["Partition"] = partition
-                OS_INFO[os_name]["PackageManager"] = "Mac App Store"
-                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+                os_info[os_name] = {}
+                os_info[os_name]["Name"] = os_name
+                os_info[os_name]["IsCurrentOS"] = False
+                os_info[os_name]["Arch"] = "Unknown"
+                os_info[os_name]["Partition"] = partition
+                os_info[os_name]["PackageManager"] = "Mac App Store"
+                os_info[os_name]["RawFSTabInfo"], os_info[os_name]["EFIPartition"], os_info[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
 
             #unmount the filesystem if needed.
             if was_mounted:
@@ -307,16 +313,16 @@ def get_oss():
                     #Unknown Windows.
                     os_name = "Windows"
 
-                #Create OS_INFO entry for it.
+                #Create os_info entry for it.
                 os_name = os_name+" ("+partition+")"
                 logger.debug("get_oss(): Found "+os_name+"...")
-                OS_INFO[os_name] = {}
-                OS_INFO[os_name]["Name"] = os_name
-                OS_INFO[os_name]["IsCurrentOS"] = False
-                OS_INFO[os_name]["Arch"] = "Unknown"
-                OS_INFO[os_name]["Partition"] = partition
-                OS_INFO[os_name]["PackageManager"] = "Windows Installer"
-                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+                os_info[os_name] = {}
+                os_info[os_name]["Name"] = os_name
+                os_info[os_name]["IsCurrentOS"] = False
+                os_info[os_name]["Arch"] = "Unknown"
+                os_info[os_name]["Partition"] = partition
+                os_info[os_name]["PackageManager"] = "Windows Installer"
+                os_info[os_name]["RawFSTabInfo"], os_info[os_name]["EFIPartition"], os_info[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
 
             #unmount the filesystem if needed.
             if was_mounted:
@@ -349,7 +355,9 @@ def get_oss():
                     root_filesystem_is_alias = False
 
             if partition == root_filesystem or root_filesystem_is_alias:
-                cmd = "python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
+                cmd = "python -c \"from __future__ import print_function; " \
+                      "import platform; print(' '.join(platform.linux_distribution()));\""
+
                 apt_cmd = "which apt-get"
                 yum_cmd = "which yum"
                 chroot = False
@@ -358,7 +366,9 @@ def get_oss():
 
             else:
                 mount_point = "/tmp/wxfixboot/mountpoints"+partition
-                cmd = "chroot "+mount_point+" python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
+                cmd = "chroot "+mount_point+" python -c \"from __future__ import print_function; "\
+                "import platform; print(' '.join(platform.linux_distribution()));\""
+
                 apt_cmd = "chroot "+mount_point+" which apt-get"
                 yum_cmd = "chroot "+mount_point+" which yum"
                 chroot = True
@@ -400,17 +410,17 @@ def get_oss():
             #Also check if CoreStartupTools.ask_for_os_name was used to determine the name.
             #If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
             if os_name != None and os_architecture != None and package_manager != "Unknown":
-                #Add this information to OS_INFO.
-                OS_INFO[os_name] = {}
-                OS_INFO[os_name]["Name"] = os_name
-                OS_INFO[os_name]["IsCurrentOS"] = is_current_os
-                OS_INFO[os_name]["Arch"] = os_architecture
-                OS_INFO[os_name]["Partition"] = partition
-                OS_INFO[os_name]["PackageManager"] = package_manager
-                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = CoreStartupTools.get_fstab_info(mount_point, os_name)
+                #Add this information to os_info.
+                os_info[os_name] = {}
+                os_info[os_name]["Name"] = os_name
+                os_info[os_name]["IsCurrentOS"] = is_current_os
+                os_info[os_name]["Arch"] = os_architecture
+                os_info[os_name]["Partition"] = partition
+                os_info[os_name]["PackageManager"] = package_manager
+                os_info[os_name]["RawFSTabInfo"], os_info[os_name]["EFIPartition"], os_info[os_name]["BootPartition"] = CoreStartupTools.get_fstab_info(mount_point, os_name)
 
                 if chroot is False:
-                    SYSTEM_INFO["CurrentOS"] = OS_INFO[os_name].copy()
+                    SYSTEM_INFO["CurrentOS"] = os_info[os_name].copy()
 
             if chroot:
                 #unmount the filesystem.
@@ -428,7 +438,7 @@ def get_oss():
     linux_oss = []
 
     #Get list of Linux OSs.
-    for _os in OS_INFO:
+    for _os in os_info:
         if _os[0] not in ("Windows", "macOS"):
             linux_oss.append(os_name)
 
@@ -450,8 +460,8 @@ def get_oss():
                                  + "and Apple to fix any issues with your computer.")
 
     #Otherwise...
-    logger.debug("get_oss(): Done, OS_INFO Populated okay. Contents: "+unicode(OS_INFO))
-    return OS_INFO, SYSTEM_INFO
+    logger.debug("get_oss(): Done, os_info Populated okay. Contents: "+unicode(os_info))
+    return os_info, SYSTEM_INFO
 
 def get_firmware_type():
     """Get the firmware type"""
@@ -487,7 +497,8 @@ def get_firmware_type():
 
     else:
         #Look a second way.
-        output = CoreTools.start_process("dmidecode -q -t BIOS", return_output=True, privileged=True)[1]
+        output = CoreTools.start_process("dmidecode -q -t BIOS", return_output=True,
+                                         privileged=True)[1]
 
         if "UEFI" not in output:
             #It's BIOS.
@@ -675,7 +686,8 @@ def get_bootloaders():
         BOOTLOADER_INFO[_os]["GUIState"]["RestoreBootloaderCheckBoxState"] = True
         BOOTLOADER_INFO[_os]["GUIState"]["RestoreBootloaderChoiceState"] = False
 
-        #If there's a seperate EFI partition for this OS, make sure it's unmounted before removing the chroot.
+        #If there's a seperate EFI partition for this OS,
+        #make sure it's unmounted before removing the chroot.
         if OS_INFO[_os]["EFIPartition"] != "Unknown":
             if CoreTools.unmount(mount_point+"/boot/efi") != 0:
                 logger.error("MainBackendTools: get_bootloaders(): Failed to unmount "+mount_point

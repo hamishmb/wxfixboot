@@ -14,6 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+This module holds the shared dictionaries used by the rest of the program.
+All you need to do to gain access to the shared dictionaries is import this module.
+"""
+
 if not 'SYSTEM_INFO' in globals():
     SYSTEM_INFO = {}
 

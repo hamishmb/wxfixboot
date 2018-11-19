@@ -19,6 +19,16 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
+"""
+This contains the essential backend tools operations.
+(internet connection test, file system checks).
+
+These are called the essential tools because a failure here may cancel all other
+operations. For example, if a filesystem check fails, it's a bad idea to write to
+the disk by doing bootloader operations. Likewise, a new bootloader cannot be
+installed without an internet connection.
+"""
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
 #strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -33,11 +43,11 @@ import wx
 
 #Import other modules.
 sys.path.append('../..') #Need to be able to import the Tools module from here.
-from . import helpers as HelperBackendTools
 
-import Tools.coretools as CoreTools
-import Tools.dialogtools as DialogTools
-from Tools.dictionaries import *
+import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
+import Tools.dialogtools as DialogTools #pylint: disable=wrong-import-position
+from Tools.dictionaries import SYSTEM_INFO, DISK_INFO #pylint: disable=wrong-import-position
+from . import helpers as HelperBackendTools #pylint: disable=wrong-import-position
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -97,7 +107,8 @@ def check_internet_connection():
                                                  + "up and skip bootloader operations.",
                                                  title="WxFixBoot - Disable Bootloader "
                                                  + "Operations?",
-                                                 buttons=("Try again", "Cancel Bootloader Operations"))
+                                                 buttons=("Try again",
+                                                          "Cancel Bootloader Operations"))
 
             if result is False:
                 logger.warning("check_internet_connection(): Disabling bootloader operations "
@@ -141,7 +152,8 @@ def filesystem_check(_type, manage_bootloader_function):
         #Gather info.
         logger.info("filesystem_check():: Checking "+disk+"...")
         wx.CallAfter(wx.GetApp().TopWindow.update_output_box, "\n###Checking Disk: "+disk+"###\n")
-        wx.CallAfter(wx.GetApp().TopWindow.update_current_operation_text, message="Checking Disk: "+disk)
+        wx.CallAfter(wx.GetApp().TopWindow.update_current_operation_text,
+                     message="Checking Disk: "+disk)
         wx.CallAfter(wx.GetApp().TopWindow.update_current_progress,
                      30+((50//filesystems_to_check_length)*(checked+1)))
 
@@ -257,7 +269,8 @@ def filesystem_check(_type, manage_bootloader_function):
         checked += 1
 
     #Update Current Operation Text.
-    wx.CallAfter(wx.GetApp().TopWindow.update_current_operation_text, message="Finished Filesystem Check!")
+    wx.CallAfter(wx.GetApp().TopWindow.update_current_operation_text,
+                 message="Finished Filesystem Check!")
     wx.CallAfter(wx.GetApp().TopWindow.update_current_progress, 100)
     wx.CallAfter(wx.GetApp().TopWindow.update_output_box, "\n###Finished Filesystem Check!###\n")
 
@@ -279,7 +292,10 @@ def handle_filesystem_check_return_values(exec_cmds, retval, partition, manage_b
                                      + "! Fortunately, it looks like the checker utility has "
                                      + "fixed the corruption. Click okay to continue.")
 
-        elif exec_list[0] in ('fsck.jfs', 'fsck.minix', 'fsck.reiserfs', 'fsck.vfat', 'fsck.ext2', 'fsck.ex3', 'fsck.ext4', 'fsck.ext4dev'):
+        elif exec_list[0] in ('fsck.jfs', 'fsck.minix', 'fsck.reiserfs',
+                              'fsck.vfat', 'fsck.ext2', 'fsck.ex3',
+                              'fsck.ext4', 'fsck.ext4dev'):
+
             #Fixed Errors.
             logger.info("handle_filesystem_check_return_values(): "+exec_list[0]
                         + " successfully fixed errors on the partition: "+partition

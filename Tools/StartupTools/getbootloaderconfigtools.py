@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-# Bootloader Configuration Obtaining Tools in the Startup Tools Package for WxFixBoot Version 2.0.3
+# Bootloader Configuration Obtaining Tools in the Startup Tools Package for WxFixBoot Version 3.0.0
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -19,6 +19,11 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
+"""
+This module contains tools used to get bootloader information during WxFixBoot's
+startup procedures.
+"""
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
 #strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -33,7 +38,7 @@ import logging
 
 #Import other modules.
 sys.path.append('../..') #Need to be able to import the Tools module from here.
-from Tools.dictionaries import *
+from Tools.dictionaries import DISK_INFO, BOOTLOADER_INFO  #pylint: disable=wrong-import-position
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -324,9 +329,9 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
 
     menu_entries[menu][menu_entry_name]["KernelOptions"] = ["Unknown"]
 
-    for line in menu_entries[menu][menu_entry_name]["RawMenuEntryData"]:
-        if "linux" in line:
-            menu_entries[menu][menu_entry_name]["KernelOptions"] = line.split()[3:]
+    for _line in menu_entries[menu][menu_entry_name]["RawMenuEntryData"]:
+        if "linux" in _line:
+            menu_entries[menu][menu_entry_name]["KernelOptions"] = _line.split()[3:]
 
     #Check we got them.
     if menu_entries[menu][menu_entry_name]["KernelOptions"] == ["Unknown"]:
@@ -479,7 +484,10 @@ def parse_grublegacy_menu_entries(menu_entries_file_path):
             logger.info("parse_grublegacy_menu_entries(): Found a menu entry. Assembling into a "
                         + "dictionary with assemble_grublegacy_menu_entry()...")
 
-            menu_entries = assemble_grublegacy_menu_entry(menu_entries, menu_entries_file_contents, line, entry_counter)
+            menu_entries = assemble_grublegacy_menu_entry(menu_entries,
+                                                          menu_entries_file_contents,
+                                                          line, entry_counter)
+
             entry_counter += 1
             logger.info("parse_grublegacy_menu_entries(): Done!")
 
@@ -518,20 +526,20 @@ def assemble_grublegacy_menu_entry(menu_entries, menu_entries_file_contents, lin
     logger.info("assemble_grublegacy_menu_entry(): Getting menu entry boot partition and "
                 + "kernel options...")
 
-    for line in menu_entries["MainMenu"][menu_entry]["RawMenuEntryData"]:
-        if "kernel" not in line:
+    for _line in menu_entries["MainMenu"][menu_entry]["RawMenuEntryData"]:
+        if "kernel" not in _line:
             continue
 
         #Get the partition.
         try:
-            partition = line.split(" ")[1]
+            partition = _line.split(" ")[1]
 
         except IndexError:
             continue
 
         #Make it work on Fedora.
         if "vmlinuz" in partition:
-            partition = line.split(" ")[3]
+            partition = _line.split(" ")[3]
 
         #If we have a UUID, convert it into a device node.
         if "UUID=" in partition:
@@ -547,7 +555,7 @@ def assemble_grublegacy_menu_entry(menu_entries, menu_entries_file_contents, lin
         logger.info("assemble_grublegacy_menu_entry(): Found boot partition...")
 
         #Kernel Options.
-        menu_entries["MainMenu"][menu_entry]["KernelOptions"] = line.split(" ")[2:]
+        menu_entries["MainMenu"][menu_entry]["KernelOptions"] = _line.split(" ")[2:]
         logger.info("assemble_grublegacy_menu_entry(): Found kernel options...")
 
     return menu_entries
@@ -631,7 +639,9 @@ def parse_lilo_menu_entries(menu_entries_file_path):
             logger.info("parse_lilo_menu_entries(): Found a menu entry. Assembling into a "
                         + "dictionary with assemble_lilo_menu_entry()...")
 
-            menu_entries = assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, entry_counter)
+            menu_entries = assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents,
+                                                    line, entry_counter)
+
             entry_counter += 1
             logger.info("parse_lilo_menu_entries(): Done!")
 
@@ -668,10 +678,10 @@ def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, ent
     menu_entries["MainMenu"][menu_entry]["Partition"] = "Unknown"
     menu_entries["MainMenu"][menu_entry]["KernelOptions"] = ["Unknown"]
 
-    for line in menu_entries["MainMenu"][menu_entry]["RawMenuEntryData"]:
-        if "root" in line:
+    for _line in menu_entries["MainMenu"][menu_entry]["RawMenuEntryData"]:
+        if "root" in _line:
             #Get the partition.
-            partition = '='.join(line.replace("\n", "").split("=")[1:])
+            partition = '='.join(_line.replace("\n", "").split("=")[1:])
 
             #If we get a UUID, convert it to a device node.
             if "UUID=" in partition:
@@ -690,9 +700,9 @@ def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, ent
 
             logger.info("assemble_lilo_menu_entry(): Found boot partition...")
 
-        elif "append" in line:
+        elif "append" in _line:
             #Get the kernel options.
-            menu_entries["MainMenu"][menu_entry]["KernelOptions"] = line.replace("\n", "").split("=")[1].replace("\"", "").split()
+            menu_entries["MainMenu"][menu_entry]["KernelOptions"] = _line.replace("\n", "").split("=")[1].replace("\"", "").split()
             logger.info("assemble_lilo_menu_entry(): Found kernel options...")
 
     return menu_entries
