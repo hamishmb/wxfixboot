@@ -105,12 +105,12 @@ def wait_until_packagemanager_free(mount_point, package_manager):
 
     #Trap in while loop until package manager is free. TODO Check this works on APT.
     while retval not in success_retvals:
-        retval = CoreTools.start_process(cmd, show_output=False)
+        retval = CoreTools.start_process(cmd, show_output=False, privileged=True)
 
         #Get the package cache if there is none. 200 - locking failure.
         if package_manager == "yum" and retval not in (0, 200):
             CoreTools.start_process("sh -c 'echo No cache available, downloading package information...'")
-            CoreTools.start_process("yum check-update", show_output=False)
+            CoreTools.start_process("yum check-update", show_output=False, privileged=True)
 
         time.sleep(5)
 
@@ -317,7 +317,7 @@ def backup_uefi_files(mount_point):
     logger.info("backup_uefi_files(): Backing up "+mount_point+"/boot/efi/boot/boot*.efi...")
 
     if os.path.isfile(mount_point+"/boot/efi/EFI/boot/boot*.efi"):
-        if CoreTools.start_process("cp -v "+mount_point+"/boot/efi/EFI/boot/boot*.efi "+mount_point+"/boot/efi/EFI/boot/bkpbootx64.efi", show_output=False) != 0:
+        if CoreTools.start_process("cp -v "+mount_point+"/boot/efi/EFI/boot/boot*.efi "+mount_point+"/boot/efi/EFI/boot/bkpbootx64.efi", show_output=False, privileged=True) != 0:
             #Log and warn user if this went wrong.
             logger.error("backup_uefi_files(): Failed to backup failsafe UEFI boot file! "
                          + "Warning user and continuing...")
@@ -330,7 +330,7 @@ def backup_uefi_files(mount_point):
     logger.info("backup_uefi_files(): Backing up Windows's boot files if they exist...")
 
     if os.path.isfile(mount_point+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi"):
-        if CoreTools.start_process("cp -v "+mount_point+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+mount_point+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", show_output=False) != 0:
+        if CoreTools.start_process("cp -v "+mount_point+"/boot/efi/EFI/Microsoft/boot/bootmgfw.efi "+mount_point+"/boot/efi/EFI/Microsoft/boot/bkpbootmgfw.efi", show_output=False, privileged=True) != 0:
             #Log and warn user if this went wrong.
             logger.error("backup_uefi_files(): Failed to backup Windows's UEFI boot files! "
                          + "Warning user and continuing...")
@@ -369,7 +369,7 @@ def manage_uefi_files(_os, mount_point):
         logger.info("manage_uefi_files(): Copying elilo.efi, elilo.conf and elilomenu.msg to "
                     + uefi_boot_dir+"...")
 
-        if CoreTools.start_process("cp -v "+source_dir+"/elilo.efi "+uefi_boot_dir+"/bootx64.efi", show_output=False) != 0:
+        if CoreTools.start_process("cp -v "+source_dir+"/elilo.efi "+uefi_boot_dir+"/bootx64.efi", show_output=False, privileged=True) != 0:
             logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/elilo.efi to "
                          + uefi_boot_dir+"/bootx64.efi! Attempting to continue anyway...")
 
@@ -378,7 +378,7 @@ def manage_uefi_files(_os, mount_point):
                                      + "This could potentially be a problem, but it's probably "
                                      + "fine. Click okay to continue.")
 
-        if CoreTools.start_process("cp -v "+source_dir+"/elilo.conf "+uefi_boot_dir+"/", show_output=False) != 0:
+        if CoreTools.start_process("cp -v "+source_dir+"/elilo.conf "+uefi_boot_dir+"/", show_output=False, privileged=True) != 0:
             logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/elilo.conf to "
                          + uefi_boot_dir+"/! Attempting to continue anyway...")
 
@@ -387,7 +387,7 @@ def manage_uefi_files(_os, mount_point):
                                      + "This could potentially be a problem, but it's probably "
                                      + "fine. Click okay to continue.")
 
-        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+uefi_boot_dir+"/", show_output=False) != 0:
+        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+uefi_boot_dir+"/", show_output=False, privileged=True) != 0:
             logger.error("manage_uefi_files(): Failed to copy elilomenu.msg to "+uefi_boot_dir
                          + "! Attempting to continue anyway...")
 
@@ -396,7 +396,7 @@ def manage_uefi_files(_os, mount_point):
                                      + "This could potentially be a problem, but it's probably "
                                      + "fine. Click okay to continue.")
 
-        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+source_dir+"/", show_output=False) != 0:
+        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "+source_dir+"/", show_output=False, privileged=True) != 0:
             logger.error("manage_uefi_files(): Failed to copy elilomenu.msg to "+source_dir
                          + "/! Attempting to continue anyway...")
 
@@ -407,7 +407,7 @@ def manage_uefi_files(_os, mount_point):
 
         #If we were previously using GRUB-EFI, remove its EFI files.
         if BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB-UEFI":
-            if CoreTools.start_process("rm -v "+source_dir+"/grub*.efi", show_output=False) != 0:
+            if CoreTools.start_process("rm -v "+source_dir+"/grub*.efi", show_output=False, privileged=True) != 0:
                 logger.warning("manage_uefi_files(): Failed to remove "+source_dir
                                +"/grub*.efi! Attempting to continue anyway...")
 
@@ -415,7 +415,7 @@ def manage_uefi_files(_os, mount_point):
         #We need to copy grub*.efi to uefi_boot_dir.
         logger.info("manage_uefi_files(): Copying grub*.efi to "+uefi_boot_dir+"...")
 
-        if CoreTools.start_process("cp -v "+source_dir+"/grub*.efi "+uefi_boot_dir+"/bootx64.efi", show_output=False) != 0:
+        if CoreTools.start_process("cp -v "+source_dir+"/grub*.efi "+uefi_boot_dir+"/bootx64.efi", show_output=False, privileged=True) != 0:
             logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/grub*.efi to "
                          + uefi_boot_dir+"/bootx64.efi! Attempting to continue anyway...")
 
@@ -425,7 +425,7 @@ def manage_uefi_files(_os, mount_point):
 
         #If we were previously using ELILO, remove its EFI files.
         if BOOTLOADER_INFO[_os]["Bootloader"] == "ELILO":
-            if CoreTools.start_process("rm -v "+source_dir+"/elilo*", show_output=False) != 0:
+            if CoreTools.start_process("rm -v "+source_dir+"/elilo*", show_output=False, privileged=True) != 0:
                 logger.warning("manage_uefi_files(): Failed to remove "+source_dir
                                + "/elilo*! Attempting to continue anyway...")
 

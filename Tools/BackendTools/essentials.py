@@ -218,7 +218,7 @@ def filesystem_check(_type, manage_bootloader_function):
 
         #Run the command, and remount the Disk if needed.
         if exec_cmds != "":
-            retval = CoreTools.start_process(exec_cmds)
+            retval = CoreTools.start_process(exec_cmds, privileged=True)
 
             #Check the return values, and run the handler if needed.
             if retval == 0:
@@ -232,7 +232,7 @@ def filesystem_check(_type, manage_bootloader_function):
 
         #Run bad blocks if requested.
         if run_badblocks:
-            retval = CoreTools.start_process("badblocks -sv "+disk)
+            retval = CoreTools.start_process("badblocks -sv "+disk, privileged=True)
 
             #Check the return values, and run the handler if needed.
             if retval == 0:

@@ -312,7 +312,7 @@ def remove_old_bootloader(_os):
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
 
-    retval = CoreTools.start_process(cmd)
+    retval = CoreTools.start_process(cmd, privileged=True)
 
     if retval != 0:
         logger.error("remove_old_bootloader(): Failed to remove "
@@ -458,7 +458,7 @@ def install_new_bootloader(_os):
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
 
-    if CoreTools.start_process(cmd) not in (0, 100):
+    if CoreTools.start_process(cmd, privileged=True) not in (0, 100):
         logger.error("install_new_bootloader(): Failed to Update the Package Information! "
                      + "Continuing anyway...")
 
@@ -544,7 +544,7 @@ def install_new_bootloader(_os):
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
 
-    retval = CoreTools.start_process(cmd)
+    retval = CoreTools.start_process(cmd, privileged=True)
 
     if retval != 0:
         logger.error("install_new_bootloader(): Failed to install new bootloader. Warn user...")
@@ -846,7 +846,7 @@ def set_new_bootloader_config(_os):
         if use_chroot:
             cmd = "chroot "+mount_point+" "+cmd
 
-        if CoreTools.start_process(cmd, show_output=False) != 0:
+        if CoreTools.start_process(cmd, show_output=False, privileged=True) != 0:
             logger.error("set_new_bootloader_config(): '"+cmd
                          +"' didn't run successfully! Attempting to continue anyway...")
 
@@ -896,7 +896,7 @@ def set_new_bootloader_config(_os):
         if use_chroot:
             cmd = "chroot "+mount_point+" "+cmd
 
-        if CoreTools.start_process(cmd, show_output=False) != 0:
+        if CoreTools.start_process(cmd, show_output=False, privileged=True) != 0:
             logger.error("set_new_bootloader_config(): '"+cmd+"' didn't run successfully! "
                          + "Attempting to continue anyway...")
 

@@ -173,7 +173,7 @@ def install_grub2_to_mbr(package_manager, use_chroot, mount_point, device):
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
 
-    retval = CoreTools.start_process(cmd, show_output=False)
+    retval = CoreTools.start_process(cmd, show_output=False, privileged=True)
 
     #Return the return value.
     return retval
@@ -192,7 +192,7 @@ def install_grub2_to_efi_partition(package_manager, use_chroot, mount_point, uef
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
 
-    retval = CoreTools.start_process(cmd, show_output=False)
+    retval = CoreTools.start_process(cmd, show_output=False, privileged=True)
 
     #Return the return value.
     return retval
@@ -212,7 +212,7 @@ def update_grub2(_os, package_manager, use_chroot, mount_point):
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
 
-    retval = CoreTools.start_process(cmd, show_output=False)
+    retval = CoreTools.start_process(cmd, show_output=False, privileged=True)
 
     #Return the return value.
     return retval
@@ -582,7 +582,7 @@ def install_lilo_to_mbr(use_chroot, mount_point):
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
 
-    retval = CoreTools.start_process(cmd, show_output=False)
+    retval = CoreTools.start_process(cmd, show_output=False, privileged=True)
 
     #Return the return value.
     return retval
@@ -597,7 +597,7 @@ def install_elilo_to_partition(_os, package_manager, use_chroot, mount_point):
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
 
-    retval = CoreTools.start_process(cmd, show_output=False)
+    retval = CoreTools.start_process(cmd, show_output=False, privileged=True)
 
     #Return the return value.
     return retval
