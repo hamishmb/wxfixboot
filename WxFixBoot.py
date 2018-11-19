@@ -25,7 +25,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Import other modulesS
+#Import other modules
 import traceback
 import threading
 import subprocess
@@ -78,7 +78,7 @@ if sys.version_info[0] == 3:
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "13/11/2018"
+RELEASEDATE = "19/11/2018"
 
 #Define other global variables.
 SESSION_ENDING = False

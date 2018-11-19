@@ -31,6 +31,7 @@ import subprocess
 import sys
 import logging
 import os
+import shlex
 import wx
 
 #Import other modules.
@@ -87,11 +88,15 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
         exec_cmds = helper+" "+exec_cmds
 
     #Make sure output is always in English.
-    exec_cmds = "LC_ALL=C "+exec_cmds
+    environ = dict(os.environ, LC_ALL="C") #pylint: disable=redefined-variable-type
+
+    exec_cmds = shlex.split(exec_cmds)
 
     #Run the command(s).
-    logger.debug("start_process(): Starting process: "+exec_cmds)
-    cmd = subprocess.Popen(exec_cmds, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    logger.debug("start_process(): Starting process: "+' '.join(exec_cmds))
+    cmd = subprocess.Popen(exec_cmds, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, env=environ,
+                              shell=False)
 
     #Use a simpler output reader on startup to improve performance.
     if startup:
@@ -104,7 +109,7 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
     ret_val = int(cmd.returncode)
 
     #Log this info in a debug message.
-    logger.debug("start_process(): Process: "+exec_cmds+": Return Value: "+unicode(ret_val)
+    logger.debug("start_process(): Process: "+' '.join(exec_cmds)+": Return Value: "+unicode(ret_val)
                  + ", Output: \"\n\n"+'\n'.join(line_list)+"\"\n")
 
     if privileged and (ret_val == 126 or ret_val == 127):
