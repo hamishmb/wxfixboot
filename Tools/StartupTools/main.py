@@ -170,7 +170,7 @@ def check_filesystems():
     """Check all unmounted filesystems."""
     logger.info("check_filesystems(): Checking filesystems if possible. Running 'fsck -ARMp'...")
 
-    if CoreTools.start_process("fsck -ARMp") not in (0, 8):
+    if CoreTools.start_process("fsck -ARMp", privileged=True) not in (0, 8):
         logger.critical("check_filesystems(): Failed to check filesystems! Doing emergency "
                         + "exit...")
 
@@ -186,7 +186,7 @@ def mount_core_filesystems():
                 + "'mount -avw'...")
 
     #Don't worry about this error when running on Parted Magic.
-    if CoreTools.start_process("mount -avw") != 0 and SYSTEM_INFO["OnPartedMagic"] is False:
+    if CoreTools.start_process("mount -avw", privileged=True) != 0 and SYSTEM_INFO["OnPartedMagic"] is False:
         logger.critical("mount_core_filesystems(): Failed to re-mount your filesystems after "
                         + "checking them! Doing emergency exit...")
 
@@ -373,7 +373,7 @@ def get_oss():
                     continue
 
             #Look for Linux on this partition.
-            retval, temp = CoreTools.start_process(cmd, return_output=True)
+            retval, temp = CoreTools.start_process(cmd, return_output=True, privileged=True)
             os_name = temp.replace('\n', '')
 
             #Run the function to get the architechure.
@@ -458,7 +458,7 @@ def get_firmware_type():
     #Check if the firmware type is UEFI.
     #Also, look for UEFI variables.
     #Make sure efivars module is loaded. If it doesn't exist, continue anyway.
-    CoreTools.start_process("modprobe efivars")
+    CoreTools.start_process("modprobe efivars", privileged=True)
 
     #Look for the UEFI vars in some common directories.
     if os.path.isdir("/sys/firmware/efi/vars") and CoreTools.start_process("ls /sys/firmware/efi/vars", return_output=True)[1] != "":
@@ -487,7 +487,7 @@ def get_firmware_type():
 
     else:
         #Look a second way.
-        output = CoreTools.start_process("dmidecode -q -t BIOS", return_output=True)[1]
+        output = CoreTools.start_process("dmidecode -q -t BIOS", return_output=True, privileged=True)[1]
 
         if "UEFI" not in output:
             #It's BIOS.

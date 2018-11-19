@@ -243,7 +243,7 @@ def determine_package_manager(apt_cmd, yum_cmd):
     package_manager = "Unknown"
 
     for cmd in (apt_cmd, yum_cmd):
-        retval = CoreTools.start_process(cmd, show_output=False)
+        retval = CoreTools.start_process(cmd, show_output=False, privileged=True)
 
         if retval != 0:
             if cmd == apt_cmd:
@@ -297,7 +297,7 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
     if using_chroot:
         cmd = "chroot "+mount_point+" "+cmd
 
-    output = CoreTools.start_process(cmd, show_output=False, return_output=True)[1].split("\n")
+    output = CoreTools.start_process(cmd, show_output=False, return_output=True, privileged=True)[1].split("\n")
 
     #Look for them in a specific order to be as fast a possible and to avoid false positives.
     if package_manager == "apt-get":
@@ -342,7 +342,7 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
         if using_chroot:
             cmd = "chroot "+mount_point+" "+cmd
 
-        output = CoreTools.start_process(cmd, show_output=False, return_output=True)[1].split("\n")
+        output = CoreTools.start_process(cmd, show_output=False, return_output=True, privileged=True)[1].split("\n")
 
         #Only look in the package name.
         for line in output:
@@ -449,7 +449,7 @@ def determine_os_architecture(mount_point):
         if mount_point != "":
             cmd = "chroot "+mount_point+" "+cmd
 
-        retval, os_architecture = CoreTools.start_process(cmd, return_output=True)
+        retval, os_architecture = CoreTools.start_process(cmd, return_output=True, privileged=True)
 
         #If the command failed, try a second approach.
         if retval != 0 and "arch" in cmd:
@@ -488,7 +488,7 @@ def get_os_name_with_lsb(partition, mount_point, is_current_os):
         logger.info("get_os_name_with_lsb(): OS isn't the currently running OS...")
         cmd = "chroot "+mount_point+" lsb_release -sd"
 
-    retval, output = CoreTools.start_process(cmd, show_output=False, return_output=True)
+    retval, output = CoreTools.start_process(cmd, show_output=False, return_output=True, privileged=True)
 
     if retval != 0 or output == "":
         logger.error("get_os_name_with_lsb(): Couldn't get OS name! Returning 'Unknown'...")

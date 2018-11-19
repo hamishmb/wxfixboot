@@ -161,7 +161,7 @@ class GetDiskInformation(threading.Thread):
 
     def get_info(self): #pylint: disable=no-self-use
         """Get disk information as a privileged user"""
-        output = CoreTools.start_process(cmd=sys.executable+" "+"/usr/share/wxfixboot"+
+        output = CoreTools.start_process(exec_cmds=sys.executable+" "+"/usr/share/wxfixboot"
                                             +"/Tools/run_getdevinfo.py",
                                             return_output=True,
                                             privileged=True)[1]
@@ -404,7 +404,7 @@ class InitThread(threading.Thread):
                                      + unicode(traceback.format_exc())
                                      + "\n\nWhile starting up!")
 
-    def receive_disk_info(self, info):
+    def receive_diskinfo(self, info):
         """Receive disk info"""
         DISK_INFO.update(info)
 
