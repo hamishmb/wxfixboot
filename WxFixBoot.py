@@ -78,7 +78,7 @@ if sys.version_info[0] == 3:
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "19/11/2018"
+RELEASEDATE = "15/1/2019"
 
 #Define other global variables.
 SESSION_ENDING = False
