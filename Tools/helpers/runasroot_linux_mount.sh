@@ -1,8 +1,8 @@
 #!/bin/bash
 # -*- coding: utf-8 -*-
-# Executes mount for Linux when requested for WxFixboot Version 3.0.0.
+# Executes mount for Linux when requested for WxFixboot.
 # This file is part of WxFixBoot.
-# Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2019 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.

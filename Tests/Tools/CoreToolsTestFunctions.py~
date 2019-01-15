@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-# CoreTools test functions for WxFixBoot Version 3.0.0
+# CoreTools test functions for WxFixBoot
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -143,6 +143,6 @@ def unmount_disk(disk):
         #The disk is mounted.
         #Unmount it.
         retval = start_process(command="umount "+disk, return_output=False)
-            
+
     #Return the return value
     return retval

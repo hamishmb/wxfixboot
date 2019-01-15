@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*- 
-# DialogTools tests for WxFixBoot Version 3.0.0
+# DialogTools tests for WxFixBoot
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
@@ -63,8 +63,10 @@ class TestShowThreadDlgs(unittest.TestCase):
         self.frame.Destroy()
         del self.frame
 
+        self.app.Yield()
         self.app.Destroy()
         del self.app
+
 
     def test_msg_dlg(self):
         DialogTools.show_thread_msg_dlg("Test message from WxFixBoot")

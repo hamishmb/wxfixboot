@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*- 
-# Unit tests for WxFixBoot Version 3.0.0
+# Unit tests for WxFixBoot
 # This file is part of WxFixBoot.
-# Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2019 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -71,7 +71,7 @@ def usage():
     print("       -a, --all:                    Run all the tests. The default.\n")
     print("       -t, --tests:                  Ignored.")
     print("WxFixBoot "+VERSION+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2018")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2019")
 
 #Exit if not running as root.
 if os.geteuid() != 0:
