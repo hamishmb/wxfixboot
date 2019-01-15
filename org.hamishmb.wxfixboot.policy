@@ -41,6 +41,28 @@
     <annotate key="org.freedesktop.policykit.exec.path">/usr/share/wxfixboot/Tools/helpers/runasroot_linux_umount.sh</annotate>
   </action>
 
+  <action id="org.hamishmb.WxFixBoot.readfile">
+    <description>WxFixBoot requires authentication to read bootloader configuration</description>
+    <message>WxFixBoot requires authentication to read bootloader configuration.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/wxfixboot/Tools/helpers/runasroot_linux_read_file.sh</annotate>
+  </action>
+
+  <action id="org.hamishmb.WxFixBoot.writefile">
+    <description>WxFixBoot requires authentication to write bootloader configuration</description>
+    <message>WxFixBoot requires authentication to write bootloader configuration.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/wxfixboot/Tools/helpers/runasroot_linux_write_file.sh</annotate>
+  </action>
+
   <action id="org.hamishmb.WxFixBoot.generic">
     <description>WxFixBoot requires authentication to perform privileged actions</description>
     <message>WxFixBoot requires authentication to perform privileged actions.</message>

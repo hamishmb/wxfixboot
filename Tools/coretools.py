@@ -29,6 +29,7 @@ from __future__ import unicode_literals
 #Import modules.
 import subprocess
 import sys
+import time
 import logging
 import os
 import shlex
@@ -44,7 +45,7 @@ if sys.version_info[0] == 3:
 
 #Set up logging.
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
+logger.setLevel(logging.DEBUG) #logging.getLogger("WxFixBoot").getEffectiveLevel())
 
 #Define global variables
 startup = None
@@ -157,7 +158,7 @@ def read(cmd, testing=False):
 
         if char in (b"\n", b"\r"):
             #Interpret as Unicode and remove "NULL" characters.
-            line = line.decode("UTF-8", errors="replace").replace("\x00", "")
+            line = line.decode("UTF-8", errors="ignore").replace("\x00", "")
 
             if testing:
                 line_list.append(line)
@@ -214,7 +215,7 @@ def read_and_send_output(cmd, show_output):
 
         if char in (b"\n", b"\x08") or send_line:
             #Interpret as Unicode and remove "NULL" characters.
-            line = line.decode("UTF-8", errors="replace").replace("\x00", "")
+            line = line.decode("UTF-8", errors="ignore").replace("\x00", "")
 
             wx.CallAfter(wx.GetApp().TopWindow.update_output_box, line, show_output)
             line_list.append(line.replace("\n", "").replace("\r", "").replace("\x08", ""))
@@ -236,6 +237,90 @@ def read_and_send_output(cmd, show_output):
         line_list.append(line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
     return line_list
+
+def read_privileged_file(filename):
+    """
+    Uses start_process() and a helper script to read privileged files
+    and returns the content as a string.
+    """
+
+    return start_process("pkexec /usr/share/wxfixboot/Tools/helpers/runasroot_linux_read_file.sh "+filename,
+                         show_output=False, return_output=True, privileged=True)[1]
+
+def write_privileged_file(filename, file_contents):
+    """
+    Uses start_process() and a helper script to write privileged files.
+    This is an inherent security risk, but is needed to write bootloader
+    configuration. So, there is a hardcoded whitelist of files we're
+    allowed to write to here to mitigate at least some of that risk.
+
+    This isn't an exact match thing, because these files might be within
+    mountpoints. We will nevertheless match as exactly as we can.
+
+    A few different checks are done to ensure that we are allowed to
+    modify this file, just in case the program does something weird.
+
+    The helper script is run through polkit, for security.
+    """
+
+    allowed_files = \
+    ["/etc/default/grub",
+     "/boot/grub/grub.cfg",
+     "/boot/grub2/grub.cfg",
+     "/boot/efi/EFI/fedora/grub.cfg",
+     "/etc/lilo.conf",
+     "/etc/elilo.conf"]
+
+    #Try to sanitize the filename argument as much as possible, as get as close a match
+    #as we can.
+    #There should never be spaces in this filename, or in the path.
+    if " " in filename:
+        logger.error("write_privileged_file(): File contains spaces, rejecting...")
+        return 1
+
+    #Check that this is a file.
+    if not os.path.isfile(filename):
+        logger.error("write_privileged_file(): This is not a file, rejecting...")
+        return 1
+
+    #Check that this is in the list of allowed files.
+    allowed = False
+
+    #Only allow this file if it is in the list. NB: We're checking this way
+    #because of mountpoints - we might not be modifying the root FS.
+    for name in allowed_files:
+        if name == filename:
+            #We're modifying this on rootfs.
+            allowed = True
+
+        elif name in filename and "/tmp/wxfixboot/mountpoints" in filename:
+            #We're modifying this on a different filesystem that wxfixboot mounted.
+            allowed = True
+
+    if not allowed:
+        logger.error("write_privileged_file(): File not allowed, or in disallowed filesystem, "
+                     + "rejecting...")
+        return 1
+
+    #Okay, we should be alright now.
+    logger.info("write_privileged_file(): Writing to "+filename+", writing:\n\n"
+                + file_contents+"\n\n...")
+
+    #Start the process.
+    cmd = subprocess.Popen(["pkexec", "/usr/share/wxfixboot/Tools/helpers/runasroot_linux_write_file.sh",
+                            "filename"], stdin=subprocess.PIPE, shell=False)
+
+    #Write the file contents to its' stdin, and close it.
+    cmd.stdin.write(file_contents.encode("UTF-8", errors="ignore"))
+    cmd.stdin.close()
+
+    #Wait for it to finish.
+    while cmd.poll() is None:
+        time.sleep(0.5)
+
+    logger.info("write_privileged_file(): Done.")
+
+    return 0
 
 def is_mounted(partition, mount_point=None):
     """

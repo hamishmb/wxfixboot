@@ -89,7 +89,8 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
     logger.debug("set_grub2_config(): Attempting to modify existing lines in the config file "
                  + "first, without making any new ones...")
 
-    config_file = open(filetoopen, 'r')
+    config_file = CoreTools.read_privileged_file(filetoopen)
+
     new_file_contents = []
 
     #Loop through each line in the file, paying attention only to the important ones.
@@ -156,10 +157,7 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
 
     #Write the finished lines to the file.
     logger.info("set_grub2_config(): Writing new config to file...")
-    config_file.close()
-    config_file = open(filetoopen, 'w')
-    config_file.write(''.join(new_file_contents))
-    config_file.close()
+    CoreTools.write_privileged_file(filetoopen, ''.join(new_file_contents))
 
     logger.info("set_grub2_config(): Done!")
 
@@ -276,7 +274,7 @@ def set_lilo_config(_os, filetoopen):
     logger.debug("set_lilo_config(): Attempting to modify existing lines in the config file "
                  + "first, without creating any new ones...")
 
-    config_file = open(filetoopen, 'r')
+    config_file = CoreTools.read_privileged_file(filetoopen)
     new_file_contents = []
 
     #Loop through each line in the file, paying attention only to the important ones.
@@ -359,10 +357,7 @@ def set_lilo_config(_os, filetoopen):
 
     #Write the finished lines to the file.
     logger.info("set_lilo_config(): Writing new config to file...")
-    config_file.close()
-    config_file = open(filetoopen, 'w')
-    config_file.write(''.join(new_file_contents))
-    config_file.close()
+    CoreTools.write_privileged_file(filetoopen, ''.join(new_file_contents))
 
     logger.info("set_lilo_config(): Done!")
 
@@ -375,7 +370,7 @@ def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
     #Now we'll set the OS entries, and then the default OS.
     #Open the file, and add each entry to a temporary list, which will be written to the file
     #later.
-    config_file = open(filetoopen, 'r')
+    config_file = CoreTools.read_privileged_file(filetoopen)
     new_file_contents = []
 
     #First, make sure everything else comes first, because LILO and ELILO are picky with the
@@ -455,15 +450,12 @@ def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
     #Now set the default OS.
     #First, write the semi-finished lines to the file.
     logger.info("make_lilo_os_entries(): Writing OS Entries and config to file...")
-    config_file.close()
-    config_file = open(filetoopen, 'w')
-    config_file.write(''.join(new_file_contents))
-    config_file.close()
+    CoreTools.write_privileged_file(filetoopen, ''.join(new_file_contents))
     logger.info("make_lilo_os_entries(): Done!")
 
     #Open the file again, with the new files written.
     logger.debug("make_lilo_os_entries(): Preparing to set default OS to boot...")
-    config_file = open(filetoopen, 'r')
+    config_file = CoreTools.read_privileged_file(filetoopen)
     new_file_contents = []
 
     #Remove all of the spaces, truncating the OS name if necessary.
@@ -530,10 +522,7 @@ def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
 
     #Write the finished lines to the file.
     logger.info("make_lilo_os_entries(): Writing finished config to file...")
-    config_file.close()
-    config_file = open(filetoopen, 'w')
-    config_file.write(''.join(new_file_contents))
-    config_file.close()
+    CoreTools.write_privileged_file(filetoopen, ''.join(new_file_contents))
 
     logger.info("make_lilo_os_entries(): Done!")
 
