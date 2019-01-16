@@ -114,6 +114,7 @@ class TestGetOSs(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
+        self.maxDiff = None
 
         Tools.coretools.startup = True
         DISK_INFO.update(getdevinfo.getdevinfo.get_info()) #We need real disk info for these ones.

@@ -15,5 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 #Keep processes' stderr by redirecting it to stdout.
+#FIXME Keep quoted arguments in quotes.
 $@ 2>&1
 exit $?

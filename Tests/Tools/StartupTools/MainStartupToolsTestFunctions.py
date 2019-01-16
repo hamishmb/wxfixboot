@@ -158,7 +158,7 @@ def get_oss():
                 OS_INFO[os_name]["Arch"] = "Unknown"
                 OS_INFO[os_name]["Partition"] = partition
                 OS_INFO[os_name]["PackageManager"] = "Mac App Store"
-                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = (["Unknown"], "Unknown", "Unknown")
 
             #Unmount the filesystem if needed.
             if was_mounted:
@@ -225,7 +225,7 @@ def get_oss():
                 OS_INFO[os_name]["Arch"] = "Unknown"
                 OS_INFO[os_name]["Partition"] = partition
                 OS_INFO[os_name]["PackageManager"] = "Windows Installer"
-                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = ("Unknown", "Unknown", "Unknown")
+                OS_INFO[os_name]["RawFSTabInfo"], OS_INFO[os_name]["EFIPartition"], OS_INFO[os_name]["BootPartition"] = (["Unknown"], "Unknown", "Unknown")
 
             #Unmount the filesystem if needed.
             if was_mounted:
