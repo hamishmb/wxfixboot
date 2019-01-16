@@ -46,17 +46,6 @@ import wx.html
 import wx.lib.statbmp
 import wx.lib.stattext
 
-#Import custom-made modules
-import Tools
-from Tools.dictionaries import *
-import Tools.coretools as CoreTools
-import Tools.dialogtools as DialogTools
-import Tools.StartupTools.main as MainStartupTools
-import Tools.BackendTools.essentials as EssentialBackendTools
-import Tools.BackendTools.main as MainBackendTools
-
-import Tools.notebookfunctions as NoteBookSharedFunctions
-
 #Compatibility with wxPython 4.
 if int(wx.version()[0]) >= 4:
     import wx.adv
@@ -78,7 +67,7 @@ if sys.version_info[0] == 3:
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "15/1/2019"
+RELEASEDATE = "16/1/2019"
 
 #Define other global variables.
 SESSION_ENDING = False
@@ -140,6 +129,19 @@ for OPTION, ARGUMENT in OPTIONS:
 
     else:
         assert False, "unhandled option"
+
+#Import custom-made modules
+#NB: This is done here so the logger is already set up - logging levels can be set properly in
+#submodules.
+import Tools
+from Tools.dictionaries import *
+import Tools.coretools as CoreTools
+import Tools.dialogtools as DialogTools
+import Tools.StartupTools.main as MainStartupTools
+import Tools.BackendTools.essentials as EssentialBackendTools
+import Tools.BackendTools.main as MainBackendTools
+
+import Tools.notebookfunctions as NoteBookSharedFunctions
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):

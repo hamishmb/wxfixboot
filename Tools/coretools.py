@@ -45,7 +45,7 @@ if sys.version_info[0] == 3:
 
 #Set up logging.
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG) #logging.getLogger("WxFixBoot").getEffectiveLevel())
+logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
 
 #Define global variables
 startup = None
