@@ -14,6 +14,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
-# Redirect stdin to the file.
-echo "$(</dev/stdin)" > $1
+
+#Clear the file. Means we start with a blank line, but it could be worse.
+echo "" > $1
+
+#Read the first line of input.
+read -r line < /dev/stdin
+echo "$line"
+
+#Keep reading and writing until we get EOF.
+while [[ $line != "EOF" ]]
+do
+    echo "$line" >> $1
+    read -r line < /dev/stdin
+    echo "$line"
+done
+
 exit $?

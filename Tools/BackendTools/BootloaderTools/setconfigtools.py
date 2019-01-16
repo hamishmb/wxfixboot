@@ -114,7 +114,7 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
                          + kernel_options+"'...")
 
             set_kernel_options = True
-            line = "GRUB_CMDLINE_LINUX_DEFAULT='"+kernel_options
+            line = "GRUB_CMDLINE_LINUX_DEFAULT='"+kernel_options+"'"
 
         #Look for the "GRUB_DEFAULT" setting.
         elif "GRUB_DEFAULT" in line and '=' in line and set_default is False:
