@@ -969,13 +969,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
             #Delete the log file, and don't bother handling any errors, because this is run as root. FIXME It won't be soon, and not smart anyway.
             os.remove('/tmp/wxfixboot.log')
 
-            #If we're using wayland, remove the workaround we have to use to make this work.
-            #XXX Fix for running on Wayland until we get policy kit stuff done.
-            try:
-                subprocess.check_call("xhost -si:localuser:root", shell=True)
-            except subprocess.CalledProcessError:
-                pass
-
             self.Destroy()
 
 #End Main window
