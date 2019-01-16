@@ -243,8 +243,12 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
     for menu_entry_data in menu_entries_file_contents[menu_entries_file_contents.index(line):]:
         menu_entries[menu][menu_entry_name]["RawMenuEntryData"].append(menu_entry_data)
 
-        if menu_entry_data.split()[-1] == "}":
-            break
+        try:
+            if menu_entry_data.split()[-1] == "}":
+                break
+
+        except IndexError:
+            pass
 
     #Get boot partition.
     logger.info("assemble_grub2_menu_entry(): Getting menu entry's boot partition with "
@@ -512,6 +516,7 @@ def assemble_grublegacy_menu_entry(menu_entries, menu_entries_file_contents, lin
 
     #Get the full contents of the menuentry (keep adding lines to the list until we find "title").
     logger.info("assemble_grublegacy_menu_entry(): Getting menu entry data...")
+
     for menu_entry_data in menu_entries_file_contents[menu_entries_file_contents.index(line)+1:]:
         menu_entries["MainMenu"][menu_entry]["RawMenuEntryData"].append(menu_entry_data)
 
