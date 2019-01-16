@@ -95,6 +95,8 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
 
     #Loop through each line in the file, paying attention only to the important ones.
     for line in config_file:
+        print(line)
+
         #Look for the timeout setting.
         if 'GRUB_TIMEOUT' in line and '=' in line and set_timeout is False:
             #Found it! Set the value to the current value of bootloader_timeout.
@@ -102,7 +104,7 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
                          + unicode(bootloader_timeout)+"'...")
 
             set_timeout = True
-            line = "GRUB_TIMEOUT="+unicode(bootloader_timeout)+"\n"
+            line = "GRUB_TIMEOUT="+unicode(bootloader_timeout)
 
         #Look for kernel options setting.
         elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line and set_kernel_options is False:
@@ -112,7 +114,7 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
                          + kernel_options+"'...")
 
             set_kernel_options = True
-            line = "GRUB_CMDLINE_LINUX_DEFAULT='"+kernel_options+"'\n"
+            line = "GRUB_CMDLINE_LINUX_DEFAULT='"+kernel_options
 
         #Look for the "GRUB_DEFAULT" setting.
         elif "GRUB_DEFAULT" in line and '=' in line and set_default is False:
@@ -121,7 +123,7 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
                          + bootloader_specific_default_os+"' (ID of default OS)...")
 
             set_default = True
-            line = "GRUB_DEFAULT="+bootloader_specific_default_os+"\n"
+            line = "GRUB_DEFAULT="+bootloader_specific_default_os
 
         #Comment out the GRUB_HIDDEN_TIMEOUT line.
         elif 'GRUB_HIDDEN_TIMEOUT' in line and 'GRUB_HIDDEN_TIMEOUT_QUIET' not in line and '=' in line and '#' not in line:
@@ -133,7 +135,7 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
             logger.debug("set_grub2_config(): Commenting out GRUB_CMDLINE_LINUX...")
             line = "#"+line
 
-        new_file_contents.append(line)
+        new_file_contents.append(line+"\n")
 
     #Check that everything was set. If not, write that config now.
     if set_timeout is False:
@@ -293,7 +295,7 @@ def set_lilo_config(_os, filetoopen):
             new_file_contents.append("chooser=textmenu\n")
             new_file_contents.append("message=elilomenu.msg\n")
 
-            line = "delay="+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"]*10)+"\n"
+            line = "delay="+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"]*10)
 
         #Look for the timeout setting (LILO).
         elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "LILO" and 'timeout' in line and '=' in line and '#' not in line and set_timeout is False:
@@ -302,7 +304,7 @@ def set_lilo_config(_os, filetoopen):
                          + unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])+"...")
 
             set_timeout = True
-            line = "timeout="+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"]*10)+"\n"
+            line = "timeout="+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"]*10)
 
         #Look for the 'boot' setting.
         elif 'boot' in line and '=' in line and '#' not in line and 'map' not in line and set_boot_device is False:
@@ -311,7 +313,7 @@ def set_lilo_config(_os, filetoopen):
             set_boot_device = True
 
             #Reassemble the line.
-            line = "boot="+boot_device+"\n"
+            line = "boot="+boot_device
 
         #Get rid of any boot entries.
         elif 'image=' in line or '\t' in line:
@@ -319,7 +321,7 @@ def set_lilo_config(_os, filetoopen):
             logger.debug("set_lilo_config(): Found boot entry, removing it...")
             continue
 
-        new_file_contents.append(line)
+        new_file_contents.append(line+"\n")
 
     #Check that everything was set. If not, write that config now.
     if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO" and set_timeout is False:
@@ -392,7 +394,7 @@ def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
         elif "read-only" in line or "read-write" in line:
             continue
 
-        new_file_contents.append(line)
+        new_file_contents.append(line+"\n")
 
     #If there isn't a placeholder, make one now.
     if temp is False:
@@ -403,7 +405,7 @@ def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
 
     if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO":
         new_file_contents.append("#################### ELILO per-image section "
-                                 + "####################")
+                                 + "####################\n")
 
     #As we make these entries, we'll record which ones were actually made, as the user can cancel
     #them if it looks like it won't work.
@@ -516,9 +518,9 @@ def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
             logger.debug("make_lilo_os_entries(): Found default OS setting, setting it to "
                          + defaultos_name+"...")
 
-            line = "default="+defaultos_name+"\n"
+            line = "default="+defaultos_name
 
-        new_file_contents.append(line)
+        new_file_contents.append(line+"\n")
 
     #Write the finished lines to the file.
     logger.info("make_lilo_os_entries(): Writing finished config to file...")

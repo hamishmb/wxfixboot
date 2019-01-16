@@ -245,7 +245,7 @@ def read_privileged_file(filename):
     """
 
     return start_process("pkexec /usr/share/wxfixboot/Tools/helpers/runasroot_linux_read_file.sh "+filename,
-                         show_output=False, return_output=True, privileged=True)[1]
+                         show_output=False, return_output=True, privileged=True)[1].split("\n")
 
 def write_privileged_file(filename, file_contents):
     """
