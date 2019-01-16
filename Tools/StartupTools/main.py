@@ -643,6 +643,16 @@ def get_bootloaders():
                                      + "Loading safe defaults instead. Click okay to continue.",
                                      kind="warning")
 
+        #If we didn't find the timeout, set it to 10 seconds here, and warn the user.
+        if BOOTLOADER_INFO[_os]["Timeout"] == "Unknown":
+            BOOTLOADER_INFO[_os]["Timeout"] = 10
+            logger.warning("get_bootloaders(): Couldn't find "+_os+"'s bootloader timeout! "
+                           + "Assuming 10 seconds...")
+
+            DialogTools.show_msg_dlg(message="Couldn't find "+_os+"'s bootloader timeout! "
+                                     + "Loading safe defaults instead. Click okay to continue.",
+                                     kind="warning")
+
         #Determine if we can modify this OS from our current one.
         if OS_INFO[_os]["Arch"] == SYSTEM_INFO["CurrentOSArch"] or (OS_INFO[_os]["Arch"] == "i386" and SYSTEM_INFO["CurrentOSArch"] == "x86_64"):
             BOOTLOADER_INFO[_os]["IsModifyable"] = True
