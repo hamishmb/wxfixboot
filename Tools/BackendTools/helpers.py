@@ -252,8 +252,9 @@ def write_fstab_entry_for_uefi_partition(_os, mount_point):
     Write an /etc/fstab entry for the UEFI System Partition, if there isn't already one.
     DISABLED***
     """
-
-    return True #FIXME Disabled cos breaks things.
+    #FIXME Disabled cos breaks things.
+    #TODO When I try to fix this, use the new config file readers/writers.
+    return True
 
     logger.info("write_fstab_entry_for_uefi_partition(): Preparing to write an fstab entry for "
                 + "the UEFI partition ("+OS_INFO[_os]["EFIPartition"]+")...")

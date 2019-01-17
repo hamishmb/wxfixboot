@@ -211,7 +211,7 @@ def get_oss():
         if DISK_INFO[partition]["Type"] == "Device":
             continue
 
-        elif DISK_INFO[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"): 
+        elif DISK_INFO[partition]["FileSystem"] in ("hfsplus", "hfs", "apfs"):
             #TODO Check if this is what APFS shows up as.
             #Look for macOS.
             os_name = "macOS ("+partition+")"

@@ -386,9 +386,7 @@ def get_fstab_info(mount_point, os_name):
     boot_partition = "Unknown"
 
     #Read the raw contents of the /etc/fstab file.
-    fstab_file = open(mount_point+"/etc/fstab", "r")
-    raw_fstab_contents = fstab_file.read().split("\n")
-    fstab_file.close()
+    raw_fstab_contents = CoreTools.read_privileged_file(mount_point+"/etc/fstab")
 
     #Gather some info from it.
     for line in raw_fstab_contents:

@@ -38,6 +38,7 @@ import logging
 
 #Import other modules.
 sys.path.append('../..') #Need to be able to import the Tools module from here.
+import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
 from Tools.dictionaries import DISK_INFO, BOOTLOADER_INFO  #pylint: disable=wrong-import-position
 
 #Make unicode an alias for str in Python 3.
@@ -111,9 +112,7 @@ def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_
             grub_dir = mount_point+"/boot/efi/EFI/fedora"
 
         #Process menu entries, and pass the entire contents of the menu entries file to the parser.
-        menu_entries_file = open(grub_dir+"/grub.cfg", "r")
-        menu_data = menu_entries_file.readlines()
-        menu_entries_file.close()
+        menu_data = CoreTools.read_privileged_file(grub_dir+"/grub.cfg")
 
         logger.info("parse_grub2_menu_data(): Finding and parsing menu entries in "
                     + grub_dir+"/grub.cfg...")
@@ -359,7 +358,7 @@ def get_grub2_config(config_file_path, grubenv_file_path, menu_entries):
 
     #Open the config file in read mode, so we can save the important bits of config.
     logger.info("get_grub2_config(): Getting config...")
-    config_file = open(config_file_path, 'r')
+    config_file = CoreTools.read_privileged_file(config_file_path)
 
     #Loop through each line in the file, paying attention only to the important ones.
     for line in config_file:
@@ -408,7 +407,7 @@ def get_grub2_config(config_file_path, grubenv_file_path, menu_entries):
                 logger.info("get_grub2_config(): Looking for default OS in GRUB environment "
                             + "file...")
 
-                grubenv_file = open(grubenv_file_path, "r")
+                grubenv_file = CoreTools.read_privileged_file(grubenv_file_path)
 
                 for variable in grubenv_file:
                     if "saved_entry=" in variable or "default=" in variable:
@@ -471,9 +470,7 @@ def parse_grublegacy_menu_entries(menu_entries_file_path):
     logger.info("parse_grublegacy_menu_entries(): Finding and parsing menu entries...")
 
     #Open the menu entries file to find and save all the menu entries.
-    menu_entries_file = open(menu_entries_file_path, "r")
-    menu_entries_file_contents = menu_entries_file.readlines()
-    menu_entries_file.close()
+    menu_entries_file_contents = CoreTools.read_privileged_file(menu_entries_file_path)
 
     #Setup.
     menu_entries = {}
@@ -573,7 +570,7 @@ def get_grublegacy_config(config_file_path, menu_entries):
     timeout, default_os = ("Unknown", "Unknown")
 
     #Open the file in read mode, so we can save the important bits of config.
-    config_file = open(config_file_path, 'r')
+    config_file = CoreTools.read_privileged_file(config_file_path)
 
     for line in config_file:
         #Look for the default setting.
@@ -630,8 +627,7 @@ def parse_lilo_menu_entries(menu_entries_file_path):
     logger.info("parse_lilo_menu_entries(): Finding and parsing menu entries...")
 
     #Open the menu entries file to find and save all the menu entries.
-    menu_entries_file = open(menu_entries_file_path, "r")
-    menu_entries_file_contents = menu_entries_file.readlines()
+    menu_entries_file_contents = CoreTools.read_privileged_file(menu_entries_file_path)
     menu_entries = {}
     menu_entries["MainMenu"] = {}
     menu_entries["MainMenu"]["Order"] = []
@@ -652,7 +648,6 @@ def parse_lilo_menu_entries(menu_entries_file_path):
 
     #Close the file.
     logger.info("parse_lilo_menu_entries(): Finished!")
-    menu_entries_file.close()
     return menu_entries
 
 def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, entry_counter):
@@ -720,7 +715,7 @@ def get_lilo_config(config_file_path, _os):
     timeout, kernel_options, boot_disk, default_os = ("Unknown", "Unknown", "Unknown", "Unknown")
 
     #Open the file in read mode, so we can save the important bits of config.
-    config_file = open(config_file_path, 'r')
+    config_file = CoreTools.read_privileged_file(config_file_path)
 
     #Loop through each line in the file, paying attention only to the important ones.
     for line in config_file:

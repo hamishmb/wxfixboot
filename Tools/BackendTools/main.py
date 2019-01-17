@@ -769,6 +769,7 @@ def set_new_bootloader_config(_os):
             #If we're switching to GRUB-UEFI from BIOS it can mess up GRUB2 and change the boot
             #commands to linux and initrd instead of linuxefi and initrdefi, preventing boot.
             #Fix this. The next time GRUB is updated from within the OS it will fix itself.
+            #TODO This section hasn't been tested w/ new config file readers/writers.
             logger.info("set_new_bootloader_config(): Fixing Fedora's GRUB2-UEFI config (when "
                         + "booted with BIOS, it can go wrong)...")
 
@@ -783,9 +784,7 @@ def set_new_bootloader_config(_os):
                 grub_dir = mount_point+"/boot/efi/EFI/fedora"
 
             #Correct the commands if needed.
-            config_file = open(grub_dir+"/grub.cfg", "r")
-            config = config_file.readlines()
-            config_file.close()
+            config = CoreTools.read_privileged_file(grub_dir+"/grub.cfg")
 
             new_config = []
 
@@ -806,9 +805,7 @@ def set_new_bootloader_config(_os):
                     new_config.append(line)
 
             #Write the fixed config.
-            config_file = open(grub_dir+"/grub.cfg", "w")
-            config_file.write(''.join(new_config))
-            config_file.close()
+            CoreTools.write_privileged_file(grub_dir+"/grub.cfg", ''.join(new_config))
 
             #unmount the EFI partition.
             if CoreTools.unmount(OS_INFO[_os]["EFIPartition"]) != 0:
@@ -835,9 +832,7 @@ def set_new_bootloader_config(_os):
                 grub_dir = mount_point+"/boot/grub2"
 
             #Correct the commands if needed.
-            config_file = open(grub_dir+"/grub.cfg", "r")
-            config = config_file.readlines()
-            config_file.close()
+            config = CoreTools.read_privileged_file(grub_dir+"/grub.cfg")
 
             new_config = []
 
@@ -845,9 +840,7 @@ def set_new_bootloader_config(_os):
                 new_config.append(line.replace("linuxefi", "linux").replace("initrdefi", "initrd"))
 
             #Write the fixed config.
-            config_file = open(grub_dir+"/grub.cfg", "w")
-            config_file.write(''.join(new_config))
-            config_file.close()
+            CoreTools.write_privileged_file(grub_dir+"/grub.cfg", ''.join(new_config))
 
             logger.info("set_new_bootloader_config(): Done!")
 

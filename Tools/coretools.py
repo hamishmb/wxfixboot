@@ -308,7 +308,7 @@ def write_privileged_file(filename, file_contents):
 
     #Start the process.
     cmd = subprocess.Popen("pkexec /usr/share/wxfixboot/Tools/helpers/runasroot_linux_write_file.sh "
-                            + filename, stdin=subprocess.PIPE, shell=True)
+                           + filename, stdin=subprocess.PIPE, shell=True)
 
     #Write the file contents to its' stdin, plus EOF.
     cmd.stdin.write(file_contents.encode("UTF-8", errors="ignore")+str(b"\nEOF"))
