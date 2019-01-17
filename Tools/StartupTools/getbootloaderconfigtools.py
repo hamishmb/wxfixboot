@@ -461,7 +461,6 @@ def get_grub2_config(config_file_path, grubenv_file_path, menu_entries):
 
     #Close the file.
     logger.info("get_grub2_config(): Done! Returning information...")
-    config_file.close()
 
     return (timeout, kernel_options, default_os)
 
@@ -618,7 +617,6 @@ def get_grublegacy_config(config_file_path, menu_entries):
 
     #Close the file.
     logger.info("get_grublegacy_config(): Done! Returning Information...")
-    config_file.close()
 
     return timeout, default_os
 
@@ -764,7 +762,6 @@ def get_lilo_config(config_file_path, _os):
 
     #Close the file.
     logger.info("get_lilo_config(): Done! Returning information...")
-    config_file.close()
 
     #Find the 1st menu entry and use that if we couldn't find the default OS.
     if default_os == "Unknown":
