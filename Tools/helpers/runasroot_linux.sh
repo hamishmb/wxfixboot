@@ -14,7 +14,26 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
-#Keep processes' stderr by redirecting it to stdout.
-#FIXME Keep quoted arguments in quotes.
-$@ 2>&1
+
+#NB: Keep processes' stderr by redirecting it to stdout.
+
+#This solution was found at https://stackoverflow.com/a/8723305.
+#CC BY-SA 3.0 - https://creativecommons.org/licenses/by-sa/3.0/
+#It allows us to run sh -c with this script by escaping arguments
+#properly with quotes.
+#Code snippet (unchanged):
+#---
+C=''
+
+for i in "$@"; do 
+    i="${i//\\/\\\\}"
+    C="$C \"${i//\"/\\\"}\""
+done
+
+#---
+
+#My code:
+
+sh -c "$C" 2>&1
+
 exit $?
