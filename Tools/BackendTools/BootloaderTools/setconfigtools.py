@@ -186,6 +186,8 @@ def install_grub2_to_efi_partition(package_manager, use_chroot, mount_point, uef
     """Install GRUB2 (EFI/UEFI version) into the EFI/UEFI partition"""
     #Okay, we've modified the kernel options and the timeout. Now we need to install grub
     #to the UEFI partition.
+    #TODO May need --force if EFI vars not present on newer GRUB-EFI versions (Ubuntu 18.10+) check!
+    #NB: Don't think so - files touched anyway, but good to double check.
     if package_manager == "apt-get":
         cmd = "grub-install --efi-directory="+uefi_system_partition_mount_point \
               + " --target="+arch+"-efi"
