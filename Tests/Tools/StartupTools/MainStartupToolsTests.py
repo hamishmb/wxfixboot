@@ -103,7 +103,7 @@ class TestCheckForLiveDisk(unittest.TestCase):
         del self.app
 
     def test_check_for_live_disk_1(self):
-        """Test #1: Test that we can defermine if on a live disk without error"""
+        """Test #1: Test that we can determine if on a live disk without error"""
         MainStartupTools.check_for_live_disk()
 
 class TestGetOSs(unittest.TestCase):
