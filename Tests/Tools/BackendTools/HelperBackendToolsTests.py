@@ -127,12 +127,13 @@ class TestFindMissingFSCKModules(unittest.TestCase):
 
     @unittest.skipUnless(Functions.can_perform_find_missing_fsck_modules_test_1(), "FSCK modules not available on system.")
     def test_find_missing_fsck_modules_1(self):
+        """Test #1: Test that FSCK modules are detected when they are present"""
         self.assertEqual(HelperBackendTools.find_missing_fsck_modules(),
                          Data.return_expected_result_finding_missing_fsck_modules())
 
     def test_find_missing_fsck_modules_2(self):
-        self.assertEqual(HelperBackendTools.find_missing_fsck_modules(),
-                         Functions.find_missing_fsck_modules())
+        """Test #2: Test that we can search for missing FSCK modules without error"""
+        HelperBackendTools.find_missing_fsck_modules()
 
 class TestFindCheckableFileSystems(unittest.TestCase):
     def setUp(self):
@@ -159,5 +160,5 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         del self.app
 
     def test_find_checkable_file_systems_1(self):
-        self.assertEqual(Functions.find_checkable_file_systems(),
-                         HelperBackendTools.find_checkable_file_systems())
+        """Test #1: Test that we can determine which filesystems to check without error"""
+        HelperBackendTools.find_checkable_file_systems()
