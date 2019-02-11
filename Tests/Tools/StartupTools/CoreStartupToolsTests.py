@@ -33,10 +33,6 @@ import unittest
 import sys
 import wx
 
-#Import test functions & data.
-from . import CoreStartupToolsTestFunctions as Functions
-from . import CoreStartupToolsTestData as Data
-
 #Import other modules.
 sys.path.append('../..') #Need to be able to import the Tools module from here.
 
@@ -73,7 +69,7 @@ class TestDeterminePackageManager(unittest.TestCase):
 
 class TestGetFSTabInfo(unittest.TestCase): #TODO Do another test with fake fstab file(s)
     def setUp(self):
-        DISK_INFO.update(Data.return_empty_disk_info_dict())
+        DISK_INFO.clear()
 
     def tearDown(self):
         DISK_INFO.clear()
