@@ -67,12 +67,11 @@ class TestDeterminePackageManager(unittest.TestCase):
         del Tools.coretools.startup
 
     def test_determine_package_manager_1(self):
-        self.assertEqual(CoreStartupTools.determine_package_manager(apt_cmd="which apt-get",
-                                                                    yum_cmd="which yum"),
-                         Functions.determine_package_manager(apt_cmd="which apt-get",
-                                                             yum_cmd="which yum"))
+        """Test #1: Test that we can determine the package manager without error."""
+        CoreStartupTools.determine_package_manager(apt_cmd="which apt-get",
+                                                   yum_cmd="which yum")
 
-class TestGetFSTabInfo(unittest.TestCase): #*** Do another test with a fake fstab file(s) ***
+class TestGetFSTabInfo(unittest.TestCase): #TODO Do another test with fake fstab file(s)
     def setUp(self):
         DISK_INFO.update(Data.return_empty_disk_info_dict())
 
@@ -80,8 +79,8 @@ class TestGetFSTabInfo(unittest.TestCase): #*** Do another test with a fake fsta
         DISK_INFO.clear()
 
     def test_get_fstab_info_1(self):
-        self.assertEqual(CoreStartupTools.get_fstab_info(mount_point="", os_name="ThisIsATest"),
-                         Functions.get_fstab_info(mount_point="", os_name="ThisIsATest"))
+        """Test #1: Test that we can get FSTAB info without error"""
+        CoreStartupTools.get_fstab_info(mount_point="", os_name="ThisIsATest")
 
 class TestDetermineOSArchitecture(unittest.TestCase):
     def setUp(self):
@@ -91,8 +90,8 @@ class TestDetermineOSArchitecture(unittest.TestCase):
         del Tools.coretools.startup
 
     def test_determine_os_architecture_1(self):
-        self.assertEqual(CoreStartupTools.determine_os_architecture(mount_point=""),
-                         Functions.determine_os_architecture(mount_point=""))
+        """Test #1: Test that we can determine the OS architecture without error."""
+        CoreStartupTools.determine_os_architecture(mount_point="")
 
 class TestGetOSNameWithLSB(unittest.TestCase):
     def setUp(self):
@@ -102,10 +101,9 @@ class TestGetOSNameWithLSB(unittest.TestCase):
         del Tools.coretools.startup
 
     def test_get_os_name_with_lsb(self):
-        self.assertEqual(CoreStartupTools.get_os_name_with_lsb(partition="RootFS", mount_point="",
-                                                               is_current_os=True),
-                         Functions.get_os_name_with_lsb(partition="RootFS", mount_point="",
-                                                        is_current_os=True))
+        """Test #1: Test that we can get the OS name without error"""
+        CoreStartupTools.get_os_name_with_lsb(partition="RootFS", mount_point="",
+                                              is_current_os=True)
 
 class TestAskForOSName(unittest.TestCase):
     def setUp(self):
