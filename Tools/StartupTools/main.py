@@ -35,6 +35,9 @@ from __future__ import unicode_literals
 import os
 import sys
 import logging
+import getdevinfo
+
+from distutils.version import LooseVersion
 
 sys.path.append('../..') #Need to be able to import the Tools module from here.
 import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
@@ -89,6 +92,30 @@ def check_depends():
         CoreTools.emergency_exit("The following dependencies could not be found on your system: "
                                  + ', '.join(failed_list)+".\n\nPlease install the missing "
                                  + "dependencies.")
+
+    #Check that the getdevinfo version is 1.0.4 or greater.
+    version_okay = False
+
+    #TODO May need to change before release.
+    versions = ["1.0.4", getdevinfo.getdevinfo.VERSION]
+
+    #Last entry is highest version.
+    versions = sorted(versions, key=LooseVersion)
+
+    if versions[-1] == versions[-2]:
+        #This is v1.0.4.
+        version_okay = True
+
+    elif versions[-1] != "1.0.4" and versions[-1] == getdevinfo.getdevinfo.VERSION:
+        #This is newer than 1.0.4.
+        version_okay = True
+
+    if not version_okay:
+        logger.critical("check_depends(): Your getdevinfo module is known to not work with this "
+                        + "version of WxFixBoot. Please update to at least 1.0.4")
+
+        CoreTools.emergency_exit("Your getdevinfo module is known to not work "
+                        + "with this version of WxFixBoot. Please update to at least v1.0.4.")
 
 def check_for_live_disk():
     """Try to determine if we're running on a live disk."""
