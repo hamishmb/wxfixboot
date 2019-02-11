@@ -2835,7 +2835,7 @@ class BackendThread(threading.Thread):
 
         for function in OPERATIONS:
             if isinstance(function, tuple):
-                if MainBackendTools.manage_bootloader in function:
+                if MainBackendTools.manage_bootloader == function[0]:
                     dialog_message += " You performed bootloader operations on at least one OS, "
                     dialog_message += "so please now reboot your system."
                     break

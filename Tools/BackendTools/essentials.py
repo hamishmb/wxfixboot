@@ -313,6 +313,7 @@ def handle_filesystem_check_return_values(exec_cmds, retval, partition, manage_b
         for function in Operations:
             if isinstance(function, tuple):
                 if manage_bootloader_function == function:
+                    #TODO check this works.
                     doing_bootloader_operations = True
                     break
 
