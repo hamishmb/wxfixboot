@@ -747,7 +747,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
         aboutbox.Copyright = "(C) 2013-2019 Hamish McIntyre-Bhatty"
         aboutbox.Description = "Utility to fix the bootloader on a\ncomputer quickly " \
                                + "\n\nPython version "+sys.version.split()[0] \
-                               + "\nwxPython version " + wx.version()
+                               + "\nwxPython version " + wx.version() \
+                               + "\nGetDevInfo version " + getdevinfo.getdevinfo.VERSION
 
         aboutbox.WebSite = ("https://www.hamishmb.com", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty"]
