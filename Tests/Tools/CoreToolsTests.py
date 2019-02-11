@@ -66,6 +66,7 @@ class TestStartProcess(unittest.TestCase):
 
         #Stops startprocess from trying to send data to the output box.
         Tools.coretools.startup = True
+        self.maxDiff = None
 
     def tearDown(self):
         del self.commands

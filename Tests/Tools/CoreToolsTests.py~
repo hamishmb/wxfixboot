@@ -38,11 +38,11 @@ sys.path.append('../..') #Need to be able to import the Tools module from here.
 
 import Tools
 import Tools.coretools as CoreTools
-import Tools.dialogtools as DialogTools
 
 #Import test data and functions.
 from . import CoreToolsTestData as Data
 from . import CoreToolsTestFunctions as Functions
+from .. import DialogFunctionsForTests
 
 #Set up autocomplete vars.
 POTENTIAL_DEVICE_PATH = ""
@@ -82,7 +82,7 @@ class TestIsMounted(unittest.TestCase):
         self.app = wx.App()
         self.frame = TestWindow()
         self.panel = TestPanel(self.frame)
-        DialogTools.parent_window = self.panel
+        DialogFunctionsForTests.parent_window = self.panel
 
         global POTENTIAL_PARTITION_PATH
 
@@ -90,7 +90,7 @@ class TestIsMounted(unittest.TestCase):
 
         if POTENTIAL_PARTITION_PATH == "":
             #Get a device path from the user to test against.
-            DialogTools.show_text_entry_dlg("WxFixBoot needs a partition name to test "
+            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test "
                                                         + "against.\nNo data on your device will "
                                                         + "be modified. Suggested: insert a USB "
                                                         + "disk and leave it mounted.\nNote: Do "
@@ -98,7 +98,7 @@ class TestIsMounted(unittest.TestCase):
                                                         + "are running, or it may interfere with "
                                                         + "the tests.", "WxFixBoot - Tests")
 
-            self.path = DialogTools.TEXT_ENTRY_DLG_RESULTS[-1]
+            self.path = DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1]
 
             #Save it for autocomplete with other dialogs.
             POTENTIAL_PARTITION_PATH = self.path
@@ -128,7 +128,7 @@ class TestIsMounted(unittest.TestCase):
         del self.app
 
         del self.path
-        del DialogTools.parent_window
+        del DialogFunctionsForTests.parent_window
         del Tools.coretools.startup
 
     def test_is_mounted1(self):
@@ -149,7 +149,7 @@ class TestGetMountPointOf(unittest.TestCase):
         self.app = wx.App()
         self.frame = TestWindow()
         self.panel = TestPanel(self.frame)
-        DialogTools.parent_window = self.panel
+        DialogFunctionsForTests.parent_window = self.panel
 
         #Get a device path from the user to test against.
         global POTENTIAL_PARTITION_PATH
@@ -158,7 +158,7 @@ class TestGetMountPointOf(unittest.TestCase):
 
         if POTENTIAL_PARTITION_PATH == "":
             #Get a device path from the user to test against.
-            DialogTools.show_text_entry_dlg("WxFixBoot needs a partition name to test "
+            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test "
                                                         + "against.\nNo data on your device will "
                                                         + "be modified. Suggested: insert a USB "
                                                         + "disk and leave it mounted.\nNote: Do "
@@ -166,7 +166,7 @@ class TestGetMountPointOf(unittest.TestCase):
                                                         + "are running, or it may interfere with "
                                                         + "the tests.", "WxFixBoot - Tests")
 
-            self.path = DialogTools.TEXT_ENTRY_DLG_RESULTS[-1]
+            self.path = DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1]
 
             #Save it for autocomplete with other dialogs.
             POTENTIAL_PARTITION_PATH = self.path
@@ -185,7 +185,7 @@ class TestGetMountPointOf(unittest.TestCase):
         del self.app
 
         del self.path
-        del DialogTools.parent_window
+        del DialogFunctionsForTests.parent_window
         del Tools.coretools.startup
 
     def test_get_mount_point_of_1(self):
@@ -209,7 +209,7 @@ class TestGetPartitionMountedAt(unittest.TestCase):
         self.app = wx.App()
         self.frame = TestWindow()
         self.panel = TestPanel(self.frame)
-        DialogTools.parent_window = self.panel
+        DialogFunctionsForTests.parent_window = self.panel
 
         #Get a device path from the user to test against.
         global POTENTIAL_PARTITION_PATH
@@ -218,7 +218,7 @@ class TestGetPartitionMountedAt(unittest.TestCase):
 
         if POTENTIAL_PARTITION_PATH == "":
             #Get a device path from the user to test against.
-            DialogTools.show_text_entry_dlg("WxFixBoot needs a partition name to test "
+            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test "
                                                         + "against.\nNo data on your device will "
                                                         + "be modified. Suggested: insert a USB "
                                                         + "disk and leave it mounted.\nNote: Do "
@@ -226,7 +226,7 @@ class TestGetPartitionMountedAt(unittest.TestCase):
                                                         + "are running, or it may interfere with "
                                                         + "the tests.", "WxFixBoot - Tests")
 
-            self.path = DialogTools.TEXT_ENTRY_DLG_RESULTS[-1]
+            self.path = DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1]
 
             #Save it for autocomplete with other dialogs.
             POTENTIAL_PARTITION_PATH = self.path
@@ -250,7 +250,7 @@ class TestGetPartitionMountedAt(unittest.TestCase):
         self.app.Destroy()
         del self.app
 
-        del DialogTools.parent_window
+        del DialogFunctionsForTests.parent_window
         del self.path
         del self.mount_point
         del Tools.coretools.startup
@@ -263,7 +263,7 @@ class TestMountPartition(unittest.TestCase):
         self.app = wx.App()
         self.frame = TestWindow()
         self.panel = TestPanel(self.frame)
-        DialogTools.parent_window = self.panel
+        DialogFunctionsForTests.parent_window = self.panel
 
         #Get a device path from the user to test against.
         global POTENTIAL_PARTITION_PATH
@@ -273,7 +273,7 @@ class TestMountPartition(unittest.TestCase):
 
         if POTENTIAL_PARTITION_PATH == "":
             #Get a device path from the user to test against.
-            DialogTools.show_text_entry_dlg("WxFixBoot needs a partition name to test "
+            DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a partition name to test "
                                                         + "against.\nNo data on your device will "
                                                         + "be modified. Suggested: insert a USB "
                                                         + "disk and leave it mounted.\nNote: Do "
@@ -281,7 +281,7 @@ class TestMountPartition(unittest.TestCase):
                                                         + "are running, or it may interfere with "
                                                         + "the tests.", "WxFixBoot - Tests")
 
-            self.path = DialogTools.TEXT_ENTRY_DLG_RESULTS[-1]
+            self.path = DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1]
 
             #Save it for autocomplete with other dialogs.
             POTENTIAL_PARTITION_PATH = self.path
@@ -310,7 +310,7 @@ class TestMountPartition(unittest.TestCase):
         self.app.Destroy()
         del self.app
 
-        del DialogTools.parent_window
+        del DialogFunctionsForTests.parent_window
         del self.path
         del Tools.coretools.startup
 
@@ -338,7 +338,7 @@ class TestMountPartition(unittest.TestCase):
 
     def test_mount_partition3(self):
         #Get another device path from the user to test against.
-        DialogTools.show_text_entry_dlg("WxFixBoot needs a second (different) "
+        DialogFunctionsForTests.show_text_entry_dlg("WxFixBoot needs a second (different) "
                                                     + "partition name to test against.\nNo "
                                                     + "data on your device will be modified. "
                                                     + "Suggested: insert a USB disk and leave "
@@ -347,7 +347,7 @@ class TestMountPartition(unittest.TestCase):
                                                     + "interfere with the tests.",
                                                     "WxFixBoot - Tests")
 
-        self.path2 = DialogTools.TEXT_ENTRY_DLG_RESULTS[-1]
+        self.path2 = DialogFunctionsForTests.TEXT_ENTRY_DLG_RESULTS[-1]
 
         #Unmount both partitions.
         for partition in [self.path, self.path2]:
