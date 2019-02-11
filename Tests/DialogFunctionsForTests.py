@@ -17,7 +17,6 @@
 
 #If you're wondering why this is here, it's so that there are some known good/sane functions to
 #aid testing the ones in DialogTools.
-#TODO are we using these still?
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
 #strings, as they fix potential problems.

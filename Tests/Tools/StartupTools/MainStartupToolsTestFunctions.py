@@ -79,44 +79,6 @@ def check_depends():
         emergency_exit("The following dependencies could not be found on your system: "
                        + ', '.join(failed_list)+".\n\nPlease install the missing dependencies.")
 
-def check_for_live_disk():
-    """Try to determine if we're running on a live disk."""
-    #Detect Parted Magic automatically.
-    if "pmagic" in CoreTools.start_process("uname -r", return_output=True)[1]:
-        SYSTEM_INFO["IsLiveDisk"] = True
-        SYSTEM_INFO["OnPartedMagic"] = True
-
-    #Try to detect ubuntu-based livecds.
-    elif CoreTools.is_mounted("/cow", "/") and os.path.isfile("/cdrom/casper/filesystem.squashfs"):
-        SYSTEM_INFO["IsLiveDisk"] = True
-        SYSTEM_INFO["OnPartedMagic"] = False
-
-    #Try to detect fedora-based livecds.
-    elif CoreTools.is_mounted("/dev/mapper/live-rw", "/") and os.path.isfile("/run/initramfs/live/LiveOS/squashfs.img"):
-        SYSTEM_INFO["IsLiveDisk"] = True
-        SYSTEM_INFO["OnPartedMagic"] = False
-
-    #Try to detect if we're not running on a live disk (on a HDD).
-    elif "/dev/sd" in CoreTools.get_partition_mounted_at("/"):
-        SYSTEM_INFO["IsLiveDisk"] = False
-        SYSTEM_INFO["OnPartedMagic"] = False
-
-    #Try to detect if we're not running on a live disk (on LVM).
-    elif "/dev/mapper/" in CoreTools.get_partition_mounted_at("/"):
-        SYSTEM_INFO["IsLiveDisk"] = False
-        SYSTEM_INFO["OnPartedMagic"] = False
-
-    #Ask the user if we're running on a live disk.
-    else:
-        SYSTEM_INFO["IsLiveDisk"] = DialogTools.show_yes_no_dlg(message="Is WxFixBoot being run on "
-                                                               + "live media, such as an Ubuntu "
-                                                               + "Installer Disk?",
-                                                               title="WxFixBoot - Live Media?")
-        SYSTEM_INFO["OnPartedMagic"] = False
-
-    #Get current OS architecture.
-    SYSTEM_INFO["CurrentOSArch"] = CoreStartupTools.determine_os_architecture(mount_point="")
-
 def get_oss():
     """Get the names of all OSs on the HDDs."""
     root_fs = CoreTools.get_partition_mounted_at("/")
@@ -323,45 +285,3 @@ def get_oss():
 
     #Exit.
     #CoreTools.emergency_exit("You don't appear to have any Linux installations on your hard disks. If you do have Linux installations but WxFixBoot hasn't found them, please file a bug or ask a question on WxFixBoot's launchpad page. If you're using Windows or Mac OS X, then sorry as WxFixBoot has no support for these operating systems. You could instead use the tools provided by Microsoft and Apple to fix any issues with your computer.")
-
-def get_firmware_type():
-    """Get the firmware type"""
-    #Check if the firmware type is UEFI.
-    #Also, look for UEFI variables.
-    #Make sure efivars module is loaded. If it doesn't exist, continue anyway.
-    CoreTools.start_process("modprobe efivars")
-
-    #Look for the UEFI vars in some common directories.
-    if os.path.isdir("/sys/firmware/efi/vars") and CoreTools.start_process("ls /sys/firmware/efi/vars", return_output=True)[1] != "":
-        uefi_variables = True
-
-    elif os.path.isdir("/proc/efi/vars") and CoreTools.start_process("ls /proc/efi/vars", return_output=True)[1] != "":
-        uefi_variables = True
-
-    elif os.path.isdir("/sys/firmware/efi/efivars") and CoreTools.start_process("ls /sys/firmware/efi/efivars", return_output=True)[1] != "":
-        uefi_variables = True
-
-    else:
-        uefi_variables = False
-
-    if uefi_variables:
-        #It's UEFI.
-        SYSTEM_INFO["FirmwareType"] = "UEFI"
-
-    else:
-        #Look a second way.
-        output = CoreTools.start_process("dmidecode -q -t BIOS", return_output=True)[1]
-
-        if "UEFI" not in output:
-            #It's BIOS.
-            SYSTEM_INFO["FirmwareType"] = "BIOS"
-
-        else:
-            #It's UEFI.
-            SYSTEM_INFO["FirmwareType"] = "UEFI"
-            DialogTools.show_msg_dlg(kind="warning", message="Your computer uses UEFI firmware, "
-                                     + "but the UEFI variables couldn't be mounted or weren't "
-                                     + "found. Please ensure you've booted in UEFI mode rather "
-                                     + "than legacy mode to enable access to the UEFI variables. "
-                                     + "You can attempt installing a UEFI bootloader without "
-                                     + "them, but it might not work, and it isn't recommended.")

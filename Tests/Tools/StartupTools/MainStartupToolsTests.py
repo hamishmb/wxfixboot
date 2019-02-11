@@ -74,6 +74,7 @@ class TestCheckDepends(unittest.TestCase):
         Functions.WOULD_EMERGENCY_EXIT_BECAUSE = []
 
     def test_check_depends_1(self):
+        """Test #1: Test that we can check dependencies without error."""
         #Run the Functions version first, because it will be a problem for us if a real Emergency
         #exit is triggered.
         Functions.check_depends()
@@ -102,13 +103,8 @@ class TestCheckForLiveDisk(unittest.TestCase):
         del self.app
 
     def test_check_for_live_disk_1(self):
-        Functions.check_for_live_disk()
-
-        self.testinfo = copy.deepcopy(SYSTEM_INFO)
-
+        """Test #1: Test that we can defermine if on a live disk without error"""
         MainStartupTools.check_for_live_disk()
-
-        self.assertEqual(self.testinfo, SYSTEM_INFO)
 
 class TestGetOSs(unittest.TestCase):
     def setUp(self):
@@ -131,10 +127,12 @@ class TestGetOSs(unittest.TestCase):
         del self.app
 
     def test_get_oss_1(self):
+        """Test #1: Test that we can get OS information without error"""
         #Only run if there are Linux OSs, because otherwise the unmodified functions could cause
         #an emergency exit which would mess up testing.
+        #TODO There may be a better way of doing this.
         if Functions.get_oss() != ("Unknown", "Unknown"):
-            self.assertEqual(MainStartupTools.get_oss(), Functions.get_oss())
+            MainStartupTools.get_oss()
 
 class TestGetFirmwareType(unittest.TestCase):
     def setUp(self):
@@ -149,20 +147,8 @@ class TestGetFirmwareType(unittest.TestCase):
         del Tools.coretools.startup
 
     def test_get_firmware_type_1(self):
-        #Run them.
+        """Test #1: Test that we can get the firmware type without error"""
         MainStartupTools.get_firmware_type()
-
-        self.testinfo = copy.deepcopy(SYSTEM_INFO)
-
-        Functions.get_firmware_type()
-
-        #Test that the result is the same.
-        self.assertEqual(self.testinfo, SYSTEM_INFO)
-
-        #If a dialog was going to be displayed to the user, make sure it would be displayed
-        #both times.
-        if DialogTools.MSG_DLG_MESSAGES and DialogTools.MSG_DLG_MESSAGES[-1] == "Your computer uses UEFI firmware, but the UEFI variables couldn't be mounted or weren't found. Please ensure you've booted in UEFI mode rather than legacy mode to enable access to the UEFI variables. You can attempt installing a UEFI bootloader without them, but it might not work, and it isn't recommended.":
-            self.assertEqual(DialogTools.MSG_DLG_MESSAGES[-1], DialogTools.MSG_DLG_MESSAGES[-2])
 
 class TestFinalCheck(unittest.TestCase):
     def setUp(self):
@@ -177,12 +163,15 @@ class TestFinalCheck(unittest.TestCase):
         DialogTools.MSG_DLG_MESSAGES = []
 
     def test_final_check_1(self):
+        """Test #1: Test that the final check warns about not being able to modify macOS and Windows when they are present"""
+
         #Get the dict for this test.
         BOOTLOADER_INFO.update(Data.return_fake_bl_info1())
         MainStartupTools.final_check()
         self.assertEqual(DialogTools.MSG_DLG_MESSAGES[-1], Data.return_final_check_results1())
 
     def test_final_check_2(self):
+        """Test #2: Test that the final check runs without error when it should"""
         #Get the dict for this test.
         BOOTLOADER_INFO.update(Data.return_fake_bl_info2())
         MainStartupTools.final_check()

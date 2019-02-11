@@ -16,7 +16,8 @@
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
 #If you're wondering why this is here, it's so that there are some known good/sane functions
-#to aid testing the ones in BackendTools.
+#to aid testing the real ones. These are needed to manipulate system state so we can create
+#various situations to test the real functions against.
 
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
 #strings, as they fix potential problems.

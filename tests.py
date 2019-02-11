@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # Unit tests for WxFixBoot
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2019 Hamish McIntyre-Bhatty
@@ -37,8 +37,6 @@ logger = logging.getLogger('WxFixBoot')
 
 #Log only critical messages by default.
 LOGGER_LEVEL = logging.CRITICAL
-
-logger.setLevel(LOGGER_LEVEL)
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
                     datefmt='%d/%m/%Y %I:%M:%S %p', level=LOGGER_LEVEL)
@@ -125,6 +123,8 @@ for o, a in OPTS:
         assert False, "unhandled option"
 
 if __name__ == "__main__":
+    logger.setLevel(LOGGER_LEVEL)
+
     for SuiteModule in TESTSUITES:
         print("\n\nTests in "+unicode(SuiteModule)+"\n\n")
         unittest.TextTestRunner(verbosity=2).run(unittest.TestLoader().loadTestsFromModule(SuiteModule))
