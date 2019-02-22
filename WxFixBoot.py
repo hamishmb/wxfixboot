@@ -590,7 +590,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
         """Create the status bar"""
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetFieldsCount(2)
-        self.statusbar.SetStatusWidths([-1, 150])
+        self.statusbar.SetStatusWidths([-1, 165])
         self.statusbar.SetStatusText("Ready.", 0)
         self.statusbar.SetStatusText("v"+VERSION+" ("+RELEASEDATE+")", 1)
 
