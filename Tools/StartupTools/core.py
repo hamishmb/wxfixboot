@@ -310,7 +310,7 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
 
     else:
         bootloader_packages = ("grub2-efi-x64", "grub2-pc", "grub")
-        package_dictionary = {"grub2-efi": "GRUB-UEFI", "grub2-pc": "GRUB2", "grub": "GRUB-LEGACY"}
+        package_dictionary = {"grub2-efi-x64": "GRUB-UEFI", "grub2-pc": "GRUB2", "grub": "GRUB-LEGACY"}
 
     for package in bootloader_packages:
         found = False
