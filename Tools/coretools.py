@@ -65,6 +65,10 @@ def get_helper(cmd):
         #Note: These are only used in the process of mounting files.
         helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux_mount.sh"
 
+    elif "pkexec /usr/share/wxfixboot/Tools/helpers/runasroot_linux_read_file.sh" in cmd:
+        #No need to add a helper for this.
+        return ""
+
     else:
         helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux.sh"
 

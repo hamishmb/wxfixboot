@@ -42,8 +42,8 @@
   </action>
 
   <action id="org.hamishmb.WxFixBoot.readfile">
-    <description>WxFixBoot requires authentication to read bootloader configuration</description>
-    <message>WxFixBoot requires authentication to read bootloader configuration.</message>
+    <description>WxFixBoot requires authentication to read system configuration</description>
+    <message>WxFixBoot requires authentication to read system configuration.</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
