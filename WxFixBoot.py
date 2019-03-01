@@ -67,7 +67,7 @@ if sys.version_info[0] == 3:
 
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
-RELEASEDATE = "11/2/2019"
+RELEASEDATE = "1/3/2019"
 
 #Define other global variables.
 SESSION_ENDING = False
@@ -584,6 +584,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
         #Bind all events.
         self.bind_events()
 
+        #Check for updates.
+        wx.CallLater(10000, self.check_for_updates, starting_up=True)
+
         logger.debug("MainWindow().__init__(): Started. Waiting for events...")
 
     def make_status_bar(self):
@@ -637,6 +640,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
         helpmenu = wx.Menu()
 
         #Adding Menu Items.
+        self.menu_updates = help_menu.Append(wx.ID_ANY, "&Check for Updates",
+                                             "Check for updates to WxFixBoot")
         self.menu_about = helpmenu.Append(wx.ID_ABOUT, "&About", "Information about this program")
         self.menu_exit = filemenu.Append(wx.ID_EXIT, "&Exit", "Terminate this program")
         self.menu_systeminfo = viewmenu.Append(wx.ID_ANY, "&System Information", "Information about all detected disks, OSs, and Bootloaders")
@@ -737,6 +742,153 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
         #Reveal MainWindow
         self.Show()
 
+    def check_for_updates(self, event=None, starting_up=False): #pylint: disable=unused-argument
+        """
+        Check for updates using the plist-formatted update file
+        on my website. If some startup, only display info to the
+        user if there was an update. Otherwise (aka requested by user),
+        always display the information.
+        """
+        logger.info("MainWindow().check_for_updates(): Checking for updates...")
+
+        CoreTools.send_notification("Checking for updates...")
+
+        try:
+            #Ubuntu 14.04 fix (Python 2.7.6 has no proper TLS support).
+            if tuple(sys.version_info)[0:3] == (2, 7, 6):
+                #Use wget to download instead, cos the server doesn't allow SSL.
+                retval, updateinfo = \
+                CoreTools.start_process(cmd="wget https://www.hamishmb.com/files/updateinfo/wxfixboot.plist -q -O -", return_output=True)
+
+                if retval != 0:
+                    raise requests.exceptions.RequestException()
+
+            else:
+                #Do it the better way w/ requests.
+                updateinfo = \
+                requests.get("https://www.hamishmb.com/files/updateinfo/wxfixboot.plist",
+                             timeout=5)
+
+                #Raise an error if our status code was bad.
+                updateinfo.raise_for_status()
+
+                updateinfo = updateinfo.text
+
+        except requests.exceptions.RequestException:
+            #Flag to user.
+            CoreTools.send_notification("Failed to check for updates!")
+
+            #Also send a message dialog.
+            if not starting_up:
+                wx.MessageDialog(self.panel, "Couldn't check for updates!\n"
+                                 + "Are you connected to the internet?",
+                                 "WxFixBoot - Update Check Failure",
+                                 wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP,
+                                 pos=wx.DefaultPosition).ShowModal()
+            return
+
+        #Process the update info.
+        infotext = ""
+        update_recommended = False
+
+        updateinfo = plistlib.readPlistFromString(updateinfo.encode())
+
+        #Determine the latest version for our kind of release.
+        if RELEASE_TYPE == "Stable":
+            #Compare your stable version to the current stable version.
+            versions = [VERSION, updateinfo["CurrentStableVersion"]]
+
+        elif RELEASE_TYPE == "Development":
+            #Compare your version to both dev and stable versions.
+            #This is in case a stable release has superseeded your dev release.
+            versions = [VERSION, updateinfo["CurrentStableVersion"],
+                        updateinfo["CurrentDevVersion"]]
+
+        #Order the list so the last entry has the latest version number.
+        versions = sorted(versions, key=LooseVersion)
+
+        #Compare the versions.
+        if versions[-1] == VERSION and RELEASE_TYPE == "Stable":
+            #We have the latest stable version.
+            infotext += "You are running the latest version of WxFixBoot.\n"
+
+        elif versions[-1] == VERSION and RELEASE_TYPE == "Development":
+            #We have the latest dev version.
+            infotext += "You are running the latest development version of WxFixBoot.\n"
+
+        elif VERSION == updateinfo["CurrentStableVersion"] and RELEASE_TYPE == "Stable":
+            #We are running the latest stable version, but there is a dev version
+            #that is newer.
+            infotext += "You are running the latest version of WxFixBoot.\n"
+
+        elif VERSION == updateinfo["CurrentDevVersion"] and RELEASE_TYPE == "Development":
+            #We are running a development version, but it has been superseeded by a
+            #new stable release. We should update.
+            update_recommended = True
+
+            infotext += "You are running an old development version of WxFixBoot.\n"
+            infotext += "You should update to the newer, stable version "
+            infotext += updateinfo["CurrentStableVersion"]+".\n"
+
+        elif RELEASE_TYPE == "Development":
+            #We are running an old dev build. We should update.
+            update_recommended = True
+
+            infotext += "You are running an old development version of WxFixBoot.\n"
+            infotext += "You could update to the latest stable version "
+            infotext += updateinfo["CurrentStableVersion"]+",\n"
+            infotext += "or the latest development version "+updateinfo["CurrentDevVersion"]+".\n"
+
+        elif RELEASE_TYPE == "Stable":
+            #We are running an old stable build. We should update.
+            update_recommended = True
+
+            infotext += "You are running an old stable version of WxFixBoot.\n"
+            infotext += "You should update to the latest stable version "
+            infotext += updateinfo["CurrentStableVersion"]+".\n"
+
+        #Note if the release date doesn't match for the latest stable build.
+        if (RELEASE_TYPE == "Stable" and VERSION == updateinfo["CurrentStableVersion"]
+                and RELEASE_DATE != updateinfo["CurrentStableReleaseDate"]):
+
+            infotext += "\nYour release date doesn't match that of the current stable version.\n"
+            infotext += "Are you running a git build?"
+
+        #Send a notification about the update status.
+        if update_recommended:
+            logger.warning("MainWindow().check_for_updates(): Update is recommended. "
+                           "Sending notification...")
+
+            CoreTools.send_notification("Updates are available")
+
+            #Add info about where to download updates.
+            infotext += "\nThe latest version of WxFixBoot can be downloaded from:\n"
+            infotext += "https://www.hamishmb.com/html/downloads.php?program_name=WxFixBoot\n"
+
+            #Add info about new release.
+            infotext += "\nDetails of the new release:\n\n"
+            infotext += updateinfo["CurrentStableVersionDetails"]
+
+            #Note for pmagic users.
+            if PARTED_MAGIC:
+                infotext += "\nThere is probably a newer version of Parted Magic that "
+                infotext += "provides an update to this program."
+
+        else:
+            logger.warning("MainWindow().check_for_updates(): No update required."
+                           "Sending notification...")
+
+            CoreTools.send_notification("Up to date")
+
+        #If asked by the user, or if there's an update and we aren't on pmagic,
+        #show the update status.
+        if not starting_up or (update_recommended and not PARTED_MAGIC):
+            logger.debug("MainWindow().check_for_updates(): Showing the user the update info...")
+
+            wx.MessageDialog(self.panel, infotext, "WxFixBoot - Update Status",
+                             wx.OK | wx.ICON_INFORMATION | wx.STAY_ON_TOP,
+                             pos=wx.DefaultPosition).ShowModal()
+
     def on_about(self, event=None): #pylint: disable=unused-argument
         """Shows the About Box"""
         logger.debug("MainWindow().on_about(): Showing About Box...")
@@ -804,6 +956,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
 
     def bind_events(self):
         """Bind all mainwindow events"""
+        self.Bind(wx.EVT_MENU, self.check_for_updates, self.menu_updates)
         self.Bind(wx.EVT_MENU, self.on_about, self.menu_about)
         self.Bind(wx.EVT_MENU, self.on_exit, self.menu_exit)
         self.Bind(wx.EVT_CLOSE, self.on_exit)
