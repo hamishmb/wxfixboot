@@ -26,6 +26,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Import other modules
+from distutils.version import LooseVersion
+
 import traceback
 import threading
 import subprocess
@@ -37,6 +39,7 @@ import shutil
 import time
 import plistlib
 import ast
+import requests
 
 import getdevinfo
 import getdevinfo.linux
@@ -68,6 +71,7 @@ if sys.version_info[0] == 3:
 #Define the version number and the release date as global variables.
 VERSION = "3.0.0"
 RELEASEDATE = "1/3/2019"
+RELEASE_TYPE = "Development"
 
 #Define other global variables.
 SESSION_ENDING = False
@@ -100,6 +104,9 @@ except getopt.GetoptError as err:
     print(unicode(err))
     usage()
     sys.exit(2)
+
+#Check if we're running on Parted Magic.
+PARTED_MAGIC = ("PartedMagic" in os.uname()[1])
 
 #Set up logging.
 logger = logging.getLogger('WxFixBoot')
@@ -640,7 +647,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
         helpmenu = wx.Menu()
 
         #Adding Menu Items.
-        self.menu_updates = help_menu.Append(wx.ID_ANY, "&Check for Updates",
+        self.menu_updates = helpmenu.Append(wx.ID_ANY, "&Check for Updates",
                                              "Check for updates to WxFixBoot")
         self.menu_about = helpmenu.Append(wx.ID_ABOUT, "&About", "Information about this program")
         self.menu_exit = filemenu.Append(wx.ID_EXIT, "&Exit", "Terminate this program")
@@ -758,7 +765,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
             if tuple(sys.version_info)[0:3] == (2, 7, 6):
                 #Use wget to download instead, cos the server doesn't allow SSL.
                 retval, updateinfo = \
-                CoreTools.start_process(cmd="wget https://www.hamishmb.com/files/updateinfo/wxfixboot.plist -q -O -", return_output=True)
+                CoreTools.start_process(exec_cmds="wget https://www.hamishmb.com/files/updateinfo/wxfixboot.plist -q -O -", return_output=True)
 
                 if retval != 0:
                     raise requests.exceptions.RequestException()
@@ -849,7 +856,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
 
         #Note if the release date doesn't match for the latest stable build.
         if (RELEASE_TYPE == "Stable" and VERSION == updateinfo["CurrentStableVersion"]
-                and RELEASE_DATE != updateinfo["CurrentStableReleaseDate"]):
+                and RELEASEDATE != updateinfo["CurrentStableReleaseDate"]):
 
             infotext += "\nYour release date doesn't match that of the current stable version.\n"
             infotext += "Are you running a git build?"

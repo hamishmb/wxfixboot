@@ -588,7 +588,7 @@ def teardown_chroot(mount_point):
 def send_notification(msg):
     """Send a notification, created to reduce clutter in the rest of the code."""
     #Use notify-send.
-    start_process(cmd="notify-send 'WxFixBoot' '"+msg
+    start_process(exec_cmds="notify-send 'WxFixBoot' '"+msg
                   +"' -i /usr/share/pixmaps/wxfixboot.png", return_output=False)
 
 def emergency_exit(message):
