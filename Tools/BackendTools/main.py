@@ -293,7 +293,7 @@ def remove_old_bootloader(_os):
                   "grub-efi-ia32-bin grub-common grub2-common'"
 
         elif OS_INFO[_os]["PackageManager"] == "yum":
-            cmd = "yum -y remove grub2-efi shim-x64"
+            cmd = "yum -y remove grub2-efi-x64 grub2-efi-ia32 shim-x64"
 
     elif BOOTLOADER_INFO[_os]["Bootloader"] == "ELILO":
         logger.info("remove_old_bootloader(): Removing ELILO...")
@@ -522,10 +522,8 @@ def install_new_bootloader(_os):
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
 
         elif OS_INFO[_os]["PackageManager"] == "yum":
-            cmd = "yum -y install grub2-efi-ia32 grub2-efi-x64 grub2-efi " \
-                  "shim-x64 fwupd fwupdate-efi fwupdate-libs gnome-software " \
-                  "PackageKit appstream-data comps-extras epiphany-runtime " \
-                  "flatpak-libs fwupd-labels libsmbios ostree rpm-ostree-libs"
+            cmd = "yum -y install grub2-efi-ia32 grub2-efi-x64 shim-x64 " \
+                  "fwupdate-efi fwupdate-libs"
 
     elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO":
         logger.info("install_new_bootloader(): Installing ELILO...")
