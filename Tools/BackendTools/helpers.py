@@ -431,10 +431,10 @@ def manage_uefi_files(_os, mount_point):
                                +"/grub*.efi! Attempting to continue anyway...")
 
     elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
-        #We need to copy grub*.efi to uefi_boot_dir.
+        #We need to copy grubx64.efi to uefi_boot_dir.
         logger.info("manage_uefi_files(): Copying grub*.efi to "+uefi_boot_dir+"...")
 
-        if CoreTools.start_process("cp -v "+source_dir+"/grub*.efi "+uefi_boot_dir+"/bootx64.efi",
+        if CoreTools.start_process("cp -v "+source_dir+"/grubx64.efi "+uefi_boot_dir+"/bootx64.efi",
                                    show_output=False, privileged=True) != 0:
             logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/grub*.efi to "
                          + uefi_boot_dir+"/bootx64.efi! Attempting to continue anyway...")
