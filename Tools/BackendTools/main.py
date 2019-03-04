@@ -440,19 +440,19 @@ def install_new_bootloader(_os):
                                      + "you wish.")
             return False
 
-        #If there's a seperate /boot partition for this OS, make sure it's mounted.
-        if OS_INFO[_os]["BootPartition"] != "Unknown":
-            if CoreTools.mount_partition(partition=OS_INFO[_os]["BootPartition"],
-                                         mount_point=mount_point+"/boot") != 0:
-                logger.error("remove_old_bootloader(): Failed to mount "
-                             + OS_INFO[_os]["BootPartition"]+"! Warn the user and skip this OS.")
+    #If there's a seperate /boot partition for this OS, make sure it's mounted.
+    if OS_INFO[_os]["BootPartition"] != "Unknown":
+        if CoreTools.mount_partition(partition=OS_INFO[_os]["BootPartition"],
+                                     mount_point=mount_point+"/boot") != 0:
+            logger.error("remove_old_bootloader(): Failed to mount "
+                         + OS_INFO[_os]["BootPartition"]+"! Warn the user and skip this OS.")
 
-                DialogTools.show_msg_dlg(kind="error",
-                                         message="WxFixBoot failed to mount the partition "
-                                         + "containing "+_os+"'s /boot partition! Giving up. "
-                                         + "You will be prompted to try again if you wish.")
+            DialogTools.show_msg_dlg(kind="error",
+                                     message="WxFixBoot failed to mount the partition "
+                                     + "containing "+_os+"'s /boot partition! Giving up. "
+                                     + "You will be prompted to try again if you wish.")
 
-                return False
+            return False
 
     #Update the package lists.
     if OS_INFO[_os]["PackageManager"] == "apt-get":
@@ -506,6 +506,7 @@ def install_new_bootloader(_os):
         logger.info("install_new_bootloader(): Installing GRUB-UEFI...")
 
         #Mount the UEFI partition at mount_point/boot/efi.
+        #FIXME on fedora this needs to be /boot!
         if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
             logger.error("install_new_bootloader(): Failed to mount "+OS_INFO[_os]["EFIPartition"]
                          + " to "+mount_point+"/boot/efi! Aborting bootloader installation and "

@@ -448,7 +448,7 @@ def mount_partition(partition, mount_point, options=""):
                          +", preventing the mounting of "+partition+"! Skipping mount attempt.")
             return False
 
-    #Create the dir if needed.
+    #Create the dir if needed. TODO What if we don't have permission?
     if os.path.isdir(mount_point) is False:
         os.makedirs(mount_point)
 
