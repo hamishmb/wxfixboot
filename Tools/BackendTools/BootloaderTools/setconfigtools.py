@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Bootloader Configuration Setting Tools in the Bootloader Tools Package in the Backend Tools
 # package for WxFixBoot

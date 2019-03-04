@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*- 
 # CoreStartupTools tests for WxFixBoot
 # This file is part of WxFixBoot.

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # WxFixBoot
 # Copyright (C) 2013-2019 Hamish McIntyre-Bhatty

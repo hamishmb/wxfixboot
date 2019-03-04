@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # NoteBook page functions for the system info window for WxFixBoot
 # This file is part of WxFixBoot.
