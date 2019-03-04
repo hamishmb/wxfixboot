@@ -790,19 +790,19 @@ def set_new_bootloader_config(_os):
 
             for line in config:
                 if "linux16" in line and "/vmlinu" in line:
-                    new_config.append(line.replace("linux16", "linuxefi"))
+                    new_config.append(line.replace("linux16", "linuxefi")+"\n")
 
                 elif "linux" in line and "linuxefi" not in line and "/vmlinu" in line:
-                    new_config.append(line.replace("linux", "linuxefi"))
+                    new_config.append(line.replace("linux", "linuxefi")+"\n")
 
                 elif "initrd16" in line and ("/initrd" in line or "/initramfs" in line):
-                    new_config.append(line.replace("initrd16", "initrdefi"))
+                    new_config.append(line.replace("initrd16", "initrdefi")+"\n")
 
                 elif "initrd" in line and "initrdefi" not in line and ("/initrd" in line or "/initramfs" in line):
-                    new_config.append(line.replace("initrd", "initrdefi"))
+                    new_config.append(line.replace("initrd", "initrdefi")+"\n")
 
                 else:
-                    new_config.append(line)
+                    new_config.append(line+"\n")
 
             #Write the fixed config.
             CoreTools.write_privileged_file(grub_dir+"/grub.cfg", ''.join(new_config))
@@ -837,7 +837,7 @@ def set_new_bootloader_config(_os):
             new_config = []
 
             for line in config:
-                new_config.append(line.replace("linuxefi", "linux").replace("initrdefi", "initrd"))
+                new_config.append(line.replace("linuxefi", "linux").replace("initrdefi", "initrd")+"\n")
 
             #Write the fixed config.
             CoreTools.write_privileged_file(grub_dir+"/grub.cfg", ''.join(new_config))
