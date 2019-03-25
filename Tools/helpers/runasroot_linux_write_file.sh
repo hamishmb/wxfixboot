@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
 
+#Clear the IFS variable to prevent read from stripping leading whitespace.
+IFS=
+
 #Read the first line of input.
 first=true
 read -r line < /dev/stdin
