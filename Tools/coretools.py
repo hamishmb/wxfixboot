@@ -282,11 +282,6 @@ def write_privileged_file(filename, file_contents):
         logger.error("write_privileged_file(): File contains spaces, rejecting...")
         return 1
 
-    #Check that this is a file.
-    if not os.path.isfile(filename):
-        logger.error("write_privileged_file(): This is not a file, rejecting...")
-        return 1
-
     #Check that this is in the list of allowed files.
     allowed = False
 
