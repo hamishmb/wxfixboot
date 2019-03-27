@@ -295,7 +295,6 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
         cmd = "dpkg --get-selections"
 
     else:
-        #TODO Do we actually just want yum list?
         cmd = "yum -C list installed"
 
     if using_chroot:

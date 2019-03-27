@@ -32,12 +32,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #Import modules.
+from distutils.version import LooseVersion
+
 import os
 import sys
 import logging
 import getdevinfo
-
-from distutils.version import LooseVersion
 
 sys.path.append('../..') #Need to be able to import the Tools module from here.
 import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
@@ -64,7 +64,7 @@ def check_depends():
 
     logger.info("MainStartupTools(): check_depends(): Checking dependencies...")
     #Create a temporary list to allow WxFixBoot to notify the user of particular unmet
-    #dependencies. TODO This will need to be updated.
+    #dependencies. TODO This will need to be updated at release time.
     cmd_list = ("cp", "mv", "which", "uname", "fsck", "ls", "modprobe", "mount", "umount",
                 "rm", "ping", "badblocks", "arch", "file", "sh", "echo", "lshw",
                 "lvdisplay", "dmidecode", "chroot", "strings", "dd", "blkid")
@@ -115,7 +115,7 @@ def check_depends():
                         + "version of WxFixBoot. Please update to at least 1.0.4")
 
         CoreTools.emergency_exit("Your getdevinfo module is known to not work "
-                        + "with this version of WxFixBoot. Please update to at least v1.0.4.")
+                                 + "with this version of WxFixBoot. Please update to at least v1.0.4.")
 
 def check_for_live_disk():
     """Try to determine if we're running on a live disk."""

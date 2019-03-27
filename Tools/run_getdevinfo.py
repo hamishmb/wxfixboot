@@ -17,6 +17,7 @@
 
 """
 This is used to run getdevinfo to obtain device information.
+This must be run as root to work correctly on Linux.
 """
 
 #Do future imports to support python 2.
@@ -26,10 +27,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#Must be run as root to work (at least on Linux)!
 import sys
 
-import getdevinfo #pylint: disable=import-error
+import getdevinfo
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:

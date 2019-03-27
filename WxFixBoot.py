@@ -428,7 +428,7 @@ class InitThread(threading.Thread):
         global OS_INFO
 
         #Let CoreTools know we're starting up.
-        Tools.coretools.startup = True
+        Tools.CoreTools.STARTUP = True
 
         #Set variables used for checking whether bootloader operations have been disabled.
         SYSTEM_INFO["DisableBootloaderOperations"] = False
@@ -550,7 +550,7 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Done Final Check!")
 
         #Let CoreTools know we're finished starting up.
-        Tools.coretools.startup = False
+        Tools.CoreTools.STARTUP = False
 
         wx.CallAfter(self.parent_window.update_progress_text, "Finished! Starting GUI...")
         logger.info("InitThread(): Finished Determining Settings. Exiting InitThread()...")

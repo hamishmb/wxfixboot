@@ -19,6 +19,10 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
+"""
+This module contains the "core tools" used in various parts of WxFixBoot.
+"""
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
 #strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -48,7 +52,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
 
 #Define global variables
-startup = None
+STARTUP = None
 
 def get_helper(cmd):
     """Figure out which helper script to use."""
@@ -104,7 +108,7 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
                            shell=False)
 
     #Use a simpler output reader on startup to improve performance.
-    if startup:
+    if STARTUP:
         line_list = read(cmd, testing=testing)
 
     else:
@@ -609,14 +613,6 @@ def emergency_exit(message):
     #Save the log file.
     log_file = DialogTools.show_save_file_dlg(wildcard="Log Files|*.log")
     start_process("mv -v /tmp/wxfixboot.log "+log_file, show_output=False)
-
-    #If we're using wayland, remove the workaround we have to use to make this work.
-    #XXX Fix for running on Wayland until we get policy kit stuff done.
-    try:
-        subprocess.check_call("xhost -si:localuser:root", shell=True)
-
-    except subprocess.CalledProcessError:
-        pass
 
     #Exit.
     DialogTools.show_msg_dlg(message="Done. WxFixBoot will now exit.")

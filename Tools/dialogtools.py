@@ -20,6 +20,14 @@
 # Reason (logging-not-lazy): This is a more readable way of logging.
 # Reason (global-statement): Need to use it here.
 
+"""
+This module provides the standard dialogs and related control functions used by WxFixBoot.
+
+This provides the extra "show_thread..." functions to enable calling dialogs from background
+threads - for example the thread that is used for backend operations when modifying the
+bootloader.
+"""
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
 #strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -235,7 +243,8 @@ def show_text_entry_dlg(message, title="WxFixBoot - Text Entry"):
         else:
             return DLGRESULT
 
-def show_thread_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All Files/Devices (*)|*"):
+def show_thread_save_file_dlg(title="WxFixBoot - Select A File",
+                              wildcard="All Files/Devices (*)|*"):
     """Shows a save file choice dialog from a thread upon instruction"""
     global DLGRESULT
 
@@ -243,11 +252,13 @@ def show_thread_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All F
     dlg = wx.FileDialog(wx.GetApp().TopWindow.panel, message=title, defaultDir="/home",
                         wildcard=wildcard, style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
-    #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
-    #TODO Why is this helpful/not a bad idea?
+    #Destroy just before setting DLGRESULT to avoid potential race conditions.
+    #This is because another dialog might be opened immediately afterwards and reset DLGRESULT,
+    #which would potentially cause issues.
     if dlg.ShowModal() == wx.ID_OK:
+        temp = dlg.GetPath()
         dlg.Destroy()
-        DLGRESULT = dlg.GetPath()
+        DLGRESULT = temp
 
     else:
         dlg.Destroy()

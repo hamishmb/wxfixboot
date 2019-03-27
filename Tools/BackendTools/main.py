@@ -19,6 +19,12 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
+"""
+This module contains the functions for the main operations WxFixBoot performs:
+updating, removing, and installing/reinstalling bootloaders. It also includes
+high-level functions for setting bootloader configuration.
+"""
+
 #Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
 #strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -506,7 +512,6 @@ def install_new_bootloader(_os):
         logger.info("install_new_bootloader(): Installing GRUB-UEFI...")
 
         #Mount the UEFI partition at mount_point/boot/efi.
-        #FIXME on fedora this needs to be /boot!
         if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
             logger.error("install_new_bootloader(): Failed to mount "+OS_INFO[_os]["EFIPartition"]
                          + " to "+mount_point+"/boot/efi! Aborting bootloader installation and "
@@ -768,7 +773,6 @@ def set_new_bootloader_config(_os):
             #If we're switching to GRUB-UEFI from BIOS it can mess up GRUB2 and change the boot
             #commands to linux and initrd instead of linuxefi and initrdefi, preventing boot.
             #Fix this. The next time GRUB is updated from within the OS it will fix itself.
-            #TODO This section hasn't been tested w/ new config file readers/writers.
             logger.info("set_new_bootloader_config(): Fixing Fedora's GRUB2-UEFI config (when "
                         + "booted with BIOS, it can go wrong)...")
 
