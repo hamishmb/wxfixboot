@@ -2451,7 +2451,7 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             self.install_new_bootloader_checkbox.Disable()
 
     def on_new_bootloader_choice(self, event=None): #pylint: disable=unused-argument
-        """Warn user about LILO's/ELILO's rubbish multi OS support if needed"""
+        """Warn user about issues chaging bootloaders if needed"""
         #Could offer to disable, but the LILO/ELILO functionality is deprecated at this point.
         if len(SYSTEM_INFO["ModifyableOSs"]) > 1 and self.new_bootloader_choice.GetStringSelection() in ("LILO", "ELILO"):
             dlg = wx.MessageDialog(self.panel, "Installing "
@@ -2459,6 +2459,27 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                                    + " is discouraged because you have more than one Linux OS "
                                    + "installed, and this bootloader has poor support for booting "
                                    + "multiple Linux OSs. Click okay to continue.",
+                                   "WxFixBoot - Warning", wx.OK | wx.ICON_WARNING)
+
+            dlg.ShowModal()
+            dlg.Destroy()
+
+        #Warning for Fedora systems about switching between GRUB2 and GRUB-UEFI.
+        #This applies for switching in either direction.
+        if OS_INFO[self.os_choice.GetStringSelection()]["PackageManager"] == "yum" and
+           ((BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB-UEFI"" and
+             self.new_bootloader_choice.GetStringSelection() == "GRUB2") or
+            (BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB2"" and
+             self.new_bootloader_choice.GetStringSelection() == "GRUB-UEFI")):
+
+            dlg = wx.MessageDialog(self.panel, "Switching between "
+                                   + BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"]
+                                   + " and " + self.new_bootloader_choice.GetStringSelection()
+                                   + " is discouraged on Fedora, as users occaisionally encounter"
+                                   + "problems. Particularly, if you are running Fedora 30 or later, "
+                                   + "don't do this because it has a high chance of making your "
+                                   + "system unbootable. This warning also applies to derivatives
+                                   + "of Fedora.",
                                    "WxFixBoot - Warning", wx.OK | wx.ICON_WARNING)
 
             dlg.ShowModal()
