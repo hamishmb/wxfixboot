@@ -469,15 +469,8 @@ class InitThread(threading.Thread):
         logger.info("InitThread(): Checking For Live Disk...")
         wx.CallAfter(self.parent_window.update_progress_text, "Checking For Live Disk...")
         MainStartupTools.check_for_live_disk()
-        wx.CallAfter(self.parent_window.update_progress_bar, "4")
+        wx.CallAfter(self.parent_window.update_progress_bar, "10")
         logger.info("InitThread(): Done Checking For Live Disk!")
-
-        #Unmount all filesystems, to avoid any data corruption.
-        logger.info("InitThread(): Unmounting Filesystems...")
-        wx.CallAfter(self.parent_window.update_progress_text, "Unmounting Filesystems...")
-        MainStartupTools.unmount_all_filesystems()
-        wx.CallAfter(self.parent_window.update_progress_bar, "5")
-        logger.info("InitThread(): Done Unmounting Filsystems!")
 
         #Check filesystems.
         logger.info("InitThread(): Checking Filesystems...")

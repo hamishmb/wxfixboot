@@ -174,30 +174,6 @@ def check_for_live_disk():
     logger.info("MainStartupTools(): check_for_live_disk(): Getting architecture of current OS...")
     SYSTEM_INFO["CurrentOSArch"] = CoreStartupTools.determine_os_architecture(mount_point="")
 
-def unmount_all_filesystems():
-    """
-    Unmount any unnecessary filesystems, to prevent data corruption.
-    """
-
-    #Warn about removing devices.
-    logger.info("unmount_all_filesystems(): Unmounting all Filesystems...")
-    DialogTools.show_msg_dlg(kind="info", message="WxFixBoot is about to gather device "
-                             + "information. After this point, you must not remove/add any "
-                             + "devices from/to your computer, so do that now if you wish to.")
-
-    #Attempt unmount of all filesystems. TODO Why is this disabled again?
-    #logger.debug("unmount_all_filesystems(): Running 'unmount -ad'...")
-    #CoreTools.start_process("umount -ad")
-
-    #Make sure that we still have rw access on live disks.
-    if SYSTEM_INFO["IsLiveDisk"]:
-        logger.info("unmount_all_filesystems(): Attempting to remount '/' to make sure it's "
-                    + "still rw...")
-
-        if CoreTools.remount_partition("/") != 0:
-            logger.error("unmount_all_filesystems(): Failed to remount / as rw! This probably "
-                         + "doesn't matter...")
-
 def check_filesystems():
     """Check all unmounted filesystems."""
     logger.info("check_filesystems(): Checking filesystems if possible. Running 'fsck -ARMp'...")
