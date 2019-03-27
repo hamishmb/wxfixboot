@@ -339,8 +339,7 @@ def get_oss():
 
         else:
             #Look for Linux.
-            #The python command runs on python 2 and python 3.
-            #TODO Check if Fedora is deprecating "python" as a command in favour of "python3" only.
+            #The python command runs on python 3.
             logger.debug("get_oss(): Looking for Linux on "+partition+"...")
 
             #If there are aliases for partition, check if the root FS is one of those too.
@@ -358,7 +357,7 @@ def get_oss():
                     root_filesystem_is_alias = False
 
             if partition == root_filesystem or root_filesystem_is_alias:
-                cmd = "python -c \"from __future__ import print_function; " \
+                cmd = "python3 -c \"from __future__ import print_function; " \
                       "import platform; print(' '.join(platform.linux_distribution()));\""
 
                 apt_cmd = "which apt-get"
@@ -369,7 +368,7 @@ def get_oss():
 
             else:
                 mount_point = "/tmp/wxfixboot/mountpoints"+partition
-                cmd = "chroot "+mount_point+" python -c \"from __future__ import print_function; "\
+                cmd = "chroot "+mount_point+" python3 -c \"from __future__ import print_function; "\
                 "import platform; print(' '.join(platform.linux_distribution()));\""
 
                 apt_cmd = "chroot "+mount_point+" which apt-get"
