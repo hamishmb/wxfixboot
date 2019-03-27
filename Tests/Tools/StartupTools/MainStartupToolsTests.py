@@ -64,10 +64,10 @@ class TestWindow(wx.Frame):
 
 class TestCheckDepends(unittest.TestCase):
     def setUp(self):
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
 
     def tearDown(self):
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
         #Reset emergency exit stuff.
         Functions.WOULD_EMERGENCY_EXIT = False
@@ -90,11 +90,11 @@ class TestCheckForLiveDisk(unittest.TestCase):
         self.app = wx.App()
         self.frame = TestWindow()
 
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
         SYSTEM_INFO.clear()
 
     def tearDown(self):
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
         self.frame.Destroy()
         del self.frame
@@ -112,11 +112,11 @@ class TestGetOSs(unittest.TestCase):
         self.frame = TestWindow()
         self.maxDiff = None
 
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
         DISK_INFO.update(getdevinfo.getdevinfo.get_info()) #We need real disk info for these ones.
 
     def tearDown(self):
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
         DISK_INFO.clear()
 
@@ -141,10 +141,10 @@ class TestGetFirmwareType(unittest.TestCase):
 
         SYSTEM_INFO.clear()
 
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
 
     def tearDown(self):
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
     def test_get_firmware_type_1(self):
         """Test #1: Test that we can get the firmware type without error"""

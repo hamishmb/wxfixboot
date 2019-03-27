@@ -73,10 +73,10 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
         self.app = wx.App()
         self.frame = TestWindow()
 
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
 
     def tearDown(self):
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
         self.frame.Destroy()
         del self.frame
@@ -116,12 +116,12 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
 
 class TestFindMissingFSCKModules(unittest.TestCase):
     def setUp(self):
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
         Tools.BackendTools.helpers.DiskInfo = Data.return_fake_disk_info()
         Functions.DiskInfo = Data.return_fake_disk_info()
 
     def tearDown(self):
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
         del Tools.BackendTools.helpers.DiskInfo
         del Functions.DiskInfo
 
@@ -140,7 +140,7 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         self.app = wx.App()
         self.frame = TestWindow()
 
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
         Tools.BackendTools.helpers.DialogTools = DialogTools
 
         DISK_INFO.update(getdevinfo.getdevinfo.get_info()) #We need real disk info for these ones.
@@ -150,7 +150,7 @@ class TestFindCheckableFileSystems(unittest.TestCase):
         DISK_INFO.clear()
         SYSTEM_INFO.clear()
 
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
         del Tools.BackendTools.helpers.DialogTools
 
         self.frame.Destroy()

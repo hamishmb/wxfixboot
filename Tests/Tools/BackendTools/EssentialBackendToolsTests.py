@@ -64,7 +64,7 @@ class TestCheckInternetConnection(unittest.TestCase):
         self.app = wx.App()
         self.frame = TestWindow()
 
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
         SYSTEM_INFO.update(Data.return_initial_system_info_dict())
 
         #Define here to avoid calling another thread that doesn't exist when trying to show
@@ -72,7 +72,7 @@ class TestCheckInternetConnection(unittest.TestCase):
         Tools.BackendTools.essentials.DialogTools = DialogTools
 
     def tearDown(self):
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
         del Tools.BackendTools.essentials.DialogTools
 
         SYSTEM_INFO.clear()

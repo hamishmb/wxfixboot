@@ -2475,7 +2475,7 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             dlg = wx.MessageDialog(self.panel, "Switching between "
                                    + BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"]
                                    + " and " + self.new_bootloader_choice.GetStringSelection()
-                                   + " is discouraged on Fedora, as users occaisionally encounter"
+                                   + " is discouraged on Fedora, as users occaisionally encounter "
                                    + "problems.\n\nParticularly, if you are running Fedora 30 or later, "
                                    + "don't do this because it has a high chance of making your "
                                    + "system unbootable. This warning also applies to derivatives "

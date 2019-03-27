@@ -57,10 +57,10 @@ class TestWindow(wx.Frame):
 
 class TestDeterminePackageManager(unittest.TestCase):
     def setUp(self):
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
 
     def tearDown(self):
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
     def test_determine_package_manager_1(self):
         """Test #1: Test that we can determine the package manager without error."""
@@ -69,9 +69,11 @@ class TestDeterminePackageManager(unittest.TestCase):
 
 class TestGetFSTabInfo(unittest.TestCase): #TODO Do another test with fake fstab file(s)
     def setUp(self):
+        Tools.coretools.STARTUP = True
         DISK_INFO.clear()
 
     def tearDown(self):
+        del Tools.coretools.STARTUP
         DISK_INFO.clear()
 
     def test_get_fstab_info_1(self):
@@ -80,10 +82,10 @@ class TestGetFSTabInfo(unittest.TestCase): #TODO Do another test with fake fstab
 
 class TestDetermineOSArchitecture(unittest.TestCase):
     def setUp(self):
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
 
     def tearDown(self):
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
     def test_determine_os_architecture_1(self):
         """Test #1: Test that we can determine the OS architecture without error."""
@@ -91,10 +93,10 @@ class TestDetermineOSArchitecture(unittest.TestCase):
 
 class TestGetOSNameWithLSB(unittest.TestCase):
     def setUp(self):
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
 
     def tearDown(self):
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
     def test_get_os_name_with_lsb(self):
         """Test #1: Test that we can get the OS name without error"""

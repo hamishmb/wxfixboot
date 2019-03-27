@@ -65,12 +65,12 @@ class TestStartProcess(unittest.TestCase):
         self.commands = Data.return_fake_commands()
 
         #Stops startprocess from trying to send data to the output box.
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
         self.maxDiff = None
 
     def tearDown(self):
         del self.commands
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
     def test_start_process(self):
         for command in self.commands:
@@ -105,7 +105,7 @@ class TestIsMounted(unittest.TestCase):
             POTENTIAL_PARTITION_PATH = self.path
 
         #Stops startprocess from trying to send data to the output box.
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
 
     def tearDown(self):
         #Check if anything is mounted at our temporary mount point.
@@ -130,7 +130,7 @@ class TestIsMounted(unittest.TestCase):
 
         del self.path
         del DialogFunctionsForTests.parent_window
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
     def test_is_mounted1(self):
         #If not mounted, mount it
@@ -173,7 +173,7 @@ class TestGetMountPointOf(unittest.TestCase):
             POTENTIAL_PARTITION_PATH = self.path
 
         #Stops startprocess from trying to send data to the output box.
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
 
     def tearDown(self):
         self.panel.Destroy()
@@ -187,7 +187,7 @@ class TestGetMountPointOf(unittest.TestCase):
 
         del self.path
         del DialogFunctionsForTests.parent_window
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
     def test_get_mount_point_of_1(self):
         #Mount disk if not mounted.
@@ -239,7 +239,7 @@ class TestGetPartitionMountedAt(unittest.TestCase):
         self.mount_point = Functions.get_mount_point_of(self.path)
 
         #Stops startprocess from trying to send data to the output box.
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
 
     def tearDown(self):
         self.panel.Destroy()
@@ -254,7 +254,7 @@ class TestGetPartitionMountedAt(unittest.TestCase):
         del DialogFunctionsForTests.parent_window
         del self.path
         del self.mount_point
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
     def test_get_partition_mounted_at_1(self):
         self.assertEqual(CoreTools.get_partition_mounted_at(self.mount_point), self.path)
@@ -296,7 +296,7 @@ class TestMountPartition(unittest.TestCase):
                 os.mkdir(self.mount_point)
 
         #Stops startprocess from trying to send data to the output box.
-        Tools.coretools.startup = True
+        Tools.coretools.STARTUP = True
 
     def tearDown(self):
         #Unmount.
@@ -313,7 +313,7 @@ class TestMountPartition(unittest.TestCase):
 
         del DialogFunctionsForTests.parent_window
         del self.path
-        del Tools.coretools.startup
+        del Tools.coretools.STARTUP
 
         if os.path.isdir("/tmp/wxfixbootmtpt"):
             if os.path.isdir("/tmp/wxfixbootmtpt/subdir"):
