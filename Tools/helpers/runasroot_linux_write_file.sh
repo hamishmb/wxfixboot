@@ -21,7 +21,6 @@ IFS=
 #Read the first line of input.
 first=true
 read -r line < /dev/stdin
-echo "$line"
 
 #Keep reading and writing until we get EOF.
 while [[ $line != "EOF" ]]
@@ -33,7 +32,6 @@ do
     fi
 
     read -r line < /dev/stdin
-    echo "$line"
     first=false
 done
 
