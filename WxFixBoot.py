@@ -30,7 +30,6 @@ from distutils.version import LooseVersion
 
 import traceback
 import threading
-import subprocess
 import sys
 import getopt
 import logging
@@ -171,17 +170,18 @@ class GetDiskInformation(threading.Thread):
     def get_info(self): #pylint: disable=no-self-use
         """Get disk information as a privileged user"""
         output = CoreTools.start_process(exec_cmds=sys.executable+" "+"/usr/share/wxfixboot"
-                                            +"/Tools/run_getdevinfo.py",
-                                            return_output=True,
-                                            privileged=True)[1]
+                                         +"/Tools/run_getdevinfo.py",
+                                         return_output=True,
+                                         privileged=True)[1]
 
         #Success! Now use ast to convert the returned string to a dictionary.
         try:
             return ast.literal_eval(output)
 
-        except Exception as e:
+        except (SyntaxError, ValueError, TypeError) as error:
             #If this fails for some reason, just return an empty dictionary.
-            #TODO Try again to find specific exceptions in next release.
+            #TODO Don't know if only these exceptions can occur. Fix that.
+            logger.error("GetDiskInformation().get_info(): Error: "+unicode(error))
             return {}
 
 #End Disk Information Handler thread.
@@ -198,7 +198,7 @@ class WxFixBoot(wx.App):
 
 #End Starter Class
 #Begin Initialization Panel.
-class InitialPanel(wx.Panel):
+class InitialPanel(wx.Panel): #pylint: disable=too-few-public-methods
     """
     This is the panel shown when the GUI is initialising and collecting data.
     """
@@ -359,7 +359,8 @@ class ProgressTextHandlerThread(threading.Thread):
                 break
 
             if half_second_counter == 20:
-                message = message.replace(".", "")+". This may take a few minutes. Please be patient."
+                message = message.replace(".", "") \
+                + ". This may take a few minutes. Please be patient."
                 wx.CallAfter(self.parent_window.set_progress_text, message)
                 time.sleep(0.5)
                 half_second_counter += 1
@@ -447,10 +448,11 @@ class InitThread(threading.Thread):
         if os.path.isdir("/tmp/wxfixboot/mountpoints"):
             #Check nothing is using it.
             if "/tmp/wxfixboot/mountpoints" in CoreTools.start_process("mount", return_output=True)[1]:
+                #FIXME Handle this automatically if possible.
                 CoreTools.emergency_exit("There are mounted filesystems in "
                                          + "/tmp/wxfixboot/mountpoints, WxFixBoot's temporary "
                                          + "mountpoints directory! Please unmount any filesystems "
-                                         + "there and try again.") #FIXME Handle this automatically if possible.
+                                         + "there and try again.")
 
             shutil.rmtree("/tmp/wxfixboot/mountpoints")
 
@@ -555,7 +557,7 @@ class InitThread(threading.Thread):
 
 #End Initalization Thread.
 #Begin Main Window
-class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
+class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instance-attributes
     def __init__(self):
         """Initialise MainWindow"""
         wx.Frame.__init__(self, None, title="WxFixBoot", size=(400, 300),
@@ -648,14 +650,19 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors
 
         #Adding Menu Items.
         self.menu_updates = helpmenu.Append(wx.ID_ANY, "&Check for Updates",
-                                             "Check for updates to WxFixBoot")
+                                            "Check for updates to WxFixBoot")
+
         self.menu_about = helpmenu.Append(wx.ID_ABOUT, "&About", "Information about this program")
         self.menu_exit = filemenu.Append(wx.ID_EXIT, "&Exit", "Terminate this program")
-        self.menu_systeminfo = viewmenu.Append(wx.ID_ANY, "&System Information", "Information about all detected disks, OSs, and Bootloaders")
+        self.menu_systeminfo = viewmenu.Append(wx.ID_ANY, "&System Information", "Information "
+                                               + "about all detected disks, OSs, and Bootloaders")
+
         self.menu_privacy_policy = viewmenu.Append(wx.ID_ANY, "&Privacy Policy",
                                                    "View WxFixBoot's privacy policy")
 
-        self.menu_bootloader_options = editmenu.Append(wx.ID_PREFERENCES, "&Bootloader Options", "All Bootloader Options used to modify/fix your system")
+        self.menu_bootloader_options = editmenu.Append(wx.ID_PREFERENCES, "&Bootloader Options",
+                                                       "All Bootloader Options used to modify/fix "
+                                                       + "your system")
 
         #Creating the menubar.
         menubar = wx.MenuBar()
@@ -1486,7 +1493,7 @@ class PrivPolWindow(wx.Frame): #pylint: disable=too-many-ancestors
 
 #End Privacy Policy Window.
 #Begin Bootloader Options Window.
-class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors
+class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instance-attributes
     def __init__(self):
         """Initialise bootloader options window"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow,
@@ -2271,8 +2278,14 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors
             self.on_install_new_bootloader_checkbox()
 
         else:
-            #Don't allow the user to attempt to switch back to GRUB-LEGACY, or replace it. TODO Can this be done a better way?
-            raise RuntimeError
+            #Don't allow the user to attempt to switch back to GRUB-LEGACY, or replace it.
+            dlg = wx.MessageDialog(self.panel, "The bootloader used at the time of backup was "
+                                   + "GRUB-LEGACY. WxFixBoot does not support reverting to "
+                                   + "GRUB-LEGACY, so this operation will now be canceled.",
+                                   "WxFixBoot - Information", wx.OK | wx.ICON_INFORMATION)
+
+            dlg.ShowModal()
+            dlg.Destroy()
 
         #Use kernel options used when the backup was taken.
         self.keep_kerneloptions_checkbox.SetValue(0)
@@ -2445,7 +2458,8 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors
             self.install_new_bootloader_checkbox.Disable()
 
     def on_new_bootloader_choice(self, event=None): #pylint: disable=unused-argument
-        """Warn user about LILO's/ELILO's rubbish multi OS support if needed""" #TODO Offer to disable?
+        """Warn user about LILO's/ELILO's rubbish multi OS support if needed"""
+        #Could offer to disable, but the LILO/ELILO functionality is deprecated at this point.
         if len(SYSTEM_INFO["ModifyableOSs"]) > 1 and self.new_bootloader_choice.GetStringSelection() in ("LILO", "ELILO"):
             dlg = wx.MessageDialog(self.panel, "Installing "
                                    + self.new_bootloader_choice.GetStringSelection()
@@ -2817,7 +2831,6 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
 
                         dlg.ShowModal()
                         dlg.Destroy()
-                        return False
 
         self.Hide()
 
