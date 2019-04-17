@@ -32,6 +32,9 @@ from __future__ import unicode_literals
 #Import modules
 import unittest
 import sys
+import threading
+import fcntl
+import time
 import subprocess
 import wx
 
@@ -72,10 +75,16 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
     def setUp(self):
         self.app = wx.App()
         self.frame = TestWindow()
+        self.fd = None
 
         Tools.coretools.STARTUP = True
 
+    def unlock_fd(self)
+        time.sleep(10)
+        self.fd.close()
+
     def tearDown(self):
+        del self.fd
         del Tools.coretools.STARTUP
 
         self.frame.Destroy()
@@ -86,15 +95,54 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
 
     @unittest.skipUnless(subprocess.Popen("which apt-get", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't apt-get.")
     def test_wait_until_packagemanager_free_1(self):
-        DialogTools.show_real_msg_dlg("Please ensure the package manager is not in use.")
+        print("Waiting until APT is free to make sure the code doesn't wait when executed.")
+        #Wait until APT is free.
+        unlocked = False
+
+        while not unlocked:
+            try:
+                self.fd = open("/var/lib/dpkg/lock", "w")
+                fcntl.lockf(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+            except (IOError, OSError):
+                #APT is still busy. Wait a second and try again.
+                time.sleep(1)
+
+            else:
+                #APT is free!
+                unlocked = True
+
+            finally:
+                self.fd.close()
+
         HelperBackendTools.wait_until_packagemanager_free(mount_point="",
                                                           package_manager="apt-get")
 
     @unittest.skipUnless(subprocess.Popen("which apt-get", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't apt-get.")
     def test_wait_until_packagemanager_free_2(self):
-        #Ask user to enable internet connection.
-        DialogTools.show_real_msg_dlg("Please open Synaptic or similar to lock the package "
-                                      + "manager, then click ok. After a few seconds, close it.")
+        print("Locking APT for a few seconds, and then releasing.")
+        print("Acquiring APT lock...")
+
+        #Wait until we can acquire the lock.
+        locked = False
+
+        while not locked:
+            try:
+                self.fd = open("/var/lib/dpkg/lock", "w")
+                fcntl.lockf(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+            except (IOError, OSError):
+                #APT is still busy. Wait a second and try again.
+                time.sleep(1)
+
+            else:
+                #APT is free!
+                locked = True
+
+        #In 10 seconds time, unlock APT.
+        print("Done. If this test now hangs for a long time, consider it to have failed")
+
+        threading.Thread(target=self.unlock_fd).start()
 
         HelperBackendTools.wait_until_packagemanager_free(mount_point="",
                                                           package_manager="apt-get")
