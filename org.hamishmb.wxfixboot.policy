@@ -9,7 +9,7 @@
   <icon_name>wxfixboot</icon_name>
 
   <action id="org.hamishmb.WxFixBoot.mount">
-    <description>WxFixBoot requires authentication to mount devices</description>
+    <description>WxFixBoot requires authentication to mount and unmount devices</description>
     <message>WxFixBoot requires authentication to mount devices.</message>
     <defaults>
       <allow_any>no</allow_any>
@@ -17,17 +17,6 @@
       <allow_active>auth_admin_keep</allow_active>
     </defaults>
     <annotate key="org.freedesktop.policykit.exec.path">/usr/share/wxfixboot/Tools/helpers/runasroot_linux_mount.sh</annotate>
-  </action>
-
-  <action id="org.hamishmb.WxFixBoot.unmount">
-    <description>WxFixBoot requires authentication to unmount devices</description>
-    <message>WxFixBoot requires authentication to unmount devices.</message>
-    <defaults>
-      <allow_any>no</allow_any>
-      <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep</allow_active>
-    </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/wxfixboot/Tools/helpers/runasroot_linux_umount.sh</annotate>
   </action>
 
   <action id="org.hamishmb.WxFixBoot.readfile">
