@@ -357,7 +357,7 @@ def get_oss():
                     root_filesystem_is_alias = False
 
             if partition == root_filesystem or root_filesystem_is_alias:
-                cmd = "cat /etc/os-release | grep 'PRETTY_NAME'"
+                cmd = "cat /etc/os-release"
 
                 apt_cmd = "which apt-get"
                 yum_cmd = "which yum"
@@ -367,7 +367,7 @@ def get_oss():
 
             else:
                 mount_point = "/tmp/wxfixboot/mountpoints"+partition
-                cmd = "cat "+mount_point+"/etc/os-release | grep 'PRETTY_NAME'"
+                cmd = "cat "+mount_point+"/etc/os-release"
 
                 apt_cmd = "chroot "+mount_point+" which apt-get"
                 yum_cmd = "chroot "+mount_point+" which yum"
@@ -385,8 +385,12 @@ def get_oss():
             #Look for Linux on this partition.
             retval, temp = CoreTools.start_process(cmd, return_output=True)
 
+            os_name = ""
+
             try:
-                os_name = temp.split("=")[1].replace('\"', '')
+                for line in temp.split("\n"):
+                    if "PRETTY_NAME" in line:
+                        os_name = line.split("=")[1].replace('\"', '')
 
             except IndexError:
                 os_name = ""
