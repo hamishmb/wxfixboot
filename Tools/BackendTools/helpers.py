@@ -388,40 +388,20 @@ def manage_uefi_files(_os, mount_point):
             logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/elilo.efi to "
                          + uefi_boot_dir+"/bootx64.efi! Attempting to continue anyway...")
 
-            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the "
-                                     + "new bootloader's UEFI files to the failsafe directory! "
-                                     + "This could potentially be a problem, but it's probably "
-                                     + "fine. Click okay to continue.")
-
         if CoreTools.start_process("cp -v "+source_dir+"/elilo.conf "+uefi_boot_dir+"/",
                                    show_output=False, privileged=True) != 0:
             logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/elilo.conf to "
                          + uefi_boot_dir+"/! Attempting to continue anyway...")
-
-            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the "
-                                     + "new bootloader's UEFI files to the failsafe directory! "
-                                     + "This could potentially be a problem, but it's probably "
-                                     + "fine. Click okay to continue.")
 
         if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "
                                    + uefi_boot_dir+"/", show_output=False, privileged=True) != 0:
             logger.error("manage_uefi_files(): Failed to copy elilomenu.msg to "+uefi_boot_dir
                          + "! Attempting to continue anyway...")
 
-            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the "
-                                     + "new bootloader's UEFI files to the failsafe directory! "
-                                     + "This could potentially be a problem, but it's probably "
-                                     + "fine. Click okay to continue.")
-
         if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "
                                    + source_dir+"/", show_output=False, privileged=True) != 0:
             logger.error("manage_uefi_files(): Failed to copy elilomenu.msg to "+source_dir
                          + "/! Attempting to continue anyway...")
-
-            DialogTools.show_msg_dlg(kind="error", message="WxFixBoot failed to copy one of the "
-                                     + "new bootloader's UEFI files to the failsafe directory! "
-                                     + "This could potentially be a problem, but it's probably "
-                                     + "fine. Click okay to continue.")
 
         #If we were previously using GRUB-EFI, remove its EFI files.
         if BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB-UEFI":
@@ -432,16 +412,12 @@ def manage_uefi_files(_os, mount_point):
 
     elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
         #We need to copy grubx64.efi to uefi_boot_dir.
-        logger.info("manage_uefi_files(): Copying grub*.efi to "+uefi_boot_dir+"...")
+        logger.info("manage_uefi_files(): Copying grubx64.efi to "+uefi_boot_dir+"...")
 
         if CoreTools.start_process("cp -v "+source_dir+"/grubx64.efi "+uefi_boot_dir+"/bootx64.efi",
                                    show_output=False, privileged=True) != 0:
             logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/grub*.efi to "
                          + uefi_boot_dir+"/bootx64.efi! Attempting to continue anyway...")
-
-            DialogTools.show_msg_dlg(kind="warning", message="WxFixBoot failed to copy the new "
-                                     + "bootloader's UEFI files to the failsafe directory! This "
-                                     + "is likely not a problem. Click okay to continue.")
 
         #If we were previously using ELILO, remove its EFI files.
         if BOOTLOADER_INFO[_os]["Bootloader"] == "ELILO":

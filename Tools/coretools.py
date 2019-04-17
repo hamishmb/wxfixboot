@@ -66,9 +66,6 @@ def get_helper(cmd):
         #No need to add a helper for this.
         return ""
 
-    else:
-        helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux.sh"
-
     return "pkexec "+helper
 
 def start_process(exec_cmds, show_output=True, return_output=False, testing=False, privileged=False):
