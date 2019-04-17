@@ -123,7 +123,8 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
                  + ", Output: \"\n\n"+'\n'.join(line_list)+"\"\n")
 
     #Handle these error codes if pkexec is being used.
-    if privileged and (ret_val in (126, 127)) and "pkexec" in exec_cmds:
+    #When commands are not found, we get the same codes - potential for infinite recursion here... XXX
+    if privileged and (ret_val in (126, 127)) and "pkexec" in exec_cmds and "chroot" not in exec_cmds:
         #Try again, auth dismissed / bad password 3 times.
         #A lot of recursion is allowed (~1000 times), so this shouldn't be a problem.
         logger.debug("start_process(): Bad auth or dismissed by user. Trying again...")

@@ -367,7 +367,7 @@ def get_oss():
 
             else:
                 mount_point = "/tmp/wxfixboot/mountpoints"+partition
-                cmd = "chroot "+mount_point+" cat /etc/os-release | grep 'PRETTY_NAME'"
+                cmd = "cat "+mount_point+"/etc/os-release | grep 'PRETTY_NAME'"
 
                 apt_cmd = "chroot "+mount_point+" which apt-get"
                 yum_cmd = "chroot "+mount_point+" which yum"
@@ -383,7 +383,7 @@ def get_oss():
                     continue
 
             #Look for Linux on this partition.
-            retval, temp = CoreTools.start_process(cmd, return_output=True, privileged=True)
+            retval, temp = CoreTools.start_process(cmd, return_output=True)
 
             try:
                 os_name = temp.split("=")[1].replace('\"', '')
