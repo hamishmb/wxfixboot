@@ -1140,8 +1140,19 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
                 dlg.ShowModal()
                 dlg.Destroy()
 
-            #Delete the log file, and don't bother handling any errors, because this is run as root. FIXME It won't be soon, and not smart anyway.
-            os.remove('/tmp/wxfixboot.log')
+            #Delete the log file, if we can.
+            try:
+                os.remove('/tmp/wxfixboot.log')
+
+            except OSError:
+                #Let the user know and exit.
+                dlg = wx.MessageDialog(self.panel, "Unable to clear the log file at "
+                                       + "/tmp/wxfixboot.log, please delete it manually "
+                                       + "or reboot your system to clear it.", 'WxFixBoot - Error',
+                                       wx.OK | wx.ICON_ERROR)
+
+                dlg.ShowModal()
+                dlg.Destroy()
 
             self.Destroy()
 
@@ -2906,7 +2917,14 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
         if SESSION_ENDING:
             #Delete the log file and exit ASAP.
             logging.shutdown()
-            os.remove("/tmp/wxfixboot.log")
+
+            try:
+                os.remove("/tmp/wxfixboot.log")
+
+            except OSError:
+                #This will be cleared on shutdown anyway, so never mind.
+                pass
+
             self.Destroy()
 
         dlg = wx.MessageDialog(self.panel, 'Are you sure you want to exit?',
@@ -2969,8 +2987,19 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
                 dlg.ShowModal()
                 dlg.Destroy()
 
-            #Delete the log file, and don't bother handling any errors, because this is run as root.
-            os.remove('/tmp/wxfixboot.log')
+            #Delete the log file, if we can.
+            try:
+                os.remove('/tmp/wxfixboot.log')
+
+            except OSError:
+                #Let the user know and exit.
+                dlg = wx.MessageDialog(self.panel, "Unable to clear the log file at "
+                                       + "/tmp/wxfixboot.log, please delete it manually "
+                                       + "or reboot your system to clear it.", 'WxFixBoot - Error',
+                                       wx.OK | wx.ICON_ERROR)
+
+                dlg.ShowModal()
+                dlg.Destroy()
 
             self.Destroy()
 
