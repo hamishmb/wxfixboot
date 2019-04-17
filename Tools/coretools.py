@@ -449,9 +449,18 @@ def mount_partition(partition, mount_point, options=""):
                          +", preventing the mounting of "+partition+"! Skipping mount attempt.")
             return False
 
-    #Create the dir if needed. TODO What if we don't have permission?
+    #Create the dir if needed.
     if os.path.isdir(mount_point) is False:
-        os.makedirs(mount_point)
+        try:
+            os.makedirs(mount_point)
+
+        except (OSError, PermissionError):
+            #Insufficient permissions, create the directory as root.
+            ret_val = start_process("mkdir -p "+mount_point, show_output=False, privileged=True)
+
+            #Return with an error code if this did not succeed.
+            if ret_val != 0:
+                return ret_val
 
     #Mount the device to the mount point.
     ret_val = start_process("mount "+options+" "+partition+" "+mount_point,
