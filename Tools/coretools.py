@@ -58,10 +58,7 @@ def get_helper(cmd):
     """Figure out which helper script to use."""
     helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux.sh"
 
-    if "run_getdevinfo.py" in cmd:
-        helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux_getdevinfo.sh"
-
-    elif "umount" in cmd or "kpartx -d" in cmd:
+    if "umount" in cmd or "kpartx -d" in cmd:
         helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux_umount.sh"
 
     elif ("mount" in cmd or "kpartx -l" in cmd or "kpartx -a" in cmd or "lsblk" in cmd
