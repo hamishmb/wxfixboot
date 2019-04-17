@@ -357,8 +357,7 @@ def get_oss():
                     root_filesystem_is_alias = False
 
             if partition == root_filesystem or root_filesystem_is_alias:
-                cmd = "python3 -c \"from __future__ import print_function; " \
-                      "import platform; print(' '.join(platform.linux_distribution()));\""
+                cmd = "cat /etc/os-release | grep 'PRETTY_NAME'"
 
                 apt_cmd = "which apt-get"
                 yum_cmd = "which yum"
@@ -368,8 +367,7 @@ def get_oss():
 
             else:
                 mount_point = "/tmp/wxfixboot/mountpoints"+partition
-                cmd = "chroot "+mount_point+" python3 -c \"from __future__ import print_function; "\
-                "import platform; print(' '.join(platform.linux_distribution()));\""
+                cmd = "chroot "+mount_point+" cat /etc/os-release | grep 'PRETTY_NAME'"
 
                 apt_cmd = "chroot "+mount_point+" which apt-get"
                 yum_cmd = "chroot "+mount_point+" which yum"
@@ -386,7 +384,12 @@ def get_oss():
 
             #Look for Linux on this partition.
             retval, temp = CoreTools.start_process(cmd, return_output=True, privileged=True)
-            os_name = temp.replace('\n', '')
+
+            try:
+                os_name = temp.split("=")[1].replace('\"', '')
+
+            except IndexError:
+                os_name = ""
 
             #Run the function to get the architechure.
             os_architecture = CoreStartupTools.determine_os_architecture(mount_point=mount_point)
