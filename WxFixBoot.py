@@ -1952,13 +1952,18 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
             self.install_new_bootloader_checkbox.Disable()
 
-        #Warn the user not to do bootloader operations if the current bootloader is an
+        #Don't allow the user to do bootloader operations if the current bootloader is an
         #EFI bootloader, but we couldn't find the OS's EFI partition.
         if (BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] in ("GRUB-UEFI", "ELILO")) and (OS_INFO[self.os_choice.GetStringSelection()]["EFIPartition"] == "Unknown"):
-            dlg = wx.MessageDialog(self.panel, "This OS has no UEFI partition, but you have a "
-                                   + "UEFI bootloader installed! Please don't do any bootloader "
-                                   + "operations on this operating system, or you may encounter "
-                                   + "errors.", "WxFixBoot - Warning",
+            self.reinstall_bootloader_checkbox.Disable()
+            self.update_bootloader_checkbox.Disable()
+            self.install_new_bootloader_checkbox.Disable()
+            self.backup_bootloader_checkbox.Disable()
+            self.restore_bootloader_checkbox.Disable()
+
+            dlg = wx.MessageDialog(self.panel, "This OS has no detected UEFI partition, but you "
+                                   + "have a UEFI bootloader installed! Bootloader operations "
+                                   + "have been disabled for this OS", "WxFixBoot - Error",
                                    style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
 
             dlg.ShowModal()
