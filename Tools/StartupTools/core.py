@@ -493,8 +493,8 @@ def get_os_name_with_lsb(partition, mount_point, is_current_os):
                                              return_output=True, privileged=True)
 
     if retval != 0 or output == "":
-        logger.error("get_os_name_with_lsb(): Couldn't get OS name! Returning 'Unknown'...")
-        return "Unknown"
+        logger.error("get_os_name_with_lsb(): Couldn't get OS name! Returning None...")
+        return None
 
     #otherwise...
     logger.info("get_os_name_with_lsb(): Success. OS name is "+output+". Returning it...")
