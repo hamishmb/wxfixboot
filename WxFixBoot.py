@@ -453,13 +453,19 @@ class InitThread(threading.Thread):
 
         #Remove the temporary directory if it exists.
         if os.path.isdir("/tmp/wxfixboot/mountpoints"):
-            #Check nothing is using it.
-            if "/tmp/wxfixboot/mountpoints" in CoreTools.start_process("mount", return_output=True)[1]:
-                #FIXME Handle this automatically if possible.
-                CoreTools.emergency_exit("There are mounted filesystems in "
-                                         + "/tmp/wxfixboot/mountpoints, WxFixBoot's temporary "
-                                         + "mountpoints directory! Please unmount any filesystems "
-                                         + "there and try again.")
+            #Check nothing is using it first.
+            for line in CoreTools.start_process("mount", return_output=True)[1].split("\n"):
+                if "/tmp/wxfixboot/mountpoints" in line:
+                    #Unmount this filesystem if possible.
+                    fs = line.split(" on ")[0]
+
+                    if CoreTools.unmount(fs) != 0:
+                        #If it can't be mounted, do an emergency exit.
+                        CoreTools.emergency_exit("There are mounted filesystems in "
+                                                 + "/tmp/wxfixboot/mountpoints, WxFixBoot's "
+                                                 + "temporary mountpoints directory! Please "
+                                                 + "unmount any filesystems there and try "
+                                                 + "again.")
 
             shutil.rmtree("/tmp/wxfixboot/mountpoints")
 
