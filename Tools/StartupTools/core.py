@@ -159,30 +159,42 @@ def has_windows_xp(mount_point):
 def has_windows_vista(mount_point):
     """Try to find a Windows Vista installation. Return True if found, False if not."""
     #Read /Windows/System32/license.rtf and search for "VISTA".
-    with open(mount_point+"/Windows/System32/license.rtf") as file:
-        for line in file:
-            if "VISTA" in line.upper():
-                return True
+    try:
+        with open(mount_point+"/Windows/System32/license.rtf") as file:
+            for line in file:
+                if "VISTA" in line.upper():
+                    return True
+
+    except (IOError, OSError):
+        return False
 
     return False
 
 def has_windows_7(mount_point):
     """Try to find a Windows 7 installation. Return True if found, False if not."""
     #Read /Windows/System32/license.rtf and search for "WINDOWS 7".
-    with open(mount_point+"/Windows/System32/license.rtf") as file:
-        for line in file:
-            if "WINDOWS 7" in line.upper():
-                return True
+    try:
+        with open(mount_point+"/Windows/System32/license.rtf") as file:
+            for line in file:
+                if "WINDOWS 7" in line.upper():
+                    return True
+
+    except (IOError, OSError):
+        return False
 
     return False
 
 def has_windows_8(mount_point):
     """Try to find a Windows 8/8.1 installation. Return True if found, False if not."""
     #Read /Windows/System32/license.rtf and search for "WINDOWS 8".
-    with open(mount_point+"/Windows/System32/license.rtf") as file:
-        for line in file:
-            if "WINDOWS 8" in line.upper():
-                return True
+    try:
+        with open(mount_point+"/Windows/System32/license.rtf") as file:
+            for line in file:
+                if "WINDOWS 8" in line.upper():
+                    return True
+
+    except (IOError, OSError):
+        return False
 
     return False
 
@@ -190,10 +202,14 @@ def has_windows_10(mount_point):
     """Try to find a Windows 10 installation. Return True if found, False if not."""
     #Read /Windows/System32/license.rtf and search for "BINDING ARBITRATION CLAUSE".
     #(Windows version not found here, but this note is at the start of the license)
-    with open(mount_point+"/Windows/System32/license.rtf") as file:
-        for line in file:
-            if "BINDING ARBITRATION CLAUSE" in line.upper():
-                return True
+    try:
+        with open(mount_point+"/Windows/System32/license.rtf") as file:
+            for line in file:
+                if "BINDING ARBITRATION CLAUSE" in line.upper():
+                    return True
+
+    except (IOError, OSError):
+        return False
 
     return False
 
