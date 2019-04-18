@@ -38,6 +38,7 @@ from __future__ import unicode_literals
 #Import modules.
 import time
 import sys
+import threading
 import logging
 import wx
 
@@ -53,6 +54,26 @@ logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
 #Global declarations.
 DLGCLOSED = False
 DLGRESULT = False
+
+def is_gui_thread():
+    """
+    Used to determine if the current thread is the GUI thread.
+    Performing this check enables us to use theese convenience
+    functions in the GUI thread as well.
+
+    Args:
+        None
+
+    Returns:
+        boolean - Whether or not this is the GUI thread.
+    """
+    #New version for Python 3 (more reliable).
+    if sys.version_info[0] == 3:
+        return threading.current_thread() is threading.main_thread()
+
+    #Legacy support for Python 2.
+    else:
+        return isinstance(threading.current_thread(), threading._MainThread)
 
 def show_thread_msg_dlg(msg, kind="info"):
     """Shows a message dialog from a thread upon instruction"""
@@ -85,6 +106,10 @@ def show_msg_dlg(message, kind="info"):
     kind is one of 'info', 'warning' or 'error'.
     message is whatever you want the dialog to say.
     """
+
+    if is_gui_thread():
+        show_thread_msg_dlg(message, kind)
+        return
 
     global DLGCLOSED
     DLGCLOSED = None
@@ -136,6 +161,10 @@ def show_yes_no_dlg(message, title="WxFixBoot - Question", buttons=(None, None))
     global DLGRESULT
     DLGRESULT = None
 
+    if is_gui_thread():
+        show_thread_yes_no_dlg(message, title, buttons)
+        return DLGRESULT
+
     wx.CallAfter(show_thread_yes_no_dlg, msg=message, title=title, buttons=buttons)
 
     #Trap the thread until the user responds.
@@ -177,6 +206,10 @@ def show_choice_dlg(message, title, choices, allow_cancel=False):
     """
 
     global DLGRESULT
+
+    if is_gui_thread():
+        show_thread_choice_dlg(message, choices, title)
+        return DLGRESULT
 
     while True:
         DLGRESULT = None
@@ -226,6 +259,10 @@ def show_text_entry_dlg(message, title="WxFixBoot - Text Entry"):
     """
 
     global DLGRESULT
+
+    if is_gui_thread():
+        show_thread_text_entry_dlg(message, title)
+        return DLGRESULT
 
     while True:
         DLGRESULT = None
@@ -277,6 +314,10 @@ def show_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All Files/De
     """
 
     global DLGRESULT
+
+    if is_gui_thread():
+        show_thread_save_file_dlg(title, wildcard)
+        return DLGRESULT
 
     while True:
         DLGRESULT = None

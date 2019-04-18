@@ -322,15 +322,9 @@ class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
         logger.info("Closing Initial Window and Starting Main Window...")
 
         #Show the user some important information
-        dlg = wx.MessageDialog(self.panel, "Please make sure you have a working "
-                               + "internet connection before performing any "
-                               + "bootloader operations. Thank you.",
-                               "WxFixBoot - Information",
-                               style=wx.OK | wx.ICON_INFORMATION,
-                               pos=wx.DefaultPosition)
-
-        dlg.ShowModal()
-        dlg.Destroy()
+        DialogTools.show_msg_dlg(kind="info", message="Please make sure you have a working "
+                                 + "internet connection before performing any "
+                                 + "bootloader operations. Thank you.")
 
         main_gui = MainWindow()
         APP.SetTopWindow(main_gui)
@@ -804,11 +798,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
 
             #Also send a message dialog.
             if not starting_up:
-                wx.MessageDialog(self.panel, "Couldn't check for updates!\n"
-                                 + "Are you connected to the internet?",
-                                 "WxFixBoot - Update Check Failure",
-                                 wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP,
-                                 pos=wx.DefaultPosition).ShowModal()
+                DialogTools.show_msg_dlg(kind="error", message="Couldn't check for updates!\n"
+                                         + "Are you connected to the internet?")
             return
 
         #Process the update info.
@@ -909,9 +900,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
         if not starting_up or (update_recommended and not PARTED_MAGIC):
             logger.debug("MainWindow().check_for_updates(): Showing the user the update info...")
 
-            wx.MessageDialog(self.panel, infotext, "WxFixBoot - Update Status",
-                             wx.OK | wx.ICON_INFORMATION | wx.STAY_ON_TOP,
-                             pos=wx.DefaultPosition).ShowModal()
+            DialogTools.show_msg_dlg(kind="info", message=infotext)
 
     def on_about(self, event=None): #pylint: disable=unused-argument
         """Shows the About Box"""
@@ -1084,90 +1073,69 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
     def on_exit(self, event=None): #pylint: disable=unused-argument
         """Shut down."""
         logger.info("MainWindow().on_exit(): Double-checking the exit attempt with the user...")
-        dlg = wx.MessageDialog(self.panel, 'Are you sure you want to exit?',
-                               'WxFixBoot - Question!', wx.YES_NO | wx.ICON_QUESTION)
 
-        answer = dlg.ShowModal()
-        dlg.Destroy()
+        if not DialogTools.show_yes_no_dlg("Are you sure you want to exit?",
+                                           "WxFixBoot - Question!"):
+            return
 
-        if answer == wx.ID_YES:
-            #Run the exit sequence
-            logger.info("MainWindow().on_exit(): Exiting...")
+        #Run the exit sequence
+        logger.info("MainWindow().on_exit(): Exiting...")
 
-            #Shutdown the logger.
-            logging.shutdown()
+        #Shutdown the logger.
+        logging.shutdown()
 
-            #Prompt user to save the log file.
-            dlg = wx.MessageDialog(self.panel, "Do you want to keep WxFixBoot's log file? "
-                                   + "For privacy reasons, WxFixBoot will delete its log file "
-                                   + "when closing. If you want to save it, which is helpful "
-                                   + "for debugging if something went wrong, click yes, and "
-                                   + "otherwise click no.", "WxFixBoot - Question",
-                                   style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
+        #Prompt user to save the log file.
+        yes = DialogTools.show_yes_no_dlg("Do you want to keep WxFixBoot's log file? "
+                                          + "For privacy reasons, WxFixBoot will delete its log "
+                                          + "file when closing. If you want to save it, which "
+                                          + "is helpful for debugging if something went wrong, "
+                                          + "click yes, and otherwise click no.",
+                                          "WxFixBoot - Question")
 
-            answer = dlg.ShowModal()
-            dlg.Destroy()
+        if yes:
+            success = False
 
-            if answer == wx.ID_YES:
-                success = False
+            while not success:
+                #Ask the user where to save the file.
+                #Use the old dialog for this, so we can have the default save directory.
+                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home",
+                                    wildcard="Log Files (*.log)|*.log",
+                                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
-                while not success:
-                    #Ask the user where to save the file.
-                    #Ask the user where to save it.
-                    dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home",
-                                        wildcard="Log Files (*.log)|*.log",
-                                        style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
-
-                    answer = dlg.ShowModal()
-                    _file = dlg.GetPath()
-                    dlg.Destroy()
-
-                    if answer != wx.ID_OK:
-                        break
-
-                    #Copy it to the specified path.
-                    if CoreTools.start_process("cp /tmp/wxfixboot.log "+_file) == 0:
-                        success = True
-
-                        dlg = wx.MessageDialog(self.panel, 'Done! WxFixBoot will now exit.',
-                                               'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
-                        dlg.ShowModal()
-                        dlg.Destroy()
-
-
-                    else:
-                        dlg = wx.MessageDialog(self.panel, "WxFixBoot does not have "
-                                               + "permission to write to that file or directory! "
-                                               + "Please select a new file and try again.",
-                                               "WxFixBoot - Error", wx.OK | wx.ICON_INFORMATION)
-
-                        dlg.ShowModal()
-                        dlg.Destroy()
-
-                #If the user canceled it, never mind.
-                if not success:
-                    dlg = wx.MessageDialog(self.panel, "Okay, WxFixBoot will now exit without "
-                                           + "saving the log file.", 'WxFixBoot - Information',
-                                           wx.OK | wx.ICON_INFORMATION)
-
-                    dlg.ShowModal()
-                    dlg.Destroy()
-
-            #Delete the log file, if we can.
-            try:
-                os.remove('/tmp/wxfixboot.log')
-
-            except OSError:
-                #Let the user know and exit.
-                dlg = wx.MessageDialog(self.panel, "Unable to clear the log file at "
-                                       + "/tmp/wxfixboot.log, please delete it manually "
-                                       + "or reboot your system to clear it.", 'WxFixBoot - Error',
-                                       wx.OK | wx.ICON_ERROR)
-
-                dlg.ShowModal()
+                answer = dlg.ShowModal()
+                _file = dlg.GetPath()
                 dlg.Destroy()
 
-            self.Destroy()
+                if answer != wx.ID_OK:
+                    break
+
+                #Copy it to the specified path.
+                if CoreTools.start_process("cp /tmp/wxfixboot.log "+_file) == 0:
+                    success = True
+
+                    DialogTools.show_msg_dlg(kind="info", message="Done! WxFixBoot will now exit.")
+
+                else:
+                    DialogTools.show_msg_dlg(kind="error", message="WxFixBoot does not have "
+                                             + "permission to write to that file or directory! "
+                                             + "Please select a new file and try again.")
+
+            #If the user canceled it, never mind.
+            if not success:
+                DialogTools.show_msg_dlg(kind="info", message="Okay, WxFixBoot will now exit without "
+                                         + "saving the log file.")
+
+        #Delete the log file, if we can.
+        try:
+            os.remove('/tmp/wxfixboot.log')
+
+        except OSError:
+            #Let the user know and exit.
+            DialogTools.show_msg_dlg(kind="error", message="Unable to clear the log file at "
+                                     + "/tmp/wxfixboot.log, please delete it manually "
+                                     + "or reboot your system to clear it.")
+
+        self.Destroy()
 
 #End Main window
 #Begin System Info Page 1.
@@ -1561,13 +1529,10 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
     def display_timeoutinfo_message(self):
         """Displays an informational message to the user if they only have 1 detected OS."""
-        dlg = wx.MessageDialog(self.panel, "WxFixBoot only detected one Operating System on "
-                               + "your computer. You can hide your boot menu entirely, if you "
-                               + "wish, by selecting a bootloader timeout of 0 seconds.",
-                               "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION)
-
-        dlg.ShowModal()
-        dlg.Destroy()
+        DialogTools.show_msg_dlg(kind="info", message="WxFixBoot only detected one Operating "
+                                 + "System on your computer. You can hide your boot menu "
+                                 + "entirely, if you wish, by selecting a bootloader timeout of 0 "
+                                 + " seconds.")
 
     def create_text(self):
         """Create the text"""
@@ -1961,13 +1926,8 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             if "ELILO" in choices:
                 choices.remove("ELILO")
 
-            dlg = wx.MessageDialog(self.panel, "This OS has no UEFI partition, so you will be "
-                                   + "unable to select a UEFI bootloader to install.",
-                                   "WxFixBoot - Information", style=wx.OK | wx.ICON_INFORMATION,
-                                   pos=wx.DefaultPosition)
-
-            dlg.ShowModal()
-            dlg.Destroy()
+            DialogTools.show_msg_dlg(kind="info", message="This OS has no UEFI partition, so you "
+                                     + "will be unable to select a UEFI bootloader to install.")
 
         #Remove the current bootloader from the choices (if it's in there).
         if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] in choices:
@@ -1998,22 +1958,17 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             self.backup_bootloader_checkbox.Disable()
             self.restore_bootloader_checkbox.Disable()
 
-            dlg = wx.MessageDialog(self.panel, "This OS has no detected UEFI partition, but you "
-                                   + "have a UEFI bootloader installed! Bootloader operations "
-                                   + "have been disabled for this OS", "WxFixBoot - Error",
-                                   style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
-
-            dlg.ShowModal()
-            dlg.Destroy()
+            DialogTools.show_msg_dlg(kind="warning", message="This OS has no detected UEFI "
+                                     + "partition, but you have a UEFI bootloader installed! "
+                                     + "Bootloader operations have been disabled for this OS")
 
         #Warn the user if we don't know what the bootloader is.
         if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "Unknown":
-            dlg = wx.MessageDialog(self.panel, "Couldn't determine the bootloader for this OS! "
-                                   + "It may be not fully installed or removed. If you want to "
-                                   + "fix this, please open the advanced options pulldown and "
-                                   + "replace the bootloader with one of the selections there.", "WxFixBoot - Warning", style=wx.OK | wx.ICON_WARNING, pos=wx.DefaultPosition)
-            dlg.ShowModal()
-            dlg.Destroy()
+            DialogTools.show_msg_dlg(kind="warning", message="Couldn't determine the bootloader "
+                                     + "for this OS! It may be not fully installed or removed. "
+                                     + "If you want to fix this, please open the advanced options "
+                                     + "pulldown and replace the bootloader with one of the "
+                                     + "selections there.")
 
         #Make sure the window displays properly.
         self.main_sizer.SetSizeHints(self)
@@ -2188,12 +2143,8 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                 logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): Finished saving config to "+_file+"...")
 
                 #Let the user know we were successful.
-                msg_dlg = wx.MessageDialog(self.panel, "Finished backing up config to "+_file+"!",
-                                           "Config Backup Successful", wx.OK | wx.ICON_INFORMATION,
-                                           pos=wx.DefaultPosition)
-
-                msg_dlg.ShowModal()
-                msg_dlg.Destroy()
+                DialogTools.show_msg_dlg(kind="info", message="Finished backing up config to "
+                                         +_file+"!")
 
                 #Reset the choicebox and checkbox.
                 self.backup_bootloader_choice.SetStringSelection("-- Please Select --")
@@ -2231,13 +2182,10 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                     logger.error("BootloaderOptionsWindow().on_restore_bootloader_choice(): Error when loading config! Warning user and reloading previous settings...")
 
                     #Let the user know about the error.
-                    msg_dlg = wx.MessageDialog(self.panel,
-                                               "Couldn't load config from "+_file+"! Are you sure you selected the right file? WxFixBoot will revert back to the previous settings now.",
-                                               "Config Load Failed!", wx.OK | wx.ICON_ERROR,
-                                               pos=wx.DefaultPosition)
-
-                    msg_dlg.ShowModal()
-                    msg_dlg.Destroy()
+                    DialogTools.show_msg_dlg(kind="error", message="Couldn't load config from "
+                                             +_file+"! Are you sure you selected the right file? "
+                                             + "WxFixBoot will revert back to the previous "
+                                             + "settings now.")
 
                     #Reload previous settings.
                     self.on_oschoice_change()
@@ -2246,14 +2194,10 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                     logger.debug("BootloaderOptionsWindow().on_restore_bootloader_choice(): Successfully loaded config from "+_file+"...")
 
                     #Let the user know we were successful.
-                    msg_dlg = wx.MessageDialog(self.panel,
-                                               "The bootloader configuration was successfully loaded. Please review the changes in this window, and then continue if you are satisfied.",
-                                               "WxFixBoot - Information",
-                                               style=wx.OK | wx.ICON_INFORMATION,
-                                               pos=wx.DefaultPosition)
-
-                    msg_dlg.ShowModal()
-                    msg_dlg.Destroy()
+                    DialogTools.show_msg_dlg(kind="info", message="The bootloader configuration "
+                                             + "was successfully loaded. Please review the "
+                                             + "changes in this window, and then continue if "
+                                             + "you are satisfied.")
 
                     #Reset the choicebox and checkbox.
                     self.restore_bootloader_choice.SetStringSelection("-- Please Select --")
@@ -2271,26 +2215,19 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
         #Check this is the right config for this OS.
         if config["OSName"] != _os:
-            dlg = wx.MessageDialog(self.panel, "This config file is config for "+config["OSName"]
-                                   + ", not "+_os+", the current OS. Please change the selected "
-                                   + "OS, or select the correct config file for this OS.",
-                                   "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR,
-                                   pos=wx.DefaultPosition)
-
-            dlg.ShowModal()
-            dlg.Destroy()
+            DialogTools.show_msg_dlg(kind="error", message="This config file is config for "
+                                     + config["OSName"]
+                                     + ", not "+_os+", the current OS. Please change the selected "
+                                     + "OS, or select the correct config file for this OS.")
             return True
 
         #Check the bootloader in the config file can be installed in this OS.
-        if self.new_bootloader_choice.FindString(config["Bootloader"]) == -1 and config["Bootloader"] != BOOTLOADER_INFO[_os]["Bootloader"]:
-            dlg = wx.MessageDialog(self.panel, "The bootloader installed at the time the config "
-                                   + "was backed up cannot be installed in this OS. Most likely, "
-                                   + "the config file has been tampered with or has corrupted.",
-                                   "WxFixBoot - Error", style=wx.OK | wx.ICON_ERROR,
-                                   pos=wx.DefaultPosition)
-
-            dlg.ShowModal()
-            dlg.Destroy()
+        if self.new_bootloader_choice.FindString(config["Bootloader"]) == -1 \
+            and config["Bootloader"] != BOOTLOADER_INFO[_os]["Bootloader"]:
+            DialogTools.show_msg_dlg(kind="error", message="The bootloader installed at the time "
+                                     + "the config  was backed up cannot be installed in this OS. "
+                                     + "Most likely, the config file has been tampered with or "
+                                     + "has corrupted.")
             return True
 
         #Disable the restore config checkbox.
@@ -2314,13 +2251,10 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
         else:
             #Don't allow the user to attempt to switch back to GRUB-LEGACY, or replace it.
-            dlg = wx.MessageDialog(self.panel, "The bootloader used at the time of backup was "
-                                   + "GRUB-LEGACY. WxFixBoot does not support reverting to "
-                                   + "GRUB-LEGACY, so this operation will now be canceled.",
-                                   "WxFixBoot - Information", wx.OK | wx.ICON_INFORMATION)
-
-            dlg.ShowModal()
-            dlg.Destroy()
+            DialogTools.show_msg_dlg(kind="info", message="The bootloader used at the time of "
+                                     + "backup was GRUB-LEGACY. WxFixBoot does not support "
+                                     + "reverting to GRUB-LEGACY, so this operation will now "
+                                     + "be canceled.")
 
         #Use kernel options used when the backup was taken.
         self.keep_kerneloptions_checkbox.SetValue(0)
@@ -2337,13 +2271,10 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             self.defaultos_choice.SetStringSelection(config["DefaultOS"])
 
         else:
-            dlg = wx.MessageDialog(self.panel, "This default OS used when this config was backed "
-                                   + "up was not detected by WxFixBoot. Instead, "+_os+" will be "
-                                   + "used, or you can make a custom selection.",
-                                   "WxFixBoot - Information", wx.OK | wx.ICON_INFORMATION)
+            DialogTools.show_msg_dlg(kind="info", message="The default OS used when this config "
+                                     + "was backed up was not detected by WxFixBoot. Instead, "
+                                     + _os+" will be used, or you can make a custom selection.")
 
-            dlg.ShowModal()
-            dlg.Destroy()
             self.defaultos_choice.SetStringSelection(_os)
 
         logger.debug("BootloaderOptionsWindow().setup_for_restoring_bootloader(): Finished loading config from file...")
@@ -2496,15 +2427,11 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         """Warn user about issues chaging bootloaders if needed"""
         #Could offer to disable, but the LILO/ELILO functionality is deprecated at this point.
         if len(SYSTEM_INFO["ModifyableOSs"]) > 1 and self.new_bootloader_choice.GetStringSelection() in ("LILO", "ELILO"):
-            dlg = wx.MessageDialog(self.panel, "Installing "
-                                   + self.new_bootloader_choice.GetStringSelection()
-                                   + " is discouraged because you have more than one Linux OS "
-                                   + "installed, and this bootloader has poor support for booting "
-                                   + "multiple Linux OSs. Click okay to continue.",
-                                   "WxFixBoot - Warning", wx.OK | wx.ICON_WARNING)
-
-            dlg.ShowModal()
-            dlg.Destroy()
+            DialogTools.show_msg_dlg(kind="warning", message="Installing "
+                                     + self.new_bootloader_choice.GetStringSelection()
+                                     + " is discouraged because you have more than one Linux OS "
+                                     + "installed, and this bootloader has poor support for "
+                                     + "booting multiple Linux OSs. Click okay to continue.")
 
         #Warning for Fedora systems about switching between GRUB2 and GRUB-UEFI.
         #This applies for switching in either direction.
@@ -2514,33 +2441,30 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             (BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB2" and \
              self.new_bootloader_choice.GetStringSelection() == "GRUB-UEFI")):
 
-            dlg = wx.MessageDialog(self.panel, "Switching between "
-                                   + BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"]
-                                   + " and " + self.new_bootloader_choice.GetStringSelection()
-                                   + " is discouraged on Fedora, as users occaisionally encounter "
-                                   + "problems.\n\nParticularly, if you are running Fedora 30 or later, "
-                                   + "don't do this because it has a high chance of making your "
-                                   + "system unbootable. This warning also applies to derivatives "
-                                   + "of Fedora.",
-                                   "WxFixBoot - Warning", wx.OK | wx.ICON_WARNING)
-
-            dlg.ShowModal()
-            dlg.Destroy()
+            DialogTools.show_msg_dlg(kind="warning", message="Switching between "
+                                     + BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"]
+                                     + " and " + self.new_bootloader_choice.GetStringSelection()
+                                     + " is discouraged on Fedora, as users occasionally "
+                                     + "encounter problems.\n\nParticularly, if you are running "
+                                     + "Fedora 30 or later, don't do this because it has a high "
+                                     + "chance of making your system unbootable. This warning "
+                                     + "also applies to derivatives of Fedora.")
 
     def save_settings(self, event=None, _os=None): #pylint: disable=unused-argument
         """Save all settings for this OS from the checkboxes and choice boxes"""
         logger.debug("BootloaderOptionsWindow().save_settings(): Saving settings for "+_os+"...")
 
         #Check that the settings are valid.
-        if self.install_new_bootloader_checkbox.IsChecked() and self.new_bootloader_choice.GetStringSelection() == "-- Please Select --":
-            logger.warning("BootloaderOptionsWindow().save_settings(): Aborting saving settings because bootloader is being replaced, but its replacement is unspecified...")
-            dlg = wx.MessageDialog(self.panel, "If you're going to replace "
-                                   + BOOTLOADER_INFO[_os]["Bootloader"]+", you must select a new "
-                                   + "bootloader to replace it with!", "WxFixBoot - Warning",
-                                   wx.OK | wx.ICON_WARNING)
+        if self.install_new_bootloader_checkbox.IsChecked() and \
+            self.new_bootloader_choice.GetStringSelection() == "-- Please Select --":
 
-            dlg.ShowModal()
-            dlg.Destroy()
+            logger.warning("BootloaderOptionsWindow().save_settings(): Aborting saving settings "
+                           + "because bootloader is being replaced, but its replacement is "
+                           + "unspecified...")
+
+            DialogTools.show_msg_dlg(kind="error", message="If you're going to replace "
+                                     + BOOTLOADER_INFO[_os]["Bootloader"]+", you must select a new "
+                                     + "bootloader to replace it with!")
             raise RuntimeError
 
         BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] = self.reinstall_bootloader_checkbox.GetValue()
@@ -2868,25 +2792,30 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
         logger.debug("ProgressWindow().restart_wxfixboot(): Restarting WxFixBoot...")
         logger.debug("ProgressWindow().restart_wxfixboot(): Checking no filesystems are mounted in the temporary directory, and unmounting them if they are...")
 
+        #TODO Handle this the same way as during startup incl emergency exit.
+        #TODO Check what happens if this fails.
         if os.path.exists("/tmp/wxfixboot/mountpoints/dev"):
             for _dir in os.listdir("/tmp/wxfixboot/mountpoints/dev"):
                 #Call CoreTools.unmount() on each directory to make sure that nothing is mounted
                 #there after this point.
                 if CoreTools.unmount("/tmp/wxfixboot/mountpoints/dev/"+_dir) != 0:
                     #If we errored try removing chroot and trying again.
-                    logger.warning("ProgressWindow().restart_wxfixboot(): Failed to unmount /tmp/wxfixboot/mountpoints/dev/"+_dir+"! Trying to remove chroot first then trying again...")
+                    logger.warning("ProgressWindow().restart_wxfixboot(): Failed to unmount "
+                                   + "/tmp/wxfixboot/mountpoints/dev/"+_dir+"! Trying to remove "
+                                   + "chroot first then trying again...")
+
                     CoreTools.teardown_chroot("/tmp/wxfixboot/mountpoints/dev/"+_dir)
 
                     if CoreTools.unmount("/tmp/wxfixboot/mountpoints/dev/"+_dir) != 0:
-                        logger.error("ProgressWindow().restart_wxfixboot(): Couldn't unmount /tmp/wxfixboot/mountpoints/dev/"+_dir+"! Giving up, warning user, and aborting restart...")
-                        dlg = wx.MessageDialog(self.panel, "Couldn't restart WxFixBoot because "
-                                               + "there are mounted filesystems in the temporary "
-                                               + "directory! Please try restarting your system "
-                                               + "and then try again.", "WxFixBoot - Error!",
-                                               wx.OK | wx.ICON_ERROR)
+                        logger.error("ProgressWindow().restart_wxfixboot(): Couldn't unmount "
+                                     + "/tmp/wxfixboot/mountpoints/dev/"+_dir+"! Giving up, "
+                                     + "warning user, and aborting restart...")
 
-                        dlg.ShowModal()
-                        dlg.Destroy()
+                        DialogTools.show_msg_dlg(kind="error", message="Couldn't restart "
+                                                 + "WxFixBoot because there are mounted "
+                                                 + "filesystems in the temporary directory! "
+                                                 + "Please try restarting your system "
+                                                 + "and then try again.")
 
         self.Hide()
 
@@ -2911,15 +2840,14 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
             #Veto the shutdown and warn the user.
             event.Veto(True)
             logger.info("ProgressWindow().session_ending(): Vetoed system shutdown / logoff...")
-            dlg = wx.MessageDialog(self.panel, "You can't shutdown or logoff while recovering "
-                                   + "data!", "WxFixBoot - Error!", wx.OK | wx.ICON_ERROR)
-
-            dlg.ShowModal()
-            dlg.Destroy()
+            DialogTools.show_msg_dlg(kind="error", message="You can't shutdown or log off "
+                                     + "while performing bootloader operations!")
 
         else:
             #Set SESSION_ENDING to True, call on_exit.
-            logger.critical("ProgressWindow().session_ending(): Cannot veto system shutdown / logoff! Cleaning up...")
+            logger.critical("ProgressWindow().session_ending(): Cannot veto system shutdown "
+                            + "/ logoff! Cleaning up...")
+
             global SESSION_ENDING
             SESSION_ENDING = True
             self.on_exit()
@@ -2940,90 +2868,71 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
 
             self.Destroy()
 
-        dlg = wx.MessageDialog(self.panel, 'Are you sure you want to exit?',
-                               'WxFixBoot - Question!', wx.YES_NO | wx.ICON_QUESTION)
+        if not DialogTools.show_yes_no_dlg("Are you sure you want to exit?",
+                                           "WxFixBoot - Question!"):
+            return
 
-        answer = dlg.ShowModal()
-        dlg.Destroy()
+        #Run the exit sequence
+        logger.info("ProgressWindow().on_exit(): Exiting...")
 
-        if answer == wx.ID_YES:
-            #Run the exit sequence
-            logger.info("ProgressWindow().on_exit(): Exiting...")
+        #Shutdown the logger.
+        logging.shutdown()
 
-            #Shutdown the logger.
-            logging.shutdown()
+        #Prompt user to save the log file.
+        yes = DialogTools.show_yes_no_dlg("Do you want to keep WxFixBoot's log file? "
+                                          + "For privacy reasons, WxFixBoot will delete its log "
+                                          + "file when closing. If you want to save it, which "
+                                          + "is helpful for debugging if something went wrong, "
+                                          + "click yes, and otherwise click no.",
+                                          "WxFixBoot - Question")
 
-                        #Prompt user to save the log file.
-            dlg = wx.MessageDialog(self.panel, "Do you want to keep WxFixBoot's log file? "
-                                   + "For privacy reasons, WxFixBoot will delete its log file "
-                                   + "when closing. If you want to save it, which is helpful "
-                                   + "for debugging if something went wrong, click yes, and "
-                                   + "otherwise click no.", "WxFixBoot - Question",
-                                   style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
+        if yes:
+            success = False
 
-            answer = dlg.ShowModal()
-            dlg.Destroy()
+            while not success:
+                #Ask the user where to save the file.
+                #Use the old dialog here, so we keep the default saving directory.
+                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home",
+                                    wildcard="Log Files (*.log)|*.log",
+                                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
-            if answer == wx.ID_YES:
-                success = False
-
-                while not success:
-                    #Ask the user where to save the file.
-                    #Ask the user where to save it.
-                    dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home",
-                                        wildcard="Log Files (*.log)|*.log",
-                                        style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
-
-                    answer = dlg.ShowModal()
-                    _file = dlg.GetPath()
-                    dlg.Destroy()
-
-                    if answer != wx.ID_OK:
-                        break
-
-                    #Copy it to the specified path.
-                    if CoreTools.start_process("cp /tmp/wxfixboot.log "+_file) == 0:
-                        success = True
-
-                        dlg = wx.MessageDialog(self.panel, 'Done! WxFixBoot will now exit.',
-                                               'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
-                        dlg.ShowModal()
-                        dlg.Destroy()
-
-
-                    else:
-                        dlg = wx.MessageDialog(self.panel, "WxFixBoot does not have "
-                                               + "permission to write to that file or directory! "
-                                               + "Please select a new file and try again.",
-                                               "WxFixBoot - Error", wx.OK | wx.ICON_INFORMATION)
-
-                        dlg.ShowModal()
-                        dlg.Destroy()
-
-                #If the user canceled it, never mind.
-                if not success:
-                    dlg = wx.MessageDialog(self.panel, "Okay, WxFixBoot will now exit without "
-                                           + "saving the log file.", 'WxFixBoot - Information',
-                                           wx.OK | wx.ICON_INFORMATION)
-
-                    dlg.ShowModal()
-                    dlg.Destroy()
-
-            #Delete the log file, if we can.
-            try:
-                os.remove('/tmp/wxfixboot.log')
-
-            except OSError:
-                #Let the user know and exit.
-                dlg = wx.MessageDialog(self.panel, "Unable to clear the log file at "
-                                       + "/tmp/wxfixboot.log, please delete it manually "
-                                       + "or reboot your system to clear it.", 'WxFixBoot - Error',
-                                       wx.OK | wx.ICON_ERROR)
-
-                dlg.ShowModal()
+                answer = dlg.ShowModal()
+                _file = dlg.GetPath()
                 dlg.Destroy()
 
-            self.Destroy()
+                if answer != wx.ID_OK:
+                    break
+
+                #Copy it to the specified path.
+                if CoreTools.start_process("cp /tmp/wxfixboot.log "+_file) == 0:
+                    success = True
+
+                    DialogTools.show_msg_dlg(kind="info",
+                                             message="Done! WxFixBoot will now exit.")
+
+
+                else:
+                    DialogTools.show_msg_dlg(kind="error", message="WxFixBoot does not have "
+                                             + "permission to write to that file or "
+                                             + "Directory! Please select a new file and try "
+                                             + "again.")
+
+            #If the user canceled it, never mind.
+            if not success:
+                DialogTools.show_msg_dlg(kind="info", message="Okay, WxFixBoot will now exit "
+                                         + "without saving the log file.")
+
+        #Delete the log file, if we can.
+        try:
+            os.remove('/tmp/wxfixboot.log')
+
+        except OSError:
+            #Let the user know and exit.
+            DialogTools.show_msg_dlg(kind="error", message="Unable to clear the log file at "
+                                     + "/tmp/wxfixboot.log, please delete it manually "
+                                     + "or reboot your system to clear it.")
+
+        self.Destroy()
 
 #End Progress Window
 #Begin Backend Thread
@@ -3120,8 +3029,8 @@ class BackendThread(threading.Thread):
 
             except (IOError, OSError):
                 DialogTools.show_msg_dlg(kind="error", message="WxFixBoot does not have "
-                                            + "permission to write to that file or directory! "
-                                            + "Please select a new file and try again.")
+                                         + "permission to write to that file or directory! "
+                                         + "Please select a new file and try again.")
 
         report_list.write("This system report was created with WxFixBoot version "+VERSION
                           + ". It can be used to diagnose problems with your system, and can help "
