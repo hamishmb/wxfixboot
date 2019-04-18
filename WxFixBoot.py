@@ -18,6 +18,12 @@
 #
 # Reason (logging-not-lazy): This is a more readable way of logging.
 
+"""
+This is WxFixBoot's main executable. Execute the file to start the program.
+This file also contains most of the GUI-related code, with small portions
+being offloaded into Tools/dialogtools.py and Tools/notebookfunctions.py.
+"""
+
 #Do future imports to continue python 2 support.
 #Use unicode strings rather than ASCII strings, as they fix potential problems.
 from __future__ import absolute_import
@@ -146,15 +152,15 @@ for OPTION, ARGUMENT in OPTIONS:
 #Import custom-made modules
 #NB: This is done here so the logger is already set up - logging levels can be set properly in
 #submodules.
-import Tools
-from Tools.dictionaries import *
-import Tools.coretools as CoreTools
-import Tools.dialogtools as DialogTools
-import Tools.StartupTools.main as MainStartupTools
-import Tools.BackendTools.essentials as EssentialBackendTools
-import Tools.BackendTools.main as MainBackendTools
+import Tools #pylint: disable=wrong-import-position
+from Tools.dictionaries import *  #pylint: disable=wrong-import-position
+import Tools.coretools as CoreTools  #pylint: disable=wrong-import-position
+import Tools.dialogtools as DialogTools  #pylint: disable=wrong-import-position
+import Tools.StartupTools.main as MainStartupTools  #pylint: disable=wrong-import-position
+import Tools.BackendTools.essentials as EssentialBackendTools  #pylint: disable=wrong-import-position
+import Tools.BackendTools.main as MainBackendTools  #pylint: disable=wrong-import-position
 
-import Tools.notebookfunctions as NoteBookSharedFunctions
+import Tools.notebookfunctions as NoteBookSharedFunctions  #pylint: disable=wrong-import-position
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
@@ -234,6 +240,11 @@ class InitialPanel(wx.Panel): #pylint: disable=too-few-public-methods
 #End Initialization Panel.
 #Begin Initialization Frame.
 class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
+    """
+    This is the splash screen that displays on startup with the progress bar and text
+    displaying startup progress.
+    """
+
     def __init__(self):
         """Initialises InitialWindow"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot",
@@ -336,6 +347,11 @@ class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
 #End Initialization Frame.
 #Begin Progress Text Handler Thread.
 class ProgressTextHandlerThread(threading.Thread):
+    """
+    A separate thread to handle the text on the splash screen to indicate the program
+    is still running during slow startup routines.
+    """
+
     def __init__(self):
         """Start the Thread"""
         threading.Thread.__init__(self)
@@ -387,6 +403,11 @@ class ProgressTextHandlerThread(threading.Thread):
 #End Progress Text Handler Thread.
 #Begin Initialization Thread.
 class InitThread(threading.Thread):
+    """
+    This is the thread that does all of the heavy lifting and information collection
+    during startup, while the splash screen is displayed.
+    """
+
     def __init__(self):
         """Start the thread."""
         #Initialize the thread.
@@ -451,9 +472,9 @@ class InitThread(threading.Thread):
             for line in CoreTools.start_process("mount", return_output=True)[1].split("\n"):
                 if "/tmp/wxfixboot/mountpoints" in line:
                     #Unmount this filesystem if possible.
-                    fs = line.split(" on ")[0]
+                    filesystem = line.split(" on ")[0]
 
-                    if CoreTools.unmount(fs) != 0:
+                    if CoreTools.unmount(filesystem) != 0:
                         #If it can't be mounted, do an emergency exit.
                         CoreTools.emergency_exit("There are mounted filesystems in "
                                                  + "/tmp/wxfixboot/mountpoints, WxFixBoot's "
@@ -558,6 +579,11 @@ class InitThread(threading.Thread):
 #End Initalization Thread.
 #Begin Main Window
 class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instance-attributes
+    """
+    This is WxFixBoot's main window, where the main options can be selected, and you
+    can navigate to the Bootloader Options window.
+    """
+
     def __init__(self):
         """Initialise MainWindow"""
         wx.Frame.__init__(self, None, title="WxFixBoot", size=(400, 300),
@@ -601,7 +627,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
     def update_output_box(self, line, show_output):
         """Ignored, temporarily here for compatibility with coretools.start_process"""
         pass
- 
+
     def make_status_bar(self):
         """Create the status bar"""
         self.statusbar = self.CreateStatusBar()
@@ -776,7 +802,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
             if tuple(sys.version_info)[0:3] == (2, 7, 6):
                 #Use wget to download instead, cos the server doesn't allow SSL.
                 retval, updateinfo = \
-                CoreTools.start_process(exec_cmds="wget https://www.hamishmb.com/files/updateinfo/wxfixboot.plist -q -O -", return_output=True)
+                CoreTools.start_process(exec_cmds="wget https://www.hamishmb.com/files/updateinfo"
+                                        + "/wxfixboot.plist -q -O -", return_output=True)
 
                 if retval != 0:
                     raise requests.exceptions.RequestException()
@@ -920,7 +947,15 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
         aboutbox.Artists = ["Bhuna https://www.instagram.com/bhuna42/",
                             "Holly McIntyre-Bhatty (Old Artwork)"]
 
-        aboutbox.License = "WxFixBoot is free software: you can redistribute it and/or modify it\nunder the terms of the GNU General Public License version 3 or,\nat your option, any later version.\n\nWxFixBoot is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>."
+        aboutbox.License = "WxFixBoot is free software: you can redistribute it and/or modify it" \
+                           "\nunder the terms of the GNU General Public License version 3 or," \
+                           "\nat your option, any later version.\n\nWxFixBoot is distributed " \
+                           "in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; " \
+                           "without even the implied warranty of\nMERCHANTABILITY or " \
+                           "FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public " \
+                           "License for more details.\n\nYou should have received a copy of " \
+                           "the GNU General Public License\nalong with WxFixBoot.  If not, " \
+                           "see <http://www.gnu.org/licenses/>."
 
         #Show the AboutBox.
         wxAboutBox(aboutbox)
@@ -1037,13 +1072,15 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
             OPERATIONS.append((EssentialBackendTools.filesystem_check, "Quick",
                                Tools.BackendTools.main.manage_bootloader))
 
-            logger.info("MainWindow().count_operations(): Added EssentialBackendTools.filesystem_check to OPERATIONS...")
+            logger.info("MainWindow().count_operations(): Added "
+                        + "EssentialBackendTools.filesystem_check to OPERATIONS...")
 
         if SETTINGS["BadSectorCheck"]:
             OPERATIONS.append((EssentialBackendTools.filesystem_check, "Thorough",
                                Tools.BackendTools.main.manage_bootloader))
 
-            logger.info("MainWindow().count_operations(): Added EssentialBackendTools.filesystem_check to OPERATIONS...")
+            logger.info("MainWindow().count_operations(): Added "
+                        + "EssentialBackendTools.filesystem_check to OPERATIONS...")
 
         #Now do other processes.
         for _os in BOOTLOADER_INFO:
@@ -1122,8 +1159,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
 
             #If the user canceled it, never mind.
             if not success:
-                DialogTools.show_msg_dlg(kind="info", message="Okay, WxFixBoot will now exit without "
-                                         + "saving the log file.")
+                DialogTools.show_msg_dlg(kind="info", message="Okay, WxFixBoot will now exit "
+                                         + "without saving the log file.")
 
         #Delete the log file, if we can.
         try:
@@ -1140,6 +1177,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
 #End Main window
 #Begin System Info Page 1.
 class SystemInfoPage1(wx.Panel): #pylint: disable=too-few-public-methods
+    """
+    The first notebook page of the System Information Window.
+    """
+
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage1"""
         self.parent_window = notebook
@@ -1182,6 +1223,10 @@ class SystemInfoPage1(wx.Panel): #pylint: disable=too-few-public-methods
 #End System Info Page 1
 #Begin System Info Page 2.
 class SystemInfoPage2(wx.Panel): #pylint: disable=too-few-public-methods
+    """
+    The first notebook page of the System Information Window.
+    """
+
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage2"""
         self.parent_window = notebook
@@ -1223,6 +1268,10 @@ class SystemInfoPage2(wx.Panel): #pylint: disable=too-few-public-methods
 #End System Info Page 2
 #Begin System Info Page 3.
 class SystemInfoPage3(wx.Panel): #pylint: disable=too-few-public-methods
+    """
+    The first notebook page of the System Information Window.
+    """
+
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage3"""
         self.parent_window = notebook
@@ -1259,6 +1308,10 @@ class SystemInfoPage3(wx.Panel): #pylint: disable=too-few-public-methods
 #End System Info Page 3
 #Begin System Info Page 4.
 class SystemInfoPage4(wx.Panel): #pylint: disable=too-few-public-methods
+    """
+    The first notebook page of the System Information Window.
+    """
+
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage4"""
         self.parent_window = notebook
@@ -1298,6 +1351,10 @@ class SystemInfoPage4(wx.Panel): #pylint: disable=too-few-public-methods
 #End System Info Page 4
 #Begin System Info Page 5.
 class SystemInfoPage5(wx.Panel): #pylint: disable=too-few-public-methods
+    """
+    The first notebook page of the System Information Window.
+    """
+
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage5"""
         self.parent_window = notebook
@@ -1335,6 +1392,10 @@ class SystemInfoPage5(wx.Panel): #pylint: disable=too-few-public-methods
 #End System Info Page 5
 #Begin System Info Page 6.
 class SystemInfoPage6(wx.Panel): #pylint: disable=too-few-public-methods
+    """
+    The first notebook page of the System Information Window.
+    """
+
     def __init__(self, notebook, systeminfo_window):
         """Initialise SystemInfoPage6"""
         self.parent_window = notebook
@@ -1373,7 +1434,12 @@ class SystemInfoPage6(wx.Panel): #pylint: disable=too-few-public-methods
 
 #End System Info Page 6
 #Begin System Info Window
-class SystemInfoWindow(wx.Frame):
+class SystemInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
+    """
+    The System Information Window, complete with all of the notebook pages that
+    hold the information.
+    """
+
     def __init__(self):
         """Initialize SystemInfoWindow"""
         wx.Frame.__init__(self, wx.GetApp().TopWindow, title="WxFixBoot - System Information",
@@ -1426,6 +1492,10 @@ class SystemInfoWindow(wx.Frame):
 #End System Info Window
 #Begin Privacy Policy Window.
 class PrivPolWindow(wx.Frame): #pylint: disable=too-many-ancestors
+    """
+    The privacy policy window where all of WxFixBoot's privacy information may be found.
+    """
+
     def __init__(self):
         """Initialize PrivPolWindow"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="WxFixBoot - Privacy Policy",
@@ -1492,6 +1562,10 @@ class PrivPolWindow(wx.Frame): #pylint: disable=too-many-ancestors
 #End Privacy Policy Window.
 #Begin Bootloader Options Window.
 class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instance-attributes
+    """
+    The bootloader options window.
+    """
+
     def __init__(self):
         """Initialise bootloader options window"""
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow,
@@ -1837,22 +1911,42 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         logger.debug("BootloaderOptionsWindow().load_settings(): Loading settings for "+_os+"...")
         self.reinstall_bootloader_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]["Reinstall"])
         self.update_bootloader_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]["Update"])
-        self.keep_bootloader_timeout_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"])
+        self.keep_bootloader_timeout_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]
+                                                       ["KeepExistingTimeout"])
+
         self.bootloader_timeout_spinner.SetValue(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])
-        self.keep_kerneloptions_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"])
-        self.new_kerneloptions_textctrl.SetValue(BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"])
+        self.keep_kerneloptions_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]
+                                                  ["KeepExistingKernelOptions"])
+
+        self.new_kerneloptions_textctrl.SetValue(BOOTLOADER_INFO[_os]["Settings"]
+                                                 ["NewKernelOptions"])
+
         self.defaultos_choice.SetStringSelection(BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"])
-        self.install_new_bootloader_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"])
-        self.new_bootloader_choice.SetStringSelection(BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"])
-        self.backup_bootloader_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]["BackupBootloader"])
-        self.backup_bootloader_choice.SetStringSelection(BOOTLOADER_INFO[_os]["Settings"]["BootloaderBackupTarget"])
-        self.restore_bootloader_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]["RestoreBootloader"])
-        self.restore_bootloader_choice.SetStringSelection(BOOTLOADER_INFO[_os]["Settings"]["BootloaderRestoreSource"])
+        self.install_new_bootloader_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]
+                                                      ["InstallNewBootloader"])
+
+        self.new_bootloader_choice.SetStringSelection(BOOTLOADER_INFO[_os]["Settings"]
+                                                      ["NewBootloader"])
+
+        self.backup_bootloader_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]
+                                                 ["BackupBootloader"])
+
+        self.backup_bootloader_choice.SetStringSelection(BOOTLOADER_INFO[_os]["Settings"]
+                                                         ["BootloaderBackupTarget"])
+
+        self.restore_bootloader_checkbox.SetValue(BOOTLOADER_INFO[_os]["Settings"]
+                                                  ["RestoreBootloader"])
+
+        self.restore_bootloader_choice.SetStringSelection(BOOTLOADER_INFO[_os]["Settings"]
+                                                          ["BootloaderRestoreSource"])
+
         self.on_timeout_checkbox()
         self.set_gui_state()
 
         #Don't allow the user to attempt to modify or remove GRUB-LEGACY.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] in ("GRUB-LEGACY", "Unknown"):
+        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] \
+            in ("GRUB-LEGACY", "Unknown"):
+
             self.reinstall_bootloader_checkbox.Disable()
             self.update_bootloader_checkbox.Disable()
 
@@ -1865,19 +1959,42 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         _os = self.os_choice.GetStringSelection()
 
         logger.debug("BootloaderOptionsWindow().set_gui_state(): Setting GUI state for "+_os+"...")
-        self.reinstall_bootloader_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]["ReinstallCheckBoxState"])
-        self.update_bootloader_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]["UpdateCheckBoxState"])
-        self.keep_bootloader_timeout_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]["KeepExistingTimeoutCheckBoxState"])
-        self.bootloader_timeout_spinner.Enable(BOOTLOADER_INFO[_os]["GUIState"]["NewTimeoutSpinnerState"])
-        self.keep_kerneloptions_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"])
-        self.new_kerneloptions_textctrl.Enable(BOOTLOADER_INFO[_os]["GUIState"]["NewKernelOptionsTextCtrlState"])
+        self.reinstall_bootloader_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                                  ["ReinstallCheckBoxState"])
+
+        self.update_bootloader_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                               ["UpdateCheckBoxState"])
+
+        self.keep_bootloader_timeout_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                                     ["KeepExistingTimeoutCheckBoxState"])
+
+        self.bootloader_timeout_spinner.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                               ["NewTimeoutSpinnerState"])
+
+        self.keep_kerneloptions_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                                ["KeepExistingKernelOptionsCheckBoxState"])
+
+        self.new_kerneloptions_textctrl.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                               ["NewKernelOptionsTextCtrlState"])
+
         self.defaultos_choice.Enable(BOOTLOADER_INFO[_os]["GUIState"]["DefaultOSChoiceState"])
-        self.install_new_bootloader_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]["InstallNewBootloaderCheckBoxState"])
-        self.new_bootloader_choice.Enable(BOOTLOADER_INFO[_os]["GUIState"]["NewBootloaderChoiceState"])
-        self.backup_bootloader_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]["BackupBootloaderCheckBoxState"])
-        self.backup_bootloader_choice.Enable(BOOTLOADER_INFO[_os]["GUIState"]["BackupBootloaderChoiceState"])
-        self.restore_bootloader_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]["RestoreBootloaderCheckBoxState"])
-        self.restore_bootloader_choice.Enable(BOOTLOADER_INFO[_os]["GUIState"]["RestoreBootloaderChoiceState"])
+        self.install_new_bootloader_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                                    ["InstallNewBootloaderCheckBoxState"])
+
+        self.new_bootloader_choice.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                          ["NewBootloaderChoiceState"])
+
+        self.backup_bootloader_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                               ["BackupBootloaderCheckBoxState"])
+
+        self.backup_bootloader_choice.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                             ["BackupBootloaderChoiceState"])
+
+        self.restore_bootloader_checkbox.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                                ["RestoreBootloaderCheckBoxState"])
+
+        self.restore_bootloader_choice.Enable(BOOTLOADER_INFO[_os]["GUIState"]
+                                              ["RestoreBootloaderChoiceState"])
 
     def set_text_labels(self):
         """Set text labels for GUI elements"""
@@ -1941,7 +2058,9 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         self.set_text_labels()
 
         #Don't allow the user to attempt to modify or remove GRUB-LEGACY.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] in ("GRUB-LEGACY", "Unknown"):
+        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] \
+            in ("GRUB-LEGACY", "Unknown"):
+
             self.reinstall_bootloader_checkbox.Disable()
             self.update_bootloader_checkbox.Disable()
 
@@ -1951,7 +2070,10 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
         #Don't allow the user to do bootloader operations if the current bootloader is an
         #EFI bootloader, but we couldn't find the OS's EFI partition.
-        if (BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] in ("GRUB-UEFI", "ELILO")) and (OS_INFO[self.os_choice.GetStringSelection()]["EFIPartition"] == "Unknown"):
+        if (BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] \
+            in ("GRUB-UEFI", "ELILO")) \
+            and (OS_INFO[self.os_choice.GetStringSelection()]["EFIPartition"] == "Unknown"):
+
             self.reinstall_bootloader_checkbox.Disable()
             self.update_bootloader_checkbox.Disable()
             self.install_new_bootloader_checkbox.Disable()
@@ -2006,8 +2128,10 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
             #Refuse to collapse this section if Advanced Settings are shown.
             if self.install_new_bootloader_checkbox.IsShown():
-                logger.debug("BootloaderOptionsWindow().on_basic_options(): Cancelling because Advanced Options are shown...")
-                return True
+                logger.debug("BootloaderOptionsWindow().on_basic_options(): Cancelling because "
+                             + "Advanced Options are shown...")
+
+                return
 
             self.arrow2.SetBitmap(self.right_arrow_image)
 
@@ -2058,7 +2182,9 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
     def on_advanced_options(self, event=None): #pylint: disable=unused-argument
         """Show/Hide the advanced options, and rotate the arrow"""
         if self.install_new_bootloader_checkbox.IsShown():
-            logger.debug("BootloaderOptionsWindow().on_advanced_options(): Hiding Advanced Options...")
+            logger.debug("BootloaderOptionsWindow().on_advanced_options(): Hiding Advanced "
+                         + "Options...")
+
             self.arrow3.SetBitmap(self.right_arrow_image)
 
             self.main_sizer.Detach(self.kernel_options_sizer)
@@ -2079,11 +2205,14 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             self.restore_bootloader_choice.Hide()
 
         else:
-            logger.debug("BootloaderOptionsWindow().on_advanced_options(): Showing Advanced Options...")
+            logger.debug("BootloaderOptionsWindow().on_advanced_options(): Showing Advanced "
+                         + "Options...")
 
             #If Basic Options are hidden, show them.
             if self.reinstall_bootloader_checkbox.IsShown() is False:
-                logger.debug("BootloaderOptionsWindow().on_advanced_options(): Showing Basic Options first...")
+                logger.debug("BootloaderOptionsWindow().on_advanced_options(): Showing Basic "
+                             + "Options first...")
+
                 self.on_basic_options()
 
             self.arrow3.SetBitmap(self.down_arrow_image)
@@ -2124,7 +2253,8 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
     def on_backup_bootloader_choice(self, event=None): #pylint: disable=unused-argument
         """Allow the user to select a config file to backup the bootloader to"""
-        logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): Selecting bootloader config backup file...")
+        logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): Selecting "
+                     + "bootloader config backup file...")
 
         _file = self.backup_bootloader_choice.GetStringSelection()
 
@@ -2132,15 +2262,23 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         if _file == "Specify File Path...":
             dlg = wx.FileDialog(self.panel, "Select Backup File...",
                                 defaultDir="/home",
-                                wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc",
+                                wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config " \
+                                         "Backup (.wxfbc)|*.wxfbc",
                                 style=wx.FD_SAVE)
 
             if dlg.ShowModal() == wx.ID_OK:
                 _file = dlg.GetPath()
-                logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): File is "+_file+"...")
-                logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): Saving config to "+_file+"...")
-                plistlib.writePlist(BOOTLOADER_INFO[self.os_choice.GetStringSelection()], _file) #pylint: disable=deprecated-method
-                logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): Finished saving config to "+_file+"...")
+                logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): File is "
+                             + _file+"...")
+
+                logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): "
+                             + "Saving config to "+_file+"...")
+
+                plistlib.writePlist(BOOTLOADER_INFO[self.os_choice.GetStringSelection()],
+                                    _file)
+
+                logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): Finished "
+                             + "saving config to "+_file+"...")
 
                 #Let the user know we were successful.
                 DialogTools.show_msg_dlg(kind="info", message="Finished backing up config to "
@@ -2159,7 +2297,8 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
     def on_restore_bootloader_choice(self, event=None): #pylint: disable=unused-argument
         """Allow the user to select a config file to restore the bootloader from"""
-        logger.debug("BootloaderOptionsWindow().on_restore_bootloader_choice(): Selecting bootloader config backup file...")
+        logger.debug("BootloaderOptionsWindow().on_restore_bootloader_choice(): Selecting "
+                     + "bootloader config backup file...")
 
         _file = self.restore_bootloader_choice.GetStringSelection()
 
@@ -2167,19 +2306,23 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         if _file == "Specify File Path...":
             dlg = wx.FileDialog(self.panel, "Select Backup File...",
                                 defaultDir="/home",
-                                wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config Backup (.wxfbc)|*.wxfbc",
+                                wildcard="All Files/Devices (*)|*|WxFixBoot Bootloader Config " \
+                                         "Backup (.wxfbc)|*.wxfbc",
                                 style=wx.FD_OPEN)
 
             if dlg.ShowModal() == wx.ID_OK:
                 _file = dlg.GetPath()
-                logger.debug("BootloaderOptionsWindow().on_restore_bootloader_choice(): Loading config from "+_file+"...")
+                logger.debug("BootloaderOptionsWindow().on_restore_bootloader_choice(): Loading "
+                             + "config from "+_file+"...")
 
                 try:
                     self.setup_for_restoring_bootloader(plistlib.readPlistFromString(_file))
 
                 except Exception:
                     #Error!
-                    logger.error("BootloaderOptionsWindow().on_restore_bootloader_choice(): Error when loading config! Warning user and reloading previous settings...")
+                    logger.error("BootloaderOptionsWindow().on_restore_bootloader_choice(): "
+                                 + "Error when loading config! Warning user and reloading "
+                                 + "previous settings...")
 
                     #Let the user know about the error.
                     DialogTools.show_msg_dlg(kind="error", message="Couldn't load config from "
@@ -2191,7 +2334,8 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                     self.on_oschoice_change()
 
                 else:
-                    logger.debug("BootloaderOptionsWindow().on_restore_bootloader_choice(): Successfully loaded config from "+_file+"...")
+                    logger.debug("BootloaderOptionsWindow().on_restore_bootloader_choice(): "
+                                 + "Successfully loaded config from "+_file+"...")
 
                     #Let the user know we were successful.
                     DialogTools.show_msg_dlg(kind="info", message="The bootloader configuration "
@@ -2210,7 +2354,10 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             dlg.Destroy()
 
     def setup_for_restoring_bootloader(self, config):
-        """Setup the window to use the configuration from the chosen bootloader config backup file"""
+        """
+        Setup the window to use the configuration from the chosen bootloader config backup file.
+        """
+
         _os = self.os_choice.GetStringSelection()
 
         #Check this is the right config for this OS.
@@ -2219,7 +2366,7 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                                      + config["OSName"]
                                      + ", not "+_os+", the current OS. Please change the selected "
                                      + "OS, or select the correct config file for this OS.")
-            return True
+            return
 
         #Check the bootloader in the config file can be installed in this OS.
         if self.new_bootloader_choice.FindString(config["Bootloader"]) == -1 \
@@ -2228,7 +2375,7 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                                      + "the config  was backed up cannot be installed in this OS. "
                                      + "Most likely, the config file has been tampered with or "
                                      + "has corrupted.")
-            return True
+            return
 
         #Disable the restore config checkbox.
         self.restore_bootloader_choice.SetStringSelection("-- Please Select --")
@@ -2236,13 +2383,17 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         self.on_restore_bootloader_checkbox()
 
         #Determine if the current bootloader is the same as the backed up one.
-        if config["Bootloader"] == BOOTLOADER_INFO[_os]["Bootloader"] and config["Bootloader"] not in ("GRUB-LEGACY", "Unknown"):
+        if config["Bootloader"] == BOOTLOADER_INFO[_os]["Bootloader"] and config["Bootloader"] \
+            not in ("GRUB-LEGACY", "Unknown"):
+
             #Set up to reinstall the current bootloader.
             self.reinstall_bootloader_checkbox.Enable()
             self.reinstall_bootloader_checkbox.SetValue(1)
             self.on_update_or_reinstall_checkbox()
 
-        elif config["Bootloader"] != "GRUB-LEGACY" and BOOTLOADER_INFO[_os]["Bootloader"] not in ("GRUB-LEGACY", "Unknown"):
+        elif config["Bootloader"] != "GRUB-LEGACY" and BOOTLOADER_INFO[_os]["Bootloader"] \
+            not in ("GRUB-LEGACY", "Unknown"):
+
             #Set up to replace the current bootloader with the old one.
             self.install_new_bootloader_checkbox.Enable()
             self.install_new_bootloader_checkbox.SetValue(1)
@@ -2277,11 +2428,13 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
             self.defaultos_choice.SetStringSelection(_os)
 
-        logger.debug("BootloaderOptionsWindow().setup_for_restoring_bootloader(): Finished loading config from file...")
+        logger.debug("BootloaderOptionsWindow().setup_for_restoring_bootloader(): Finished "
+                     + "loading config from file...")
 
     def on_update_or_reinstall_checkbox(self, event=None): #pylint: disable=unused-argument
         """Enable/Disable options, based on the value of the update/reinstall checkboxes."""
-        logger.debug("BootloaderOptionsWindow().on_update_or_reinstall_checkbox(): Enabling and Disabling options as needed...")
+        logger.debug("BootloaderOptionsWindow().on_update_or_reinstall_checkbox(): Enabling and "
+                     + "Disabling options as needed...")
 
         if self.reinstall_bootloader_checkbox.IsChecked():
             self.update_bootloader_checkbox.Disable()
@@ -2325,30 +2478,49 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             self.restore_bootloader_choice.Disable()
 
     def on_kerneloptions_checkbox(self, event=None): #pylint: disable=unused-argument
-        """Enable/Disable the kernel options text ctrl, based on the value of the kernel options checkbox."""
-        logger.debug("BootloaderOptionsWindow().on_kerneloptions_checkbox(): Enabling and Disabling options as needed...")
+        """
+        Enable/Disable the kernel options text ctrl, based on the value of the kernel options
+        checkbox.
+        """
+
+        logger.debug("BootloaderOptionsWindow().on_kerneloptions_checkbox(): Enabling and "
+                     + "Disabling options as needed...")
 
         if self.keep_kerneloptions_checkbox.IsChecked():
-            self.new_kerneloptions_textctrl.SetValue(BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Settings"]["NewKernelOptions"])
+            self.new_kerneloptions_textctrl.SetValue(BOOTLOADER_INFO
+                                                     [self.os_choice.GetStringSelection()]
+                                                     ["Settings"]["NewKernelOptions"])
+
             self.new_kerneloptions_textctrl.Disable()
 
         else:
             self.new_kerneloptions_textctrl.Enable()
 
     def on_timeout_checkbox(self, event=None): #pylint: disable=unused-argument
-        """Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox."""
-        logger.debug("BootloaderOptionsWindow().on_timeout_checkbox(): Enabling and Disabling options s needed...")
+        """
+        Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox.
+        """
+
+        logger.debug("BootloaderOptionsWindow().on_timeout_checkbox(): Enabling and Disabling "
+                     + "options as needed...")
 
         if self.keep_bootloader_timeout_checkbox.IsChecked():
-            self.bootloader_timeout_spinner.SetValue(BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Settings"]["NewTimeout"])
+            self.bootloader_timeout_spinner.SetValue(BOOTLOADER_INFO
+                                                     [self.os_choice.GetStringSelection()]
+                                                     ["Settings"]["NewTimeout"])
+
             self.bootloader_timeout_spinner.Disable()
 
         else:
             self.bootloader_timeout_spinner.Enable()
 
     def on_backup_bootloader_checkbox(self, event=None): #pylint: disable=unused-argument
-        """Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox."""
-        logger.debug("BootloaderOptionsWindow().on_backup_bootloader_checkbox(): Enabling and Disabling options as needed...")
+        """
+        Enable/Disable the bootloader timeout spinner, based on the value of the timeout checkbox.
+        """
+
+        logger.debug("BootloaderOptionsWindow().on_backup_bootloader_checkbox(): Enabling and "
+                     + "Disabling options as needed...")
 
         if self.backup_bootloader_checkbox.IsChecked():
             self.backup_bootloader_choice.Enable()
@@ -2375,7 +2547,9 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             self.new_bootloader_choice.Disable()
 
         #Don't allow the user to attempt to modify GRUB-LEGACY.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] in ("GRUB-LEGACY", "Unknown"):
+        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] \
+            in ("GRUB-LEGACY", "Unknown"):
+
             self.reinstall_bootloader_checkbox.Disable()
             self.update_bootloader_checkbox.Disable()
 
@@ -2385,7 +2559,8 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
     def on_install_new_bootloader_checkbox(self, event=None): #pylint: disable=unused-argument
         """Enable/Disable options, based on the value of the new bootloader checkbox."""
-        logger.debug("BootloaderOptionsWindow().on_install_new_bootloader_checkbox(): Enabling and disabling options as needed...")
+        logger.debug("BootloaderOptionsWindow().on_install_new_bootloader_checkbox(): Enabling "
+                     + "and disabling options as needed...")
 
         if self.install_new_bootloader_checkbox.IsChecked():
             self.new_bootloader_choice.Enable()
@@ -2415,7 +2590,9 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             self.restore_bootloader_choice.Disable()
 
         #Don't allow the user to attempt to modify GRUB-LEGACY.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] in ("GRUB-LEGACY", "Unknown"):
+        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] \
+            in ("GRUB-LEGACY", "Unknown"):
+
             self.reinstall_bootloader_checkbox.Disable()
             self.update_bootloader_checkbox.Disable()
 
@@ -2426,7 +2603,9 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
     def on_new_bootloader_choice(self, event=None): #pylint: disable=unused-argument
         """Warn user about issues chaging bootloaders if needed"""
         #Could offer to disable, but the LILO/ELILO functionality is deprecated at this point.
-        if len(SYSTEM_INFO["ModifyableOSs"]) > 1 and self.new_bootloader_choice.GetStringSelection() in ("LILO", "ELILO"):
+        if len(SYSTEM_INFO["ModifyableOSs"]) > 1 \
+            and self.new_bootloader_choice.GetStringSelection() in ("LILO", "ELILO"):
+
             DialogTools.show_msg_dlg(kind="warning", message="Installing "
                                      + self.new_bootloader_choice.GetStringSelection()
                                      + " is discouraged because you have more than one Linux OS "
@@ -2442,7 +2621,8 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
              self.new_bootloader_choice.GetStringSelection() == "GRUB-UEFI")):
 
             DialogTools.show_msg_dlg(kind="warning", message="Switching between "
-                                     + BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"]
+                                     + BOOTLOADER_INFO[self.os_choice.GetStringSelection()]
+                                     ["Bootloader"]
                                      + " and " + self.new_bootloader_choice.GetStringSelection()
                                      + " is discouraged on Fedora, as users occasionally "
                                      + "encounter problems.\n\nParticularly, if you are running "
@@ -2463,49 +2643,101 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                            + "unspecified...")
 
             DialogTools.show_msg_dlg(kind="error", message="If you're going to replace "
-                                     + BOOTLOADER_INFO[_os]["Bootloader"]+", you must select a new "
-                                     + "bootloader to replace it with!")
+                                     + BOOTLOADER_INFO[_os]["Bootloader"]+", you must select a "
+                                     + "new bootloader to replace it with!")
             raise RuntimeError
 
-        BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] = self.reinstall_bootloader_checkbox.GetValue()
-        BOOTLOADER_INFO[_os]["Settings"]["Update"] = self.update_bootloader_checkbox.GetValue()
-        BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"] = self.keep_bootloader_timeout_checkbox.GetValue()
-        BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"] = self.bootloader_timeout_spinner.GetValue()
-        BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"] = self.keep_kerneloptions_checkbox.GetValue()
-        BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"] = self.new_kerneloptions_textctrl.GetValue()
-        BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"] = self.defaultos_choice.GetStringSelection()
-        BOOTLOADER_INFO[_os]["Settings"]["DefaultBootDevice"] = BOOTLOADER_INFO[BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"]]["DefaultBootDevice"]
-        BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"] = self.install_new_bootloader_checkbox.GetValue()
-        BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] = self.new_bootloader_choice.GetStringSelection()
-        BOOTLOADER_INFO[_os]["Settings"]["BackupBootloader"] = self.backup_bootloader_checkbox.GetValue()
-        BOOTLOADER_INFO[_os]["Settings"]["BootloaderBackupTarget"] = self.backup_bootloader_choice.GetStringSelection()
-        BOOTLOADER_INFO[_os]["Settings"]["RestoreBootloader"] = self.restore_bootloader_checkbox.GetValue()
-        BOOTLOADER_INFO[_os]["Settings"]["BootloaderRestoreSource"] = self.restore_bootloader_choice.GetStringSelection()
+        BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] = \
+        self.reinstall_bootloader_checkbox.GetValue()
 
-        if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] or BOOTLOADER_INFO[_os]["Settings"]["Update"] or BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"] or BOOTLOADER_INFO[_os]["Settings"]["RestoreBootloader"]:
+        BOOTLOADER_INFO[_os]["Settings"]["Update"] = self.update_bootloader_checkbox.GetValue()
+        BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"] = \
+        self.keep_bootloader_timeout_checkbox.GetValue()
+
+        BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"] = self.bootloader_timeout_spinner.GetValue()
+        BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"] = \
+        self.keep_kerneloptions_checkbox.GetValue()
+
+        BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"] = \
+        self.new_kerneloptions_textctrl.GetValue()
+
+        BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"] = self.defaultos_choice.GetStringSelection()
+        BOOTLOADER_INFO[_os]["Settings"]["DefaultBootDevice"] = BOOTLOADER_INFO[BOOTLOADER_INFO
+        [_os]["Settings"]["DefaultOS"]]["DefaultBootDevice"]
+
+        BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"] = \
+        self.install_new_bootloader_checkbox.GetValue()
+
+        BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] = \
+        self.new_bootloader_choice.GetStringSelection()
+
+        BOOTLOADER_INFO[_os]["Settings"]["BackupBootloader"] = \
+        self.backup_bootloader_checkbox.GetValue()
+
+        BOOTLOADER_INFO[_os]["Settings"]["BootloaderBackupTarget"] = \
+        self.backup_bootloader_choice.GetStringSelection()
+
+        BOOTLOADER_INFO[_os]["Settings"]["RestoreBootloader"] = \
+        self.restore_bootloader_checkbox.GetValue()
+
+        BOOTLOADER_INFO[_os]["Settings"]["BootloaderRestoreSource"] = \
+        self.restore_bootloader_choice.GetStringSelection()
+
+        if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] \
+        or BOOTLOADER_INFO[_os]["Settings"]["Update"] \
+        or BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"] \
+        or BOOTLOADER_INFO[_os]["Settings"]["RestoreBootloader"]:
+
             logger.debug("BootloaderOptionsWindow().save_settings(): "+_os+" is being modified...")
             BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"] = True
 
         else:
-            logger.debug("BootloaderOptionsWindow().save_settings(): "+_os+" is not being modified...")
+            logger.debug("BootloaderOptionsWindow().save_settings(): "+_os
+                         + " is not being modified...")
+
             BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"] = False
 
     def save_gui_state(self, event=None, _os=None): #pylint: disable=unused-argument
         """Save all the GUI element's states (enabled/disabled) for this _os"""
         logger.debug("BootloaderOptionsWindow().save_gui_state(): Saving GUI state for "+_os+"...")
-        BOOTLOADER_INFO[_os]["GUIState"]["ReinstallCheckBoxState"] = self.reinstall_bootloader_checkbox.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["UpdateCheckBoxState"] = self.update_bootloader_checkbox.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = self.keep_bootloader_timeout_checkbox.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["NewTimeoutSpinnerState"] = self.bootloader_timeout_spinner.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = self.keep_kerneloptions_checkbox.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["NewKernelOptionsTextCtrlState"] = self.new_kerneloptions_textctrl.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["DefaultOSChoiceState"] = self.defaultos_choice.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["InstallNewBootloaderCheckBoxState"] = self.install_new_bootloader_checkbox.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["NewBootloaderChoiceState"] = self.new_bootloader_choice.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["BackupBootloaderCheckBoxState"] = self.backup_bootloader_checkbox.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["BackupBootloaderChoiceState"] = self.backup_bootloader_choice.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["RestoreBootloaderCheckBoxState"] = self.restore_bootloader_checkbox.IsEnabled()
-        BOOTLOADER_INFO[_os]["GUIState"]["RestoreBootloaderChoiceState"] = self.restore_bootloader_choice.IsEnabled()
+        BOOTLOADER_INFO[_os]["GUIState"]["ReinstallCheckBoxState"] = \
+        self.reinstall_bootloader_checkbox.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["UpdateCheckBoxState"] = \
+        self.update_bootloader_checkbox.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["KeepExistingTimeoutCheckBoxState"] = \
+        self.keep_bootloader_timeout_checkbox.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["NewTimeoutSpinnerState"] = \
+        self.bootloader_timeout_spinner.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["KeepExistingKernelOptionsCheckBoxState"] = \
+        self.keep_kerneloptions_checkbox.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["NewKernelOptionsTextCtrlState"] = \
+        self.new_kerneloptions_textctrl.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["DefaultOSChoiceState"] = \
+        self.defaultos_choice.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["InstallNewBootloaderCheckBoxState"] = \
+        self.install_new_bootloader_checkbox.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["NewBootloaderChoiceState"] = \
+        self.new_bootloader_choice.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["BackupBootloaderCheckBoxState"] = \
+        self.backup_bootloader_checkbox.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["BackupBootloaderChoiceState"] = \
+        self.backup_bootloader_choice.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["RestoreBootloaderCheckBoxState"] = \
+        self.restore_bootloader_checkbox.IsEnabled()
+
+        BOOTLOADER_INFO[_os]["GUIState"]["RestoreBootloaderChoiceState"] = \
+        self.restore_bootloader_choice.IsEnabled()
 
     def on_close(self, event=None): #pylint: disable=unused-argument
         """Save settings and GUI state, and then close BootloaderOptionsWindow"""
@@ -2521,6 +2753,11 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 #End New Bootloader Options Window.
 #Begin Progress Window
 class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
+    """
+    This is the window that displays with the two progress bars during bootloader
+    (and other) operations.
+    """
+
     def __init__(self):
         """Initialse Progress Window"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot - Operations Progress",
@@ -2560,10 +2797,14 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
 
     def create_text(self):
         """Create the Text"""
-        self.performing_operations_text = wx.StaticText(self.panel, -1, "WxFixBoot is performing operations... Please wait.")
+        self.performing_operations_text = wx.StaticText(self.panel, -1, "WxFixBoot is performing "
+                                                        + "operations... Please wait.")
+
         self.current_operating_heading_text = wx.StaticText(self.panel, -1, "Current Operation:")
         self.current_operating_text = wx.StaticText(self.panel, -1, "Initializating...")
-        self.current_operation_progress_text = wx.StaticText(self.panel, -1, "Current Operation Progress:")
+        self.current_operation_progress_text = wx.StaticText(self.panel, -1,
+                                                             "Current Operation Progress:")
+
         self.overall_progress_text = wx.StaticText(self.panel, -1, "Overall Progress:")
 
     def create_buttons(self):
@@ -2652,7 +2893,13 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
         self.output_box.Bind(wx.EVT_SET_FOCUS, self.focus_on_output_button)
 
     def focus_on_output_button(self, event=None): #pylint: disable=unused-argument
-        """Focus on the show output button instead of the TextCtrl, and reset the insertion point back after 30 milliseconds, preventing the user from changing the insertion point and messing the formatting up."""
+        """
+        Focus on the show output button instead of the TextCtrl, and reset the insertion
+        point back after 30 milliseconds, preventing the user from changing the insertion
+        point and messing the formatting up.
+        """
+
+        #TODO Didn't I find a better way of doing this in Disk Verifier?
         #Just a slightly hacky way of trying to make sure the user can't change the insertion
         #point! Works unless you start doing silly stuff like tapping on the output box
         #constantly :)
@@ -2662,7 +2909,10 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
 
     def show_output(self, event=None): #pylint: disable=unused-argument
         """Show and Hide the output box in ProgressWindow()"""
-        logger.debug("ProgressWindow().show_output() was Toggled to position: "+unicode(self.show_output_button.GetValue())+", where True = Depressed and vice versa.")
+        logger.debug("ProgressWindow().show_output() was Toggled to position: "
+                     + unicode(self.show_output_button.GetValue())
+                     + ", where True = Depressed and vice versa.")
+
         if self.show_output_button.GetValue():
             #Remove the empty space.
             self.main_sizer.Detach(8)
@@ -2747,6 +2997,7 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
                     temp_line = ""
 
     def add_line_to_output_box(self, line, _type):
+        """Adds the given line to the outtput box, also handles carriage returns and backspaces"""
         insertion_point = self.output_box.GetInsertionPoint()
 
         self.output_box.Replace(insertion_point, insertion_point+len(line), line)
@@ -2782,7 +3033,10 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
         self.panel.Layout()
 
     def backend_thread_finished(self):
-        """Called when the BackendThread is finished, enables self.restart_button and self.exit_button"""
+        """
+        Called when the BackendThread is finished, enables self.restart_button and self.exit_button
+        """
+
         self.running_operations = False
         self.restart_button.Enable()
         self.exit_button.Enable()
@@ -2790,7 +3044,8 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def restart_wxfixboot(self, event=None): #pylint: disable=unused-argument
         """Restart WxFixBoot"""
         logger.debug("ProgressWindow().restart_wxfixboot(): Restarting WxFixBoot...")
-        logger.debug("ProgressWindow().restart_wxfixboot(): Checking no filesystems are mounted in the temporary directory, and unmounting them if they are...")
+        logger.debug("ProgressWindow().restart_wxfixboot(): Checking no filesystems are mounted "
+                     + "in the temporary directory, and unmounting them if they are...")
 
         #TODO Handle this the same way as during startup incl emergency exit.
         #TODO Check what happens if this fails.
@@ -2834,7 +3089,8 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def session_ending(self, event): #pylint: disable=unused-argument
         """Attempt to veto e.g. a shutdown/logout event if recovering data."""
         #Check if we can veto the shutdown.
-        logger.warning("ProgressWindow().session_ending(): Attempting to veto system shutdown / logoff...")
+        logger.warning("ProgressWindow().session_ending(): Attempting to veto system shutdown "
+                       + "/ logoff...")
 
         if event.CanVeto() and self.running_operations:
             #Veto the shutdown and warn the user.
@@ -2937,6 +3193,11 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
 #End Progress Window
 #Begin Backend Thread
 class BackendThread(threading.Thread):
+    """
+    This is the backend thread that performs all of the bootloader (and other)
+    operations in the background when the progress window is being shown.
+    """
+
     def __init__(self, parent_window):
         """Initialize BackendThread"""
         #Set up the backend tools.
@@ -2956,8 +3217,12 @@ class BackendThread(threading.Thread):
             self.start_operations()
 
         except Exception:
-            logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())+"\n\n while running operations. Warning user and exiting.")
-            CoreTools.emergency_exit("There was an unexpected error:\n\n"+unicode(traceback.format_exc())+"\n\nWhile running operations!")
+            logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())
+                            + "\n\n while running operations. Warning user and exiting.")
+
+            CoreTools.emergency_exit("There was an unexpected error:\n\n"
+                                     + unicode(traceback.format_exc())
+                                     + "\n\nWhile running operations!")
 
     def start_operations(self):
         """Start doing operations."""
@@ -3010,7 +3275,11 @@ class BackendThread(threading.Thread):
         wx.CallAfter(self.parent_window.backend_thread_finished)
 
     def generate_system_report(self):
-        """Create a system report, containing various information helpful for debugging and fixing problems. It's pretty much like a bootinfo summary."""
+        """
+        Create a system report, containing various information helpful for debugging and
+        fixing problems. It's pretty much like a bootinfo summary.
+        """
+
         DialogTools.show_msg_dlg(kind="info", message="WxFixBoot will now create your system "
                                  + "report. Click okay to continue.")
 
@@ -3019,8 +3288,11 @@ class BackendThread(threading.Thread):
         while not success:
             try:
                 #Ask the user where to save the file.
-                report_file = DialogTools.show_save_file_dlg(title="WxFixBoot - Select System Report File",
-                                                             wildcard="Text Files|*.txt|Log Files|*.log|All Files/Devices (*)|*")
+                report_file = DialogTools.show_save_file_dlg(title="WxFixBoot - " \
+                                                                   "Select System Report File",
+                                                             wildcard="Text Files|*.txt|Log " \
+                                                                      "Files|*.log|All Files" \
+                                                                      "/Devices (*)|*")
 
                 #Write everything directly to the file.
                 report_list = open(report_file, 'w')
@@ -3063,7 +3335,8 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tFilesystem: "+DISK_INFO[disk]["FileSystem"]+"\n")
             report_list.write("\t\tUUID: "+DISK_INFO[disk]["UUID"]+"\n")
             report_list.write("\t\tID: "+DISK_INFO[disk]["ID"]+"\n")
-            report_list.write("\t\tBoot Record Strings: "+unicode(b', '.join(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n")
+            report_list.write("\t\tBoot Record Strings: "
+                              + unicode(b', '.join(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n")
 
         #Do OS Information.
         report_list.write("\n##########OS Information##########\n")
@@ -3152,25 +3425,33 @@ class BackendThread(threading.Thread):
                                   + unicode(BOOTLOADER_INFO[_os]["Settings"]["Update"])+"\n")
 
                 report_list.write("\t\t\tBootloader was replaced with another bootloader: "
-                                  + unicode(BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"])+"\n\n")
+                                  + unicode(BOOTLOADER_INFO[_os]["Settings"]
+                                            ["InstallNewBootloader"])+"\n\n")
 
-                if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] or BOOTLOADER_INFO[_os]["Settings"]["Update"] or BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"]:
+                if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] \
+                or BOOTLOADER_INFO[_os]["Settings"]["Update"] \
+                or BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"]:
+
                     report_list.write("\t\t\tNew Bootloader: "
                                       + BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"\n")
 
                     report_list.write("\t\t\tKept Existing Bootloader Timeout: "
-                                      + unicode(BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"])+"\n")
+                                      + unicode(BOOTLOADER_INFO[_os]["Settings"]
+                                                ["KeepExistingTimeout"])+"\n")
 
                     if BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"] is False:
                         report_list.write("\t\t\tNew Bootloader Timeout: "
-                                          + unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])+"\n")
+                                          + unicode(BOOTLOADER_INFO[_os]["Settings"]
+                                                    ["NewTimeout"])+"\n")
 
                     report_list.write("\t\t\tKept Existing Kernel Options: "
-                                      + unicode(BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"])+"\n")
+                                      + unicode(BOOTLOADER_INFO[_os]["Settings"]
+                                                ["KeepExistingKernelOptions"])+"\n")
 
                     if BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"] is False:
                         report_list.write("\t\t\tNew Kernel Options: "
-                                          + BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"]+"\n")
+                                          + BOOTLOADER_INFO[_os]["Settings"]
+                                          ["NewKernelOptions"]+"\n")
 
                     report_list.write("\t\t\tNew Default OS: "
                                       +BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"]+"\n\n")
@@ -3183,7 +3464,8 @@ class BackendThread(threading.Thread):
         report_list.write("Show Diagnostic Terminal Output: "
                           + unicode(SETTINGS["FullVerbosity"])+"\n")
 
-        report_list.write("Save System Report To File: "+unicode(SETTINGS["MakeSystemSummary"])+"\n")
+        report_list.write("Save System Report To File: "+unicode(SETTINGS["MakeSystemSummary"])
+                          + "\n")
 
         if SETTINGS["MakeSystemSummary"]:
             report_list.write("\n\tSave Terminal Output in Report: "
