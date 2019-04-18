@@ -294,23 +294,25 @@ def get_oss():
 
             else:
                 #Look for lots of different Windows editions.
-                if CoreStartupTools.has_windows_9x(mount_point):
-                    os_name = "Windows 95/98/ME"
-
-                elif CoreStartupTools.has_windows_xp(mount_point):
-                    os_name = "Windows XP"
-
-                elif CoreStartupTools.has_windows_vista(mount_point):
-                    os_name = "Windows Vista"
-
-                elif CoreStartupTools.has_windows_7(mount_point):
-                    os_name = "Windows 7"
+                #Look for the newest ones first, due to references to old versions
+                #in the licenses messing up our version detection.
+                if CoreStartupTools.has_windows_10(mount_point):
+                    os_name = "Windows 10"
 
                 elif CoreStartupTools.has_windows_8(mount_point):
                     os_name = "Windows 8/8.1"
 
-                elif CoreStartupTools.has_windows_10(mount_point):
-                    os_name = "Windows 10"
+                elif CoreStartupTools.has_windows_7(mount_point):
+                    os_name = "Windows 7"
+
+                elif CoreStartupTools.has_windows_vista(mount_point):
+                    os_name = "Windows Vista"
+
+                elif CoreStartupTools.has_windows_xp(mount_point):
+                    os_name = "Windows XP"
+
+                elif CoreStartupTools.has_windows_9x(mount_point):
+                    os_name = "Windows 95/98/ME"
 
                 else:
                     #Unknown Windows.
