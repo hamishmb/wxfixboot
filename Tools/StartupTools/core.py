@@ -205,6 +205,10 @@ def has_windows_10(mount_point):
     try:
         with open(mount_point+"/Windows/System32/license.rtf") as file:
             for line in file:
+                #If this is Windows 8/8.1, this will come up first.
+                if "WINDOWS 8" in line.upper():
+                    return False
+
                 if "BINDING ARBITRATION CLAUSE" in line.upper():
                     return True
 
