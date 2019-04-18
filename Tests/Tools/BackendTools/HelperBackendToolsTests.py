@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # HelperBackendTools tests for WxFixBoot
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2019 Hamish McIntyre-Bhatty
@@ -79,7 +79,7 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
 
         Tools.coretools.STARTUP = True
 
-    def unlock_fd(self)
+    def unlock_fd(self):
         time.sleep(10)
         self.fd.close()
 
@@ -94,7 +94,7 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
         del self.app
 
     @unittest.skipUnless(subprocess.Popen("which apt-get", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't apt-get.")
-    def test_wait_until_packagemanager_free_1(self):
+    def test_packagemanager_free_1(self):
         print("Waiting until APT is free to make sure the code doesn't wait when executed.")
         #Wait until APT is free.
         unlocked = False
@@ -119,7 +119,7 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
                                                           package_manager="apt-get")
 
     @unittest.skipUnless(subprocess.Popen("which apt-get", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't apt-get.")
-    def test_wait_until_packagemanager_free_2(self):
+    def test_packagemanager_free_2(self):
         print("Locking APT for a few seconds, and then releasing.")
         print("Acquiring APT lock...")
 
@@ -148,16 +148,55 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
                                                           package_manager="apt-get")
 
     @unittest.skipUnless(subprocess.Popen("which yum", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't yum.")
-    def test_wait_until_packagemanager_free_3(self):
-        DialogTools.show_real_msg_dlg("Please ensure the package manager is not in use.")
+    def test_packagemanager_free_3(self):
+        print("Waiting until DNF is free to make sure the code doesn't wait when executed.")
+        #Wait until DNF is free.
+        unlocked = False
+
+        while not unlocked:
+            try:
+                self.fd = open("/var/lib/rpm/.rpm.lock", "w")
+                fcntl.lockf(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+            except (IOError, OSError):
+                #DNF is still busy. Wait a second and try again.
+                time.sleep(1)
+
+            else:
+                #DNF is free!
+                unlocked = True
+
+            finally:
+                self.fd.close()
+
         HelperBackendTools.wait_until_packagemanager_free(mount_point="",
                                                           package_manager="yum")
 
     @unittest.skipUnless(subprocess.Popen("which yum", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't yum.")
-    def test_wait_until_packagemanager_free_4(self):
-        #Ask user to enable internet connection.
-        DialogTools.show_real_msg_dlg("Please open YUM Extender or similar to lock the package "
-                                      + "manager, then click ok. After a few seconds, close it.")
+    def test_packagemanager_free_4(self):
+        print("Locking DNF for a few seconds, and then releasing.")
+        print("Acquiring DNF lock...")
+
+        #Wait until we can acquire the lock.
+        locked = False
+
+        while not locked:
+            try:
+                self.fd = open("/var/lib/rpm/.rpm.lock", "w")
+                fcntl.lockf(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+            except (IOError, OSError):
+                #DNF is still busy. Wait a second and try again.
+                time.sleep(1)
+
+            else:
+                #DNF is free!
+                locked = True
+
+        #In 10 seconds time, unlock DNF.
+        print("Done. If this test now hangs for a long time, consider it to have failed")
+
+        threading.Thread(target=self.unlock_fd).start()
 
         HelperBackendTools.wait_until_packagemanager_free(mount_point="",
                                                           package_manager="yum")
