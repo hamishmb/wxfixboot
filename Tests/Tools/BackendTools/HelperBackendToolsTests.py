@@ -147,6 +147,8 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
         HelperBackendTools.wait_until_packagemanager_free(mount_point="",
                                                           package_manager="apt-get")
 
+    #FIXME: These two tests fail, strictly speaking, but DNF handles the lock differently;
+    #it will wait instead of exiting with an error, so it doesn't matter as much.
     @unittest.skipUnless(subprocess.Popen("which yum", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't yum.")
     def test_packagemanager_free_3(self):
         print("Waiting until DNF is free to make sure the code doesn't wait when executed.")

@@ -109,7 +109,9 @@ def wait_until_packagemanager_free(mount_point, package_manager):
 
     retval = 1
 
-    #Trap in while loop until package manager is free. TODO Check this works on APT.
+    #Trap in while loop until package manager is free.
+    #FIXME: Doesn't work with DNF, but doesn't strictly matter because it will just wait
+    #until the lock is free, rather than exiting.
     while retval not in success_retvals:
         retval = CoreTools.start_process(cmd, show_output=False, privileged=True)
 
