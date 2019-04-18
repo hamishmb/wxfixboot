@@ -209,7 +209,7 @@ def has_windows_10(mount_point):
                 if "WINDOWS 8" in line.upper():
                     return False
 
-                if "BINDING ARBITRATION CLAUSE" in line.upper():
+                elif "BINDING ARBITRATION CLAUSE" in line.upper():
                     return True
 
     except (IOError, OSError):

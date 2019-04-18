@@ -604,6 +604,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
 
         logger.debug("MainWindow().__init__(): Started. Waiting for events...")
 
+    def update_output_box(self, line, show_output):
+        """Ignored, temporarily here for compatibility with coretools.start_process"""
+        pass
+ 
     def make_status_bar(self):
         """Create the status bar"""
         self.statusbar = self.CreateStatusBar()
@@ -1105,40 +1109,49 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
             dlg.Destroy()
 
             if answer == wx.ID_YES:
-                #Ask the user where to save it.
-                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home",
-                                    wildcard="Log Files (*.log)|*.log",
-                                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+                success = False
 
-                answer = dlg.ShowModal()
-                _file = dlg.GetPath()
-                dlg.Destroy()
+                while not success:
+                    #Ask the user where to save the file.
+                    #Ask the user where to save it.
+                    dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home",
+                                        wildcard="Log Files (*.log)|*.log",
+                                        style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
-                if answer == wx.ID_OK:
-                    #Copy it to the specified path, using a one-liner, and don't bother
-                    #handling any errors, because this is run as root.
-                    CoreTools.start_process("cp /tmp/wxfixboot.log "+_file)
-
-                    dlg = wx.MessageDialog(self.panel, 'Done! WxFixBoot will now exit.',
-                                           'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
-                    dlg.ShowModal()
+                    answer = dlg.ShowModal()
+                    _file = dlg.GetPath()
                     dlg.Destroy()
 
-                else:
+                    if answer != wx.ID_OK:
+                        break
+
+                    #Copy it to the specified path.
+                    if CoreTools.start_process("cp /tmp/wxfixboot.log "+_file) == 0:
+                        success = True
+
+                        dlg = wx.MessageDialog(self.panel, 'Done! WxFixBoot will now exit.',
+                                               'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                        dlg.ShowModal()
+                        dlg.Destroy()
+
+
+                    else:
+                        dlg = wx.MessageDialog(self.panel, "WxFixBoot does not have "
+                                               + "permission to write to that file or directory! "
+                                               + "Please select a new file and try again.",
+                                               "WxFixBoot - Error", wx.OK | wx.ICON_INFORMATION)
+
+                        dlg.ShowModal()
+                        dlg.Destroy()
+
+                #If the user canceled it, never mind.
+                if not success:
                     dlg = wx.MessageDialog(self.panel, "Okay, WxFixBoot will now exit without "
                                            + "saving the log file.", 'WxFixBoot - Information',
                                            wx.OK | wx.ICON_INFORMATION)
 
                     dlg.ShowModal()
                     dlg.Destroy()
-
-            else:
-                dlg = wx.MessageDialog(self.panel, "Okay, WxFixBoot will now exit without "
-                                       + "saving the log file.", 'WxFixBoot - Information',
-                                       wx.OK | wx.ICON_INFORMATION)
-
-                dlg.ShowModal()
-                dlg.Destroy()
 
             #Delete the log file, if we can.
             try:
@@ -2940,52 +2953,61 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
             #Shutdown the logger.
             logging.shutdown()
 
-            #Prompt user to save the log file.
-            dlg = wx.MessageDialog(self.panel, "Do you want to keep WxFixBoot's log file? For "
-                                   + "privacy reasons, WxFixBoot will delete its log file when "
-                                   + "closing. If you want to save it, which is helpful for "
-                                   + "debugging if something went wrong, click yes, and otherwise "
-                                   + "click no.", "WxFixBoot - Question",
+                        #Prompt user to save the log file.
+            dlg = wx.MessageDialog(self.panel, "Do you want to keep WxFixBoot's log file? "
+                                   + "For privacy reasons, WxFixBoot will delete its log file "
+                                   + "when closing. If you want to save it, which is helpful "
+                                   + "for debugging if something went wrong, click yes, and "
+                                   + "otherwise click no.", "WxFixBoot - Question",
                                    style=wx.YES_NO | wx.ICON_QUESTION, pos=wx.DefaultPosition)
 
             answer = dlg.ShowModal()
             dlg.Destroy()
 
             if answer == wx.ID_YES:
-                #Ask the user where to save it.
-                dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home",
-                                    wildcard="Log Files (*.log)|*.log",
-                                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+                success = False
 
-                answer = dlg.ShowModal()
-                _file = dlg.GetPath()
-                dlg.Destroy()
+                while not success:
+                    #Ask the user where to save the file.
+                    #Ask the user where to save it.
+                    dlg = wx.FileDialog(self.panel, "Save log file to...", defaultDir="/home",
+                                        wildcard="Log Files (*.log)|*.log",
+                                        style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
-                if answer == wx.ID_OK:
-                    #Copy it to the specified path, using a one-liner, and don't bother handling
-                    #any errors, because this is run as root. FIXME Bad idea.
-                    CoreTools.start_process("cp /tmp/wxfixboot.log "+_file)
-
-                    dlg = wx.MessageDialog(self.panel, 'Done! WxFixBoot will now exit.',
-                                           'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
-                    dlg.ShowModal()
+                    answer = dlg.ShowModal()
+                    _file = dlg.GetPath()
                     dlg.Destroy()
 
-                else:
+                    if answer != wx.ID_OK:
+                        break
+
+                    #Copy it to the specified path.
+                    if CoreTools.start_process("cp /tmp/wxfixboot.log "+_file) == 0:
+                        success = True
+
+                        dlg = wx.MessageDialog(self.panel, 'Done! WxFixBoot will now exit.',
+                                               'WxFixBoot - Information', wx.OK | wx.ICON_INFORMATION)
+                        dlg.ShowModal()
+                        dlg.Destroy()
+
+
+                    else:
+                        dlg = wx.MessageDialog(self.panel, "WxFixBoot does not have "
+                                               + "permission to write to that file or directory! "
+                                               + "Please select a new file and try again.",
+                                               "WxFixBoot - Error", wx.OK | wx.ICON_INFORMATION)
+
+                        dlg.ShowModal()
+                        dlg.Destroy()
+
+                #If the user canceled it, never mind.
+                if not success:
                     dlg = wx.MessageDialog(self.panel, "Okay, WxFixBoot will now exit without "
                                            + "saving the log file.", 'WxFixBoot - Information',
                                            wx.OK | wx.ICON_INFORMATION)
 
                     dlg.ShowModal()
                     dlg.Destroy()
-
-            else:
-                dlg = wx.MessageDialog(self.panel, "Okay, WxFixBoot will now exit without saving "
-                                       + "the log file.", 'WxFixBoot - Information',
-                                       wx.OK | wx.ICON_INFORMATION)
-
-                dlg.ShowModal()
-                dlg.Destroy()
 
             #Delete the log file, if we can.
             try:
@@ -3083,12 +3105,24 @@ class BackendThread(threading.Thread):
         DialogTools.show_msg_dlg(kind="info", message="WxFixBoot will now create your system "
                                  + "report. Click okay to continue.")
 
-        #Ask the user where to save the file.
-        report_file = DialogTools.show_save_file_dlg(title="WxFixBoot - Select System Report File",
-                                                     wildcard="Text Files|*.txt|Log Files|*.log|All Files/Devices (*)|*")
+        success = False
 
-        #Write everything directly to the file.
-        report_list = open(report_file, 'w')
+        while not success:
+            try:
+                #Ask the user where to save the file.
+                report_file = DialogTools.show_save_file_dlg(title="WxFixBoot - Select System Report File",
+                                                             wildcard="Text Files|*.txt|Log Files|*.log|All Files/Devices (*)|*")
+
+                #Write everything directly to the file.
+                report_list = open(report_file, 'w')
+
+                success = True
+
+            except (IOError, OSError):
+                DialogTools.show_msg_dlg(kind="error", message="WxFixBoot does not have "
+                                            + "permission to write to that file or directory! "
+                                            + "Please select a new file and try again.")
+
         report_list.write("This system report was created with WxFixBoot version "+VERSION
                           + ". It can be used to diagnose problems with your system, and can help "
                           + "if you wish to make a support request.\n\n")
