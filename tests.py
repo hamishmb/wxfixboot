@@ -75,58 +75,58 @@ def usage():
     print("WxFixBoot "+VERSION+" is released under the GNU GPL Version 3")
     print("Copyright (C) Hamish McIntyre-Bhatty 2013-2019")
 
-#Exit if not running as root.
-if os.geteuid() != 0:
-    sys.exit("You must run the tests as root! Exiting...")
-
-#Check all cmdline options are valid.
-try:
-    OPTS = getopt.getopt(sys.argv[1:], "hDdsbcmat", ["help", "debug", "startuptools",
-                                                     "backendtools", "coretools", "main",
-                                                     "all", "tests"])[0]
-
-except getopt.GetoptError as err:
-    #Invalid option. Show the help message and then exit.
-    #Show the error.
-    print(unicode(err))
-    usage()
-    sys.exit(2)
-
-#Set up which tests to run based on options given.
-#TODO Set up full defaults when finished.
-TESTSUITES = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests,
-              EssentialBackendToolsTests, CoreStartupToolsTests,
-              MainStartupToolsTests]
-
-for o, a in OPTS:
-    if o in ["-c", "--coretools"]:
-        TESTSUITES = [CoreToolsTests]
-    elif o in ["-d", "--dialogtools"]:
-        TESTSUITES = [DialogToolsTests]
-    elif o in ["-s", "--startuptools"]:
-        TESTSUITES = [CoreStartupToolsTests, MainStartupToolsTests]
-        #Implementation isn't finished ***
-    elif o in ["-b", "--backendtools"]:
-        TESTSUITES = [HelperBackendToolsTests, EssentialBackendToolsTests]
-        #Implementation isn't finished ***
-    elif o in ["-m", "--main"]:
-        #TESTSUITES = [MainTests]
-        assert False, "Not implemented yet"
-    elif o in ["-a", "--all"]:
-        TESTSUITES = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests,
-                      EssentialBackendToolsTests, CoreStartupToolsTests, MainStartupToolsTests]
-        #TESTSUITES.append(MainTests)
-    elif o in ["-t", "--tests"]:
-        pass
-    elif o in ["-D", "--debug"]:
-        LOGGER_LEVEL = logging.DEBUG
-    elif o in ["-h", "--help"]:
-        usage()
-        sys.exit()
-    else:
-        assert False, "unhandled option"
-
 if __name__ == "__main__":
+    #Exit if not running as root.
+    if os.geteuid() != 0:
+        sys.exit("You must run the tests as root! Exiting...")
+
+    #Check all cmdline options are valid.
+    try:
+        OPTS = getopt.getopt(sys.argv[1:], "hDdsbcmat", ["help", "debug", "startuptools",
+                                                         "backendtools", "coretools", "main",
+                                                         "all", "tests"])[0]
+
+    except getopt.GetoptError as err:
+        #Invalid option. Show the help message and then exit.
+        #Show the error.
+        print(unicode(err))
+        usage()
+        sys.exit(2)
+
+    #Set up which tests to run based on options given.
+    #TODO Set up full defaults when finished.
+    TESTSUITES = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests,
+                  EssentialBackendToolsTests, CoreStartupToolsTests,
+                  MainStartupToolsTests]
+
+    for o, a in OPTS:
+        if o in ["-c", "--coretools"]:
+            TESTSUITES = [CoreToolsTests]
+        elif o in ["-d", "--dialogtools"]:
+            TESTSUITES = [DialogToolsTests]
+        elif o in ["-s", "--startuptools"]:
+            TESTSUITES = [CoreStartupToolsTests, MainStartupToolsTests]
+            #Implementation isn't finished ***
+        elif o in ["-b", "--backendtools"]:
+            TESTSUITES = [HelperBackendToolsTests, EssentialBackendToolsTests]
+            #Implementation isn't finished ***
+        elif o in ["-m", "--main"]:
+            #TESTSUITES = [MainTests]
+            assert False, "Not implemented yet"
+        elif o in ["-a", "--all"]:
+            TESTSUITES = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests,
+                          EssentialBackendToolsTests, CoreStartupToolsTests, MainStartupToolsTests]
+            #TESTSUITES.append(MainTests)
+        elif o in ["-t", "--tests"]:
+            pass
+        elif o in ["-D", "--debug"]:
+            LOGGER_LEVEL = logging.DEBUG
+        elif o in ["-h", "--help"]:
+            usage()
+            sys.exit()
+        else:
+            assert False, "unhandled option"
+
     logger.setLevel(LOGGER_LEVEL)
 
     for SuiteModule in TESTSUITES:

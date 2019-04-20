@@ -106,48 +106,49 @@ def usage():
     print("WxFixBoot "+VERSION+" is released under the GNU GPL Version 3")
     print("Copyright (C) Hamish McIntyre-Bhatty 2013-2019")
 
-#Set up according to cmdline options.
-try:
-    OPTIONS = getopt.getopt(sys.argv[1:], "hqvd", ("help", "quiet", "verbose", "debug"))[0]
+if __name__ == "__main__":
+    #Set up according to cmdline options.
+    try:
+        OPTIONS = getopt.getopt(sys.argv[1:], "hqvd", ("help", "quiet", "verbose", "debug"))[0]
 
-except getopt.GetoptError as err:
-    #Invalid option. Show the help message and then exit.
-    #Show the error.
-    print(unicode(err))
-    usage()
-    sys.exit(2)
-
-#Check if we're running on Parted Magic.
-PARTED_MAGIC = ("PartedMagic" in os.uname()[1])
-
-#Set up logging.
-logger = logging.getLogger('WxFixBoot')
-logging.basicConfig(filename='/tmp/wxfixboot.log',
-                    format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
-                    datefmt='%d/%m/%Y %I:%M:%S %p')
-
-logger.setLevel(logging.DEBUG)
-
-#Set restarting to false.
-RESTARTING = False
-
-#Determine the option(s) given, and change the level of logging based on cmdline options.
-for OPTION, ARGUMENT in OPTIONS:
-    if OPTION in ("-q", "--quiet"):
-        logger.setLevel(logging.WARNING)
-
-    elif OPTION in ("-v", "--verbose"):
-        logger.setLevel(logging.INFO)
-
-    elif OPTION in ("-d", "--debug"):
-        logger.setLevel(logging.DEBUG)
-
-    elif OPTION in ("-h", "--help"):
+    except getopt.GetoptError as err:
+        #Invalid option. Show the help message and then exit.
+        #Show the error.
+        print(unicode(err))
         usage()
-        sys.exit()
+        sys.exit(2)
 
-    else:
-        assert False, "unhandled option"
+    #Check if we're running on Parted Magic.
+    PARTED_MAGIC = ("PartedMagic" in os.uname()[1])
+
+    #Set up logging.
+    logger = logging.getLogger('WxFixBoot')
+    logging.basicConfig(filename='/tmp/wxfixboot.log',
+                        format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
+                        datefmt='%d/%m/%Y %I:%M:%S %p')
+
+    logger.setLevel(logging.DEBUG)
+
+    #Set restarting to false.
+    RESTARTING = False
+
+    #Determine the option(s) given, and change the level of logging based on cmdline options.
+    for OPTION, ARGUMENT in OPTIONS:
+        if OPTION in ("-q", "--quiet"):
+            logger.setLevel(logging.WARNING)
+
+        elif OPTION in ("-v", "--verbose"):
+            logger.setLevel(logging.INFO)
+
+        elif OPTION in ("-d", "--debug"):
+            logger.setLevel(logging.DEBUG)
+
+        elif OPTION in ("-h", "--help"):
+            usage()
+            sys.exit()
+
+        else:
+            assert False, "unhandled option"
 
 #Import custom-made modules
 #NB: This is done here so the logger is already set up - logging levels can be set properly in
@@ -3499,5 +3500,7 @@ class BackendThread(threading.Thread):
         report_list.close()
 
 #End Backend Thread
-APP = WxFixBoot(False)
-APP.MainLoop()
+
+if __name__ == "__main__":
+    APP = WxFixBoot(False)
+    APP.MainLoop()
