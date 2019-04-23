@@ -58,11 +58,7 @@ def get_helper(cmd):
     """Figure out which helper script to use."""
     helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux.sh"
 
-    if ("mount" in cmd or "kpartx" in cmd or "lsblk" in cmd or "partprobe" in cmd):
-        #Note: These are only used in the process of mounting/unmounting files.
-        helper = "/usr/share/wxfixboot/Tools/helpers/runasroot_linux_mount.sh"
-
-    elif "pkexec /usr/share/wxfixboot/Tools/helpers/runasroot_linux_read_file.sh" in cmd:
+    if "pkexec /usr/share/wxfixboot/Tools/helpers/runasroot_linux_read_file.sh" in cmd:
         #No need to add a helper for this.
         return ""
 
