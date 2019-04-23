@@ -45,16 +45,6 @@ LOGGER_LEVEL = logging.CRITICAL
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
                     datefmt='%d/%m/%Y %I:%M:%S %p', level=LOGGER_LEVEL)
 
-#Import test modules.
-from Tests.Tools import CoreToolsTests
-from Tests.Tools import DialogToolsTests
-
-from Tests.Tools.BackendTools import HelperBackendToolsTests
-from Tests.Tools.BackendTools import EssentialBackendToolsTests
-
-from Tests.Tools.StartupTools import CoreStartupToolsTests
-from Tests.Tools.StartupTools import MainStartupToolsTests
-
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
     #Disable cos necessary to keep supporting python 2.
@@ -93,6 +83,24 @@ if __name__ == "__main__":
         usage()
         sys.exit(2)
 
+    #We have to handle options twice for this to work - a bit strange, but it works.
+    #Handle debugging mode here.
+    for o, a in OPTS:
+        if o in ["-D", "--debug"]:
+            LOGGER_LEVEL = logging.DEBUG
+
+    logger.setLevel(LOGGER_LEVEL)
+
+    #Import test modules here so the logging level is right - debug mode will work.
+    from Tests.Tools import CoreToolsTests
+    from Tests.Tools import DialogToolsTests
+
+    from Tests.Tools.BackendTools import HelperBackendToolsTests
+    from Tests.Tools.BackendTools import EssentialBackendToolsTests
+
+    from Tests.Tools.StartupTools import CoreStartupToolsTests
+    from Tests.Tools.StartupTools import MainStartupToolsTests
+
     #Set up which tests to run based on options given.
     #TODO Set up full defaults when finished.
     TESTSUITES = [CoreToolsTests, DialogToolsTests, HelperBackendToolsTests,
@@ -126,8 +134,6 @@ if __name__ == "__main__":
             sys.exit()
         else:
             assert False, "unhandled option"
-
-    logger.setLevel(LOGGER_LEVEL)
 
     for SuiteModule in TESTSUITES:
         print("\n\nTests in "+unicode(SuiteModule)+"\n\n")
