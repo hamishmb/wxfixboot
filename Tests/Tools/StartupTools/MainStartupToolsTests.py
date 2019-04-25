@@ -119,7 +119,7 @@ class TestGetOSs(unittest.TestCase):
 
     def tearDown(self):
         del Tools.coretools.STARTUP
-        del Tools.startuptools.core.DialogTools
+        del Tools.StartupTools.core.DialogTools
 
         DISK_INFO.clear()
 
