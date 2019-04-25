@@ -120,7 +120,13 @@ def wait_until_packagemanager_free(mount_point, package_manager):
             CoreTools.start_process("sh -c 'echo No cache available, "
                                     + "downloading package information...'")
 
-            CoreTools.start_process("yum check-update", show_output=False, privileged=True)
+            if mount_point != "":
+                cmd2 = "chroot "+mount_point+" yum check-update"
+
+            else:
+                cmd2 = "yum check-update"
+
+            CoreTools.start_process(cmd2, show_output=False, privileged=True)
 
         time.sleep(5)
 
