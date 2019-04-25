@@ -113,10 +113,13 @@ class TestGetOSs(unittest.TestCase):
         self.maxDiff = None
 
         Tools.coretools.STARTUP = True
+        Tools.StartupTools.core.DialogTools = DialogTools
+
         DISK_INFO.update(getdevinfo.getdevinfo.get_info()) #We need real disk info for these ones.
 
     def tearDown(self):
         del Tools.coretools.STARTUP
+        del Tools.startuptools.core.DialogTools
 
         DISK_INFO.clear()
 
