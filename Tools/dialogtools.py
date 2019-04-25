@@ -132,7 +132,7 @@ def show_thread_yes_no_dlg(msg, title="WxFixBoot - Question", buttons=(None, Non
             if dlg.SetYesNoLabels(buttons[0], buttons[1]):
                 #If it worked get rid of the last unneccessary sentence in the message.
                 #(A click yes for X, click no for Y sentence).
-                dlg.SetMessage('. '.join(msg.split(".")[0:-1]))
+                dlg.SetMessage('.'.join(msg.split(".")[0:-1]))
 
         except AttributeError:
             pass

@@ -102,7 +102,7 @@ def show_yes_no_dlg(message, title="WxFixBoot - Question", buttons=(None, None))
         try:
             if dlg.SetYesNoLabels(buttons[0], buttons[1]):
                 #If it worked get rid of the last unneccessary sentence in the message.
-                dlg.SetMessage(' '.join(message.split(".")[0:-1]))
+                dlg.SetMessage('.'.join(message.split(".")[0:-1]))
 
         except AttributeError:
             pass
