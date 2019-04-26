@@ -525,13 +525,13 @@ def setup_chroot(mount_point):
     """Set up a chroot for the given mountpoint."""
     logger.debug("setup_chroot(): Setting up chroot for mount_point: "+mount_point+"...")
 
-    #Mount /dev, /dev/pts, /proc and /sys for the chroot.
+    #Mount /dev, /dev/pts, /proc, /run and /sys for the chroot.
     #We might also need internet access in chroot, so to do this first backup
     #mount_point/etc/resolv.conf to mount_point/etc/resolv.conf.bak (if it's a link, this
     #will also preserve it), then copy current system's /etc/resolv.conf (the contents, not
     #the link) to mount_point/etc/resolv.conf, enabling internet access.
 
-    mount_list = ("/dev", "/dev/pts", "/proc", "/sys")
+    mount_list = ("/dev", "/dev/pts", "/proc", "/run", "/sys")
 
     for file_system in mount_list:
         if mount_partition(partition=file_system, mount_point=mount_point+file_system, options="--bind") != 0:
@@ -563,9 +563,9 @@ def teardown_chroot(mount_point):
     """Remove a chroot at the given mountpoint."""
     logger.debug("teardown_chroot(): Removing chroot at mount_point: "+mount_point+"...")
 
-    #unmount /dev/pts, /dev, /proc and /sys in the chroot.
+    #unmount /dev/pts, /dev, /proc, /run and /sys in the chroot.
     unmount_list = (mount_point+"/dev/pts", mount_point+"/dev", mount_point+"/proc",
-                    mount_point+"/sys")
+                    mount_point+"/run", mount_point+"/sys")
 
     for file_system in unmount_list:
         if unmount(file_system) != 0:
