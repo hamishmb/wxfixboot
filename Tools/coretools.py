@@ -351,6 +351,23 @@ def is_mounted(partition, mount_point=None):
     logger.debug("is_mounted(): It isn't. Returning False...")
     return False
 
+def any_mounted(partitions):
+    """
+    Checks if any of the given partitions are mounted.
+    partitions are the given partitions to check.
+
+    Return boolean True/False.
+    """
+
+    any_disks_mounted = False
+
+    for alias in partitions:
+        if is_mounted(alias):
+            any_disks_mounted = True
+            break
+
+    return any_disks_mounted
+
 def get_partition_mounted_at(mount_point):
     """Returns the partition mounted at the given mountpoint, if any.
     Otherwise, return None"""

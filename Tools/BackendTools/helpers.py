@@ -199,6 +199,14 @@ def find_checkable_file_systems():
             remount_fs_after = False
             reason = "disk is busy."
 
+        #Extra check for LVM disks using aliases.
+        elif DISK_INFO[disk]["Product"] == "LVM Partition":
+            if root_fs in DISK_INFO[disk]["Aliases"]:
+                mount_point = "/"
+                check_this_fs = False
+                remount_fs_after = False
+                reason = "disk is busy."
+
         else:
             #If filesystem is unknown, or not applicable (extended partitions), don't check it.
             if DISK_INFO[disk]["FileSystem"] in ("Unknown", "N/A"):
@@ -210,6 +218,14 @@ def find_checkable_file_systems():
             else:
                 #Check if the partition is mounted.
                 if CoreTools.is_mounted(disk) is False:
+                    mount_point = "None"
+                    check_this_fs = True
+                    remount_fs_after = False
+
+                #Extra check for LVM disks using aliases.
+                elif DISK_INFO[disk]["Product"] == "LVM Partition" and \
+                     CoreTools.any_mounted(DISK_INFO[disk]["Aliases"]) is False:
+
                     mount_point = "None"
                     check_this_fs = True
                     remount_fs_after = False
