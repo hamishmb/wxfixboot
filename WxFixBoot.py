@@ -3228,6 +3228,7 @@ class BackendThread(threading.Thread):
         #Make the list of operations avalable so bootloader operations can be disabled if
         #necessary.
         Tools.BackendTools.helpers.OPERATIONS = OPERATIONS
+        Tools.BackendTools.essentials.OPERATIONS = OPERATIONS
 
         #Run functions to do operations.
         for function in OPERATIONS:
@@ -3244,7 +3245,7 @@ class BackendThread(threading.Thread):
         if SYSTEM_INFO["DisableBootloaderOperations"]:
             DialogTools.show_msg_dlg(kind="warning", message="Bootloader Operations were "
                                      + "disabled. This is because "
-                                     + SYSTEM_INFO["DisableBootloaderOperationsBecause"]
+                                     + ', '.join(SYSTEM_INFO["DisableBootloaderOperationsBecause"])
                                      + ". Click okay to continue.")
 
         logger.info("BackendThread().start_operations(): Finished Operation Running Code.")
@@ -3371,7 +3372,7 @@ class BackendThread(threading.Thread):
 
             report_list.write("but they weren't actually done.\n")
             report_list.write("Bootloader Operations were disabled because: "
-                              + SYSTEM_INFO["DisableBootloaderOperationsBecause"]+"\n\n")
+                              + ', '.join(SYSTEM_INFO["DisableBootloaderOperationsBecause"])+"\n\n")
 
         bootloader_oss = list(BOOTLOADER_INFO.keys())
         bootloader_oss.sort()

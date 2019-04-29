@@ -793,7 +793,7 @@ def final_check():
                                  + "modified! These are:\n\n"+'\n'.join(unmodifyable_oss)
                                  + "\n\nClick okay to continue.")
 
-    #Warn if any bootloaders need reinstalling. TODO Does this work? Can it be improved?
+    #Warn if any bootloaders need reinstalling.
     need_reinstalling = []
 
     for _os in BOOTLOADER_INFO:

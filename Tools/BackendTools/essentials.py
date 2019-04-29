@@ -59,7 +59,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
 
 #Silence other errors.
-Operations = []
+OPERATIONS = []
 
 def check_internet_connection():
     """Check the internet connection."""
@@ -68,7 +68,6 @@ def check_internet_connection():
                              + "done by pinging the OpenDNS DNS servers.")
 
     logger.info("check_internet_connection(): Checking the Internet Connection...")
-    SYSTEM_INFO["DisableBootloaderOperations"] = False
 
     while True:
         #Test the internet connection by pinging an OpenDNS DNS server.
@@ -310,10 +309,9 @@ def handle_filesystem_check_return_values(exec_cmds, retval, partition, manage_b
         #If we're doing bootloader operations, prompt the user to disable them.
         doing_bootloader_operations = False
 
-        for function in Operations:
+        for function in OPERATIONS:
             if isinstance(function, tuple):
-                if manage_bootloader_function == function:
-                    #TODO check this works.
+                if manage_bootloader_function == function[0]:
                     doing_bootloader_operations = True
                     break
 
