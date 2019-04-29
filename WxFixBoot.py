@@ -3048,30 +3048,20 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
         logger.debug("ProgressWindow().restart_wxfixboot(): Checking no filesystems are mounted "
                      + "in the temporary directory, and unmounting them if they are...")
 
-        #TODO Handle this the same way as during startup incl emergency exit.
-        #TODO Check what happens if this fails.
-        if os.path.exists("/tmp/wxfixboot/mountpoints/dev"):
-            for _dir in os.listdir("/tmp/wxfixboot/mountpoints/dev"):
-                #Call CoreTools.unmount() on each directory to make sure that nothing is mounted
-                #there after this point.
-                if CoreTools.unmount("/tmp/wxfixboot/mountpoints/dev/"+_dir) != 0:
-                    #If we errored try removing chroot and trying again.
-                    logger.warning("ProgressWindow().restart_wxfixboot(): Failed to unmount "
-                                   + "/tmp/wxfixboot/mountpoints/dev/"+_dir+"! Trying to remove "
-                                   + "chroot first then trying again...")
+        if os.path.isdir("/tmp/wxfixboot/mountpoints"):
+            #Check nothing is using it first.
+            for line in CoreTools.start_process("mount", return_output=True)[1].split("\n"):
+                if "/tmp/wxfixboot/mountpoints" in line:
+                    #Unmount this filesystem if possible.
+                    filesystem = line.split(" on ")[0]
 
-                    CoreTools.teardown_chroot("/tmp/wxfixboot/mountpoints/dev/"+_dir)
-
-                    if CoreTools.unmount("/tmp/wxfixboot/mountpoints/dev/"+_dir) != 0:
-                        logger.error("ProgressWindow().restart_wxfixboot(): Couldn't unmount "
-                                     + "/tmp/wxfixboot/mountpoints/dev/"+_dir+"! Giving up, "
-                                     + "warning user, and aborting restart...")
-
-                        DialogTools.show_msg_dlg(kind="error", message="Couldn't restart "
-                                                 + "WxFixBoot because there are mounted "
-                                                 + "filesystems in the temporary directory! "
-                                                 + "Please try restarting your system "
-                                                 + "and then try again.")
+                    if CoreTools.unmount(filesystem) != 0:
+                        #If it can't be mounted, do an emergency exit.
+                        CoreTools.emergency_exit("There are mounted filesystems in "
+                                                 + "/tmp/wxfixboot/mountpoints, WxFixBoot's "
+                                                 + "temporary mountpoints directory! Please "
+                                                 + "unmount any filesystems there and try "
+                                                 + "again.")
 
         self.Hide()
 
