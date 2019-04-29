@@ -375,6 +375,9 @@ def remove_old_bootloader(_os):
                                  + "after WxFixBoot finishes its operations. Reinstalling the "
                                  + "bootloader again afterwards is recommended.")
 
+    #Attempt to clear any stuck logical volumes that may have been created by os-prober.
+    CoreTools.start_process("dmsetup remove_all -y", privileged=True)
+
     #Log and notify the user that we're finished removing bootloaders.
     logger.info("remove_old_bootloader(): Finished removing "+BOOTLOADER_INFO[_os]["Bootloader"]
                 + "...")
@@ -608,6 +611,9 @@ def install_new_bootloader(_os):
 
     wx.CallAfter(wx.GetApp().TopWindow.update_output_box, "\n###Finished installing "
                  + BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" in "+_os+"...###\n")
+
+    #Attempt to clear any stuck logical volumes that may have been created by os-prober.
+    CoreTools.start_process("dmsetup remove_all -y", privileged=True)
 
     #Log and notify the user that we're finished installing the bootloader.
     logger.info("install_new_bootloader(): Finished installing "
@@ -971,6 +977,9 @@ def set_new_bootloader_config(_os):
         if CoreTools.unmount(mount_point) != 0:
             logger.error("set_new_bootloader_config(): Failed to unmount "+mount_point
                          + "! Continuing anyway...")
+
+    #Attempt to clear any stuck logical volumes that may have been created by os-prober.
+    CoreTools.start_process("dmsetup remove_all -y", privileged=True)
 
     logger.debug("set_new_bootloader_config(): Finished setting "
                  + BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]

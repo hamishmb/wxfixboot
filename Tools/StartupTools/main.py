@@ -67,7 +67,7 @@ def check_depends():
     #dependencies. TODO This will need to be updated at release time.
     cmd_list = ("cp", "mv", "which", "uname", "fsck", "ls", "modprobe", "mount", "umount",
                 "rm", "ping", "badblocks", "arch", "file", "sh", "echo", "lshw",
-                "lvdisplay", "dmidecode", "chroot", "strings", "dd", "blkid")
+                "lvdisplay", "dmidecode", "chroot", "strings", "dd", "blkid", "dmsetup")
 
     #Create a list to contain names of failed commands.
     failed_list = []
