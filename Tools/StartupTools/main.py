@@ -64,10 +64,11 @@ def check_depends():
 
     logger.info("MainStartupTools(): check_depends(): Checking dependencies...")
     #Create a temporary list to allow WxFixBoot to notify the user of particular unmet
-    #dependencies. TODO This will need to be updated at release time.
-    cmd_list = ("cp", "mv", "which", "uname", "fsck", "ls", "modprobe", "mount", "umount",
-                "rm", "ping", "badblocks", "arch", "file", "sh", "echo", "lshw",
-                "lvdisplay", "dmidecode", "chroot", "strings", "dd", "blkid", "dmsetup")
+    #dependencies. TODO This will need to be updated at each release time.
+    cmd_list = ("mkdir", "notify-send", "pkexec", "cp", "mv", "which", "uname", "fsck", "ls",
+                "modprobe", "mount", "umount", "rm", "ping", "badblocks", "arch", "file",
+                "sh", "echo", "lshw", "lvdisplay", "dmidecode", "chroot", "strings", "dd",
+                "blkid", "dmsetup")
 
     #Create a list to contain names of failed commands.
     failed_list = []
