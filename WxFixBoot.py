@@ -1933,16 +1933,10 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         self.on_timeout_checkbox()
         self.set_gui_state()
 
-        #Don't allow the user to attempt to modify or remove GRUB-LEGACY.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] \
-            in ("GRUB-LEGACY", "Unknown"):
-
+        #Don't allow the user to attempt to modify or remove an unknown bootloader.
+        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "Unknown":
             self.reinstall_bootloader_checkbox.Disable()
             self.update_bootloader_checkbox.Disable()
-
-        #Don't allow the user to replace grub-legacy.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
-            self.install_new_bootloader_checkbox.Disable()
 
     def set_gui_state(self, event=None): #pylint: disable=unused-argument
         """Set all the GUI element's states (enabled/disabled) for this OS"""
@@ -2047,16 +2041,10 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         self.load_settings()
         self.set_text_labels()
 
-        #Don't allow the user to attempt to modify or remove GRUB-LEGACY.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] \
-            in ("GRUB-LEGACY", "Unknown"):
-
+        #Don't allow the user to attempt to modify or remove an unknown bootloader.
+        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "Unknown":
             self.reinstall_bootloader_checkbox.Disable()
             self.update_bootloader_checkbox.Disable()
-
-        #Don't allow the user to replace grub-legacy.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
-            self.install_new_bootloader_checkbox.Disable()
 
         #Don't allow the user to do bootloader operations if the current bootloader is an
         #EFI bootloader, but we couldn't find the OS's EFI partition.
@@ -2374,28 +2362,19 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
         #Determine if the current bootloader is the same as the backed up one.
         if config["Bootloader"] == BOOTLOADER_INFO[_os]["Bootloader"] and config["Bootloader"] \
-            not in ("GRUB-LEGACY", "Unknown"):
+            != "Unknown":
 
             #Set up to reinstall the current bootloader.
             self.reinstall_bootloader_checkbox.Enable()
             self.reinstall_bootloader_checkbox.SetValue(1)
             self.on_update_or_reinstall_checkbox()
 
-        elif config["Bootloader"] != "GRUB-LEGACY" and BOOTLOADER_INFO[_os]["Bootloader"] \
-            not in ("GRUB-LEGACY", "Unknown"):
-
+        elif BOOTLOADER_INFO[_os]["Bootloader"] != "Unknown":
             #Set up to replace the current bootloader with the old one.
             self.install_new_bootloader_checkbox.Enable()
             self.install_new_bootloader_checkbox.SetValue(1)
             self.new_bootloader_choice.SetStringSelection(config["Bootloader"])
             self.on_install_new_bootloader_checkbox()
-
-        else:
-            #Don't allow the user to attempt to switch back to GRUB-LEGACY, or replace it.
-            DialogTools.show_msg_dlg(kind="info", message="The bootloader used at the time of "
-                                     + "backup was GRUB-LEGACY. WxFixBoot does not support "
-                                     + "reverting to GRUB-LEGACY, so this operation will now "
-                                     + "be canceled.")
 
         #Use kernel options used when the backup was taken.
         self.keep_kerneloptions_checkbox.SetValue(0)
@@ -2536,16 +2515,11 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             self.install_new_bootloader_checkbox.Enable()
             self.new_bootloader_choice.Disable()
 
-        #Don't allow the user to attempt to modify GRUB-LEGACY.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] \
-            in ("GRUB-LEGACY", "Unknown"):
+        #Don't allow the user to attempt to modify an unknown bootloader.
+        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "Unknown":
 
             self.reinstall_bootloader_checkbox.Disable()
             self.update_bootloader_checkbox.Disable()
-
-        #Don't allow replacing grub-legacy.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
-            self.install_new_bootloader_checkbox.Disable()
 
     def on_install_new_bootloader_checkbox(self, event=None): #pylint: disable=unused-argument
         """Enable/Disable options, based on the value of the new bootloader checkbox."""
@@ -2579,16 +2553,10 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
             self.restore_bootloader_checkbox.Enable()
             self.restore_bootloader_choice.Disable()
 
-        #Don't allow the user to attempt to modify GRUB-LEGACY.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] \
-            in ("GRUB-LEGACY", "Unknown"):
-
+        #Don't allow the user to attempt to modify an unknown bootloader.
+        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "Unknown":
             self.reinstall_bootloader_checkbox.Disable()
             self.update_bootloader_checkbox.Disable()
-
-        #Don't allow replacing grub-legacy.
-        if BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB-LEGACY":
-            self.install_new_bootloader_checkbox.Disable()
 
     def on_new_bootloader_choice(self, event=None): #pylint: disable=unused-argument
         """Warn user about issues chaging bootloaders if needed"""

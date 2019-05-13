@@ -312,12 +312,12 @@ def remove_old_bootloader(_os):
                   "Continuing anyway...'"
 
     else:
-        #Bootloader is unknown, or grub-legacy. Just output a warning message.
-        logger.warning("remove_old_bootloader(): Cannot remove GRUB-LEGACY / unknown bootloader! "
+        #Bootloader is unknown. Just output a warning message.
+        logger.warning("remove_old_bootloader(): Cannot remove unknown bootloader! "
                        + "Continuing anyway...")
 
-        cmd = "echo 'WARNING: Cannot remove GRUB-LEGACY, or bootloader is " \
-              "unknown. Continuing anyway...'"
+        cmd = "echo 'WARNING: Bootloader is " \
+              "unknown, cannot remove. Continuing anyway...'"
 
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd

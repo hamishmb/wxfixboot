@@ -632,18 +632,6 @@ def get_bootloaders():
             BOOTLOADER_INFO[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_lilo_menu_entries(mount_point+"/etc/lilo.conf")
             BOOTLOADER_INFO[_os]["Timeout"], BOOTLOADER_INFO[_os]["GlobalKernelOptions"], BOOTLOADER_INFO[_os]["BootDisk"], BOOTLOADER_INFO[_os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_lilo_config(mount_point+"/etc/lilo.conf", _os=_os)
 
-        elif BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB-LEGACY" and os.path.isfile(mount_point+"/boot/grub/menu.lst"):
-            BOOTLOADER_INFO[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_grublegacy_menu_entries(mount_point+"/boot/grub/menu.lst")
-            BOOTLOADER_INFO[_os]["Timeout"], BOOTLOADER_INFO[_os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_grublegacy_config(mount_point+"/boot/grub/menu.lst", BOOTLOADER_INFO[_os]["MenuEntries"])
-            BOOTLOADER_INFO[_os]["BootDisk"] = BootloaderConfigObtainingTools.find_grub(OS_INFO[_os]["Partition"], "GRUB-LEGACY")
-
-            #Use safe default kernel options.
-            logger.info("get_bootloaders(): "+_os+" is using GRUB-LEGACY and therefore doesn't "
-                        + "have global kernel options. For compatibility's sake, we're setting "
-                        + "them to \"quiet splash nomodeset\"...")
-
-            BOOTLOADER_INFO[_os]["GlobalKernelOptions"] = "quiet splash nomodeset"
-
         #If we didn't find the kernel options, set some defaults here, and warn the user.
         if BOOTLOADER_INFO[_os]["GlobalKernelOptions"] == "Unknown":
             BOOTLOADER_INFO[_os]["GlobalKernelOptions"] = "quiet splash nomodeset"

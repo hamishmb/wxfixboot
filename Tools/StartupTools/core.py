@@ -349,12 +349,12 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
 
     #Look for them in a specific order to be as fast a possible and to avoid false positives.
     if package_manager == "apt-get":
-        bootloader_packages = ("grub-efi", "elilo", "grub-pc", "lilo", "grub")
-        package_dictionary = {"grub-efi": "GRUB-UEFI", "elilo": "ELILO", "grub-pc": "GRUB2", "lilo": "LILO", "grub": "GRUB-LEGACY"}
+        bootloader_packages = ("grub-efi", "elilo", "grub-pc", "lilo")
+        package_dictionary = {"grub-efi": "GRUB-UEFI", "elilo": "ELILO", "grub-pc": "GRUB2", "lilo": "LILO"}
 
     else:
-        bootloader_packages = ("grub2-efi-x64", "grub2-pc", "grub")
-        package_dictionary = {"grub2-efi-x64": "GRUB-UEFI", "grub2-pc": "GRUB2", "grub": "GRUB-LEGACY"}
+        bootloader_packages = ("grub2-efi-x64", "grub2-pc")
+        package_dictionary = {"grub2-efi-x64": "GRUB-UEFI", "grub2-pc": "GRUB2"}
 
     for package in bootloader_packages:
         found = False
@@ -379,7 +379,7 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
             logger.info("look_for_bootloaders_on_partition(): Found "+bootloader+"...")
             break
 
-    #Look for any other bootloaders that might be available for installation. Ignore GRUB-LEGACY.
+    #Look for any other bootloaders that might be available for installation.
     for package in bootloader_packages:
         if package_manager == "apt-get":
             cmd = "apt-cache search "+package
@@ -405,7 +405,7 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
                 continue
 
             if package == correct_section:
-                if package_dictionary[package] not in available_bootloaders and package_dictionary[package] != "GRUB-LEGACY":
+                if package_dictionary[package] not in available_bootloader:
                     available_bootloaders.append(package_dictionary[package])
 
     #Log info.
