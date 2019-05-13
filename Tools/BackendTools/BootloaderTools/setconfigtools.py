@@ -95,8 +95,6 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
 
     #Loop through each line in the file, paying attention only to the important ones.
     for line in config_file:
-        print(line)
-
         #Look for the timeout setting.
         if 'GRUB_TIMEOUT' in line and '=' in line and set_timeout is False:
             #Found it! Set the value to the current value of bootloader_timeout.
