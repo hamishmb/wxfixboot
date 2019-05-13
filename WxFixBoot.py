@@ -799,26 +799,15 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
         CoreTools.send_notification("Checking for updates...")
 
         try:
-            #Ubuntu 14.04 fix (Python 2.7.6 has no proper TLS support).
-            if tuple(sys.version_info)[0:3] == (2, 7, 6):
-                #Use wget to download instead, cos the server doesn't allow SSL.
-                retval, updateinfo = \
-                CoreTools.start_process(exec_cmds="wget https://www.hamishmb.com/files/updateinfo"
-                                        + "/wxfixboot.plist -q -O -", return_output=True)
+            #Do it the better way w/ requests.
+            updateinfo = \
+            requests.get("https://www.hamishmb.com/files/updateinfo/wxfixboot.plist",
+                         timeout=5)
 
-                if retval != 0:
-                    raise requests.exceptions.RequestException()
+            #Raise an error if our status code was bad.
+            updateinfo.raise_for_status()
 
-            else:
-                #Do it the better way w/ requests.
-                updateinfo = \
-                requests.get("https://www.hamishmb.com/files/updateinfo/wxfixboot.plist",
-                             timeout=5)
-
-                #Raise an error if our status code was bad.
-                updateinfo.raise_for_status()
-
-                updateinfo = updateinfo.text
+            updateinfo = updateinfo.text
 
         except requests.exceptions.RequestException:
             #Flag to user.

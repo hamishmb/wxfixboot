@@ -126,16 +126,12 @@ def show_thread_yes_no_dlg(msg, title="WxFixBoot - Question", buttons=(None, Non
 
     global DLGRESULT
 
-    #Try to set custom button labels if needed (handle attribute error on wx 2.8.11).
+    #Try to set custom button labels if desired.
     if buttons != (None, None):
-        try:
-            if dlg.SetYesNoLabels(buttons[0], buttons[1]):
-                #If it worked get rid of the last unneccessary sentence in the message.
-                #(A click yes for X, click no for Y sentence).
-                dlg.SetMessage('.'.join(msg.split(".")[0:-1]))
-
-        except AttributeError:
-            pass
+        if dlg.SetYesNoLabels(buttons[0], buttons[1]):
+            #If it worked get rid of the last unneccessary sentence in the message.
+            #(A click yes for X, click no for Y sentence).
+            dlg.SetMessage('.'.join(msg.split(".")[0:-1]))
 
     #Where possible, destroy just before setting DLGRESULT to avoid potential race conditions.
     if dlg.ShowModal() == wx.ID_YES:
