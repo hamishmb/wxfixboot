@@ -606,7 +606,7 @@ def get_bootloaders():
         BOOTLOADER_INFO[_os]["MenuEntries"] = {_os: {}}
 
         #For EFI bootloaders, set the boot disk to the OS's EFI Partition.
-        if BOOTLOADER_INFO[_os]["Bootloader"] in ("GRUB-UEFI", "ELILO"):
+        if BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB-UEFI":
             BOOTLOADER_INFO[_os]["BootDisk"] = OS_INFO[_os]["EFIPartition"]
 
         if BOOTLOADER_INFO[_os]["Bootloader"] in ("GRUB-UEFI", "GRUB2") and os.path.isfile(mount_point+"/etc/default/grub"):
@@ -623,10 +623,6 @@ def get_bootloaders():
             #Try to find GRUB's location if this is GRUB2.
             if BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB2":
                 BOOTLOADER_INFO[_os]["BootDisk"] = BootloaderConfigObtainingTools.find_grub(OS_INFO[_os]["Partition"], "GRUB2")
-
-        elif BOOTLOADER_INFO[_os]["Bootloader"] == "ELILO" and os.path.isfile(mount_point+"/etc/elilo.conf"):
-            BOOTLOADER_INFO[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_lilo_menu_entries(mount_point+"/etc/elilo.conf")
-            BOOTLOADER_INFO[_os]["Timeout"], BOOTLOADER_INFO[_os]["GlobalKernelOptions"], BOOTLOADER_INFO[_os]["BLSpecificDefaultOS"] = BootloaderConfigObtainingTools.get_lilo_config(mount_point+"/etc/elilo.conf", _os=_os)
 
         elif BOOTLOADER_INFO[_os]["Bootloader"] == "LILO" and os.path.isfile(mount_point+"/etc/lilo.conf"):
             BOOTLOADER_INFO[_os]["MenuEntries"] = BootloaderConfigObtainingTools.parse_lilo_menu_entries(mount_point+"/etc/lilo.conf")

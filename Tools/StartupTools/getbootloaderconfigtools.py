@@ -465,7 +465,7 @@ def get_grub2_config(config_file_path, grubenv_file_path, menu_entries):
     return (timeout, kernel_options, default_os)
 
 def parse_lilo_menu_entries(menu_entries_file_path):
-    """Find and parse LILO and ELILO menu entries."""
+    """Find and parse LILO menu entries."""
     logger.info("parse_lilo_menu_entries(): Finding and parsing menu entries...")
 
     #Open the menu entries file to find and save all the menu entries.
@@ -493,7 +493,7 @@ def parse_lilo_menu_entries(menu_entries_file_path):
     return menu_entries
 
 def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, entry_counter):
-    """Assemble a menu entry in the dictionary for LILO/ELILO"""
+    """Assemble a menu entry in the dictionary for LILO"""
     logger.info("assemble_lilo_menu_entry(): Preparing to get menu entry info...")
 
     raw_menu_entry_data = []
@@ -550,7 +550,7 @@ def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, ent
     return menu_entries
 
 def get_lilo_config(config_file_path, _os):
-    """Get important bits of config from lilo and elilo"""
+    """Get important bits of config from LILO"""
     logger.info("get_lilo_config(): Getting config at "+config_file_path+"...")
 
     #Set temporary vars
@@ -568,7 +568,7 @@ def get_lilo_config(config_file_path, _os):
 
             if timeout.isdigit():
                 #Great! We got it.
-                #However, because lilo and elilo save this in 10ths of a second, divide it by
+                #However, because lilo saves this in 10ths of a second, divide it by
                 #ten first.
                 timeout = int(timeout)//10
                 logger.info("get_lilo_config(): Found bootloader timeout...")
@@ -615,12 +615,4 @@ def get_lilo_config(config_file_path, _os):
                 logger.info("get_lilo_config(): Set default OS to "+entry+" instead. "
                             + "Continuing...")
 
-    #Ignore ELILO's boot disk setting.
-    if "/etc/lilo.conf" in config_file_path:
-        return (timeout, kernel_options, boot_disk, default_os)
-
-    #Otherwise...
-    logger.info("get_lilo_config(): Ignoring ELILO's book disk setting, instead preferring "
-                + "the detected EFI partition for this OS...")
-
-    return (timeout, kernel_options, default_os)
+    return (timeout, kernel_options, boot_disk, default_os)

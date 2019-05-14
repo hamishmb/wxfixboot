@@ -74,9 +74,9 @@ if sys.version_info[0] == 3:
     plistlib.writePlist = plistlib.dump #pylint: disable=no-member
 
 #Define the version number and the release date as global variables.
-VERSION = "3.0.0"
-RELEASEDATE = "30/4/2019"
-RELEASE_TYPE = "Stable"
+VERSION = "3.0.1"
+RELEASEDATE = "13/5/2019"
+RELEASE_TYPE = "Development"
 
 #Define other global variables.
 SESSION_ENDING = False
@@ -2020,12 +2020,9 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         choices = BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["AvailableBootloaders"]
 
         if OS_INFO[self.os_choice.GetStringSelection()]["EFIPartition"] == "Unknown":
-            #Remove GRUB-UEFI and ELILO if they are available for install.
+            #Remove GRUB-UEFI if it is available for install.
             if "GRUB-UEFI" in choices:
                 choices.remove("GRUB-UEFI")
-
-            if "ELILO" in choices:
-                choices.remove("ELILO")
 
             DialogTools.show_msg_dlg(kind="info", message="This OS has no UEFI partition, so you "
                                      + "will be unable to select a UEFI bootloader to install.")
@@ -2048,8 +2045,7 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
         #Don't allow the user to do bootloader operations if the current bootloader is an
         #EFI bootloader, but we couldn't find the OS's EFI partition.
-        if (BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] \
-            in ("GRUB-UEFI", "ELILO")) \
+        if (BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB-UEFI") \
             and (OS_INFO[self.os_choice.GetStringSelection()]["EFIPartition"] == "Unknown"):
 
             self.reinstall_bootloader_checkbox.Disable()
@@ -2560,12 +2556,12 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
     def on_new_bootloader_choice(self, event=None): #pylint: disable=unused-argument
         """Warn user about issues chaging bootloaders if needed"""
-        #Could offer to disable, but the LILO/ELILO functionality is deprecated at this point.
+        #Could offer to disable, but the LILO functionality is deprecated at this point.
+        #TODO yes/no dialog.
         if len(SYSTEM_INFO["ModifyableOSs"]) > 1 \
-            and self.new_bootloader_choice.GetStringSelection() in ("LILO", "ELILO"):
+            and self.new_bootloader_choice.GetStringSelection() == "LILO":
 
-            DialogTools.show_msg_dlg(kind="warning", message="Installing "
-                                     + self.new_bootloader_choice.GetStringSelection()
+            DialogTools.show_msg_dlg(kind="warning", message="Installing LILO"
                                      + " is discouraged because you have more than one Linux OS "
                                      + "installed, and this bootloader has poor support for "
                                      + "booting multiple Linux OSs. Click okay to continue.")
