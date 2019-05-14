@@ -64,7 +64,8 @@ def get_helper(cmd):
 
     return "pkexec "+helper
 
-def start_process(exec_cmds, show_output=True, return_output=False, testing=False, privileged=False):
+def start_process(exec_cmds, show_output=True, return_output=False, testing=False,
+                  privileged=False):
     """Start a process given a string of commands to execute.
     show_output is boolean and specifies whether to show output in the outputbox (if exists) or
     not.
@@ -109,8 +110,10 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
                  + ", Output: \"\n\n"+'\n'.join(line_list)+"\"\n")
 
     #Handle these error codes if pkexec is being used.
-    #When commands are not found, we get the same codes - potential for infinite recursion here... XXX
-    if privileged and (ret_val in (126, 127)) and "pkexec" in exec_cmds and "chroot" not in exec_cmds \
+    #When commands are not found, we get the same codes,
+    #potential for infinite recursion here... XXX
+    if privileged and (ret_val in (126, 127)) and "pkexec" in exec_cmds \
+        and "chroot" not in exec_cmds \
         and "lsb_release" not in exec_cmds:
         #Try again, auth dismissed / bad password 3 times.
         #A lot of recursion is allowed (~1000 times), so this shouldn't be a problem.
@@ -240,7 +243,8 @@ def read_privileged_file(filename):
     and returns the content as a string.
     """
 
-    return start_process("pkexec /usr/share/wxfixboot/Tools/helpers/runasroot_linux_read_file.sh "+filename,
+    return start_process("pkexec /usr/share/wxfixboot/Tools/helpers/runasroot_linux_read_file.sh "
+                         + filename,
                          show_output=False, return_output=True, privileged=True)[1].split("\n")
 
 def write_privileged_file(filename, file_contents):
@@ -298,7 +302,8 @@ def write_privileged_file(filename, file_contents):
                 + file_contents+"\n\n...")
 
     #Start the process.
-    cmd = subprocess.Popen("pkexec /usr/share/wxfixboot/Tools/helpers/runasroot_linux_write_file.sh "
+    cmd = subprocess.Popen("pkexec "
+                           + "/usr/share/wxfixboot/Tools/helpers/runasroot_linux_write_file.sh "
                            + filename, stdin=subprocess.PIPE, shell=True)
 
     #Write the file contents to its stdin, plus EOF.
@@ -551,7 +556,9 @@ def setup_chroot(mount_point):
     mount_list = ("/dev", "/dev/pts", "/proc", "/run", "/sys")
 
     for file_system in mount_list:
-        if mount_partition(partition=file_system, mount_point=mount_point+file_system, options="--bind") != 0:
+        if mount_partition(partition=file_system, mount_point=mount_point+file_system,
+                           options="--bind") != 0:
+
             logger.error("setup_chroot(): Failed to bind "+file_system+" to "+mount_point
                          + file_system+"! Chroot isn't set up properly! Attempting to continue "
                          + "anyway...")

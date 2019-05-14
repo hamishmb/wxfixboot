@@ -78,13 +78,20 @@ def partition_matches_os(partition, _os):
 
     #If the eg EFI partition isn't known, don't do the rest of the test in the if statement to
     #avoid erors (short-circuit logic).
-    if OS_INFO[_os]["Partition"] != "Unknown" and partition in (OS_INFO[_os]["Partition"], DISK_INFO[OS_INFO[_os]["Partition"]]["UUID"]):
+    if OS_INFO[_os]["Partition"] != "Unknown" \
+        and partition in (OS_INFO[_os]["Partition"], DISK_INFO[OS_INFO[_os]["Partition"]]["UUID"]):
         return True
 
-    elif OS_INFO[_os]["BootPartition"] != "Unknown" and partition in (OS_INFO[_os]["BootPartition"], DISK_INFO[OS_INFO[_os]["BootPartition"]]["UUID"]):
+    elif OS_INFO[_os]["BootPartition"] != "Unknown" \
+        and partition in (OS_INFO[_os]["BootPartition"],
+                          DISK_INFO[OS_INFO[_os]["BootPartition"]]["UUID"]):
+
         return True
 
-    elif OS_INFO[_os]["EFIPartition"] != "Unknown" and partition in (OS_INFO[_os]["EFIPartition"], DISK_INFO[OS_INFO[_os]["EFIPartition"]]["UUID"]):
+    elif OS_INFO[_os]["EFIPartition"] != "Unknown" \
+        and partition in (OS_INFO[_os]["EFIPartition"],
+                          DISK_INFO[OS_INFO[_os]["EFIPartition"]]["UUID"]):
+
         return True
 
 
@@ -296,7 +303,9 @@ def write_fstab_entry_for_uefi_partition(_os, mount_point):
     new_file_contents = []
 
     for line in fstab:
-        if OS_INFO[_os]["EFIPartition"] in line or "UUID="+DISK_INFO[OS_INFO[_os]["EFIPartition"]]["UUID"] in line:
+        if OS_INFO[_os]["EFIPartition"] in line \
+            or "UUID="+DISK_INFO[OS_INFO[_os]["EFIPartition"]]["UUID"] in line:
+
             #This fstab already has an entry for the UEFI System Partition!
             write_entry = False
 

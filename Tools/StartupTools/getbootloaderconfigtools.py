@@ -82,7 +82,8 @@ def find_grub(os_partition, grub_version):
     logger.info("find_grub(): Didn't find "+grub_version+" on any likely disks...")
     return "Unknown"
 
-def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_name="MainMenu", menu_ids=None, menu_id=""):
+def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_name="MainMenu",
+                          menu_ids=None, menu_id=""):
     """Find and parse GRUB2 (EFI and BIOS) menu entries in the given line list"""
     if menu_entries is None:
         menu_entries = {}
@@ -108,7 +109,9 @@ def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_
             grub_dir = mount_point+"/boot/grub2"
 
         #(Fedora, EFI)
-        if os.path.isfile(grub_dir+"/grub.cfg") is False and os.path.isdir(mount_point+"/boot/efi/EFI/fedora"):
+        if os.path.isfile(grub_dir+"/grub.cfg") is False \
+            and os.path.isdir(mount_point+"/boot/efi/EFI/fedora"):
+
             grub_dir = mount_point+"/boot/efi/EFI/fedora"
 
         #Process menu entries, and pass the entire contents of the menu entries file to the parser.
@@ -206,7 +209,8 @@ def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_
     logger.info("parse_grub2_menu_data(): Finished!")
     return grub_dir, menu_entries, menu_ids
 
-def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents, menu, line, entry_counter):
+def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents, menu, line,
+                              entry_counter):
     """
     Assemble a menu entry in the dictionary for GRUB2 (BIOS and UEFI)
     """
@@ -260,14 +264,17 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
     try:
         #Remove the brackets, split with " ", and grab the last element in the resulting list,
         #which is hopefully the partition name e.g. /dev/sdc.
-        menu_entries[menu][menu_entry_name]["Partition"] = menu_entry_name.replace(")", "").split(" (")[1].split(" ")[-1]
+        menu_entries[menu][menu_entry_name]["Partition"] = \
+        menu_entry_name.replace(")", "").split(" (")[1].split(" ")[-1]
 
     except IndexError:
         pass
 
     #If this fails, try finding the UUID in the menu-entry data and converting that to a
     #device name.
-    if menu_entries[menu][menu_entry_name]["Partition"] == "Unknown" or "/dev/" not in menu_entries[menu][menu_entry_name]["Partition"]:
+    if menu_entries[menu][menu_entry_name]["Partition"] == "Unknown" \
+        or "/dev/" not in menu_entries[menu][menu_entry_name]["Partition"]:
+
         logger.info("assemble_grub2_menu_entry(): Getting menu entry's boot partition "
                     + "with UUID...")
 
@@ -287,7 +294,9 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
                     menu_entries[menu][menu_entry_name]["Partition"] = disk
 
     #If THAT fails, try to use the "set root=" line to find the device name.
-    if menu_entries[menu][menu_entry_name]["Partition"] == "Unknown" or "/dev/" not in menu_entries[menu][menu_entry_name]["Partition"]:
+    if menu_entries[menu][menu_entry_name]["Partition"] == "Unknown" \
+        or "/dev/" not in menu_entries[menu][menu_entry_name]["Partition"]:
+
         logger.info("assemble_grub2_menu_entry(): Getting menu entry's boot partition with "
                     + "GRUB2's 'set root=' line...")
 
@@ -315,10 +324,13 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
             #Check it's a letter from a to z.
             if numbers[0] in range(0, 25):
                 #The partition number is 1-based.
-                menu_entries[menu][menu_entry_name]["Partition"] = "/dev/sd"+letter+unicode(numbers[1])
+                menu_entries[menu][menu_entry_name]["Partition"] = \
+                "/dev/sd"+letter+unicode(numbers[1])
 
     #Log if we STILL haven't found the disk.
-    if menu_entries[menu][menu_entry_name]["Partition"] == "Unknown" or "/dev/" not in menu_entries[menu][menu_entry_name]["Partition"]:
+    if menu_entries[menu][menu_entry_name]["Partition"] == "Unknown" \
+        or "/dev/" not in menu_entries[menu][menu_entry_name]["Partition"]:
+
         menu_entries[menu][menu_entry_name]["Partition"] = "Unknown"
         logger.error("assemble_grub2_menu_entry(): Couldn't find boot partition for menu entry! "
                      + "Continuing anyway...")
@@ -508,7 +520,9 @@ def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, ent
         if "label" in menu_entry_data:
             menu_entry = menu_entry_data.split("=")[1].replace("\n", "")
 
-        if menu_entry_data != line and "image" in menu_entry_data.split() and "=" in menu_entry_data.split() and "#" not in menu_entry_data.split():
+        if menu_entry_data != line and "image" in menu_entry_data.split() \
+            and "=" in menu_entry_data.split() and "#" not in menu_entry_data.split():
+
             #Remove the last line.
             raw_menu_entry_data.pop()
             break
@@ -544,7 +558,9 @@ def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, ent
 
         elif "append" in _line:
             #Get the kernel options.
-            menu_entries["MainMenu"][menu_entry]["KernelOptions"] = _line.replace("\n", "").split("=")[1].replace("\"", "").split()
+            menu_entries["MainMenu"][menu_entry]["KernelOptions"] = \
+            _line.replace("\n", "").split("=")[1].replace("\"", "").split()
+
             logger.info("assemble_lilo_menu_entry(): Found kernel options...")
 
     return menu_entries

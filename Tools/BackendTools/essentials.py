@@ -114,7 +114,9 @@ def check_internet_connection():
                                + "due to bad internet connection...")
 
                 SYSTEM_INFO["DisableBootloaderOperations"] = True
-                SYSTEM_INFO["DisableBootloaderOperationsBecause"].append("Internet Connection test failed.")
+                SYSTEM_INFO["DisableBootloaderOperationsBecause"] \
+                .append("Internet Connection test failed.")
+
                 break
 
             else:
@@ -344,7 +346,8 @@ def handle_filesystem_check_return_values(exec_cmds, retval, partition, manage_b
                                + "Checker problems...")
 
                 SYSTEM_INFO["DisableBootloaderOperations"] = True
-                SYSTEM_INFO["DisableBootloaderOperationsBecause"].append("Filesystem corruption was detected on "+partition)
+                SYSTEM_INFO["DisableBootloaderOperationsBecause"] \
+                .append("Filesystem corruption was detected on "+partition)
 
             else:
                 #Seriously? Well, okay, we'll do it anyway... This is probably a very bad idea...

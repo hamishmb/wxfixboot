@@ -67,8 +67,11 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
     bootloader_specific_default_os = "Unknown"
 
     for entry in BOOTLOADER_INFO[_os]["NewMenuEntries"]["MainMenu"]["Order"]:
-        if HelperBackendTools.partition_matches_os(BOOTLOADER_INFO[_os]["NewMenuEntries"]["MainMenu"][entry]["Partition"], BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"]):
-            bootloader_specific_default_os = BOOTLOADER_INFO[_os]["NewMenuEntries"]["MainMenu"][entry]["ID"]
+        if HelperBackendTools.partition_matches_os(BOOTLOADER_INFO[_os]["NewMenuEntries"]["MainMenu"][entry]["Partition"],
+                                                   BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"]):
+            bootloader_specific_default_os = \
+            BOOTLOADER_INFO[_os]["NewMenuEntries"]["MainMenu"][entry]["ID"]
+
             logger.info("set_grub2_config(): Found Default OS's GRUB2 ID...")
             break
 
@@ -124,12 +127,16 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
             line = "GRUB_DEFAULT="+bootloader_specific_default_os
 
         #Comment out the GRUB_HIDDEN_TIMEOUT line.
-        elif 'GRUB_HIDDEN_TIMEOUT' in line and 'GRUB_HIDDEN_TIMEOUT_QUIET' not in line and '=' in line and '#' not in line:
+        elif 'GRUB_HIDDEN_TIMEOUT' in line and 'GRUB_HIDDEN_TIMEOUT_QUIET' not in line \
+            and '=' in line and '#' not in line:
+
             logger.debug("set_grub2_config(): Commenting out GRUB_HIDDEN_TIMEOUT...")
             line = "#"+line
 
         #Comment out the GRUB_CMDLINE_LINUX line.
-        elif 'GRUB_CMDLINE_LINUX' in line and 'GRUB_CMDLINE_LINUX_DEFAULT' not in line and '=' in line and '#' not in line:
+        elif 'GRUB_CMDLINE_LINUX' in line and 'GRUB_CMDLINE_LINUX_DEFAULT' not in line \
+            and '=' in line and '#' not in line:
+
             logger.debug("set_grub2_config(): Commenting out GRUB_CMDLINE_LINUX...")
             line = "#"+line
 
@@ -180,7 +187,9 @@ def install_grub2_to_mbr(package_manager, use_chroot, mount_point, device):
     #Return the return value.
     return retval
 
-def install_grub2_to_efi_partition(package_manager, use_chroot, mount_point, uefi_system_partition_mount_point, arch):
+def install_grub2_to_efi_partition(package_manager, use_chroot, mount_point,
+                                   uefi_system_partition_mount_point, arch):
+
     """Install GRUB2 (EFI/UEFI version) into the EFI/UEFI partition"""
     #Okay, we've modified the kernel options and the timeout. Now we need to install grub
     #to the UEFI partition.
@@ -243,7 +252,8 @@ def set_lilo_config(_os, filetoopen):
                          + "...")
 
             #Set it to RootDevice's ID.
-            boot_device = "/dev/disk/by-id/"+DISK_INFO[DISK_INFO[OS_INFO[_os]["Partition"]]["HostDevice"]]["ID"]
+            boot_device = \
+            "/dev/disk/by-id/"+DISK_INFO[DISK_INFO[OS_INFO[_os]["Partition"]]["HostDevice"]]["ID"]
 
         else:
             #Not so good... We'll have to use the device name, which may change, especially if
@@ -283,7 +293,9 @@ def set_lilo_config(_os, filetoopen):
     #Loop through each line in the file, paying attention only to the important ones.
     for line in config_file:
         #Look for the timeout setting (ELILO).
-        if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO" and 'delay' in line and '=' in line and '#' not in line and set_timeout is False:
+        if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO" \
+            and 'delay' in line and '=' in line and '#' not in line and set_timeout is False:
+
             #Found it! Set it to our value.
             logger.debug("set_lilo_config(): Found timeout setting, setting it to "
                          + unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])+"...")
@@ -299,7 +311,9 @@ def set_lilo_config(_os, filetoopen):
             line = "delay="+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"]*10)
 
         #Look for the timeout setting (LILO).
-        elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "LILO" and 'timeout' in line and '=' in line and '#' not in line and set_timeout is False:
+        elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "LILO" \
+            and 'timeout' in line and '=' in line and '#' not in line and set_timeout is False:
+
             #Found it! Set it to our value.
             logger.debug("set_lilo_config(): Found timeout setting, setting it to "
                          + unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])+"...")
@@ -308,7 +322,9 @@ def set_lilo_config(_os, filetoopen):
             line = "timeout="+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"]*10)
 
         #Look for the 'boot' setting.
-        elif 'boot' in line and '=' in line and '#' not in line and 'map' not in line and set_boot_device is False:
+        elif 'boot' in line and '=' in line and '#' not in line and 'map' not in line \
+            and set_boot_device is False:
+
             #Found it, seperate the line.
             logger.debug("set_lilo_config(): Found boot setting, setting it to "+boot_device+"...")
             set_boot_device = True
@@ -418,10 +434,12 @@ def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
     for __os in keys:
         logger.info("make_lilo_os_entries(): Preparing to make an entry for: "+__os)
 
-        if not os.path.isfile(mount_point+"/vmlinuz") or not os.path.isfile(mount_point+"/initrd.img"):
+        if not os.path.isfile(mount_point+"/vmlinuz") \
+            or not os.path.isfile(mount_point+"/initrd.img"):
+
             #We can't make an entry for this OS. Warn the user.
-            logger.warning("make_lilo_os_entries(): Couldn't find /vmlinuz or /initrd.img for "+__os
-                           + "! Telling the user we can't make an entry...")
+            logger.warning("make_lilo_os_entries(): Couldn't find /vmlinuz or /initrd.img for "
+                           +__os+ "! Telling the user we can't make an entry...")
 
             DialogTools.show_msg_dlg(message="Warning: The shortcut to the latest kernel or "
                                      + "initrd weren't found for "+__os+"! Unfortunately, this "

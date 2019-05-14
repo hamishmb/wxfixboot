@@ -60,7 +60,11 @@ def make_bootloaderinfo_entry_for_macos(the_os):
     BOOTLOADER_INFO[the_os]["MenuEntries"] = {}
     BOOTLOADER_INFO[the_os]["IsModifyable"] = False
     BOOTLOADER_INFO[the_os]["Comments"] = "WxFixBoot cannot modify macOS."
-    BOOTLOADER_INFO[the_os]["Timeout"], BOOTLOADER_INFO[the_os]["GlobalKernelOptions"], BOOTLOADER_INFO[the_os]["BootDisk"], BOOTLOADER_INFO[the_os]["BLSpecificDefaultOS"], BOOTLOADER_INFO[the_os]["DefaultOS"] = (10, "Unknown", OS_INFO[the_os]["Partition"], the_os, the_os)
+
+    BOOTLOADER_INFO[the_os]["Timeout"], BOOTLOADER_INFO[the_os]["GlobalKernelOptions"], \
+    BOOTLOADER_INFO[the_os]["BootDisk"], BOOTLOADER_INFO[the_os]["BLSpecificDefaultOS"], \
+    BOOTLOADER_INFO[the_os]["DefaultOS"] = \
+    (10, "Unknown", OS_INFO[the_os]["Partition"], the_os, the_os)
 
     #Initialise some default no-action settings.
     BOOTLOADER_INFO[the_os]["Settings"] = {}
@@ -68,7 +72,9 @@ def make_bootloaderinfo_entry_for_macos(the_os):
     BOOTLOADER_INFO[the_os]["Settings"]["Update"] = False
     BOOTLOADER_INFO[the_os]["Settings"]["KeepExistingTimeout"] = False
     BOOTLOADER_INFO[the_os]["Settings"]["KeepExistingKernelOptions"] = False
-    BOOTLOADER_INFO[the_os]["Settings"]["NewKernelOptions"] = BOOTLOADER_INFO[the_os]["GlobalKernelOptions"]
+    BOOTLOADER_INFO[the_os]["Settings"]["NewKernelOptions"] = \
+    BOOTLOADER_INFO[the_os]["GlobalKernelOptions"]
+
     BOOTLOADER_INFO[the_os]["Settings"]["NewTimeout"] = BOOTLOADER_INFO[the_os]["Timeout"]
     BOOTLOADER_INFO[the_os]["Settings"]["DefaultOS"] = BOOTLOADER_INFO[the_os]["DefaultOS"]
     BOOTLOADER_INFO[the_os]["Settings"]["InstallNewBootloader"] = False
@@ -113,7 +119,10 @@ def make_bootloaderinfo_entry_for_windows(the_os):
     BOOTLOADER_INFO[the_os]["MenuEntries"] = {}
     BOOTLOADER_INFO[the_os]["IsModifyable"] = False
     BOOTLOADER_INFO[the_os]["Comments"] = "WxFixBoot cannot modify Windows."
-    BOOTLOADER_INFO[the_os]["Timeout"], BOOTLOADER_INFO[the_os]["GlobalKernelOptions"], BOOTLOADER_INFO[the_os]["BootDisk"], BOOTLOADER_INFO[the_os]["BLSpecificDefaultOS"], BOOTLOADER_INFO[the_os]["DefaultOS"] = (10, "Unknown", "Unknown", the_os, the_os)
+
+    BOOTLOADER_INFO[the_os]["Timeout"], BOOTLOADER_INFO[the_os]["GlobalKernelOptions"], \
+    BOOTLOADER_INFO[the_os]["BootDisk"], BOOTLOADER_INFO[the_os]["BLSpecificDefaultOS"], \
+    BOOTLOADER_INFO[the_os]["DefaultOS"] = (10, "Unknown", "Unknown", the_os, the_os)
 
     #Initialise some default no-action settings.
     BOOTLOADER_INFO[the_os]["Settings"] = {}
@@ -121,7 +130,9 @@ def make_bootloaderinfo_entry_for_windows(the_os):
     BOOTLOADER_INFO[the_os]["Settings"]["Update"] = False
     BOOTLOADER_INFO[the_os]["Settings"]["KeepExistingTimeout"] = False
     BOOTLOADER_INFO[the_os]["Settings"]["KeepExistingKernelOptions"] = False
-    BOOTLOADER_INFO[the_os]["Settings"]["NewKernelOptions"] = BOOTLOADER_INFO[the_os]["GlobalKernelOptions"]
+    BOOTLOADER_INFO[the_os]["Settings"]["NewKernelOptions"] = \
+    BOOTLOADER_INFO[the_os]["GlobalKernelOptions"]
+
     BOOTLOADER_INFO[the_os]["Settings"]["NewTimeout"] = BOOTLOADER_INFO[the_os]["Timeout"]
     BOOTLOADER_INFO[the_os]["Settings"]["DefaultOS"] = BOOTLOADER_INFO[the_os]["DefaultOS"]
     BOOTLOADER_INFO[the_os]["Settings"]["InstallNewBootloader"] = False
@@ -150,11 +161,15 @@ def make_bootloaderinfo_entry_for_windows(the_os):
 
 def has_windows_9x(mount_point):
     """Try to find a Windows 9X installation. Return True if found, False if not."""
-    return os.path.isdir(mount_point+"/WINDOWS") and os.path.exists(mount_point+"/AUTOEXEC.BAT") and os.path.exists(mount_point+"/COMMAND.COM") and os.path.isdir(mount_point+"/My Documents")
+    return os.path.isdir(mount_point+"/WINDOWS") and os.path.exists(mount_point+"/AUTOEXEC.BAT") \
+           and os.path.exists(mount_point+"/COMMAND.COM") \
+           and os.path.isdir(mount_point+"/My Documents")
 
 def has_windows_xp(mount_point):
     """Try to find a Windows XP installation. Return True if found, False if not."""
-    return os.path.isfile(mount_point+"/boot.ini") and os.path.isfile(mount_point+"/ntldr") and os.path.isfile(mount_point+"/NTDETECT.COM") and os.path.isdir(mount_point+"/Documents and Settings")
+    return os.path.isfile(mount_point+"/boot.ini") and os.path.isfile(mount_point+"/ntldr") \
+           and os.path.isfile(mount_point+"/NTDETECT.COM") \
+           and os.path.isdir(mount_point+"/Documents and Settings")
 
 def has_windows_vista(mount_point):
     """Try to find a Windows Vista installation. Return True if found, False if not."""
@@ -224,7 +239,9 @@ def get_defaultoss_partition(the_os):
     for menu in BOOTLOADER_INFO[the_os]["MenuEntries"]:
         for entry in BOOTLOADER_INFO[the_os]["MenuEntries"][menu]:
             if entry == BOOTLOADER_INFO[the_os]["BLSpecificDefaultOS"]:
-                default_boot_device = BOOTLOADER_INFO[the_os]["MenuEntries"][menu][entry]["Partition"]
+                default_boot_device = \
+                BOOTLOADER_INFO[the_os]["MenuEntries"][menu][entry]["Partition"]
+
                 logger.info("get_defaultoss_partition(): Found Default OS's partition...")
                 break
 
@@ -237,7 +254,8 @@ def get_defaultoss_partition(the_os):
 
         #Try to get the UUID too.
         if BOOTLOADER_INFO[the_os]["DefaultBootDevice"] in DISK_INFO:
-            BOOTLOADER_INFO[the_os]["DefaultBootDeviceUUID"] = DISK_INFO[BOOTLOADER_INFO[the_os]["DefaultBootDevice"]]["UUID"]
+            BOOTLOADER_INFO[the_os]["DefaultBootDeviceUUID"] = \
+            DISK_INFO[BOOTLOADER_INFO[the_os]["DefaultBootDevice"]]["UUID"]
 
         else:
             BOOTLOADER_INFO[the_os]["DefaultBootDeviceUUID"] = "Unknown"
@@ -257,7 +275,10 @@ def match_partition_to_os(the_os):
         else:
             disk = BOOTLOADER_INFO[the_os]["DefaultBootDevice"]
 
-        if OS_INFO[os_name]["Partition"] != "Unknown" and disk in (OS_INFO[os_name]["Partition"], DISK_INFO[OS_INFO[os_name]["Partition"]]["UUID"]):
+        if OS_INFO[os_name]["Partition"] != "Unknown" \
+            and disk in (OS_INFO[os_name]["Partition"],
+                         DISK_INFO[OS_INFO[os_name]["Partition"]]["UUID"]):
+
             #Set it.
             BOOTLOADER_INFO[the_os]["DefaultBootDeviceMatchedWith"] = "Partition"
             BOOTLOADER_INFO[the_os]["DefaultOS"] = os_name
@@ -266,7 +287,10 @@ def match_partition_to_os(the_os):
 
             break
 
-        elif OS_INFO[os_name]["BootPartition"] != "Unknown" and disk in (OS_INFO[os_name]["BootPartition"], DISK_INFO[OS_INFO[os_name]["BootPartition"]]["UUID"]):
+        elif OS_INFO[os_name]["BootPartition"] != "Unknown" \
+            and disk in (OS_INFO[os_name]["BootPartition"],
+                         DISK_INFO[OS_INFO[os_name]["BootPartition"]]["UUID"]):
+
             #Set it.
             BOOTLOADER_INFO[the_os]["DefaultBootDeviceMatchedWith"] = "BootPartition"
             BOOTLOADER_INFO[the_os]["DefaultOS"] = os_name
@@ -275,7 +299,10 @@ def match_partition_to_os(the_os):
 
             break
 
-        elif OS_INFO[os_name]["EFIPartition"] != "Unknown" and disk in (OS_INFO[os_name]["EFIPartition"], DISK_INFO[OS_INFO[os_name]["EFIPartition"]]["UUID"]):
+        elif OS_INFO[os_name]["EFIPartition"] != "Unknown" \
+            and disk in (OS_INFO[os_name]["EFIPartition"],
+                         DISK_INFO[OS_INFO[os_name]["EFIPartition"]]["UUID"]):
+
             #Set it.
             BOOTLOADER_INFO[the_os]["DefaultBootDeviceMatchedWith"] = "EFIPartition"
             BOOTLOADER_INFO[the_os]["DefaultOS"] = os_name
@@ -345,7 +372,8 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
     if using_chroot:
         cmd = "chroot "+mount_point+" "+cmd
 
-    output = CoreTools.start_process(cmd, show_output=False, return_output=True, privileged=True)[1].split("\n")
+    output = CoreTools.start_process(cmd, show_output=False, return_output=True,
+                                     privileged=True)[1].split("\n")
 
     #Look for them in a specific order to be as fast a possible and to avoid false positives.
     if package_manager == "apt-get":
@@ -370,8 +398,12 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
 
         if found:
             #On Fedora, GRUB2 for BIOS and GRUB2 for UEFI are both installed by default!
-            #To figure out which way we're booting (and which is being used), see whether we are booting in EFI mode or not.
-            if package_dictionary[package] == "GRUB-UEFI" and OS_INFO[the_os]["PackageManager"] == "yum" and SYSTEM_INFO["FirmwareType"] == "BIOS":
+            #To figure out which way we're booting (and which is being used), see whether
+            #we are booting in EFI mode or not.
+            if package_dictionary[package] == "GRUB-UEFI" \
+                and OS_INFO[the_os]["PackageManager"] == "yum" \
+                and SYSTEM_INFO["FirmwareType"] == "BIOS":
+
                 #We're booting with GRUB2.
                 continue
 
@@ -390,7 +422,8 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
         if using_chroot:
             cmd = "chroot "+mount_point+" "+cmd
 
-        output = CoreTools.start_process(cmd, show_output=False, return_output=True, privileged=True)[1].split("\n")
+        output = CoreTools.start_process(cmd, show_output=False, return_output=True,
+                                         privileged=True)[1].split("\n")
 
         #Only look in the package name.
         for line in output:

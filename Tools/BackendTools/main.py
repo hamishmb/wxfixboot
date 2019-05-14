@@ -96,7 +96,9 @@ def manage_bootloader(_os):
     #Create a list of functions to call.
     function_list = [set_new_bootloader_config]
 
-    if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] or BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"]:
+    if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] \
+        or BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"]:
+
         #Add more stuff to the list.
         function_list = [remove_old_bootloader, install_new_bootloader, set_new_bootloader_config]
 
@@ -139,7 +141,8 @@ def manage_bootloader(_os):
                                                      title="WxFixBoot - Error "+operation
                                                      + "ing Bootloader!",
                                                      buttons=("Try Again",
-                                                              "Skip Bootloader Operations For This OS"))
+                                                              "Skip Bootloader Operations "
+                                                              + "For This OS"))
 
                 if result:
                     logger.info("manage_bootloader(): Trying again and checking internet "
@@ -195,7 +198,9 @@ def remove_old_bootloader(_os):
 
         if unmount_after:
             #Mount the partition using the global mount function.
-            if CoreTools.mount_partition(partition=OS_INFO[_os]["Partition"], mount_point=mount_point) != 0:
+            if CoreTools.mount_partition(partition=OS_INFO[_os]["Partition"],
+                                         mount_point=mount_point) != 0:
+
                 logger.error("remove_old_bootloader(): Failed to mount "+OS_INFO[_os]["Partition"]
                              + "! Warning the user and giving up...")
 
@@ -261,7 +266,8 @@ def remove_old_bootloader(_os):
 
     logger.debug("remove_old_bootloader(): Waiting until "+_os+"'s package manager is free...")
     HelperBackendTools.wait_until_packagemanager_free(mount_point=mount_point,
-                                                      package_manager=OS_INFO[_os]["PackageManager"])
+                                                      package_manager=\
+                                                      OS_INFO[_os]["PackageManager"])
 
     wx.CallAfter(wx.GetApp().TopWindow.update_current_progress, 27)
     wx.CallAfter(wx.GetApp().TopWindow.update_current_operation_text,
@@ -515,7 +521,9 @@ def install_new_bootloader(_os):
         logger.info("install_new_bootloader(): Installing GRUB-UEFI...")
 
         #Mount the UEFI partition at mount_point/boot/efi.
-        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"], mount_point=mount_point+"/boot/efi") != 0:
+        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"],
+                                     mount_point=mount_point+"/boot/efi") != 0:
+
             logger.error("install_new_bootloader(): Failed to mount "+OS_INFO[_os]["EFIPartition"]
                          + " to "+mount_point+"/boot/efi! Aborting bootloader installation and "
                          + "warning user...")
@@ -713,7 +721,9 @@ def set_new_bootloader_config(_os):
                                                   package_manager=OS_INFO[_os]["PackageManager"],
                                                   use_chroot=use_chroot, mount_point=mount_point)
 
-        BOOTLOADER_INFO[_os]["NewMenuEntries"] = BootloaderConfigObtainingTools.parse_grub2_menu_data(menu_data="", mount_point=mount_point)[1]
+        BOOTLOADER_INFO[_os]["NewMenuEntries"] = \
+        BootloaderConfigObtainingTools.parse_grub2_menu_data(menu_data="",
+                                                             mount_point=mount_point)[1]
 
     #Look for the configuration file, based on which SetConfig() function we're about to run.
     if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] in ("GRUB2", "GRUB-UEFI"):
@@ -775,7 +785,9 @@ def set_new_bootloader_config(_os):
             HelperBackendTools.backup_uefi_files(mount_point=mount_point)
             HelperBackendTools.manage_uefi_files(_os=_os, mount_point=mount_point)
 
-        if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI" and OS_INFO[_os]["PackageManager"] == "yum":
+        if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI" \
+            and OS_INFO[_os]["PackageManager"] == "yum":
+
             #If we're switching to GRUB-UEFI from BIOS it can mess up GRUB2 and change the boot
             #commands to linux and initrd instead of linuxefi and initrdefi, preventing boot.
             #Fix this. The next time GRUB is updated from within the OS it will fix itself.
@@ -807,7 +819,9 @@ def set_new_bootloader_config(_os):
                 elif "initrd16" in line and ("/initrd" in line or "/initramfs" in line):
                     new_config.append(line.replace("initrd16", "initrdefi")+"\n")
 
-                elif "initrd" in line and "initrdefi" not in line and ("/initrd" in line or "/initramfs" in line):
+                elif "initrd" in line and "initrdefi" not in line \
+                    and ("/initrd" in line or "/initramfs" in line):
+
                     new_config.append(line.replace("initrd", "initrdefi")+"\n")
 
                 else:
@@ -823,7 +837,9 @@ def set_new_bootloader_config(_os):
 
             logger.info("set_new_bootloader_config(): Done!")
 
-        elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB2" and OS_INFO[_os]["PackageManager"] == "yum":
+        elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB2" \
+            and OS_INFO[_os]["PackageManager"] == "yum":
+
             #If we're switching to GRUB2 from UEFI it can mess up GRUB2 and change the boot
             #commands to linuxefi and initrdefi instead of linux and initrd, preventing boot.
             #Fix this. The next time GRUB is updated from within the OS it will fix itself.
@@ -846,7 +862,8 @@ def set_new_bootloader_config(_os):
             new_config = []
 
             for line in config:
-                new_config.append(line.replace("linuxefi", "linux").replace("initrdefi", "initrd")+"\n")
+                new_config.append(line.replace("linuxefi", "linux")\
+                .replace("initrdefi", "initrd")+"\n")
 
             #Write the fixed config.
             CoreTools.write_privileged_file(grub_dir+"/grub.cfg", ''.join(new_config))
