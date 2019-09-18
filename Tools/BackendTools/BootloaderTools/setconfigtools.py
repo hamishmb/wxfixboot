@@ -444,7 +444,7 @@ def make_lilo_os_entries(_os, filetoopen, mount_point, kernel_options):
             DialogTools.show_msg_dlg(message="Warning: The shortcut to the latest kernel or "
                                      + "initrd weren't found for "+__os+"! Unfortunately, this "
                                      + "means WxFixBoot can't make a bootloader entry for this "
-                                     + "OS. Click okay to continue.", kind="Warning")
+                                     + "OS. Click okay to continue.", kind="warning")
 
             continue
 
