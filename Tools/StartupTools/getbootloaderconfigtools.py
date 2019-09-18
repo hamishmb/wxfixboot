@@ -520,6 +520,10 @@ def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, ent
         if "label" in menu_entry_data:
             menu_entry = menu_entry_data.split("=")[1].replace("\n", "")
 
+        else:
+            #Not a valid menu entry.
+            return menu_entries
+
         if menu_entry_data != line and "image" in menu_entry_data.split() \
             and "=" in menu_entry_data.split() and "#" not in menu_entry_data.split():
 
