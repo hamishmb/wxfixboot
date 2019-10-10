@@ -539,8 +539,7 @@ def install_new_bootloader(_os):
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
 
         elif OS_INFO[_os]["PackageManager"] == "yum":
-            cmd = "yum -y install grub2-efi-ia32 grub2-efi-x64 shim-x64 " \
-                  "fwupdate-efi fwupdate-libs"
+            cmd = "yum -y install grub2-efi-ia32 grub2-efi-x64 shim-x64 "
 
     elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO":
         logger.info("install_new_bootloader(): Installing ELILO...")
