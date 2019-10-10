@@ -734,7 +734,8 @@ def set_new_bootloader_config(_os):
             BootloaderConfigSettingTools.set_grub2_config(_os=_os, filetoopen=mount_point
                                                           + "/etc/default/grub",
                                                           bootloader_timeout=BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"],
-                                                          kernel_options=BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"])
+                                                          kernel_options=BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"],
+                                                          package_manager=OS_INFO[_os]["PackageManager"])
 
         if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
             #Mount the UEFI partition at mount_point/boot/efi.

@@ -53,7 +53,7 @@ if sys.version_info[0] == 3:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.getLogger("WxFixBoot").getEffectiveLevel())
 
-def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
+def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options, package_manager):
     """Set GRUB2 config."""
     logger.info("set_grub2_config(): Setting GRUB2 Config in "+filetoopen+"...")
     set_timeout, set_kernel_options, set_default = (False, False, False)
@@ -133,12 +133,22 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
             logger.debug("set_grub2_config(): Commenting out GRUB_HIDDEN_TIMEOUT...")
             line = "#"+line
 
-        #Comment out the GRUB_CMDLINE_LINUX line.
+        #Comment out the GRUB_CMDLINE_LINUX line, unless on Fedora.
         elif 'GRUB_CMDLINE_LINUX' in line and 'GRUB_CMDLINE_LINUX_DEFAULT' not in line \
             and '=' in line and '#' not in line:
 
-            logger.debug("set_grub2_config(): Commenting out GRUB_CMDLINE_LINUX...")
-            line = "#"+line
+            if package_manager == "apt-get":
+                logger.debug("set_grub2_config(): Commenting out GRUB_CMDLINE_LINUX...")
+                line = "#"+line
+
+            elif package_manager == "yum":
+                #Found it! Set it to the options in kernel_options, carefully making sure we aren't
+                #double-quoting it.
+                logger.debug("set_grub2_config(): Found GRUB_CMDLINE_LINUX, setting it to '"
+                             + kernel_options+"'...")
+
+                set_kernel_options = True
+                line = "GRUB_CMDLINE_LINUX='"+kernel_options+"'"
 
         new_file_contents.append(line+"\n")
 
@@ -154,7 +164,11 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options):
         logger.debug("set_grub2_config(): Didn't find GRUB_CMDLINE_LINUX_DEFAULT in config file. "
                      + "Creating and setting it to '"+kernel_options+"'...")
 
-        new_file_contents.append("GRUB_CMDLINE_LINUX_DEFAULT='"+temp+"'\n")
+        if package_manager == "apt-get":
+            new_file_contents.append("GRUB_CMDLINE_LINUX_DEFAULT='"+temp+"'\n")
+
+        elif package_manager == "yum":
+            new_file_contents.append("GRUB_CMDLINE_LINUX='"+temp+"'\n")
 
     if set_default is False:
         logger.debug("set_grub2_config(): Didn't find GRUB_DEFAULT in config file. "
