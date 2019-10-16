@@ -60,7 +60,7 @@ def check_depends():
     #Create a temporary list to allow WxFixBoot to notify the user of particular unmet
     #dependencies.
     cmd_list = ("cp", "mv", "which", "uname", "fsck", "ls", "modprobe", "mount", "umount",
-                "rm", "ping", "badblocks", "arch", "python", "file", "sh", "echo", "lshw",
+                "rm", "ping", "badblocks", "arch", "file", "sh", "echo", "lshw",
                 "lvdisplay", "dmidecode", "chroot", "strings", "dd", "blkid")
 
     #Create a list to contain names of failed commands.
