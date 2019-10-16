@@ -820,7 +820,10 @@ def final_check():
     #Warn if any OSs aren't modifyable.
     unmodifyable_oss = []
 
-    for _os in BOOTLOADER_INFO:
+    keys = list(BOOTLOADER_INFO.keys())
+    keys.sort()
+
+    for _os in keys:
         if BOOTLOADER_INFO[_os]["IsModifyable"] is False:
             unmodifyable_oss.append(_os+", because "+BOOTLOADER_INFO[_os]["Comments"])
 
@@ -832,7 +835,7 @@ def final_check():
     #Warn if any bootloaders need reinstalling.
     need_reinstalling = []
 
-    for _os in BOOTLOADER_INFO:
+    for _os in keys:
         if "MenuEntries" not in BOOTLOADER_INFO[_os].keys():
             need_reinstalling.append(_os)
 
