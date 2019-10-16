@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 
 #Functions to return test data.
 def return_initial_system_info_dict():
-    return {"DisableBootloaderOperationsBecause": []}
+    return {"DisableBootloaderOperations": False, "DisableBootloaderOperationsBecause": []}
 
 def return_system_info_dict_with_disabled_bl_opts():
     return {"DisableBootloaderOperations": True,
