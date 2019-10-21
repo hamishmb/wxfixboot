@@ -297,7 +297,7 @@ def write_fstab_entry_for_uefi_partition(_os, mount_point):
         os.makedirs(mount_point+"/boot/efi")
 
     #Open the mount_point/etc/fstab file for reading. If we aren't using chroot, this'll just be
-    #/etc/fstab, otherwise, /tmp/wxfixboot/mountpoints/dev/sdxy/etc/fstab. Also, save its contents
+    #/etc/fstab, otherwise, /mnt/wxfixboot/mountpoints/dev/sdxy/etc/fstab. Also, save its contents
     #in a variable.
     fstab = open(mount_point+"/etc/fstab", "r")
     new_file_contents = []

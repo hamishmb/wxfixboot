@@ -235,7 +235,7 @@ def get_oss():
 
             else:
                 #Mount the partition and check if anything went wrong.
-                mount_point = "/tmp/wxfixboot/mountpoints"+partition
+                mount_point = "/mnt/wxfixboot/mountpoints"+partition
 
                 if CoreTools.mount_partition(partition=partition, mount_point=mount_point) != 0:
                     #Ignore the partition.
@@ -286,7 +286,7 @@ def get_oss():
 
             else:
                 #Mount the partition and check if anything went wrong.
-                mount_point = "/tmp/wxfixboot/mountpoints"+partition
+                mount_point = "/mnt/wxfixboot/mountpoints"+partition
 
                 if CoreTools.mount_partition(partition=partition, mount_point=mount_point) != 0:
                     #Ignore the partition.
@@ -382,7 +382,7 @@ def get_oss():
                 mount_point = ""
 
             else:
-                mount_point = "/tmp/wxfixboot/mountpoints"+partition
+                mount_point = "/mnt/wxfixboot/mountpoints"+partition
                 cmd = "cat "+mount_point+"/etc/os-release"
 
                 apt_cmd = "chroot "+mount_point+" which apt-get"
@@ -576,7 +576,7 @@ def get_bootloaders():
         #If this isn't the current OS, do some preparation.
         if not OS_INFO[_os]["IsCurrentOS"]:
             #Mount the OS's partition.
-            mount_point = "/tmp/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
+            mount_point = "/mnt/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
 
             if CoreTools.mount_partition(OS_INFO[_os]["Partition"], mount_point) != 0:
                 logger.error("get_bootloaders(): Failed to mount "+_os+"'s partition! Skipping "

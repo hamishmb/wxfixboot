@@ -104,7 +104,7 @@ def get_oss():
 
             else:
                 #Mount the partition and check if anything went wrong.
-                mount_point = "/tmp/wxfixboot/mountpoints"+partition
+                mount_point = "/mnt/wxfixboot/mountpoints"+partition
 
                 if CoreTools.mount_partition(partition=partition, mount_point=mount_point) != 0:
                     #Ignore the partition.
@@ -142,7 +142,7 @@ def get_oss():
 
             else:
                 #Mount the partition and check if anything went wrong.
-                mount_point = "/tmp/wxfixboot/mountpoints"+partition
+                mount_point = "/mnt/wxfixboot/mountpoints"+partition
 
                 if CoreTools.mount_partition(partition=partition, mount_point=mount_point) != 0:
                     #Ignore the partition.
@@ -215,7 +215,7 @@ def get_oss():
                 mount_point = ""
 
             else:
-                mount_point = "/tmp/wxfixboot/mountpoints"+partition
+                mount_point = "/mnt/wxfixboot/mountpoints"+partition
                 cmd = "chroot "+mount_point+" python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
                 apt_cmd = "chroot "+mount_point+" which apt-get"
                 yum_cmd = "chroot "+mount_point+" which yum"

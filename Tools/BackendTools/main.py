@@ -191,7 +191,7 @@ def remove_old_bootloader(_os):
     else:
         logger.debug("remove_old_bootloader(): Using chroot to modify another OS...")
         use_chroot = True
-        mount_point = "/tmp/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
+        mount_point = "/mnt/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
 
         #Check if the partition is mounted.
         unmount_after = not CoreTools.is_mounted(OS_INFO[_os]["Partition"], mount_point)
@@ -424,7 +424,7 @@ def install_new_bootloader(_os):
     else:
         logger.debug("install_new_bootloader(): Using chroot to modify another OS...")
         use_chroot = True
-        mount_point = "/tmp/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
+        mount_point = "/mnt/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
 
         #Check if the partition is mounted.
         unmount_after = not CoreTools.is_mounted(OS_INFO[_os]["Partition"], mount_point)
@@ -655,7 +655,7 @@ def set_new_bootloader_config(_os):
     else:
         logger.debug("set_new_bootloader_config(): We're modifying another OS...")
         use_chroot = True
-        mount_point = "/tmp/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
+        mount_point = "/mnt/wxfixboot/mountpoints"+OS_INFO[_os]["Partition"]
 
         #Check if the partition is mounted.
         unmount_after = not CoreTools.is_mounted(OS_INFO[_os]["Partition"], mount_point)

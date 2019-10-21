@@ -288,7 +288,7 @@ def write_privileged_file(filename, file_contents):
             #We're modifying this on rootfs.
             allowed = True
 
-        elif name in filename and "/tmp/wxfixboot/mountpoints" in filename:
+        elif name in filename and "/mnt/wxfixboot/mountpoints" in filename:
             #We're modifying this on a different filesystem that wxfixboot mounted.
             allowed = True
 

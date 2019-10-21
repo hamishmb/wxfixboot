@@ -468,24 +468,24 @@ class InitThread(threading.Thread):
         SETTINGS["SaveOutput"] = True
 
         #Remove the temporary directory if it exists.
-        if os.path.isdir("/tmp/wxfixboot/mountpoints"):
+        if os.path.isdir("/mnt/wxfixboot/mountpoints"):
             #Check nothing is using it first.
             for line in CoreTools.start_process("mount", return_output=True)[1].split("\n"):
-                if "/tmp/wxfixboot/mountpoints" in line:
+                if "/mnt/wxfixboot/mountpoints" in line:
                     #Unmount this filesystem if possible.
                     filesystem = line.split(" on ")[0]
 
                     if CoreTools.unmount(filesystem) != 0:
                         #If it can't be mounted, do an emergency exit.
                         CoreTools.emergency_exit("There are mounted filesystems in "
-                                                 + "/tmp/wxfixboot/mountpoints, WxFixBoot's "
+                                                 + "/mnt/wxfixboot/mountpoints, WxFixBoot's "
                                                  + "temporary mountpoints directory! Please "
                                                  + "unmount any filesystems there and try "
                                                  + "again.")
 
-            shutil.rmtree("/tmp/wxfixboot/mountpoints")
+            shutil.rmtree("/mnt/wxfixboot/mountpoints")
 
-        os.makedirs("/tmp/wxfixboot/mountpoints")
+        os.makedirs("/mnt/wxfixboot/mountpoints")
 
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
@@ -3001,17 +3001,17 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
         logger.debug("ProgressWindow().restart_wxfixboot(): Checking no filesystems are mounted "
                      + "in the temporary directory, and unmounting them if they are...")
 
-        if os.path.isdir("/tmp/wxfixboot/mountpoints"):
+        if os.path.isdir("/mnt/wxfixboot/mountpoints"):
             #Check nothing is using it first.
             for line in CoreTools.start_process("mount", return_output=True)[1].split("\n"):
-                if "/tmp/wxfixboot/mountpoints" in line:
+                if "/mnt/wxfixboot/mountpoints" in line:
                     #Unmount this filesystem if possible.
                     filesystem = line.split(" on ")[0]
 
                     if CoreTools.unmount(filesystem) != 0:
                         #If it can't be mounted, do an emergency exit.
                         CoreTools.emergency_exit("There are mounted filesystems in "
-                                                 + "/tmp/wxfixboot/mountpoints, WxFixBoot's "
+                                                 + "/mnt/wxfixboot/mountpoints, WxFixBoot's "
                                                  + "temporary mountpoints directory! Please "
                                                  + "unmount any filesystems there and try "
                                                  + "again.")
