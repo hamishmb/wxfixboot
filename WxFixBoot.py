@@ -483,9 +483,10 @@ class InitThread(threading.Thread):
                                                  + "unmount any filesystems there and try "
                                                  + "again.")
 
-            shutil.rmtree("/mnt/wxfixboot/mountpoints")
+            CoreTools.start_process("rm -rvf --one-file-system /mnt/wxfixboot/mountpoints", privileged=True)
 
-        os.makedirs("/mnt/wxfixboot/mountpoints")
+        CoreTools.start_process("mkdir /mnt/wxfixboot/mountpoints", privileged=True)
+        CoreTools.start_process("chmod a+rw -R /mnt/wxfixboot", privileged=True)
 
         #Check for dependencies
         logger.info("InitThread(): Checking For Dependencies...")
