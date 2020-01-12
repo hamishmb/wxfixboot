@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # WxFixBoot
-# Copyright (C) 2013-2019 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2020 Hamish McIntyre-Bhatty
 # WxFixBoot is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -104,7 +104,7 @@ def usage():
     print("                                     The default, as it's very helpful if problems ")
     print("                                     are encountered, and the user needs help\n")
     print("WxFixBoot "+VERSION+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2019")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2020")
 
 if __name__ == "__main__":
     #Set up according to cmdline options.
@@ -927,7 +927,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
         aboutbox.Name = "WxFixBoot"
         aboutbox.SetIcon(APPICON)
         aboutbox.Version = VERSION
-        aboutbox.Copyright = "(C) 2013-2019 Hamish McIntyre-Bhatty"
+        aboutbox.Copyright = "(C) 2013-2020 Hamish McIntyre-Bhatty"
         aboutbox.Description = "Utility to fix the bootloader on a\ncomputer quickly " \
                                + "\n\nPython version "+sys.version.split()[0] \
                                + "\nwxPython version " + wx.version() \
