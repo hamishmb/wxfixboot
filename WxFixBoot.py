@@ -33,7 +33,6 @@ import sys
 import getopt
 import logging
 import os
-import shutil
 import time
 import plistlib
 import ast
@@ -361,9 +360,6 @@ class ProgressTextHandlerThread(threading.Thread):
 
                 if message == last_message:
                     half_second_counter += 1
-
-                else:
-                    half_second_counter == 0
 
                 if message[-3:] == "...":
                     message = message[0:-3]
@@ -2211,8 +2207,7 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                 logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): "
                              + "Saving config to "+_file+"...")
 
-                plistlib.writePlist(BOOTLOADER_INFO[self.os_choice.GetStringSelection()],
-                                    _file)
+                plistlib.dumps(BOOTLOADER_INFO[self.os_choice.GetStringSelection()], _file)
 
                 logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): Finished "
                              + "saving config to "+_file+"...")
@@ -2579,8 +2574,7 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         self.new_kerneloptions_textctrl.GetValue()
 
         BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"] = self.defaultos_choice.GetStringSelection()
-        BOOTLOADER_INFO[_os]["Settings"]["DefaultBootDevice"] = BOOTLOADER_INFO[BOOTLOADER_INFO
-        [_os]["Settings"]["DefaultOS"]]["DefaultBootDevice"]
+        BOOTLOADER_INFO[_os]["Settings"]["DefaultBootDevice"] = BOOTLOADER_INFO[BOOTLOADER_INFO[_os]["Settings"]["DefaultOS"]]["DefaultBootDevice"]
 
         BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"] = \
         self.install_new_bootloader_checkbox.GetValue()
@@ -3334,27 +3328,27 @@ class BackendThread(threading.Thread):
 
                 report_list.write("\t\t\tBootloader was replaced with another bootloader: "
                                   + str(BOOTLOADER_INFO[_os]["Settings"]
-                                            ["InstallNewBootloader"])+"\n\n")
+                                        ["InstallNewBootloader"])+"\n\n")
 
                 if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] \
-                or BOOTLOADER_INFO[_os]["Settings"]["Update"] \
-                or BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"]:
+                    or BOOTLOADER_INFO[_os]["Settings"]["Update"] \
+                    or BOOTLOADER_INFO[_os]["Settings"]["InstallNewBootloader"]:
 
                     report_list.write("\t\t\tNew Bootloader: "
                                       + BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"\n")
 
                     report_list.write("\t\t\tKept Existing Bootloader Timeout: "
                                       + str(BOOTLOADER_INFO[_os]["Settings"]
-                                                ["KeepExistingTimeout"])+"\n")
+                                            ["KeepExistingTimeout"])+"\n")
 
                     if BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"] is False:
                         report_list.write("\t\t\tNew Bootloader Timeout: "
                                           + str(BOOTLOADER_INFO[_os]["Settings"]
-                                                    ["NewTimeout"])+"\n")
+                                                ["NewTimeout"])+"\n")
 
                     report_list.write("\t\t\tKept Existing Kernel Options: "
                                       + str(BOOTLOADER_INFO[_os]["Settings"]
-                                                ["KeepExistingKernelOptions"])+"\n")
+                                            ["KeepExistingKernelOptions"])+"\n")
 
                     if BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"] is False:
                         report_list.write("\t\t\tNew Kernel Options: "
