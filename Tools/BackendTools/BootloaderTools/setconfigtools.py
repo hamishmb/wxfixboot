@@ -25,13 +25,6 @@ This module contains the tools used to set the configuration of bootloaders
 when performing operations with WxFixBoot.
 """
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules.
 import os
 import sys
@@ -43,11 +36,6 @@ import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
 import Tools.dialogtools as DialogTools #pylint: disable=wrong-import-position
 from Tools.dictionaries import DISK_INFO, OS_INFO, BOOTLOADER_INFO #pylint: disable=wrong-import-position
 from .. import helpers as HelperBackendTools #pylint: disable=wrong-import-position
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
 #Set up logging.
 logger = logging.getLogger(__name__)
@@ -102,10 +90,10 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options, packag
         if 'GRUB_TIMEOUT' in line and '=' in line and set_timeout is False:
             #Found it! Set the value to the current value of bootloader_timeout.
             logger.debug("set_grub2_config(): Found GRUB_TIMEOUT, setting it to '"
-                         + unicode(bootloader_timeout)+"'...")
+                         + str(bootloader_timeout)+"'...")
 
             set_timeout = True
-            line = "GRUB_TIMEOUT="+unicode(bootloader_timeout)
+            line = "GRUB_TIMEOUT="+str(bootloader_timeout)
 
         #Look for kernel options setting.
         elif 'GRUB_CMDLINE_LINUX_DEFAULT' in line and '=' in line and set_kernel_options is False:
@@ -155,9 +143,9 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options, packag
     #Check that everything was set. If not, write that config now.
     if set_timeout is False:
         logger.debug("set_grub2_config(): Didn't find GRUB_TIMEOUT in config file. "
-                     + "Creating and setting it to '"+unicode(bootloader_timeout)+"'...")
+                     + "Creating and setting it to '"+str(bootloader_timeout)+"'...")
 
-        new_file_contents.append("GRUB_TIMEOUT="+unicode(bootloader_timeout)+"\n")
+        new_file_contents.append("GRUB_TIMEOUT="+str(bootloader_timeout)+"\n")
 
     if set_kernel_options is False:
         temp = kernel_options.replace('\"', '').replace("\'", "").replace("\n", "")
@@ -312,7 +300,7 @@ def set_lilo_config(_os, filetoopen):
 
             #Found it! Set it to our value.
             logger.debug("set_lilo_config(): Found timeout setting, setting it to "
-                         + unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])+"...")
+                         + str(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])+"...")
 
             set_timeout = True
 
@@ -322,7 +310,7 @@ def set_lilo_config(_os, filetoopen):
             new_file_contents.append("chooser=textmenu\n")
             new_file_contents.append("message=elilomenu.msg\n")
 
-            line = "delay="+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"]*10)
+            line = "delay="+str(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"]*10)
 
         #Look for the timeout setting (LILO).
         elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "LILO" \
@@ -330,10 +318,10 @@ def set_lilo_config(_os, filetoopen):
 
             #Found it! Set it to our value.
             logger.debug("set_lilo_config(): Found timeout setting, setting it to "
-                         + unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])+"...")
+                         + str(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])+"...")
 
             set_timeout = True
-            line = "timeout="+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"]*10)
+            line = "timeout="+str(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"]*10)
 
         #Look for the 'boot' setting.
         elif 'boot' in line and '=' in line and '#' not in line and 'map' not in line \
@@ -357,7 +345,7 @@ def set_lilo_config(_os, filetoopen):
     #Check that everything was set. If not, write that config now.
     if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO" and set_timeout is False:
         logger.debug("set_lilo_config(): Didn't find timeout in config file. Creating it and "
-                     + "setting it to "+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])
+                     + "setting it to "+str(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])
                      + "...")
 
         #Also set prompt to use the text menu, chooser to textmenu, and the text menu file.
@@ -366,15 +354,15 @@ def set_lilo_config(_os, filetoopen):
         new_file_contents.append("chooser=textmenu\n")
         new_file_contents.append("message=elilomenu.msg\n")
 
-        new_file_contents.append("delay="+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])
+        new_file_contents.append("delay="+str(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])
                                  + "\n")
 
     elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "LILO" and set_timeout is False:
         logger.debug("set_lilo_config(): Didn't find timeout in config file. Creating it and "
-                     + "setting it to "+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])
+                     + "setting it to "+str(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])
                      + "...")
 
-        new_file_contents.append("timeout="+unicode(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])
+        new_file_contents.append("timeout="+str(BOOTLOADER_INFO[_os]["Settings"]["NewTimeout"])
                                  + "\n")
 
     #Use LILO's compact option to speed the boot process up.

@@ -19,13 +19,6 @@
 This module contains functions used for generating the system info notebook.
 """
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules.
 import logging
 import sys
@@ -107,11 +100,11 @@ def update_list_ctrl(self, event=None, headings=None, dictionary=None): #pylint:
         for heading in headings:
             data = info[heading]
 
-            if unicode(type(data)) == type([]):
+            if str(type(data)) == type([]):
                 data = ', '.join(data)
 
-            elif unicode(type(data)) != type(""):
-                data = unicode(data)
+            elif str(type(data)) != type(""):
+                data = str(data)
 
             if column == 0:
                 self.list_ctrl.InsertItem(number, label=data)

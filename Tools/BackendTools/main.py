@@ -25,13 +25,6 @@ updating, removing, and installing/reinstalling bootloaders. It also includes
 high-level functions for setting bootloader configuration.
 """
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules.
 import os
 import sys
@@ -49,11 +42,6 @@ from . import essentials as EssentialBackendTools #pylint: disable=wrong-import-
 from . import helpers as HelperBackendTools #pylint: disable=wrong-import-position
 from . import BootloaderTools #pylint: disable=wrong-import-position
 BootloaderConfigSettingTools = BootloaderTools.setconfigtools
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
 #Set up logging.
 logger = logging.getLogger(__name__)
@@ -104,7 +92,7 @@ def manage_bootloader(_os):
 
     #Safegaurd operations using a loop.
     for function in function_list:
-        logger.info("manage_bootloader(): Calling "+unicode(function)+"...")
+        logger.info("manage_bootloader(): Calling "+str(function)+"...")
 
         success = False
 

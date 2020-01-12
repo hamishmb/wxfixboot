@@ -23,13 +23,6 @@
 This module contains the core functions used during WxFixBoot's startup procedure.
 """
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules.
 import os
 import sys
@@ -41,11 +34,6 @@ sys.path.append('../..') #Need to be able to import the Tools module from here.
 import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
 import Tools.dialogtools as DialogTools #pylint: disable=wrong-import-position
 from Tools.dictionaries import * #pylint: disable=wrong-import-position
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
 #Set up logging.
 logger = logging.getLogger(__name__)

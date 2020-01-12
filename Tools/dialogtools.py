@@ -28,24 +28,11 @@ threads - for example the thread that is used for backend operations when modify
 bootloader.
 """
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules.
 import time
-import sys
 import threading
 import logging
 import wx
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
 #Set up logging.
 logger = logging.getLogger(__name__)
@@ -58,7 +45,7 @@ DLGRESULT = False
 def is_gui_thread():
     """
     Used to determine if the current thread is the GUI thread.
-    Performing this check enables us to use theese convenience
+    Performing this check enables us to use these convenience
     functions in the GUI thread as well.
 
     Args:
@@ -67,13 +54,7 @@ def is_gui_thread():
     Returns:
         boolean - Whether or not this is the GUI thread.
     """
-    #New version for Python 3 (more reliable).
-    if sys.version_info[0] == 3:
-        return threading.current_thread() is threading.main_thread()
-
-    #Legacy support for Python 2.
-    else:
-        return isinstance(threading.current_thread(), threading._MainThread)
+    return threading.current_thread() is threading.main_thread()
 
 def show_thread_msg_dlg(msg, kind="info"):
     """Shows a message dialog from a thread upon instruction"""
@@ -143,7 +124,7 @@ def show_thread_yes_no_dlg(msg, title="WxFixBoot - Question", buttons=(None, Non
         DLGRESULT = False
 
     logger.debug("show_thread_yes_no_dlg(): Result of Thread Yes/No Dialog was: "
-                 + unicode(DLGRESULT))
+                 + str(DLGRESULT))
 
 def show_yes_no_dlg(message, title="WxFixBoot - Question", buttons=(None, None)):
     """
@@ -187,7 +168,7 @@ def show_thread_choice_dlg(msg, choices, title="WxFixBoot - Select an Option"):
         DLGRESULT = False
 
     logger.debug("show_thread_choice_dlg(): Result of Thread Choice Dialog was: "
-                 + unicode(DLGRESULT))
+                 + str(DLGRESULT))
 
 def show_choice_dlg(message, title, choices, allow_cancel=False):
     """
@@ -244,7 +225,7 @@ def show_thread_text_entry_dlg(msg, title="WxFixBoot - Text Entry"):
         DLGRESULT = False
 
     logger.debug("show_thread_text_entry_dlg(): Result of Thread Text Entry Dlg was: "
-                 + unicode(DLGRESULT))
+                 + str(DLGRESULT))
 
 def show_text_entry_dlg(message, title="WxFixBoot - Text Entry"):
     """
@@ -298,7 +279,7 @@ def show_thread_save_file_dlg(title="WxFixBoot - Select A File",
         DLGRESULT = False
 
     logger.debug("show_thread_save_file_dlg(): Result of Thread Save File Dialog was: "
-                 + unicode(DLGRESULT))
+                 + str(DLGRESULT))
 
 def show_save_file_dlg(title="WxFixBoot - Select A File", wildcard="All Files/Devices (*)|*"):
     """

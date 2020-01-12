@@ -24,13 +24,6 @@ This module contains tools used to get bootloader information during WxFixBoot's
 startup procedures.
 """
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules
 import os
 import sys
@@ -40,11 +33,6 @@ import logging
 sys.path.append('../..') #Need to be able to import the Tools module from here.
 import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
 from Tools.dictionaries import DISK_INFO, BOOTLOADER_INFO  #pylint: disable=wrong-import-position
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
 #Set up logging.
 logger = logging.getLogger(__name__)
@@ -68,10 +56,10 @@ def find_grub(os_partition, grub_version):
 
     for disk in likely_grub_install_disks:
         logger.info("find_grub(): "+DISK_INFO[disk]["Name"]+" "
-                    + ', '.join(unicode(DISK_INFO[disk]["BootRecordStrings"])))
+                    + ', '.join(str(DISK_INFO[disk]["BootRecordStrings"])))
 
         for line in DISK_INFO[disk]["BootRecordStrings"]:
-            line = unicode(line)
+            line = str(line)
 
             #Check that we have the right version of GRUB, and double check that GRUB is present.
             if line in look_for and "GRUB" in DISK_INFO[disk]["BootRecordStrings"]:
@@ -194,7 +182,7 @@ def parse_grub2_menu_data(menu_data="", mount_point="", menu_entries=None, menu_
                                                            menu_entries=menu_entries,
                                                            menu_name=sub_menu_name,
                                                            menu_ids=menu_ids,
-                                                           menu_id=unicode(entry_counter)+">")[1:]
+                                                           menu_id=str(entry_counter)+">")[1:]
 
             logger.info("parse_grub2_menu_data(): Done! Jumping past the submenu data to avoid "
                         + "duplicating menu entries...")
@@ -228,12 +216,12 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
 
     #Handle duplicate names.
     if menu_entry_name in menu_entries[menu]["Order"]:
-        menu_entry_name = menu_entry_name+" (ID "+menu_ids[menu]["ID"]+unicode(entry_counter)+")"
+        menu_entry_name = menu_entry_name+" (ID "+menu_ids[menu]["ID"]+str(entry_counter)+")"
 
     #Get the menu entry ID.
     menu_entries[menu]["Order"].append(menu_entry_name)
     menu_entries[menu][menu_entry_name] = {}
-    menu_entries[menu][menu_entry_name]["ID"] = menu_ids[menu]["ID"]+unicode(entry_counter)
+    menu_entries[menu][menu_entry_name]["ID"] = menu_ids[menu]["ID"]+str(entry_counter)
 
     logger.debug("assemble_grub2_menu_entry(): Menu Entry ID: "
                  + menu_entries[menu][menu_entry_name]["ID"]+"...")
@@ -325,7 +313,7 @@ def assemble_grub2_menu_entry(menu_entries, menu_ids, menu_entries_file_contents
             if numbers[0] in range(0, 25):
                 #The partition number is 1-based.
                 menu_entries[menu][menu_entry_name]["Partition"] = \
-                "/dev/sd"+letter+unicode(numbers[1])
+                "/dev/sd"+letter+str(numbers[1])
 
     #Log if we STILL haven't found the disk.
     if menu_entries[menu][menu_entry_name]["Partition"] == "Unknown" \
@@ -534,7 +522,7 @@ def assemble_lilo_menu_entry(menu_entries, menu_entries_file_contents, line, ent
     menu_entries["MainMenu"][menu_entry] = {}
     menu_entries["MainMenu"]["Order"].append(menu_entry)
     menu_entries["MainMenu"][menu_entry]["RawMenuEntryData"] = raw_menu_entry_data
-    menu_entries["MainMenu"][menu_entry]["ID"] = unicode(entry_counter)
+    menu_entries["MainMenu"][menu_entry]["ID"] = str(entry_counter)
     menu_entries["MainMenu"][menu_entry]["Partition"] = "Unknown"
     menu_entries["MainMenu"][menu_entry]["KernelOptions"] = ["Unknown"]
 

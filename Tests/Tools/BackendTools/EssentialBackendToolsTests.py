@@ -21,13 +21,6 @@
 # Reason (too-few-public-methods): Test classes.
 # Reason (wrong-import-order): These are just unit tests.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules
 import unittest
 import sys

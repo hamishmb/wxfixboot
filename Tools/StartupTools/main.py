@@ -24,13 +24,6 @@ This module contains the main functions that form most of the cohesive whole
 of WxFixBoot's startup procedures.
 """
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules.
 from distutils.version import LooseVersion
 
@@ -47,11 +40,6 @@ from Tools.dictionaries import * #pylint: disable=wrong-import-position
 #Import other modules.
 from . import core as CoreStartupTools #pylint: disable=wrong-import-position
 from . import getbootloaderconfigtools as BootloaderConfigObtainingTools  #pylint: disable=wrong-import-position
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
 #Set up logging.
 logger = logging.getLogger(__name__)
@@ -172,7 +160,7 @@ def check_for_live_disk():
 
         SYSTEM_INFO["OnPartedMagic"] = False
         logger.info("MainStartupTools(): check_for_live_disk(): Result: "
-                    + unicode(SYSTEM_INFO["IsLiveDisk"]))
+                    + str(SYSTEM_INFO["IsLiveDisk"]))
 
     #Get current OS architecture.
     logger.info("MainStartupTools(): check_for_live_disk(): Getting architecture of current OS...")
@@ -488,7 +476,7 @@ def get_oss():
                                  + "and Apple to fix any issues with your computer.")
 
     #Otherwise...
-    logger.debug("get_oss(): Done, os_info Populated okay. Contents: "+unicode(os_info))
+    logger.debug("get_oss(): Done, os_info Populated okay. Contents: "+str(os_info))
     return os_info, SYSTEM_INFO
 
 def get_firmware_type():

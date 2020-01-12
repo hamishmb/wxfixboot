@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # MainStartupTools test functions for WxFixBoot
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2020 Hamish McIntyre-Bhatty
@@ -14,16 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with WxFixBoot.  If not, see <http://www.gnu.org/licenses/>.
-
-#If you're wondering why this is here, it's so that there are some known good/sane functions
-#to aid testing the ones in DialogTools.
-
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 #Import modules.
 import sys

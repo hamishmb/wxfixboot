@@ -19,13 +19,6 @@
 This module contains the code used to run the test suites for WxFixBoot.
 """
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules.
 import unittest
 import logging
@@ -34,7 +27,7 @@ import getopt
 import sys
 
 #Global vars.
-VERSION = "3.0.0"
+VERSION = "3.0.2"
 
 #Set up the logger (silence all except critical logging messages).
 logger = logging.getLogger('WxFixBoot')
@@ -44,11 +37,6 @@ LOGGER_LEVEL = logging.CRITICAL
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
                     datefmt='%d/%m/%Y %I:%M:%S %p', level=LOGGER_LEVEL)
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    #Disable cos necessary to keep supporting python 2.
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 def usage():
     print("\nUsage: Tests.py [OPTION]\n\n")
@@ -81,7 +69,7 @@ if __name__ == "__main__":
     except getopt.GetoptError as err:
         #Invalid option. Show the help message and then exit.
         #Show the error.
-        print(unicode(err))
+        print(str(err))
         usage()
         sys.exit(2)
 
@@ -138,5 +126,5 @@ if __name__ == "__main__":
             assert False, "unhandled option"
 
     for SuiteModule in TESTSUITES:
-        print("\n\nTests in "+unicode(SuiteModule)+"\n\n")
+        print("\n\nTests in "+str(SuiteModule)+"\n\n")
         unittest.TextTestRunner(verbosity=2).run(unittest.TestLoader().loadTestsFromModule(SuiteModule))

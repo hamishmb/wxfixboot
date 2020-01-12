@@ -24,13 +24,6 @@ This file also contains most of the GUI-related code, with small portions
 being offloaded into Tools/dialogtools.py and Tools/notebookfunctions.py.
 """
 
-#Do future imports to continue python 2 support.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import other modules
 from distutils.version import LooseVersion
 
@@ -54,33 +47,17 @@ import wx.html
 import wx.lib.statbmp
 import wx.lib.stattext
 
-#Compatibility with wxPython 4.
-if int(wx.version()[0]) >= 4:
-    import wx.adv
-    from wx.adv import AboutDialogInfo as wxAboutDialogInfo #pylint: disable=no-name-in-module
-    from wx.adv import AboutBox as wxAboutBox #pylint: disable=no-name-in-module
-
-else:
-    from wx import AboutDialogInfo as wxAboutDialogInfo #pylint: disable=no-name-in-module
-    from wx import AboutBox as wxAboutBox #pylint: disable=no-name-in-module
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    #Disable cos necessary to keep supporting python 2.
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-
-    #Plist hack for Python 3.
-    plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
-    plistlib.writePlist = plistlib.dump #pylint: disable=no-member
+import wx.adv
+from wx.adv import AboutDialogInfo as wxAboutDialogInfo #pylint: disable=no-name-in-module
+from wx.adv import AboutBox as wxAboutBox #pylint: disable=no-name-in-module
 
 #Define the version number and the release date as global variables.
-VERSION = "3.0.1"
+VERSION = "3.0.2"
 RELEASEDATE = "30/10/2019"
 RELEASE_TYPE = "Stable"
 
 #Define other global variables.
 SESSION_ENDING = False
-CLASSIC_WXPYTHON = int(wx.version()[0]) < 4
 APPICON = None
 OUTPUT_LOG = None
 OPERATIONS = None
@@ -114,7 +91,7 @@ if __name__ == "__main__":
     except getopt.GetoptError as err:
         #Invalid option. Show the help message and then exit.
         #Show the error.
-        print(unicode(err))
+        print(str(err))
         usage()
         sys.exit(2)
 
@@ -195,7 +172,7 @@ class GetDiskInformation(threading.Thread):
         except (SyntaxError, ValueError, TypeError) as error:
             #If this fails for some reason, just return an empty dictionary.
             #TODO Don't know if only these exceptions can occur. Fix that.
-            logger.error("GetDiskInformation().get_info(): Error: "+unicode(error))
+            logger.error("GetDiskInformation().get_info(): Error: "+str(error))
             return {}
 
 #End Disk Information Handler thread.
@@ -227,13 +204,7 @@ class InitialPanel(wx.Panel): #pylint: disable=too-few-public-methods
     def on_erase_background(self, event): #pylint: disable=unused-argument
         """Redraw the background image when needed"""
         _dc = wx.ClientDC(self)
-
-        if CLASSIC_WXPYTHON:
-            _dc.SetClippingRect(self.GetUpdateRegion().GetBox())
-
-        else:
-            _dc.SetClippingRegion(self.GetUpdateRegion().GetBox())
-
+        _dc.SetClippingRegion(self.GetUpdateRegion().GetBox())
         _dc.Clear()
         splash = wx.Bitmap("/usr/share/wxfixboot/images/splash.png")
         _dc.DrawBitmap(splash, 0, 0)
@@ -266,7 +237,7 @@ class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
             logger.info("WxFixBoot Version "+VERSION+" Restarting...")
 
         logger.info("Release date: "+RELEASEDATE)
-        logger.info("Running on Python version: "+unicode(sys.version_info)+"...")
+        logger.info("Running on Python version: "+str(sys.version_info)+"...")
         logger.info("Running on wxPython version: "+wx.version()+"...")
 
         #Set the frame's icon.
@@ -429,12 +400,12 @@ class InitThread(threading.Thread):
 
         except Exception:
             logger.critical("Unexpected error \n\n"
-                            + unicode(traceback.format_exc())
+                            + str(traceback.format_exc())
                             + "\n\n while starting WxFixBoot. "
                             + "Warning user and exiting.")
 
             CoreTools.emergency_exit("There was an unexpected error: \n\n"
-                                     + unicode(traceback.format_exc())
+                                     + str(traceback.format_exc())
                                      + "\n\nWhile starting up!")
 
     def receive_diskinfo(self, info):
@@ -648,11 +619,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
         #Add an image.
         img = wx.Image("/usr/share/pixmaps/wxfixboot.png", wx.BITMAP_TYPE_PNG)
 
-        if CLASSIC_WXPYTHON:
-            self.logo = wx.StaticBitmap(self.panel, -1, wx.BitmapFromImage(img))
-
-        else:
-            self.logo = wx.StaticBitmap(self.panel, -1, wx.Bitmap(img))
+        self.logo = wx.StaticBitmap(self.panel, -1, wx.Bitmap(img))
 
     def create_buttons(self):
         """Create the buttons"""
@@ -824,7 +791,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
         infotext = ""
         update_recommended = False
 
-        updateinfo = plistlib.readPlistFromString(updateinfo.encode())
+        updateinfo = plistlib.loads(updateinfo.encode())
 
         #Determine the latest version for our kind of release.
         if RELEASE_TYPE == "Stable":
@@ -1084,7 +1051,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
 
         #Log gathered operations to do, and the number (verbose mode, default).
         logger.info("MainWindow().count_operations(): Number of operations: "
-                    + unicode(NUMBER_OF_OPERATIONS))
+                    + str(NUMBER_OF_OPERATIONS))
 
         if NUMBER_OF_OPERATIONS == 0:
             logger.info("MainWindow().count_operations(): No operations to do. "
@@ -1668,13 +1635,8 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
         img1 = wx.Image("/usr/share/wxfixboot/images/ArrowDown.png", wx.BITMAP_TYPE_PNG)
         img2 = wx.Image("/usr/share/wxfixboot/images/ArrowRight.png", wx.BITMAP_TYPE_PNG)
 
-        if CLASSIC_WXPYTHON:
-            self.down_arrow_image = wx.BitmapFromImage(img1)
-            self.right_arrow_image = wx.BitmapFromImage(img2)
-
-        else:
-            self.down_arrow_image = wx.Bitmap(img1)
-            self.right_arrow_image = wx.Bitmap(img2)
+        self.down_arrow_image = wx.Bitmap(img1)
+        self.right_arrow_image = wx.Bitmap(img2)
 
         self.arrow1 = wx.lib.statbmp.GenStaticBitmap(self.panel, -1, self.down_arrow_image)
         self.arrow2 = wx.lib.statbmp.GenStaticBitmap(self.panel, -1, self.down_arrow_image)
@@ -2291,7 +2253,7 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                              + "config from "+_file+"...")
 
                 try:
-                    self.setup_for_restoring_bootloader(plistlib.readPlistFromString(_file))
+                    self.setup_for_restoring_bootloader(plistlib.loads(_file))
 
                 except Exception:
                     #Error!
@@ -2865,7 +2827,7 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def show_output(self, event=None): #pylint: disable=unused-argument
         """Show and Hide the output box in ProgressWindow()"""
         logger.debug("ProgressWindow().show_output() was Toggled to position: "
-                     + unicode(self.show_output_button.GetValue())
+                     + str(self.show_output_button.GetValue())
                      + ", where True = Depressed and vice versa.")
 
         if self.show_output_button.GetValue():
@@ -3162,11 +3124,11 @@ class BackendThread(threading.Thread):
             self.start_operations()
 
         except Exception:
-            logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())
+            logger.critical("Unexpected error \n\n"+str(traceback.format_exc())
                             + "\n\n while running operations. Warning user and exiting.")
 
             CoreTools.emergency_exit("There was an unexpected error:\n\n"
-                                     + unicode(traceback.format_exc())
+                                     + str(traceback.format_exc())
                                      + "\n\nWhile running operations!")
 
     def start_operations(self):
@@ -3282,7 +3244,7 @@ class BackendThread(threading.Thread):
             report_list.write("\t\tUUID: "+DISK_INFO[disk]["UUID"]+"\n")
             report_list.write("\t\tID: "+DISK_INFO[disk]["ID"]+"\n")
             report_list.write("\t\tBoot Record Strings: "
-                              + unicode(b', '.join(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n")
+                              + str(b', '.join(DISK_INFO[disk]["BootRecordStrings"]))+"\n\n")
 
         #Do OS Information.
         report_list.write("\n##########OS Information##########\n")
@@ -3295,17 +3257,17 @@ class BackendThread(threading.Thread):
 
         report_list.write("Currently running OS architecture: "+SYSTEM_INFO["CurrentOSArch"]+"\n")
         report_list.write("Currently running OS is on Live Disk: "
-                          + unicode(SYSTEM_INFO["IsLiveDisk"])+"\n")
+                          + str(SYSTEM_INFO["IsLiveDisk"])+"\n")
 
         if SYSTEM_INFO["IsLiveDisk"]:
             report_list.write("Currently running OS is Parted Magic: "
-                              + unicode(SYSTEM_INFO["OnPartedMagic"])+"\n")
+                              + str(SYSTEM_INFO["OnPartedMagic"])+"\n")
 
         report_list.write("Per OS Info:\n")
 
         for _os in os_list:
             report_list.write("\tOS Name: "+_os+"\n")
-            report_list.write("\t\tIs Current OS: "+unicode(OS_INFO[_os]["IsCurrentOS"])+"\n")
+            report_list.write("\t\tIs Current OS: "+str(OS_INFO[_os]["IsCurrentOS"])+"\n")
             report_list.write("\t\tArchitecture: "+OS_INFO[_os]["Arch"]+"\n")
             report_list.write("\t\tInstalled On: "+OS_INFO[_os]["Partition"]+"\n")
             report_list.write("\t\tPackage Manager: "+OS_INFO[_os]["PackageManager"]+"\n")
@@ -3318,7 +3280,7 @@ class BackendThread(threading.Thread):
         report_list.write("\n##########Bootloader Information##########\n")
 
         report_list.write("Disabled Bootloader Operations: "
-                          + unicode(SYSTEM_INFO["DisableBootloaderOperations"])+"\n")
+                          + str(SYSTEM_INFO["DisableBootloaderOperations"])+"\n")
 
         if SYSTEM_INFO["DisableBootloaderOperations"]:
             report_list.write("Bootloader operations have been disabled. The operations that were "
@@ -3340,7 +3302,7 @@ class BackendThread(threading.Thread):
                               + ', '.join(BOOTLOADER_INFO[_os]["AvailableBootloaders"])+"\n")
 
             report_list.write("\t\tBootloader Timeout: "
-                              + unicode(BOOTLOADER_INFO[_os]["Timeout"])+"\n")
+                              + str(BOOTLOADER_INFO[_os]["Timeout"])+"\n")
 
             report_list.write("\t\tGlobal Kernel Options: "
                               + BOOTLOADER_INFO[_os]["GlobalKernelOptions"]+"\n")
@@ -3355,23 +3317,23 @@ class BackendThread(threading.Thread):
                               + BOOTLOADER_INFO[_os]["BootDisk"]+"\n")
 
             report_list.write("\t\tCan be modified: "
-                              + unicode(BOOTLOADER_INFO[_os]["IsModifyable"])+"\n")
+                              + str(BOOTLOADER_INFO[_os]["IsModifyable"])+"\n")
 
             report_list.write("\t\tReason for modifyability: "
                               + BOOTLOADER_INFO[_os]["Comments"]+"\n")
 
             report_list.write("\t\tBootloader was modified: "
-                              + unicode(BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"])+"\n\n")
+                              + str(BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"])+"\n\n")
 
             if BOOTLOADER_INFO[_os]["Settings"]["ChangeThisOS"]:
                 report_list.write("\t\t\tBootloader was reinstalled: "
-                                  + unicode(BOOTLOADER_INFO[_os]["Settings"]["Reinstall"])+"\n")
+                                  + str(BOOTLOADER_INFO[_os]["Settings"]["Reinstall"])+"\n")
 
                 report_list.write("\t\t\tBootloader was updated: "
-                                  + unicode(BOOTLOADER_INFO[_os]["Settings"]["Update"])+"\n")
+                                  + str(BOOTLOADER_INFO[_os]["Settings"]["Update"])+"\n")
 
                 report_list.write("\t\t\tBootloader was replaced with another bootloader: "
-                                  + unicode(BOOTLOADER_INFO[_os]["Settings"]
+                                  + str(BOOTLOADER_INFO[_os]["Settings"]
                                             ["InstallNewBootloader"])+"\n\n")
 
                 if BOOTLOADER_INFO[_os]["Settings"]["Reinstall"] \
@@ -3382,16 +3344,16 @@ class BackendThread(threading.Thread):
                                       + BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+"\n")
 
                     report_list.write("\t\t\tKept Existing Bootloader Timeout: "
-                                      + unicode(BOOTLOADER_INFO[_os]["Settings"]
+                                      + str(BOOTLOADER_INFO[_os]["Settings"]
                                                 ["KeepExistingTimeout"])+"\n")
 
                     if BOOTLOADER_INFO[_os]["Settings"]["KeepExistingTimeout"] is False:
                         report_list.write("\t\t\tNew Bootloader Timeout: "
-                                          + unicode(BOOTLOADER_INFO[_os]["Settings"]
+                                          + str(BOOTLOADER_INFO[_os]["Settings"]
                                                     ["NewTimeout"])+"\n")
 
                     report_list.write("\t\t\tKept Existing Kernel Options: "
-                                      + unicode(BOOTLOADER_INFO[_os]["Settings"]
+                                      + str(BOOTLOADER_INFO[_os]["Settings"]
                                                 ["KeepExistingKernelOptions"])+"\n")
 
                     if BOOTLOADER_INFO[_os]["Settings"]["KeepExistingKernelOptions"] is False:
@@ -3405,21 +3367,21 @@ class BackendThread(threading.Thread):
 
         #Do WxFixBoot's settings.
         report_list.write("\n##########Other WxFixBoot Settings##########\n")
-        report_list.write("Do Quick Filesystem Check: "+unicode(SETTINGS["QuickFSCheck"])+"\n")
-        report_list.write("Do Bad Sector Check: "+unicode(SETTINGS["BadSectorCheck"])+"\n")
+        report_list.write("Do Quick Filesystem Check: "+str(SETTINGS["QuickFSCheck"])+"\n")
+        report_list.write("Do Bad Sector Check: "+str(SETTINGS["BadSectorCheck"])+"\n")
         report_list.write("Show Diagnostic Terminal Output: "
-                          + unicode(SETTINGS["FullVerbosity"])+"\n")
+                          + str(SETTINGS["FullVerbosity"])+"\n")
 
-        report_list.write("Save System Report To File: "+unicode(SETTINGS["MakeSystemSummary"])
+        report_list.write("Save System Report To File: "+str(SETTINGS["MakeSystemSummary"])
                           + "\n")
 
         if SETTINGS["MakeSystemSummary"]:
             report_list.write("\n\tSave Terminal Output in Report: "
-                              + unicode(SETTINGS["SaveOutput"])+"\n")
+                              + str(SETTINGS["SaveOutput"])+"\n")
 
             report_list.write("\tSystem Report Target File: "+report_file+"\n\n")
 
-        report_list.write("Number of operations to do: "+unicode(NUMBER_OF_OPERATIONS)+"\n")
+        report_list.write("Number of operations to do: "+str(NUMBER_OF_OPERATIONS)+"\n")
 
         #Save terminal output.
         if SETTINGS["SaveOutput"]:

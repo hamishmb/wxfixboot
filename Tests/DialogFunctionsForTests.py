@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # Test functions for Displaying Dialogs for WxFixBoot
 # This file is part of WxFixBoot.
 # Copyright (C) 2013-2020 Hamish McIntyre-Bhatty
@@ -18,20 +18,7 @@
 #If you're wondering why this is here, it's so that there are some known good/sane functions to
 #aid testing the ones in DialogTools.
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-import sys
 import wx
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    #Disable cos necessary to keep supporting python 2.
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 #These hold results from the dialog functions.
 MSG_DLG_MESSAGES = []
@@ -42,7 +29,7 @@ SAVE_FILE_DLG_RESULTS = []
 
 def ask_user_if_correct(info):
     dlg = wx.MessageDialog(None, "Was the correct dialog shown and displayed properly? Was your "
-                           + "result "+unicode(info)+"?", "WxFixBoot - Dialog Tests",
+                           + "result "+str(info)+"?", "WxFixBoot - Dialog Tests",
                            wx.YES_NO | wx.ICON_QUESTION)
 
     result = (dlg.ShowModal() == wx.ID_YES)

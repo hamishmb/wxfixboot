@@ -29,13 +29,6 @@ the disk by doing bootloader operations. Likewise, a new bootloader cannot be
 installed without an internet connection.
 """
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules.
 import logging
 import sys
@@ -48,11 +41,6 @@ import Tools.coretools as CoreTools #pylint: disable=wrong-import-position
 import Tools.dialogtools as DialogTools #pylint: disable=wrong-import-position
 from Tools.dictionaries import SYSTEM_INFO, DISK_INFO #pylint: disable=wrong-import-position
 from . import helpers as HelperBackendTools #pylint: disable=wrong-import-position
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
 #Set up logging.
 logger = logging.getLogger(__name__)
@@ -318,7 +306,7 @@ def handle_filesystem_check_return_values(exec_cmds, retval, partition, manage_b
                     break
 
         logger.error("handle_filesystem_check_return_values(): "+exec_list[0]
-                     +" Errored with exit value "+unicode(retval)
+                     +" Errored with exit value "+str(retval)
                      +"! This could indicate filesystem corruption or bad sectors!")
 
         if doing_bootloader_operations:
@@ -326,7 +314,7 @@ def handle_filesystem_check_return_values(exec_cmds, retval, partition, manage_b
                          + "skip bootloader operations...")
 
             result = DialogTools.show_yes_no_dlg(message="Error! The filesystem checker gave "
-                                                 + "exit value: "+unicode(retval)+"! This could "
+                                                 + "exit value: "+str(retval)+"! This could "
                                                  + "indicate filesystem corruption, a problem "
                                                  + "with the filesystem checker, or bad sectors "
                                                  + "on partition: "+partition+". If you perform "

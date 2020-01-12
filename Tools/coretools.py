@@ -23,13 +23,6 @@
 This module contains the "core tools" used in various parts of WxFixBoot.
 """
 
-#Do future imports to prepare to support python 3. Use unicode strings rather than ASCII
-#strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules.
 import subprocess
 import sys
@@ -41,11 +34,6 @@ import wx
 
 #Import other modules.
 from . import dialogtools as DialogTools
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-    str = bytes #pylint: disable=redefined-builtin,invalid-name
 
 #Set up logging.
 logger = logging.getLogger(__name__)
@@ -106,7 +94,7 @@ def start_process(exec_cmds, show_output=True, return_output=False, testing=Fals
 
     #Log this info in a debug message.
     logger.debug("start_process(): Process: "+' '.join(exec_cmds)
-                 +": Return Value: "+unicode(ret_val)
+                 +": Return Value: "+str(ret_val)
                  + ", Output: \"\n\n"+'\n'.join(line_list)+"\"\n")
 
     #Handle these error codes if pkexec is being used.
@@ -143,7 +131,7 @@ def read(cmd, testing=False):
     #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes
     #to make sure we get all the output.
     counter = 0
-    line = str(b"")
+    line = bytes(b"")
     line_list = []
 
     while cmd.poll() is None or counter < 100:
@@ -166,7 +154,7 @@ def read(cmd, testing=False):
                 line_list.append(line.replace("\n", "").replace("\r", ""))
 
             #Reset line.
-            line = str(b"")
+            line = bytes(b"")
 
     #Catch it if there's not a newline at the end.
     if line != b"":
@@ -186,7 +174,7 @@ def read_and_send_output(cmd, show_output):
     #Get ready to run the command(s). Read up to 100 empty "" characters after the process finishes
     #to make sure we get all the output.
     counter = 0
-    line = str(b"")
+    line = bytes(b"")
     line_list = []
     hold = False
     send_line = False
@@ -204,7 +192,7 @@ def read_and_send_output(cmd, show_output):
             #Check if this char is \n.
             if char == b"\n":
                 #Send the line as is but replace \r\n with \n.
-                line = str(line.replace(b"\r\n", b"\n"))
+                line = bytes(line.replace(b"\r\n", b"\n"))
 
             else:
                 #Send the line as is.
@@ -220,7 +208,7 @@ def read_and_send_output(cmd, show_output):
             line_list.append(line.replace("\n", "").replace("\r", "").replace("\x08", ""))
 
             #Reset line.
-            line = str(b"")
+            line = bytes(b"")
             send_line = False
 
         elif char == b"\r":
@@ -307,7 +295,7 @@ def write_privileged_file(filename, file_contents):
                            + filename, stdin=subprocess.PIPE, shell=True)
 
     #Write the file contents to its stdin, plus EOF.
-    cmd.stdin.write(file_contents.encode("UTF-8", errors="ignore")+str(b"\nEOF"))
+    cmd.stdin.write(file_contents.encode("UTF-8", errors="ignore")+bytes(b"\nEOF"))
     cmd.stdin.flush()
     cmd.stdin.close()
 
@@ -604,7 +592,7 @@ def teardown_chroot(mount_point):
     if ret_val != 0:
         logger.error("teardown_chroot(): Failed to run command: 'mv -vf "+mount_point
                      + "/etc/resolv.conf.bak "+mount_point+"/etc/resolv.conf'! Return value was: "
-                     + unicode(ret_val)+". Chroot may not be removed properly!")
+                     + str(ret_val)+". Chroot may not be removed properly!")
 
     logger.debug("teardown_chroot(): Finished removing chroot at mount_point: "+mount_point+"...")
     return ret_val
