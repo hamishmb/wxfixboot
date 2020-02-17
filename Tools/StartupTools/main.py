@@ -136,8 +136,10 @@ def check_for_live_disk():
         SYSTEM_INFO["IsLiveDisk"] = True
         SYSTEM_INFO["OnPartedMagic"] = False
 
-    #Try to detect if we're not running on a live disk (on a HDD).
-    elif "/dev/sd" in CoreTools.get_partition_mounted_at("/"):
+    #Try to detect if we're not running on a live disk (on HDD/NVME).
+    elif "/dev/sd" in CoreTools.get_partition_mounted_at("/") \
+        or "/dev/nvme" in CoreTools.get_partition_mounted_at("/"):
+
         logger.info("MainStartupTools(): check_for_live_disk(): Not running on live disk...")
         SYSTEM_INFO["IsLiveDisk"] = False
         SYSTEM_INFO["OnPartedMagic"] = False
