@@ -319,7 +319,7 @@ def is_mounted(partition, mount_point=None):
     """
 
     #Handle LVM disks with aliases.
-    if DISK_INFO[partition]["Product"] == "LVM Partition":
+    if partition in DISK_INFO and DISK_INFO[partition]["Product"] == "LVM Partition":
         return any_mounted(DISK_INFO[partition]["Aliases"], mount_point)
 
     if mount_point is None:
@@ -404,7 +404,7 @@ def get_mount_point_of(partition):
             mount_point = split_line[2]
 
         #Handle LVM disks with aliases.
-        elif DISK_INFO[partition]["Product"] == "LVM Partition" \
+        elif partition in DISK_INFO and DISK_INFO[partition]["Product"] == "LVM Partition" \
             and split_line[0] in DISK_INFO[partition]["Aliases"]:
 
             mount_point = split_line[2]
