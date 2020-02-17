@@ -59,10 +59,10 @@ def find_grub(os_partition, grub_version):
                     + ', '.join(str(DISK_INFO[disk]["BootRecordStrings"])))
 
         for line in DISK_INFO[disk]["BootRecordStrings"]:
-            line = str(line)
+            line = line.decode("utf-8")
 
             #Check that we have the right version of GRUB, and double check that GRUB is present.
-            if line in look_for and "GRUB" in DISK_INFO[disk]["BootRecordStrings"]:
+            if line in look_for and b"GRUB" in DISK_INFO[disk]["BootRecordStrings"]:
                 logger.info("find_grub(): Found "+grub_version+" on "+disk+"...")
                 logger.info("find_grub(): Done!")
                 return disk
