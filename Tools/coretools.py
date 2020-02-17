@@ -308,7 +308,7 @@ def write_privileged_file(filename, file_contents):
 
     return 0
 
-def is_mounted(partition, mount_point=None):
+def is_mounted(partition, mount_point=None, lvm=False):
     """
     Checks if the given partition is mounted.
     partition is the given partition to check.
@@ -319,8 +319,10 @@ def is_mounted(partition, mount_point=None):
     """
 
     #Handle LVM disks with aliases.
-    if partition in DISK_INFO and DISK_INFO[partition]["Product"] == "LVM Partition":
-        return any_mounted(DISK_INFO[partition]["Aliases"], mount_point)
+    if not lvm \
+        and (partition in DISK_INFO and DISK_INFO[partition]["Product"] == "LVM Partition"):
+
+        return any_mounted(DISK_INFO[partition]["Aliases"], mount_point, lvm=True)
 
     if mount_point is None:
         logger.debug("is_mounted(): Checking if "+partition+" is mounted...")
@@ -349,7 +351,7 @@ def is_mounted(partition, mount_point=None):
     logger.debug("is_mounted(): It isn't. Returning False...")
     return False
 
-def any_mounted(partitions, mount_point=None):
+def any_mounted(partitions, mount_point=None, lvm=False):
     """
     Checks if any of the given partitions are mounted.
     partitions are the given partitions to check.
@@ -360,7 +362,7 @@ def any_mounted(partitions, mount_point=None):
     any_disks_mounted = False
 
     for alias in partitions:
-        if is_mounted(alias, mount_point):
+        if is_mounted(alias, mount_point, lvm):
             any_disks_mounted = True
             break
 
