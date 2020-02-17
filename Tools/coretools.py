@@ -34,6 +34,7 @@ import wx
 
 #Import other modules.
 from . import dialogtools as DialogTools
+from .dictionaries import DISK_INFO #pylint: disable=wrong-import-position
 
 #Set up logging.
 logger = logging.getLogger(__name__)
@@ -317,6 +318,10 @@ def is_mounted(partition, mount_point=None):
     Return boolean True/False.
     """
 
+    #Handle LVM disks with aliases.
+    if DISK_INFO[partition]["Product"] == "LVM Partition":
+        return any_mounted(DISK_INFO[partition]["Aliases"], mount_point)
+
     if mount_point is None:
         logger.debug("is_mounted(): Checking if "+partition+" is mounted...")
         mount_info = start_process("mount -l", show_output=False, return_output=True)[1]
@@ -344,7 +349,7 @@ def is_mounted(partition, mount_point=None):
     logger.debug("is_mounted(): It isn't. Returning False...")
     return False
 
-def any_mounted(partitions):
+def any_mounted(partitions, mount_point=None):
     """
     Checks if any of the given partitions are mounted.
     partitions are the given partitions to check.
@@ -355,7 +360,7 @@ def any_mounted(partitions):
     any_disks_mounted = False
 
     for alias in partitions:
-        if is_mounted(alias):
+        if is_mounted(alias, mount_point):
             any_disks_mounted = True
             break
 
@@ -398,6 +403,12 @@ def get_mount_point_of(partition):
         if partition == split_line[0]:
             mount_point = split_line[2]
 
+        #Handle LVM disks with aliases.
+        elif DISK_INFO[partition]["Product"] == "LVM Partition" \
+            and split_line[0] in DISK_INFO[partition]["Aliases"]:
+
+            mount_point = split_line[2]
+
     if mount_point != None:
         logger.info("get_mount_point_of(): Found it! mount_point is "+mount_point+"...")
 
@@ -429,13 +440,13 @@ def mount_partition(partition, mount_point, options=""):
     #place.
     if mount_point == get_mount_point_of(partition):
         #The correct partition is already mounted here.
-        logger.debug("mount_partition(): partition: "+partition+" was already mounted at: "
+        logger.debug("mount_partition(): Partition: "+partition+" was already mounted at: "
                      + mount_point+". Continuing...")
         return 0
 
     elif mount_point in mount_info:
         #Something else is in the way. unmount that partition, and continue.
-        logger.warning("mount_partition(): unmounting filesystem in the way at "+mount_point
+        logger.warning("mount_partition(): Unmounting filesystem in the way at "+mount_point
                        + "...")
 
         ret_val = unmount(mount_point)
@@ -497,12 +508,14 @@ def unmount(mount_point):
     """
     logger.debug("unmount(): Preparing to unmount "+mount_point)
 
-    if mount_point not in start_process("mount -l", show_output=False, return_output=True)[1]:
+    if mount_point not in start_process("mount -l", show_output=False, return_output=True)[1] \
+        and is_mounted(mount_point) is False:
+
         logger.info("unmount(): "+mount_point+" was not mounted. Continuing...")
         ret_val = 0
 
     else:
-        logger.debug("unmount(): unmounting "+mount_point+"...")
+        logger.debug("unmount(): Unmounting "+mount_point+"...")
         ret_val = start_process("umount "+mount_point, show_output=False, privileged=True)
 
         if ret_val == 0:
