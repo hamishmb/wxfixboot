@@ -2966,7 +2966,7 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
                     filesystem = line.split(" on ")[0]
 
                     if CoreTools.unmount(filesystem) != 0:
-                        #If it can't be mounted, do an emergency exit.
+                        #If it can't be unmounted, do an emergency exit.
                         CoreTools.emergency_exit("There are mounted filesystems in "
                                                  + "/mnt/wxfixboot/mountpoints, WxFixBoot's "
                                                  + "temporary mountpoints directory! Please "

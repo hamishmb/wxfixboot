@@ -449,9 +449,6 @@ def get_oss():
                                              + "operating systems on it! Please reboot your "
                                              + "computer and try again.")
 
-                #Remove the temporary mountpoint
-                os.rmdir(mount_point)
-
     #Check that at least one Linux OS was detected.
     linux_oss = []
 
