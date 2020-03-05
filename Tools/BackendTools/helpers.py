@@ -280,8 +280,9 @@ def write_fstab_entry_for_uefi_partition(_os, mount_point):
     write_entry = True
 
     #Make the directory mount_point/boot/efi if it doesn't already exist.
-    if os.path.isdir(mount_point+"/boot/efi") is False:
-        os.makedirs(mount_point+"/boot/efi")
+    if path.isdir(mount_point+"/boot/efi") is False:
+        CoreTools.start_process("mkdir -p "+mount_point+"/boot/efi", show_output=False,
+                                privileged=True)
 
     #Open the mount_point/etc/fstab file for reading. If we aren't using chroot, this'll just be
     #/etc/fstab, otherwise, /mnt/wxfixboot/mountpoints/dev/sdxy/etc/fstab. Also, save its contents
@@ -387,7 +388,7 @@ def manage_uefi_files(_os, mount_point):
     else:
         #It doesn't, so we'll create it.
         uefi_boot_dir = mount_point+"/boot/efi/EFI/boot"
-        os.mkdir(uefi_boot_dir)
+        CoreTools.start_process("mkdir "+uefi_boot_dir, show_output=False, privileged=True)
 
     #Do this different depending on whether the OS is ubuntu or fedora-based.
     if OS_INFO[_os]["PackageManager"] == "apt-get":
