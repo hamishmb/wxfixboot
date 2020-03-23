@@ -372,6 +372,11 @@ def remove_old_bootloader(_os):
     #Attempt to clear any stuck logical volumes that may have been created by os-prober.
     CoreTools.start_process("dmsetup remove_all -y", privileged=True)
 
+    #Make sure any LVM volume groups are active.
+    for disk in DISK_INFO:
+        if "VGName" in DISK_INFO[disk]:
+            CoreTools.start_process("vgchange -a y "+DISK_INFO[disk]["VGName"], privileged=True)
+
     #Log and notify the user that we're finished removing bootloaders.
     logger.info("remove_old_bootloader(): Finished removing "+BOOTLOADER_INFO[_os]["Bootloader"]
                 + "...")
@@ -609,6 +614,11 @@ def install_new_bootloader(_os):
 
     #Attempt to clear any stuck logical volumes that may have been created by os-prober.
     CoreTools.start_process("dmsetup remove_all -y", privileged=True)
+
+    #Make sure any LVM volume groups are active.
+    for disk in DISK_INFO:
+        if "VGName" in DISK_INFO[disk]:
+            CoreTools.start_process("vgchange -a y "+DISK_INFO[disk]["VGName"], privileged=True)
 
     #Log and notify the user that we're finished installing the bootloader.
     logger.info("install_new_bootloader(): Finished installing "
@@ -985,6 +995,11 @@ def set_new_bootloader_config(_os):
 
     #Attempt to clear any stuck logical volumes that may have been created by os-prober.
     CoreTools.start_process("dmsetup remove_all -y", privileged=True)
+
+    #Make sure any LVM volume groups are active.
+    for disk in DISK_INFO:
+        if "VGName" in DISK_INFO[disk]:
+            CoreTools.start_process("vgchange -a y "+DISK_INFO[disk]["VGName"], privileged=True)
 
     logger.debug("set_new_bootloader_config(): Finished setting "
                  + BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]
