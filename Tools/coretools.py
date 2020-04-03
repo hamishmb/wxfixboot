@@ -256,9 +256,7 @@ def write_privileged_file(filename, file_contents):
     ["/etc/default/grub",
      "/boot/grub/grub.cfg",
      "/boot/grub2/grub.cfg",
-     "/boot/efi/EFI/fedora/grub.cfg",
-     "/etc/lilo.conf",
-     "/etc/elilo.conf"]
+     "/boot/efi/EFI/fedora/grub.cfg"]
 
     #Try to sanitize the filename argument as much as possible, as get as close a match
     #as we can.

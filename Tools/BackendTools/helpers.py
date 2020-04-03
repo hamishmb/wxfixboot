@@ -398,41 +398,7 @@ def manage_uefi_files(_os, mount_point):
     elif OS_INFO[_os]["PackageManager"] == "dnf":
         source_dir = mount_point+"/boot/efi/EFI/fedora"
 
-    #Do it differently depending on whether the now-installed UEFI bootloader is ELILO
-    #or GRUB-UEFI.
-    if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO":
-        #We need to copy both elilo.efi, and elilo.conf to uefi_boot_dir.
-        logger.info("manage_uefi_files(): Copying elilo.efi, elilo.conf and elilomenu.msg to "
-                    + uefi_boot_dir+"...")
-
-        if CoreTools.start_process("cp -v "+source_dir+"/elilo.efi "+uefi_boot_dir+"/bootx64.efi",
-                                   show_output=False, privileged=True) != 0:
-            logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/elilo.efi to "
-                         + uefi_boot_dir+"/bootx64.efi! Attempting to continue anyway...")
-
-        if CoreTools.start_process("cp -v "+source_dir+"/elilo.conf "+uefi_boot_dir+"/",
-                                   show_output=False, privileged=True) != 0:
-            logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/elilo.conf to "
-                         + uefi_boot_dir+"/! Attempting to continue anyway...")
-
-        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "
-                                   + uefi_boot_dir+"/", show_output=False, privileged=True) != 0:
-            logger.error("manage_uefi_files(): Failed to copy elilomenu.msg to "+uefi_boot_dir
-                         + "! Attempting to continue anyway...")
-
-        if CoreTools.start_process("cp -v /usr/share/wxfixboot/sampleconfig/elilomenu.msg "
-                                   + source_dir+"/", show_output=False, privileged=True) != 0:
-            logger.error("manage_uefi_files(): Failed to copy elilomenu.msg to "+source_dir
-                         + "/! Attempting to continue anyway...")
-
-        #If we were previously using GRUB-EFI, remove its EFI files.
-        if BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB-UEFI":
-            if CoreTools.start_process("rm -v "+source_dir+"/grub*.efi",
-                                       show_output=False, privileged=True) != 0:
-                logger.warning("manage_uefi_files(): Failed to remove "+source_dir
-                               +"/grub*.efi! Attempting to continue anyway...")
-
-    elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
+    if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
         #We need to copy grubx64.efi to uefi_boot_dir.
         logger.info("manage_uefi_files(): Copying grubx64.efi to "+uefi_boot_dir+"...")
 
@@ -440,12 +406,5 @@ def manage_uefi_files(_os, mount_point):
                                    show_output=False, privileged=True) != 0:
             logger.error("manage_uefi_files(): Failed to copy "+source_dir+"/grub*.efi to "
                          + uefi_boot_dir+"/bootx64.efi! Attempting to continue anyway...")
-
-        #If we were previously using ELILO, remove its EFI files.
-        if BOOTLOADER_INFO[_os]["Bootloader"] == "ELILO":
-            if CoreTools.start_process("rm -v "+source_dir+"/elilo*",
-                                       show_output=False, privileged=True) != 0:
-                logger.warning("manage_uefi_files(): Failed to remove "+source_dir
-                               + "/elilo*! Attempting to continue anyway...")
 
     logger.info("manage_uefi_files(): Done!")

@@ -2514,16 +2514,6 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
     def on_new_bootloader_choice(self, event=None): #pylint: disable=unused-argument
         """Warn user about issues chaging bootloaders if needed"""
-        #Could offer to disable, but the LILO functionality is deprecated at this point.
-        #TODO yes/no dialog.
-        if len(SYSTEM_INFO["ModifyableOSs"]) > 1 \
-            and self.new_bootloader_choice.GetStringSelection() == "LILO":
-
-            DialogTools.show_msg_dlg(kind="warning", message="Installing LILO"
-                                     + " is discouraged because you have more than one Linux OS "
-                                     + "installed, and this bootloader has poor support for "
-                                     + "booting multiple Linux OSs. Click okay to continue.")
-
         #Warning for Fedora systems about switching between GRUB2 and GRUB-UEFI.
         #This applies for switching in either direction.
         if OS_INFO[self.os_choice.GetStringSelection()]["PackageManager"] == "dnf" and \

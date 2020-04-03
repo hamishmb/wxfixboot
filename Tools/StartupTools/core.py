@@ -365,8 +365,8 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
 
     #Look for them in a specific order to be as fast a possible and to avoid false positives.
     if package_manager == "apt-get":
-        bootloader_packages = ("grub-efi", "grub-pc", "lilo")
-        package_dictionary = {"grub-efi": "GRUB-UEFI", "grub-pc": "GRUB2", "lilo": "LILO"}
+        bootloader_packages = ("grub-efi", "grub-pc")
+        package_dictionary = {"grub-efi": "GRUB-UEFI", "grub-pc": "GRUB2"}
 
     else:
         bootloader_packages = ("grub2-efi-x64", "grub2-pc")

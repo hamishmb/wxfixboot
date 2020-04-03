@@ -28,7 +28,6 @@ high-level functions for setting bootloader configuration.
 #Import modules.
 import os
 import sys
-import time
 import logging
 import wx
 
@@ -275,15 +274,6 @@ def remove_old_bootloader(_os):
         elif OS_INFO[_os]["PackageManager"] == "dnf":
             cmd = "dnf -y remove grub2"
 
-    elif BOOTLOADER_INFO[_os]["Bootloader"] == "LILO":
-        logger.info("remove_old_bootloader(): Removing LILO...")
-
-        if OS_INFO[_os]["PackageManager"] == "apt-get":
-            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y lilo'"
-
-        elif OS_INFO[_os]["PackageManager"] == "dnf":
-            cmd = "echo 'ERROR: LILO not available on Fedora or derivatives. Continuing anyway...'"
-
     elif BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB-UEFI":
         logger.info("remove_old_bootloader(): Removing GRUB-UEFI...")
 
@@ -294,16 +284,6 @@ def remove_old_bootloader(_os):
 
         elif OS_INFO[_os]["PackageManager"] == "dnf":
             cmd = "dnf -y remove grub2-efi-x64 grub2-efi-ia32 shim-x64"
-
-    elif BOOTLOADER_INFO[_os]["Bootloader"] == "ELILO":
-        logger.info("remove_old_bootloader(): Removing ELILO...")
-
-        if OS_INFO[_os]["PackageManager"] == "apt-get":
-            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y elilo'"
-
-        elif OS_INFO[_os]["PackageManager"] == "dnf":
-            cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. " \
-                  "Continuing anyway...'"
 
     else:
         #Bootloader is unknown. Just output a warning message.
@@ -501,15 +481,6 @@ def install_new_bootloader(_os):
         elif OS_INFO[_os]["PackageManager"] == "dnf":
             cmd = "dnf -y install grub2"
 
-    elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "LILO":
-        logger.info("install_new_bootloader(): Installing LILO...")
-
-        if OS_INFO[_os]["PackageManager"] == "apt-get":
-            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y lilo'"
-
-        elif OS_INFO[_os]["PackageManager"] == "dnf":
-            cmd = "echo 'ERROR: LILO not available on Fedora or derivatives. Continuing anyway...'"
-
     elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
         logger.info("install_new_bootloader(): Installing GRUB-UEFI...")
 
@@ -533,30 +504,6 @@ def install_new_bootloader(_os):
 
         elif OS_INFO[_os]["PackageManager"] == "dnf":
             cmd = "dnf -y install grub2-efi-ia32 grub2-efi-x64 shim-x64 "
-
-    elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO":
-        logger.info("install_new_bootloader(): Installing ELILO...")
-
-        #unmount the UEFI Partition now, and update the mtab inside chroot (if using chroot).
-        if CoreTools.unmount(OS_INFO[_os]["EFIPartition"]) != 0:
-            logger.error("install_new_bootloader(): Failed to unmount the EFI partition! Giving "
-                         + "up and warning user...")
-
-            DialogTools.show_msg_dlg(message="Couldn't unmount "+_os+"'s EFI partition! "
-                                     + "Giving up. You will be prompted to try again if you wish.",
-                                     kind="error")
-
-            return False
-
-        if use_chroot:
-            CoreTools.update_chroot_mtab(mount_point=mount_point)
-
-        if OS_INFO[_os]["PackageManager"] == "apt-get":
-            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'"
-
-        elif OS_INFO[_os]["PackageManager"] == "dnf":
-            cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. " \
-                  "Continuing anyway...'"
 
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
@@ -867,106 +814,6 @@ def set_new_bootloader_config(_os):
             CoreTools.write_privileged_file(grub_dir+"/grub.cfg", ''.join(new_config))
 
             logger.info("set_new_bootloader_config(): Done!")
-
-    elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "LILO":
-        #Make LILO's config file.
-        logger.info("set_new_bootloader_config(): Making LILO's configuration file...")
-        cmd = "liloconfig -f"
-
-        if use_chroot:
-            cmd = "chroot "+mount_point+" "+cmd
-
-        if CoreTools.start_process(cmd, show_output=False, privileged=True) != 0:
-            logger.error("set_new_bootloader_config(): '"+cmd
-                         +"' didn't run successfully! Attempting to continue anyway...")
-
-        #Check the config file exists for lilo.
-        if os.path.isfile(mount_point+"/etc/lilo.conf"):
-            #It does, we'll run the function to set the config now.
-            logger.info("set_new_bootloader_config(): Setting LILO Configuration...")
-            BootloaderConfigSettingTools.set_lilo_config(_os=_os, filetoopen=mount_point
-                                                         + "/etc/lilo.conf")
-
-            #Also, set the OS entries.
-            logger.info("set_new_bootloader_config(): Creating LILO OS Entries...")
-            BootloaderConfigSettingTools.make_lilo_os_entries(_os=_os, filetoopen=mount_point
-                                                              + "/etc/lilo.conf",
-                                                              mount_point=mount_point,
-                                                              kernel_options=BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"])
-
-        #Now Install LILO to the MBR.
-        logger.info("set_new_bootloader_config(): Installing LILO to the MBR...")
-        BootloaderConfigSettingTools.install_lilo_to_mbr(use_chroot=use_chroot,
-                                                         mount_point=mount_point)
-
-    elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO":
-        #unmount the UEFI Partition now, and update mtab in the chroot.
-        #Pause for 0.5 secs.
-        time.sleep(0.5)
-
-        if CoreTools.unmount(OS_INFO[_os]["EFIPartition"]) != 0:
-            logger.error("set_new_bootloader_config(): Failed to unmount "+_os
-                         + "'s EFI partition! Waning user and prompting to try again...")
-
-            DialogTools.show_msg_dlg(message="Couldn't unmount "+_os+"'s EFI partition! "
-                                     + "Giving up. You will be prompted to try again if you wish.",
-                                     kind="error")
-
-            return False
-
-        #Update chroot mtab if needed.
-        if use_chroot:
-            CoreTools.update_chroot_mtab(mount_point=mount_point)
-
-        #Make ELILO's config file.
-        logger.info("set_new_bootloader_config(): Making ELILO's configuration file...")
-
-        cmd = "elilo -b "+OS_INFO[_os]["EFIPartition"]+" --autoconf"
-
-        if use_chroot:
-            cmd = "chroot "+mount_point+" "+cmd
-
-        if CoreTools.start_process(cmd, show_output=False, privileged=True) != 0:
-            logger.error("set_new_bootloader_config(): '"+cmd+"' didn't run successfully! "
-                         + "Attempting to continue anyway...")
-
-        #Check elilo's config file exists.
-        if os.path.isfile(mount_point+"/etc/elilo.conf"):
-            #It does, we'll run the function to set the config now.
-            logger.info("set_new_bootloader_config(): Setting ELILO Configuration...")
-            BootloaderConfigSettingTools.set_lilo_config(_os=_os, filetoopen=mount_point
-                                                         + "/etc/elilo.conf")
-
-            #Also, set the OS entries.
-            logger.info("set_new_bootloader_config(): Creating ELILO OS Entries...")
-            BootloaderConfigSettingTools.make_lilo_os_entries(_os=_os, filetoopen=mount_point
-                                                              + "/etc/elilo.conf",
-                                                              mount_point=mount_point,
-                                                              kernel_options=BOOTLOADER_INFO[_os]["Settings"]["NewKernelOptions"])
-
-        #Now Install ELILO to the UEFI Partition.
-        logger.info("set_new_bootloader_config(): Installing ELILO to "
-                    + OS_INFO[_os]["EFIPartition"]+"...")
-
-        BootloaderConfigSettingTools.install_elilo_to_partition(_os=_os,
-                                                                package_manager=OS_INFO[_os]["PackageManager"],
-                                                                use_chroot=use_chroot,
-                                                                mount_point=mount_point)
-
-        #Mount the UEFI partition at mount_point/boot/efi.
-        if CoreTools.mount_partition(partition=OS_INFO[_os]["EFIPartition"],
-                                     mount_point=mount_point+"/boot/efi") != 0:
-            logger.error("set_new_bootloader_config(): Failed to mount EFI partition "
-                         + OS_INFO[_os]["EFIPartition"]+"! Continuing anyway...")
-
-        #Copy and backup UEFI files where needed.
-        HelperBackendTools.backup_uefi_files(mount_point=mount_point)
-        HelperBackendTools.manage_uefi_files(_os=_os, mount_point=mount_point)
-
-        #unmount the EFI partition.
-        if CoreTools.unmount(OS_INFO[_os]["EFIPartition"]) != 0:
-            logger.error("set_new_bootloader_config(): Couldn't unmount EFI partition! "
-                         + "This probably won't matter, so we'll continue anyway...")
 
     #If there's a seperate EFI partition for this OS, make sure it's unmounted before
     #removing the chroot.
