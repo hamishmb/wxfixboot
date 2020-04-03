@@ -129,7 +129,7 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options, packag
                 logger.debug("set_grub2_config(): Commenting out GRUB_CMDLINE_LINUX...")
                 line = "#"+line
 
-            elif package_manager == "yum":
+            elif package_manager == "dnf":
                 #Found it! Set it to the options in kernel_options, carefully making sure we aren't
                 #double-quoting it.
                 logger.debug("set_grub2_config(): Found GRUB_CMDLINE_LINUX, setting it to '"
@@ -155,7 +155,7 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options, packag
         if package_manager == "apt-get":
             new_file_contents.append("GRUB_CMDLINE_LINUX_DEFAULT='"+temp+"'\n")
 
-        elif package_manager == "yum":
+        elif package_manager == "dnf":
             new_file_contents.append("GRUB_CMDLINE_LINUX='"+temp+"'\n")
 
     if set_default is False:
@@ -178,7 +178,7 @@ def install_grub2_to_mbr(package_manager, use_chroot, mount_point, device):
     if package_manager == "apt-get":
         cmd = "grub-install --force "+device
 
-    elif package_manager == "yum":
+    elif package_manager == "dnf":
         cmd = "grub2-install --force --target=i386-pc "+device
 
     if use_chroot:
@@ -202,7 +202,7 @@ def install_grub2_to_efi_partition(package_manager, use_chroot, mount_point,
         cmd = "grub-install --efi-directory="+uefi_system_partition_mount_point \
               + " --target="+arch+"-efi"
 
-    elif package_manager == "yum":
+    elif package_manager == "dnf":
         #Don't install on fedora, it messes stuff up.
         cmd = "echo 'Disabled on Fedora'"
 
@@ -224,10 +224,10 @@ def update_grub2(_os, package_manager, use_chroot, mount_point):
     if package_manager == "apt-get":
         cmd = "update-grub2"
 
-    elif package_manager == "yum" and BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB2":
+    elif package_manager == "dnf" and BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB2":
         cmd = "grub2-mkconfig -o /boot/grub2/grub.cfg"
 
-    elif package_manager == "yum":
+    elif package_manager == "dnf":
         cmd = "grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg"
 
     if use_chroot:

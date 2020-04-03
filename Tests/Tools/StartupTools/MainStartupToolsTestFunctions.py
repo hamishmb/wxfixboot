@@ -199,7 +199,7 @@ def get_oss():
             if partition == root_fs or root_fs_is_alias:
                 cmd = "python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
                 apt_cmd = "which apt-get"
-                yum_cmd = "which yum"
+                dnf_cmd = "which dnf"
                 chroot = False
                 is_current_os = True
                 mount_point = ""
@@ -208,7 +208,7 @@ def get_oss():
                 mount_point = "/mnt/wxfixboot/mountpoints"+partition
                 cmd = "chroot "+mount_point+" python -c \"from __future__ import print_function; import platform; print(' '.join(platform.linux_distribution()));\""
                 apt_cmd = "chroot "+mount_point+" which apt-get"
-                yum_cmd = "chroot "+mount_point+" which yum"
+                dnf_cmd = "chroot "+mount_point+" which dnf"
                 chroot = True
                 is_current_os = False
 
@@ -239,7 +239,7 @@ def get_oss():
 
             #Look for APT.
             package_manager = CoreStartupTools.determine_package_manager(apt_cmd=apt_cmd,
-                                                                         yum_cmd=yum_cmd) 
+                                                                         dnf_cmd=dnf_cmd) 
 
             #Also check if CoreStartupTools.ask_for_os_name was used to determine the name.
             #If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.

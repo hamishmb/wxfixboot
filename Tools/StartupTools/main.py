@@ -366,7 +366,7 @@ def get_oss():
                 cmd = "cat /etc/os-release"
 
                 apt_cmd = "which apt-get"
-                yum_cmd = "which yum"
+                dnf_cmd = "which dnf"
                 chroot = False
                 is_current_os = True
                 mount_point = ""
@@ -376,7 +376,7 @@ def get_oss():
                 cmd = "cat "+mount_point+"/etc/os-release"
 
                 apt_cmd = "chroot "+mount_point+" which apt-get"
-                yum_cmd = "chroot "+mount_point+" which yum"
+                dnf_cmd = "chroot "+mount_point+" which dnf"
                 chroot = True
                 is_current_os = False
 
@@ -420,7 +420,7 @@ def get_oss():
 
             #Look for APT.
             package_manager = CoreStartupTools.determine_package_manager(apt_cmd=apt_cmd,
-                                                                         yum_cmd=yum_cmd)
+                                                                         dnf_cmd=dnf_cmd)
 
             #Also check if CoreStartupTools.ask_for_os_name was used to determine the name.
             #If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
@@ -637,7 +637,7 @@ def get_bootloaders():
             #Get GRUB2's config.
             #If we're using fedora, always look for grubenv in the EFI partition (the grubenv
             #symlink is in /boot/grub2 but it doesn't work when we're chrooting).
-            if OS_INFO[_os]["PackageManager"] == "yum":
+            if OS_INFO[_os]["PackageManager"] == "dnf":
                 grub_dir = mount_point+"/boot/efi/EFI/fedora"
 
             BOOTLOADER_INFO[_os]["Timeout"], BOOTLOADER_INFO[_os]["GlobalKernelOptions"], \

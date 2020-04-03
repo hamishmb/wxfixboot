@@ -51,8 +51,8 @@ from wx.adv import AboutDialogInfo as wxAboutDialogInfo #pylint: disable=no-name
 from wx.adv import AboutBox as wxAboutBox #pylint: disable=no-name-in-module
 
 #Define the version number and the release date as global variables.
-VERSION = "3.0.2"
-RELEASEDATE = "24/3/2020"
+VERSION = "3.1.0"
+RELEASEDATE = "3/4/2020"
 RELEASE_TYPE = "Stable"
 
 #Define other global variables.
@@ -2526,7 +2526,7 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
 
         #Warning for Fedora systems about switching between GRUB2 and GRUB-UEFI.
         #This applies for switching in either direction.
-        if OS_INFO[self.os_choice.GetStringSelection()]["PackageManager"] == "yum" and \
+        if OS_INFO[self.os_choice.GetStringSelection()]["PackageManager"] == "dnf" and \
            ((BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB-UEFI" and \
              self.new_bootloader_choice.GetStringSelection() == "GRUB2") or \
             (BOOTLOADER_INFO[self.os_choice.GetStringSelection()]["Bootloader"] == "GRUB2" and \

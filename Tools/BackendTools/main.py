@@ -242,7 +242,7 @@ def remove_old_bootloader(_os):
 
             return False
 
-    #Wait until no other application is using APT/YUM.
+    #Wait until no other application is using APT/DNF.
     #Let user know what's happening.
     wx.CallAfter(wx.GetApp().TopWindow.update_current_progress, 27)
     wx.CallAfter(wx.GetApp().TopWindow.update_current_operation_text, message="Waiting until "+_os
@@ -272,8 +272,8 @@ def remove_old_bootloader(_os):
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y " \
                   "grub-pc grub-pc-bin grub-common'"
 
-        elif OS_INFO[_os]["PackageManager"] == "yum":
-            cmd = "yum -y remove grub2"
+        elif OS_INFO[_os]["PackageManager"] == "dnf":
+            cmd = "dnf -y remove grub2"
 
     elif BOOTLOADER_INFO[_os]["Bootloader"] == "LILO":
         logger.info("remove_old_bootloader(): Removing LILO...")
@@ -281,7 +281,7 @@ def remove_old_bootloader(_os):
         if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y lilo'"
 
-        elif OS_INFO[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "dnf":
             cmd = "echo 'ERROR: LILO not available on Fedora or derivatives. Continuing anyway...'"
 
     elif BOOTLOADER_INFO[_os]["Bootloader"] == "GRUB-UEFI":
@@ -292,8 +292,8 @@ def remove_old_bootloader(_os):
                   "grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 " \
                   "grub-efi-ia32-bin grub-common grub2-common'"
 
-        elif OS_INFO[_os]["PackageManager"] == "yum":
-            cmd = "yum -y remove grub2-efi-x64 grub2-efi-ia32 shim-x64"
+        elif OS_INFO[_os]["PackageManager"] == "dnf":
+            cmd = "dnf -y remove grub2-efi-x64 grub2-efi-ia32 shim-x64"
 
     elif BOOTLOADER_INFO[_os]["Bootloader"] == "ELILO":
         logger.info("remove_old_bootloader(): Removing ELILO...")
@@ -301,7 +301,7 @@ def remove_old_bootloader(_os):
         if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y elilo'"
 
-        elif OS_INFO[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "dnf":
             cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. " \
                   "Continuing anyway...'"
 
@@ -466,8 +466,8 @@ def install_new_bootloader(_os):
     if OS_INFO[_os]["PackageManager"] == "apt-get":
         cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'"
 
-    elif OS_INFO[_os]["PackageManager"] == "yum":
-        cmd = "yum check-update"
+    elif OS_INFO[_os]["PackageManager"] == "dnf":
+        cmd = "dnf check-update"
 
     if use_chroot:
         cmd = "chroot "+mount_point+" "+cmd
@@ -498,8 +498,8 @@ def install_new_bootloader(_os):
         if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'"
 
-        elif OS_INFO[_os]["PackageManager"] == "yum":
-            cmd = "yum -y install grub2"
+        elif OS_INFO[_os]["PackageManager"] == "dnf":
+            cmd = "dnf -y install grub2"
 
     elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "LILO":
         logger.info("install_new_bootloader(): Installing LILO...")
@@ -507,7 +507,7 @@ def install_new_bootloader(_os):
         if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y lilo'"
 
-        elif OS_INFO[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "dnf":
             cmd = "echo 'ERROR: LILO not available on Fedora or derivatives. Continuing anyway...'"
 
     elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI":
@@ -531,8 +531,8 @@ def install_new_bootloader(_os):
         if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
 
-        elif OS_INFO[_os]["PackageManager"] == "yum":
-            cmd = "yum -y install grub2-efi-ia32 grub2-efi-x64 shim-x64 "
+        elif OS_INFO[_os]["PackageManager"] == "dnf":
+            cmd = "dnf -y install grub2-efi-ia32 grub2-efi-x64 shim-x64 "
 
     elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "ELILO":
         logger.info("install_new_bootloader(): Installing ELILO...")
@@ -554,7 +554,7 @@ def install_new_bootloader(_os):
         if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y elilo'"
 
-        elif OS_INFO[_os]["PackageManager"] == "yum":
+        elif OS_INFO[_os]["PackageManager"] == "dnf":
             cmd = "echo 'ERROR: ELILO not available on Fedora or derivatives. " \
                   "Continuing anyway...'"
 
@@ -784,7 +784,7 @@ def set_new_bootloader_config(_os):
             HelperBackendTools.manage_uefi_files(_os=_os, mount_point=mount_point)
 
         if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB-UEFI" \
-            and OS_INFO[_os]["PackageManager"] == "yum":
+            and OS_INFO[_os]["PackageManager"] == "dnf":
 
             #If we're switching to GRUB-UEFI from BIOS it can mess up GRUB2 and change the boot
             #commands to linux and initrd instead of linuxefi and initrdefi, preventing boot.
@@ -836,7 +836,7 @@ def set_new_bootloader_config(_os):
             logger.info("set_new_bootloader_config(): Done!")
 
         elif BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB2" \
-            and OS_INFO[_os]["PackageManager"] == "yum":
+            and OS_INFO[_os]["PackageManager"] == "dnf":
 
             #If we're switching to GRUB2 from UEFI it can mess up GRUB2 and change the boot
             #commands to linuxefi and initrdefi instead of linux and initrd, preventing boot.

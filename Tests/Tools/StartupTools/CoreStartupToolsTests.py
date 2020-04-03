@@ -58,7 +58,7 @@ class TestDeterminePackageManager(unittest.TestCase):
     def test_determine_package_manager_1(self):
         """Test #1: Test that we can determine the package manager without error."""
         CoreStartupTools.determine_package_manager(apt_cmd="which apt-get",
-                                                   yum_cmd="which yum")
+                                                   dnf_cmd="which dnf")
 
 class TestGetFSTabInfo(unittest.TestCase): #TODO Do another test with fake fstab file(s)
     def setUp(self):

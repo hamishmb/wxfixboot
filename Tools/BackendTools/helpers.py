@@ -95,8 +95,8 @@ def wait_until_packagemanager_free(mount_point, package_manager):
         cmd = "apt-get check"
         success_retvals = (0, 0) #100 omitted - indicates apt is in use.
 
-    elif package_manager == "yum":
-        cmd = "yum -C check-update"
+    elif package_manager == "dnf":
+        cmd = "dnf -C check-update"
         success_retvals = (0, 100) #100 - updates available.
 
     if mount_point != "":
@@ -106,20 +106,21 @@ def wait_until_packagemanager_free(mount_point, package_manager):
 
     #Trap in while loop until package manager is free.
     #FIXME: Doesn't work with DNF, but doesn't strictly matter because it will just wait
+    #FIXME: Handle return code 100 when updates are available.
     #until the lock is free, rather than exiting.
     while retval not in success_retvals:
         retval = CoreTools.start_process(cmd, show_output=False, privileged=True)
 
         #Get the package cache if there is none. 200 - locking failure.
-        if package_manager == "yum" and retval not in (0, 200):
+        if package_manager == "dnf" and retval not in (0, 200):
             CoreTools.start_process("sh -c 'echo No cache available, "
                                     + "downloading package information...'")
 
             if mount_point != "":
-                cmd2 = "chroot "+mount_point+" yum check-update"
+                cmd2 = "chroot "+mount_point+" dnf check-update"
 
             else:
-                cmd2 = "yum check-update"
+                cmd2 = "dnf check-update"
 
             CoreTools.start_process(cmd2, show_output=False, privileged=True)
 
@@ -280,7 +281,7 @@ def write_fstab_entry_for_uefi_partition(_os, mount_point):
     write_entry = True
 
     #Make the directory mount_point/boot/efi if it doesn't already exist.
-    if path.isdir(mount_point+"/boot/efi") is False:
+    if os.path.isdir(mount_point+"/boot/efi") is False:
         CoreTools.start_process("mkdir -p "+mount_point+"/boot/efi", show_output=False,
                                 privileged=True)
 
@@ -394,7 +395,7 @@ def manage_uefi_files(_os, mount_point):
     if OS_INFO[_os]["PackageManager"] == "apt-get":
         source_dir = mount_point+"/boot/efi/EFI/ubuntu"
 
-    elif OS_INFO[_os]["PackageManager"] == "yum":
+    elif OS_INFO[_os]["PackageManager"] == "dnf":
         source_dir = mount_point+"/boot/efi/EFI/fedora"
 
     #Do it differently depending on whether the now-installed UEFI bootloader is ELILO

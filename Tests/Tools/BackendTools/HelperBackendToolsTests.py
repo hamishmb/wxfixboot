@@ -142,7 +142,7 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
 
     #FIXME: These two tests fail, strictly speaking, but DNF handles the lock differently;
     #it will wait instead of exiting with an error, so it doesn't matter as much.
-    @unittest.skipUnless(subprocess.Popen("which yum", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't yum.")
+    @unittest.skipUnless(subprocess.Popen("which dnf", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't dnf.")
     def test_packagemanager_free_3(self):
         print("Waiting until DNF is free to make sure the code doesn't wait when executed.")
         #Wait until DNF is free.
@@ -165,9 +165,9 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
                 self.fd.close()
 
         HelperBackendTools.wait_until_packagemanager_free(mount_point="",
-                                                          package_manager="yum")
+                                                          package_manager="dnf")
 
-    @unittest.skipUnless(subprocess.Popen("which yum", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't yum.")
+    @unittest.skipUnless(subprocess.Popen("which dnf", shell=True, stdout=subprocess.PIPE).wait() == 0, "Package Manager isn't dnf.")
     def test_packagemanager_free_4(self):
         print("Locking DNF for a few seconds, and then releasing.")
         print("Acquiring DNF lock...")
@@ -194,7 +194,7 @@ class TestWaitUntilPackageManagerFree(unittest.TestCase):
         threading.Thread(target=self.unlock_fd).start()
 
         HelperBackendTools.wait_until_packagemanager_free(mount_point="",
-                                                          package_manager="yum")
+                                                          package_manager="dnf")
 
 class TestFindMissingFSCKModules(unittest.TestCase):
     def setUp(self):

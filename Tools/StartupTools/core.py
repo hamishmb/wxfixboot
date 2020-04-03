@@ -299,27 +299,27 @@ def match_partition_to_os(the_os):
 
             break
 
-def determine_package_manager(apt_cmd, yum_cmd):
+def determine_package_manager(apt_cmd, dnf_cmd):
     """
     Determine and return the package manager using the given command strings.
     """
 
     package_manager = "Unknown"
 
-    for cmd in (apt_cmd, yum_cmd):
+    for cmd in (apt_cmd, dnf_cmd):
         retval = CoreTools.start_process(cmd, show_output=False, privileged=True)
 
         if retval != 0:
             if cmd == apt_cmd:
                 #Couldn't find apt!
                 logger.info("MainStartupTools: Main().determine_package_manager(): Didn't find "
-                            + "apt. Looking for yum...")
+                            + "apt. Looking for dnf...")
 
                 continue
 
             else:
                 logger.info("MainStartupTools: Main().determine_package_manager(): Didn't find "
-                            + "apt or yum. Returning 'Unknown'...")
+                            + "apt or dnf. Returning 'Unknown'...")
 
         else:
             if cmd == apt_cmd:
@@ -329,9 +329,9 @@ def determine_package_manager(apt_cmd, yum_cmd):
                 break
 
             else:
-                #Found YUM!
-                logger.info("MainStartupTools: Main().determine_package_manager(): Found yum...")
-                package_manager = "yum"
+                #Found DNF!
+                logger.info("MainStartupTools: Main().determine_package_manager(): Found dnf...")
+                package_manager = "dnf"
                 break
 
     return package_manager
@@ -355,7 +355,7 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
         cmd = "dpkg --get-selections"
 
     else:
-        cmd = "yum -C list installed"
+        cmd = "dnf -C list installed"
 
     if using_chroot:
         cmd = "chroot "+mount_point+" "+cmd
@@ -389,7 +389,7 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
             #To figure out which way we're booting (and which is being used), see whether
             #we are booting in EFI mode or not.
             if package_dictionary[package] == "GRUB-UEFI" \
-                and OS_INFO[the_os]["PackageManager"] == "yum" \
+                and OS_INFO[the_os]["PackageManager"] == "dnf" \
                 and SYSTEM_INFO["FirmwareType"] == "BIOS":
 
                 #We're booting with GRUB2.
@@ -405,7 +405,7 @@ def look_for_bootloaders_on_partition(the_os, package_manager, mount_point, usin
             cmd = "apt-cache search "+package
 
         else:
-            cmd = "yum -C search "+package
+            cmd = "dnf -C search "+package
 
         if using_chroot:
             cmd = "chroot "+mount_point+" "+cmd
