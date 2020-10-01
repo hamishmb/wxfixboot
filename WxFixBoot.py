@@ -897,8 +897,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
 
         aboutbox.WebSite = ("https://www.hamishmb.com", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty"]
-        aboutbox.Artists = ["Bhuna https://www.instagram.com/bhuna42/",
-                            "Holly McIntyre-Bhatty (Old Artwork)"]
+        aboutbox.Artists = ["Bhuna https://www.instagram.com/bhuna42/"]
 
         aboutbox.License = "WxFixBoot is free software: you can redistribute it and/or modify it" \
                            "\nunder the terms of the GNU General Public License version 3 or," \
