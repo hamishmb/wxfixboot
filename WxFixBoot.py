@@ -2206,7 +2206,8 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                 logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): "
                              + "Saving config to "+_file+"...")
 
-                plistlib.dumps(BOOTLOADER_INFO[self.os_choice.GetStringSelection()], _file)
+                with open(_file, "wb") as filehndl:
+                    plistlib.dump(BOOTLOADER_INFO[self.os_choice.GetStringSelection()], filehndl)
 
                 logger.debug("BootloaderOptionsWindow().on_backup_bootloader_choice(): Finished "
                              + "saving config to "+_file+"...")
