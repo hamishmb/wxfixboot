@@ -52,8 +52,8 @@ from wx.adv import AboutBox as wxAboutBox #pylint: disable=no-name-in-module
 
 #Define the version number and the release date as global variables.
 VERSION = "3.1.0"
-RELEASEDATE = "3/4/2020"
-RELEASE_TYPE = "Stable"
+RELEASEDATE = "1/10/2020"
+RELEASE_TYPE = "Development"
 
 #Define other global variables.
 SESSION_ENDING = False
@@ -170,7 +170,6 @@ class GetDiskInformation(threading.Thread):
 
         except (SyntaxError, ValueError, TypeError) as error:
             #If this fails for some reason, just return an empty dictionary.
-            #TODO Don't know if only these exceptions can occur. Fix that.
             logger.error("GetDiskInformation().get_info(): Error: "+str(error))
             return {}
 
