@@ -2248,7 +2248,8 @@ class BootloaderOptionsWindow(wx.Frame): #pylint: disable=too-many-ancestors, to
                              + "config from "+_file+"...")
 
                 try:
-                    self.setup_for_restoring_bootloader(plistlib.loads(_file))
+                    with open(_file, "rb") as filehndl:
+                        self.setup_for_restoring_bootloader(plistlib.load(filehndl))
 
                 except Exception:
                     #Error!
