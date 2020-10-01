@@ -267,6 +267,9 @@ class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
         #Create the progress text.
         self.progress_text = wx.StaticText(self.panel, -1, "Initialising...")
 
+        #Set foreground colour to make sure text is visible when a dark theme is in use.
+        self.progress_text.SetForegroundColour(wx.Colour(61, 61, 61))
+
     def setup_sizers(self):
         """Setup sizers for InitialWindow"""
         main_sizer = wx.BoxSizer(wx.VERTICAL)
