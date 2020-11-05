@@ -433,7 +433,7 @@ def get_oss():
 
             #Also check if CoreStartupTools.ask_for_os_name was used to determine the name.
             #If the user skipped naming the OS, ignore it and skip the rest of this loop iteration.
-            if os_name != None and os_architecture != None and package_manager != "Unknown":
+            if os_name is not None and os_architecture is not None and package_manager != "Unknown":
                 #Add this information to os_info.
                 os_info[os_name] = {}
                 os_info[os_name]["Name"] = os_name
@@ -466,7 +466,7 @@ def get_oss():
         if _os[0] not in ("Windows", "macOS"):
             linux_oss.append(os_name)
 
-    if len(linux_oss) < 1:
+    if not linux_oss:
         logger.critical("get_oss(): No Linux installations found! If you do have Linux "
                         + "installations but WxFixBoot hasn't found them, please file a bug or "
                         + "ask a question on WxFixBoot's launchpad page. If you're using Windows "
