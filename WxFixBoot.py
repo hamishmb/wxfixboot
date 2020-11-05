@@ -936,7 +936,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
 
         #Add items to the check box and logo sizer.
         checkbox_and_logo_sizer.Add(checkbox_sizer, 2, wx.RIGHT, 10)
-        checkbox_and_logo_sizer.Add(self.logo, 1, wx.TOP|wx.LEFT|wx.ALIGN_RIGHT, 10)
+        checkbox_and_logo_sizer.Add(self.logo, 1, wx.TOP|wx.LEFT, 10)
 
         #Add items to the bottom button sizer.
         bottom_button_sizer.Add(self.about_button, 1, wx.RIGHT|wx.EXPAND, 10)
