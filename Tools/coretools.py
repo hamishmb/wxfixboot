@@ -425,6 +425,14 @@ def mount_partition(partition, mount_point, options=""):
     The default value for options is an empty string.
     """
 
+    #Try -o subvol=/root for BTRFS (fixes Fedora 33)
+    if partition in DISK_INFO and DISK_INFO[partition]["FileSystem"] == "btrfs" \
+        and "-o subvol=/root" not in options:
+
+        logger.info("Trying -o subvol=/root for BTRFS partition...")
+
+        options += " -o subvol=/root"
+
     if options != "":
         logger.info("mount_partition(): Preparing to mount "+partition+" at "+mount_point
                     + " with extra options "+options+"...")
@@ -476,16 +484,7 @@ def mount_partition(partition, mount_point, options=""):
         logger.debug("mount_partition(): Successfully mounted partition!")
 
     else:
-        #Try -o subvol=/root for BTRFS (fixes Fedora 33)
-        if partition in DISK_INFO and DISK_INFO[partition]["FileSystem"] == "btrfs" \
-            and "-o subvol=/root" not in options:
-
-            logger.info("Failed, trying -o subvol=/root for BTRFS partition...")
-
-            ret_val = mount_partition(partition, mount_point, options+" -o subvol=/root")
-
-        else:
-            logger.warning("mount_partition(): Failed to mount partition!")
+        logger.warning("mount_partition(): Failed to mount partition!")
 
     return ret_val
 
