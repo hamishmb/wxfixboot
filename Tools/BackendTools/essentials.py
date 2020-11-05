@@ -51,11 +51,7 @@ OPERATIONS = []
 
 def check_internet_connection():
     """Check the internet connection."""
-    DialogTools.show_msg_dlg(kind="info", message="Your internet connection will now be tested "
-                             + "to ensure it's safe to do bootloader operations. This will be "
-                             + "done by pinging the OpenDNS DNS servers.")
-
-    logger.info("check_internet_connection(): Checking the Internet Connection...")
+    logger.info("check_internet_connection(): Checking the Internet Connection w/ OpenDNS...")
 
     while True:
         #Test the internet connection by pinging an OpenDNS DNS server.
@@ -132,9 +128,9 @@ def filesystem_check(_type, manage_bootloader_function):
     filesystems_to_check_length = len(filesystems_to_check)
     checked = 0
 
-    DialogTools.show_msg_dlg(kind="info", message="WxFixBoot will now perform the disk check. "
+    DialogTools.show_msg_dlg(kind="info", message="WxFixBoot will now perform the disk checks. "
                              + "You may wish to open the terminal output box to view the "
-                             + "progress of the disk checks.")
+                             + "progress information.")
 
     #Run the check on the checkable Disks
     for disk in filesystems_to_check:

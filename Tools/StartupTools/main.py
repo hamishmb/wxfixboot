@@ -112,7 +112,6 @@ def check_for_live_disk():
                 + "live disk...")
 
     #Detect Parted Magic automatically.
-    #TODO is there a better way?
     if "pmagic" in CoreTools.start_process("uname -r", return_output=True)[1]:
         logger.info("MainStartupTools(): check_for_live_disk(): Running on Parted Magic...")
         SYSTEM_INFO["IsLiveDisk"] = True
@@ -132,6 +131,16 @@ def check_for_live_disk():
 
         logger.info("MainStartupTools(): check_for_live_disk(): "
                     + "Running on Fedora-based live disk...")
+
+        SYSTEM_INFO["IsLiveDisk"] = True
+        SYSTEM_INFO["OnPartedMagic"] = False
+
+    #Try to detect Disk Verifier/any other live disks.
+    elif CoreTools.is_mounted("overlay", "/") \
+        or os.path.isfile("/run/live/medium/live/filesystem.squashfs"):
+
+        logger.info("MainStartupTools(): check_for_live_disk(): "
+                    + "Running on live disk...")
 
         SYSTEM_INFO["IsLiveDisk"] = True
         SYSTEM_INFO["OnPartedMagic"] = False

@@ -356,9 +356,8 @@ def backup_uefi_files(mount_point):
             logger.error("backup_uefi_files(): Failed to backup failsafe UEFI boot file! "
                          + "Warning user and continuing...")
 
-            DialogTools.show_msg_dlg(kind="error", message="Error! WxFixBoot failed to save "
-                                     + "your UEFI boot files to the backup directory! This "
-                                     + "probably isn't very important. Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="warning", message="WxFixBoot failed to save "
+                                     + "your UEFI boot files to the backup directory! Click okay to continue.")
 
     #Now do Windows's files, if they exist.
     logger.info("backup_uefi_files(): Backing up Windows's boot files if they exist...")
@@ -371,9 +370,8 @@ def backup_uefi_files(mount_point):
             logger.error("backup_uefi_files(): Failed to backup Windows's UEFI boot files! "
                          + "Warning user and continuing...")
 
-            DialogTools.show_msg_dlg(kind="error", message="Warning: WxFixBoot failed to "
-                                     + "backup Windows's UEFI boot files! This probably isn't "
-                                     + "very important. Click okay to continue.")
+            DialogTools.show_msg_dlg(kind="warning", message="WxFixBoot failed to "
+                                     + "backup Windows's UEFI boot files! Click okay to continue.")
 
     logger.info("backup_uefi_files(): Done!")
 

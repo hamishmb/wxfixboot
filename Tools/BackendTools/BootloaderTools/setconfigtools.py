@@ -69,7 +69,7 @@ def set_grub2_config(_os, filetoopen, bootloader_timeout, kernel_options, packag
 
         DialogTools.show_msg_dlg(message="Couldn't match the default OS you picked to any that "
                                  + BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]
-                                 + " has detected! This doesn't matter, so instead, the first "
+                                 + " has detected! As a fallback, the first "
                                  + "menu entry will be the default. Click okay to continue...")
 
         bootloader_specific_default_os = "0"

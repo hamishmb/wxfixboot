@@ -366,10 +366,6 @@ def remove_old_bootloader(_os):
                  +_os+"......")
 
     wx.CallAfter(wx.GetApp().TopWindow.update_current_progress, 50)
-    DialogTools.show_msg_dlg(kind="info",
-                             message="Finished removing "+BOOTLOADER_INFO[_os]["Bootloader"]
-                             + "! WxFixBoot will now install "
-                             + BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]+" to "+_os+".")
 
     return True
 
