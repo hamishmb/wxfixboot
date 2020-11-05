@@ -259,8 +259,6 @@ class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def create_progress_bar_and_text(self):
         """Create a progressbar and some progress text"""
         self.progress_bar = wx.Gauge(self.panel, -1, 100)
-        self.progress_bar.SetBezelFace(3)
-        self.progress_bar.SetShadowWidth(3)
         self.progress_bar.SetValue(0)
         self.progress_bar.Show()
 
@@ -2723,15 +2721,11 @@ class ProgressWindow(wx.Frame): #pylint: disable=too-many-ancestors
         """Create both progress bars"""
         #Create the progress bar for the current operation.
         self.current_operation_progress_bar = wx.Gauge(self.panel, -1, 100)
-        self.current_operation_progress_bar.SetBezelFace(3)
-        self.current_operation_progress_bar.SetShadowWidth(3)
         self.current_operation_progress_bar.SetValue(0)
         self.current_operation_progress_bar.Show()
 
         #Create the progress bar for overall progress.
         self.overall_progress_bar = wx.Gauge(self.panel, -1, 100)
-        self.overall_progress_bar.SetBezelFace(3)
-        self.overall_progress_bar.SetShadowWidth(3)
         self.overall_progress_bar.SetValue(0)
         self.overall_progress_bar.Show()
 
