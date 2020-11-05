@@ -381,7 +381,7 @@ def get_partition_mounted_at(mount_point):
         if mount_point == split_line[2]:
             partition = split_line[0]
 
-    if partition != None:
+    if partition is not None:
         logger.info("get_partition_mounted_at(): Found it! partition is "+partition+"...")
 
     else:
@@ -409,7 +409,7 @@ def get_mount_point_of(partition):
 
             mount_point = split_line[2]
 
-    if mount_point != None:
+    if mount_point is not None:
         logger.info("get_mount_point_of(): Found it! mount_point is "+mount_point+"...")
 
     else:
@@ -424,7 +424,6 @@ def mount_partition(partition, mount_point, options=""):
     options is non-mandatory and contains whatever options you want to pass to the mount command.
     The default value for options is an empty string.
     """
-
 
     if options != "":
         logger.info("mount_partition(): Preparing to mount "+partition+" at "+mount_point
@@ -477,7 +476,16 @@ def mount_partition(partition, mount_point, options=""):
         logger.debug("mount_partition(): Successfully mounted partition!")
 
     else:
-        logger.warning("mount_partition(): Failed to mount partition!")
+        #Try -o subvol=/root for BTRFS (fixes Fedora 33)
+        if partition in DISK_INFO and DISK_INFO[partition]["FileSystem"] == "btrfs" \
+            and "-o subvol=/root" not in options:
+
+            logger.info("Failed, trying -o subvol=/root for BTRFS partition...")
+
+            ret_val = mount_partition(partition, mount_point, options+" -o subvol=/root")
+
+        else:
+            logger.warning("mount_partition(): Failed to mount partition!")
 
     return ret_val
 
