@@ -6,6 +6,8 @@ Description of Package
 ======================
 A utility to assist with fixing the bootloader on a computer quickly.
 
+[![pipeline status](https://gitlab.com/hamishmb/wxfixboot/badges/master/pipeline.svg)](https://gitlab.com/hamishmb/wxfixboot/-/commits/master)
+
 Distribution Packages
 =====================
 
