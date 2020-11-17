@@ -218,7 +218,7 @@ class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def __init__(self):
         """Initialises InitialWindow"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot",
-                          size=(600, 420), style=wx.SIMPLE_BORDER)
+                          size=(600, 420), style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER|wx.MAXIMIZE_BOX))
 
         self.panel = InitialPanel(self)
         self.SetClientSize(wx.Size(600, 420))
@@ -278,7 +278,8 @@ class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
         #Get the sizer set up for the frame.
         self.panel.SetSizer(main_sizer)
         main_sizer.SetMinSize(wx.Size(600, 420))
-        main_sizer.SetSizeHints(self)
+        self.SetMinSize(wx.Size(600, 420))
+        self.SetMaxSize(wx.Size(600, 420))
 
     def update_progress_bar(self, value):
         """Update the progress bar with the given value"""
