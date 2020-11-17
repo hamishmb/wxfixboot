@@ -218,7 +218,7 @@ class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def __init__(self):
         """Initialises InitialWindow"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot",
-                          size=(600, 420), style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER|wx.MAXIMIZE_BOX))
+                          size=(600, 420), style=wx.DEFAULT_FRAME_STYLE & ~(wx.MAXIMIZE_BOX))
 
         self.panel = InitialPanel(self)
         self.SetClientSize(wx.Size(600, 420))
