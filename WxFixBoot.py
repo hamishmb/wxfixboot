@@ -218,10 +218,13 @@ class InitialWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def __init__(self):
         """Initialises InitialWindow"""
         wx.Frame.__init__(self, parent=None, title="WxFixBoot",
-                          size=(600, 420), style=wx.DEFAULT_FRAME_STYLE & ~(wx.MAXIMIZE_BOX))
+                          size=(600, 420), style=wx.SIMPLE_BORDER)
 
         self.panel = InitialPanel(self)
-        self.SetClientSize(wx.Size(600, 420))
+
+        #Disabled to work around bug in wxPython/wxWidgets:
+        #https://discuss.wxpython.org/t/wx-frame-style-wx-simple-border-doesnt-work-on-wxpython-4-1-0/35028/7
+        #self.SetClientSize(wx.Size(600, 420))
 
         #Fix crashes when wxfixboot is restarted.
         wx.GetApp().SetTopWindow(self)
