@@ -876,7 +876,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-ancestors, too-many-instan
 
         else:
             logger.warning("MainWindow().check_for_updates(): No update required."
-                           "Sending notification...")
+                           " Sending notification...")
 
             CoreTools.send_notification("Up to date")
 
