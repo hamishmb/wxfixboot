@@ -265,7 +265,16 @@ def remove_old_bootloader(_os):
 
     #Make sure the GNOME APT frontend dependency is installed.
     if OS_INFO[_os]["PackageManager"] == "apt-get":
+        #Ubuntu 16.04.
         cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y libgnome2-perl'"
+
+        if use_chroot:
+            cmd = "chroot "+mount_point+" "+cmd
+
+        retval = CoreTools.start_process(cmd, privileged=True)
+
+        #All newer versions.
+        cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y libgtk3-perl'"
 
         if use_chroot:
             cmd = "chroot "+mount_point+" "+cmd
@@ -478,7 +487,16 @@ def install_new_bootloader(_os):
 
     #Make sure all GNOME APT frontend dependency is installed.
     if OS_INFO[_os]["PackageManager"] == "apt-get":
+        #Ubuntu 16.04.
         cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y libgnome2-perl'"
+
+        if use_chroot:
+            cmd = "chroot "+mount_point+" "+cmd
+
+        retval = CoreTools.start_process(cmd, privileged=True)
+
+        #All newer versions.
+        cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y libgtk3-perl'"
 
         if use_chroot:
             cmd = "chroot "+mount_point+" "+cmd
