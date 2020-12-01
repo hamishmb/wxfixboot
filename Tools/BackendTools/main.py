@@ -263,7 +263,7 @@ def remove_old_bootloader(_os):
     wx.CallAfter(wx.GetApp().TopWindow.update_output_box,
                  "\n###Removing "+BOOTLOADER_INFO[_os]["Bootloader"]+" from "+_os+"...###\n")
 
-    #Make sure all GNOME APT frontend dependency is installed.
+    #Make sure the GNOME APT frontend dependency is installed.
     if OS_INFO[_os]["PackageManager"] == "apt-get":
         cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y libgnome2-perl'"
 
@@ -475,6 +475,15 @@ def install_new_bootloader(_os):
     wx.CallAfter(wx.GetApp().TopWindow.update_output_box,
                  "\n###Installing "+BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"]
                  + " in "+_os+"...###\n")
+
+    #Make sure all GNOME APT frontend dependency is installed.
+    if OS_INFO[_os]["PackageManager"] == "apt-get":
+        cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y libgnome2-perl'"
+
+        if use_chroot:
+            cmd = "chroot "+mount_point+" "+cmd
+
+        retval = CoreTools.start_process(cmd, privileged=True)
 
     #Install the bootloader.
     if BOOTLOADER_INFO[_os]["Settings"]["NewBootloader"] == "GRUB2":
