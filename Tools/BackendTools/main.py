@@ -298,7 +298,7 @@ def remove_old_bootloader(_os):
         if OS_INFO[_os]["PackageManager"] == "apt-get":
             cmd = "sh -c 'DEBIAN_FRONTEND=gnome DISPLAY=:0 apt-get purge -y " \
                   "--allow-remove-essential grub-efi grub-efi-amd64 grub-efi-amd64-bin" \
-                  "grub-efi-ia32  grub-efi-ia32-bin grub-common grub2-common'"
+                  " grub-efi-ia32 grub-efi-ia32-bin grub-common grub2-common'"
 
         elif OS_INFO[_os]["PackageManager"] == "dnf":
             cmd = "dnf -y remove grub2-efi-x64 grub2-efi-ia32 shim-x64"
