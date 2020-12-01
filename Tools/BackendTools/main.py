@@ -268,7 +268,7 @@ def remove_old_bootloader(_os):
         logger.info("remove_old_bootloader(): Removing GRUB2...")
 
         if OS_INFO[_os]["PackageManager"] == "apt-get":
-            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y " \
+            cmd = "sh -c 'DEBIAN_FRONTEND=gnome DISPLAY=:0 apt-get purge -y " \
                   "grub-pc grub-pc-bin grub-common'"
 
         elif OS_INFO[_os]["PackageManager"] == "dnf":
@@ -278,7 +278,7 @@ def remove_old_bootloader(_os):
         logger.info("remove_old_bootloader(): Removing GRUB-UEFI...")
 
         if OS_INFO[_os]["PackageManager"] == "apt-get":
-            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get purge -y " \
+            cmd = "sh -c 'DEBIAN_FRONTEND=gnome DISPLAY=:0 apt-get purge -y " \
                   "grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-efi-ia32 " \
                   "grub-efi-ia32-bin grub-common grub2-common'"
 
@@ -440,7 +440,7 @@ def install_new_bootloader(_os):
 
     #Update the package lists.
     if OS_INFO[_os]["PackageManager"] == "apt-get":
-        cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update'"
+        cmd = "sh -c 'DEBIAN_FRONTEND=gnome DISPLAY=:0 apt-get update'"
 
     elif OS_INFO[_os]["PackageManager"] == "dnf":
         cmd = "dnf check-update"
@@ -472,7 +472,7 @@ def install_new_bootloader(_os):
         logger.info("install_new_bootloader(): Installing GRUB2...")
 
         if OS_INFO[_os]["PackageManager"] == "apt-get":
-            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-pc os-prober'"
+            cmd = "sh -c 'DEBIAN_FRONTEND=gnome DISPLAY=:0 apt-get install -y grub-pc os-prober'"
 
         elif OS_INFO[_os]["PackageManager"] == "dnf":
             cmd = "dnf -y install grub2"
@@ -496,7 +496,7 @@ def install_new_bootloader(_os):
             return False
 
         if OS_INFO[_os]["PackageManager"] == "apt-get":
-            cmd = "sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y grub-efi os-prober'"
+            cmd = "sh -c 'DEBIAN_FRONTEND=gnome DISPLAY=:0 apt-get install -y grub-efi os-prober'"
 
         elif OS_INFO[_os]["PackageManager"] == "dnf":
             cmd = "dnf -y install grub2-efi-ia32 grub2-efi-x64 shim-x64 "
