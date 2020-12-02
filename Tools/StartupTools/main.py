@@ -85,7 +85,7 @@ def check_depends():
     version_okay = False
 
     #TODO May need to change before each release.
-    versions = ["1.0.10", getdevinfo.getdevinfo.VERSION]
+    versions = ["1.1.1", getdevinfo.getdevinfo.VERSION]
 
     #Last entry is highest version.
     versions = sorted(versions, key=LooseVersion)
@@ -94,17 +94,17 @@ def check_depends():
         #This is the latest version WxFixBoot is aware of at the time of writing.
         version_okay = True
 
-    elif versions[-1] != "1.0.10" and versions[-1] == getdevinfo.getdevinfo.VERSION:
+    elif versions[-1] != "1.1.1" and versions[-1] == getdevinfo.getdevinfo.VERSION:
         #This is newer than the latest version WxFixBoot is aware of at the time of writing.
         version_okay = True
 
     if not version_okay:
         logger.critical("check_depends(): Your getdevinfo module is known to not work with this "
-                        + "version of WxFixBoot. Please update to at least 1.0.10")
+                        + "version of WxFixBoot. Please update to at least 1.1.1")
 
         CoreTools.emergency_exit("Your getdevinfo module is known to not work "
                                  + "with this version of WxFixBoot. Please update to at least "
-                                 + "v1.0.10.")
+                                 + "v1.1.1.")
 
 def check_for_live_disk():
     """Try to determine if we're running on a live disk."""
