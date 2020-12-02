@@ -52,7 +52,7 @@ from wx.adv import AboutBox as wxAboutBox #pylint: disable=no-name-in-module
 
 #Define the version number and the release date as global variables.
 VERSION = "3.1.0"
-RELEASEDATE = "1/10/2020"
+RELEASEDATE = "2/12/2020"
 RELEASE_TYPE = "Development"
 
 #Define other global variables.
